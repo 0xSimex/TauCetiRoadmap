@@ -16,8 +16,9 @@ says *"the prerequisites are all here, in reusable form, and I can start my work
 ## The end goal (v1)
 
 For a **bounded open `Ω ⊆ ℝⁿ`** and a **uniformly elliptic, divergence-form** operator
-`L u = -∂ⱼ(aⁱʲ ∂ᵢ u) + bⁱ ∂ᵢ u + c u` with bounded measurable coefficients, deliver the
-**three pillars** for the Dirichlet problem `L u = f` in `Ω`, `u = g` on `∂Ω`:
+`L u = -∂ⱼ(aⁱʲ ∂ᵢ u) + bⁱ ∂ᵢ u + c u` with bounded measurable coefficients, with no
+symmetry assumption on the principal coefficient field `a`, deliver the **three pillars**
+for the Dirichlet problem `L u = f` in `Ω`, `u = g` on `∂Ω`:
 
 1. **Existence and uniqueness** of a weak solution in `H¹(Ω)` (energy method: Gårding's
    inequality plus Lax–Milgram; the Fredholm alternative when coercivity fails).
@@ -42,8 +43,10 @@ For a **bounded open `Ω ⊆ ℝⁿ`** and a **uniformly elliptic, divergence-fo
 --     ∃! u : Wkp0 1 2 Ω, ∀ v : Wkp0 1 2 Ω, energyForm a b c u v = ∫ x in Ω, f x * v x
 --
 -- De Giorgi–Nash–Moser interior regularity of the weak solution:
+-- def holderExponent (n : ℕ) (λ Λ : ℝ) : ℝ
+-- def holderConstant (n : ℕ) (λ Λ : ℝ) (K Ω : Set (EuclideanSpace ℝ (Fin n))) : ℝ
 -- theorem weakSolution_holderOn (hu : IsWeakSolution L u f) (hcompact : K ⊆ Ω) (hK : IsCompact K) :
---     ∃ α ∈ Set.Ioc (0:ℝ) 1, HolderOnWith C α u K
+--     HolderOnWith (holderConstant n λ Λ K Ω) (holderExponent n λ Λ) u K
 ```
 
 ## Standing hypotheses (spell them out)
@@ -58,9 +61,15 @@ separate hypothesis:
   *extension*, and *Rellich–Kondrachov* additionally need boundary regularity
   (Lipschitz, or `C¹`, or the cone/segment condition). Carry the boundary hypothesis
   explicitly: interior estimates do **not** need it, global ones do.
-- **Uniform ellipticity** with *explicit* constants `0 < λ ≤ Λ`:
-  `λ‖ξ‖² ≤ aⁱʲ(x) ξᵢ ξⱼ ≤ Λ‖ξ‖²`. Almost every estimate's constant depends on `λ, Λ, n`
-  and the domain only, so make that dependence visible, not hidden in a `∃ C`.
+- **Uniform ellipticity** for possibly non-symmetric coefficient fields, with *explicit*
+  constants `0 < λ ≤ Λ`: for almost every `x ∈ Ω` and every `ξ ∈ ℝⁿ`, require
+  `ξ · a(x)ξ ≥ λ‖ξ‖²` and `ξ · a(x)⁻¹ξ ≥ Λ⁻¹‖ξ‖²`. The first condition implies that
+  `a(x)` is invertible. For symmetric `a(x)` these conditions are equivalent to the
+  Loewner bounds `λI ≤ a(x) ≤ ΛI`; Loewner ordering is not a definition for a general
+  non-symmetric field. The inverse condition yields the quadratic and mixed upper bounds
+  with the same `Λ`. Do not replace it in the definition by `‖a(x)‖ ≤ Λ`: a norm bound is
+  equivalent only after changing constants and therefore loses sharp `Λ`-dependence.
+  Use a pointwise specialization when stronger coefficient regularity makes it appropriate.
 - **Coefficient regularity is a *dial*, and it selects the theory:**
   - *bounded measurable* `aⁱʲ` gives **divergence form**, **weak** solutions, De Giorgi–Nash–Moser;
   - *Hölder* `aⁱʲ ∈ C^{0,α}` gives **Schauder** `C^{2,α}` estimates (classical solutions);
@@ -72,8 +81,10 @@ separate hypothesis:
 define. Follow "Use Mathlib's vocabulary" in the top-level README: a coefficient bound is the
 inline hypothesis `∀ x ∈ Ω, ‖b x‖ ≤ β`, never a bespoke boundedness predicate, because Mathlib
 states such bounds inline and has `Bornology.IsBounded` when no constant is needed. Uniform
-ellipticity is the case that does earn a named definition: its two-sided bound
-`λ‖ξ‖² ≤ aⁱʲ ξᵢ ξⱼ ≤ Λ‖ξ‖²` has no Mathlib spelling, so define it once, with explicit `λ, Λ`.
+ellipticity is the case that does earn a named definition: the coercivity bounds on `a(x)`
+and `a(x)⁻¹` above have no Mathlib spelling, so define them once, with explicit `λ, Λ` and
+without a symmetry field. Derive mixed bilinear and norm bounds as theorems rather than
+making a changed upper constant primitive.
 
 ## Getting the statements right
 
@@ -85,6 +96,12 @@ statement time is what keeps the formalized API reusable.
   PDE holds pointwise), *strong* (`W^{2,p}`, a.e.), or *weak* (`H¹`, against test
   functions) solutions, and which of these it assumes versus produces. The regularity lane
   is exactly the passage from weak to classical.
+- **Track ellipticity constants quantitatively.** Every energy, Harnack, Hölder, Schauder,
+  and Calderón–Zygmund estimate must state how its constants and exponents depend on
+  `λ, Λ` (or, after normalization, on the ellipticity ratio `Λ / λ`), as well as on the
+  dimension, exponents, domain geometry, and coefficient moduli that actually enter.
+  An unqualified `∃ C` is not an adequate final statement, and an intermediate norm-bound
+  reformulation must not silently change `Λ`.
 - **Build domain Sobolev spaces from weak derivatives, then connect them to the Fourier
   scale.** The PDE workhorse is `W^{k,p}(Ω)` on a domain via weak derivatives; build it,
   then *prove* it agrees with Mathlib's Fourier/Bessel-potential spaces
@@ -191,11 +208,12 @@ statement time is what keeps the formalized API reusable.
   **Hopf lemma**, comparison principles, the **Harnack inequality**, the Newtonian
   potential / fundamental solution of `Δ`, the Green's function, the Poisson kernel on
   `ℝⁿ` (the half-space and the ball), and **Perron's method** for the Dirichlet problem.
-- **Elliptic existence & regularity:** the energy/weak formulation and Gårding's
+- **Elliptic existence & regularity:** the energy/weak formulation for non-symmetric
+  coefficients and Gårding's
   inequality (then Lax–Milgram, *consumed*); interior and boundary `Hᵏ`/`Lᵖ` estimates
   (difference quotients, Calderón–Zygmund); **Schauder** `C^{2,α}` estimates;
-  **De Giorgi–Nash–Moser**; eigenvalues of `−Δ` via the compact-self-adjoint spectral
-  theorem.
+  **De Giorgi–Nash–Moser** (port and reconcile Armstrong–Kempe's existing formalization);
+  eigenvalues of `−Δ` via the compact-self-adjoint spectral theorem.
 - **Parabolic & evolution equations:** Bochner spaces `L²(0,T;H)`, the Gelfand triple
   `V ↪ H ↪ V*`, the **Galerkin method**, existence for linear parabolic equations, the
   parabolic maximum principle, the **heat semigroup** and **Hille–Yosida**.
@@ -281,7 +299,9 @@ Mathlib*. This lane mostly assembles Lane A and Mathlib.
 
 16. **Weak formulation.** The energy bilinear form `a(u,v) = ∫ aⁱʲ ∂ᵢu ∂ⱼv + …` on
     `H¹_0(Ω) × H¹_0(Ω)`; boundedness; **Gårding's inequality**
-    `a(u,u) ≥ α‖u‖²_{H¹} − β‖u‖²_{L²}` from uniform ellipticity.
+    `a(u,u) ≥ α‖u‖²_{H¹} − β‖u‖²_{L²}` from uniform ellipticity. Do not assume
+    `aⁱʲ = aʲⁱ`: use coercivity of `a` for the lower energy bound and derive weak-form
+    boundedness with the same `Λ` from coercivity of `a⁻¹`.
 17. **Existence & uniqueness (coercive case).** When `a` is coercive, *consume* Lax–Milgram
     (`continuousLinearEquivOfBilin`) for the unique weak solution of the Dirichlet problem.
     This is the first end-to-end PDE theorem and should land early.
@@ -299,18 +319,23 @@ The deepest lane, and the route from weak to classical solutions; it is the hear
 classical elliptic theory (Schauder, De Giorgi–Nash–Moser).
 
 20. **Interior `H²`/`Hᵏ` estimates** via difference quotients: a weak `H¹` solution with
-    `L²` data is locally `H²`, bootstrapping to `C^∞` for smooth coefficients and data.
+    `L²` data is locally `H²`, bootstrapping to `C^∞` for smooth coefficients and data;
+    expose the estimate's dependence on `λ, Λ` and the relevant coefficient derivatives.
 21. **Calderón–Zygmund `W^{2,p}` estimates** for strong solutions (consume Lane B): the
-    `Lᵖ` theory of `D²u` for `Δu = f`, then variable continuous/VMO coefficients.
+    `Lᵖ` theory of `D²u` for `Δu = f`, then variable continuous/VMO coefficients, with
+    the dependence on `λ, Λ`, `p`, dimension, and the coefficient modulus explicit.
 22. **Schauder estimates.** Interior and global `C^{2,α}` estimates for `C^{0,α}`
     coefficients (Lane B / Campanato approach), giving classical solvability of the
-    Dirichlet problem in `C^{2,α}`.
+    Dirichlet problem in `C^{2,α}`; state the dependence on `λ, Λ`, `α`, dimension, domain
+    geometry, and coefficient Hölder norm.
 23. **De Giorgi–Nash–Moser.** Local boundedness and **Hölder continuity** of weak
-    solutions of divergence-form equations with **bounded measurable** coefficients, and
-    the elliptic Harnack inequality in this generality (De Giorgi's iteration and/or
-    Moser's). ⚠ This is *the* hard theorem of the lane, so budget for it accordingly;
-    note it is **divergence-form/weak**, whereas the non-divergence analogue is
-    Krylov–Safonov.
+    solutions of divergence-form equations with **bounded measurable, not necessarily
+    symmetric** coefficients, and the elliptic Harnack inequality in this generality.
+    Port and reconcile the Armstrong–Kempe development, whose coefficient structure uses
+    the two inverse-coercivity conditions above and derives its mixed upper bounds. Keep
+    the Hölder exponent and all estimate constants explicit in `λ, Λ` (or `Λ / λ`) and
+    dimension. Note that this is **divergence-form/weak**, whereas the non-divergence
+    analogue is Krylov–Safonov.
 
 ### Lane F: parabolic and evolution equations
 
@@ -352,7 +377,9 @@ Concrete sanity checks that rule out vacuous or mis-stated definitions:
 - **Eigenvalues are real and positive:** the first Dirichlet eigenvalue of `−Δ` is
   positive (Lane D.19), matching the Poincaré constant.
 - **Regularity actually upgrades:** exhibit a weak solution that is *only* `H¹` a priori
-  and prove it is `C^{0,α}` (Lane E.23), the De Giorgi–Nash–Moser payoff on an example.
+  and prove it is `C^{0,α}` (Lane E.23), the De Giorgi–Nash–Moser payoff on an example;
+  include a genuinely non-symmetric coefficient field and expose the dependence of `α`
+  and the Hölder bound on `λ, Λ`.
 - **Maximum principle bites:** a subsolution of `−Δu ≤ 0` attains its max on `∂Ω`
   (Lane C.13), with a counterexample showing the sign condition is necessary.
 
@@ -364,6 +391,11 @@ Concrete sanity checks that rule out vacuous or mis-stated definitions:
 - D. Gilbarg, N. Trudinger, *Elliptic Partial Differential Equations of Second Order*:
   maximum principles (Ch. 3), Schauder (Ch. 6), `Lᵖ` theory (Ch. 9), De Giorgi–Nash–Moser
   (Ch. 8); the canonical elliptic reference.
+- S. Armstrong, J. Kempe, [*Formalization of De Giorgi–Nash–Moser Theory in
+  Lean*](https://arxiv.org/abs/2604.05984), with the accompanying
+  [`scottnarmstrong/DeGiorgi`](https://github.com/scottnarmstrong/DeGiorgi) repository:
+  the sorry-free source for the non-symmetric inverse-coercivity definition, its derived
+  sharp upper bounds, and the Lane E.23 migration.
 - L. Grafakos, *Classical Fourier Analysis* (and *Modern*) / E. Stein, *Singular Integrals
   and Differentiability Properties of Functions*: maximal function, interpolation,
   Calderón–Zygmund, BMO. Baby versions in Stein–Shakarchi vol. 4, §3.3.

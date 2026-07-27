@@ -33,7 +33,17 @@ natural first targets, in order:
 * Lane D: existence and uniqueness of the weak solution of `−Δu = f`, `u|∂Ω = 0`, on a
   bounded domain, via `IsCoercive` + `continuousLinearEquivOfBilin` (Lax–Milgram).
 * Lane E: De Giorgi–Nash–Moser, showing that a weak `H¹` solution of a divergence-form
-  equation with bounded measurable coefficients is locally Hölder continuous.
+  equation with bounded measurable, not necessarily symmetric coefficients is locally
+  Hölder continuous. Port and reconcile Armstrong–Kempe's existing `DeGiorgi`
+  formalization rather than rebuilding this theorem from scratch.
+
+The intended uniform-ellipticity predicate must support non-symmetric coefficient fields.
+With explicit constants `0 < λ ≤ Λ`, its primitive almost-everywhere conditions are
+`ξ · a(x)ξ ≥ λ‖ξ‖²` and `ξ · a(x)⁻¹ξ ≥ Λ⁻¹‖ξ‖²`. The familiar Loewner inequality
+`λI ≤ a(x) ≤ ΛI` is equivalent only in the symmetric case. Mixed bilinear and operator-norm
+upper bounds should be derived with the same `Λ`, not used as a primitive replacement that
+changes constants. Every quantitative target must expose its dependence on `λ, Λ` (or the
+normalized ratio `Λ / λ`).
 
 The first end-to-end milestone (Lane D.17) is the shortest path to a genuine PDE existence
 theorem, because Lax–Milgram is already in Mathlib; it only awaits `Wkp0` and Poincaré
