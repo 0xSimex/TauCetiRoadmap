@@ -62,19 +62,41 @@ Pin these conventions before writing code — implementors make bad, divergent c
   by a power of the determinant); **pin Diamond–Shurman's** as primary, and provide the
   Shimura-normalized action as a named bridge (AINTLIB has both via `ShimuraHom`), so any
   half-integral-weight work downstream can use it without silently switching conventions.
-- **What "eigenform" means — the call, made once.** An **eigenform** of level `N`, weight `k`,
-  nebentypus `χ` is a cusp form in `M_k(N, χ)` that is an eigenvector for `Tₙ` at **every `n`
-  coprime to `N`** — and nothing more. Two consequences of that choice, both deliberate: the
-  diamond operators are handled by *living in* `M_k(N, χ)`, so an eigenform is a `⟨d⟩`-eigenvector
-  by construction rather than by hypothesis; and eigen-behaviour at `n` sharing a factor with
-  `N` is **not** assumed — for a newform it is a *theorem*, the Atkin–Lehner–Li all-`n` upgrade
-  (Layer 4), with the bad-prime eigenvalues classified there. Several inequivalent notions
-  circulate under the one word ("eigen for all `Tₙ`", "eigen for the good `Tₙ`", "eigen for
-  `Tₙ` and `⟨d⟩`"); this roadmap uses the good-`n` one throughout, matching Miyake §4.5 and
-  D–S §§5.5–5.7, and names the stronger notion `IsFullEigenform` where it is needed.
-- **Normalized eigenforms.** An eigenform is `normalized` when `a₁ = 1`; a **newform** is a
-  normalized eigenform in the new subspace — the orthogonal complement of the oldspace under
-  the Petersson product, defined in Layer 3, where the old/new decomposition is a milestone.
+- **`Tₙ` is defined for every `n`, and at `p ∣ N` it *is* `Uₚ`.** Miyake (§4.5, Lemma 4.5.7),
+  Diamond–Shurman (Prop. 5.2.1–5.2.2, eq. (5.3)–(5.4)) and Shimura (3.5.12) all define `T(n)`
+  for **all** `n ≥ 1`, with the nebentypus extended by `χ(d) = 0` for `(d, N) > 1`. The
+  coefficient formula `aₘ(Tₚ f) = a_{mp}(f) + χ(p)p^{k−1}a_{m/p}(f)` then degenerates at
+  `p ∣ N` to `aₘ(Tₚ f) = a_{mp}(f)` — which is exactly the operator modern papers write `Uₚ`.
+  So there is **no second operator**: follow the sources and define `Tₙ` uniformly, then
+  provide `Uₚ` as an **alias at `p ∣ N` with the lemma `Uₚ = Tₚ`** (Layer 2), so both
+  vocabularies are available and provably the same. Likewise the recurrence
+  `T_{p^{r+2}} = Tₚ T_{p^{r+1}} − p^{k−1}⟨p⟩T_{p^r}` is uniform once `⟨p⟩ = 0` at bad `p`,
+  degenerating to `T_{p^r} = Tₚ^r`. ⚠ Genuine diamond operators are indexed by
+  `(ZMod N)ˣ` only; the `⟨n⟩ = 0` extension to non-units is a *separate* zero-extended
+  notation for uniform formulas — do not conflate the two, and do not pretend a non-unit
+  indexes an automorphism.
+- **What "eigenform" means — the call, made once, following the sources.** The bare word
+  `Eigenform` is reserved for the **full** notion, as in **Diamond–Shurman Definition 5.8.1**:
+  a nonzero form that is an eigenvector for `Tₙ` at **every** `n ≥ 1` (their zero-extended
+  `⟨n⟩` clause is vacuous at bad `n`, so the substantive content is the `Tₙ`). This is the
+  right thing to call `Eigenform` because its eigenvalue system *contains* the bad-prime data
+  that the Euler factors (Layer 7) and Atkin–Lehner–Li (Layer 4) consume.
+  The weaker, good-`n` notion — eigenvector for `Tₙ` whenever `(n, N) = 1` — is exactly the
+  natural *hypothesis* of the newform arguments (it is the family that is normal for the
+  Petersson product, hence simultaneously diagonalizable: Miyake Thm 4.5.4(3), D–S Thm 5.5.4)
+  and so it needs a name of its own — but a **qualified** one, since no source gives it the
+  bare word: `IsEigenformAwayFromLevel` (say "good Hecke eigenform" in prose, never plain
+  "eigenform"). Miyake has no free-standing "eigenform" at all; he says "common eigenfunction"
+  relative to a stated family.
+- **Normalized eigenforms and newforms.** A form is `normalized` when `a₁ = 1`. A **newform**
+  is defined the proof-friendly way, following Miyake's *primitive form* (§4.6): normalized,
+  lying in the new subspace — the orthogonal complement of the oldspace under
+  the Petersson product, defined in Layer 3, where the old/new decomposition is a milestone —
+  and **eigen away from the level**. That every newform is then a *full* eigenform is a
+  **theorem**, not part of the definition (D–S Thm 5.8.2 / Miyake Thm 4.6.13), and it is what
+  makes the bad-prime eigenvalues (Layer 4) available. Building the full condition into the
+  newform hypothesis would put a hard theorem into the hypotheses of the newform-decomposition
+  argument, which is why the sources do not do it.
   State eigenvalue results for normalized forms, so that
   `Tₙ f = aₙ(f) · f` (Hecke eigenvalue = Fourier coefficient).
 - **Coefficient field.** The coefficient field of a newform is `CoefficientField f = ℚ(aₙ : n ≥ 1)
@@ -280,8 +302,17 @@ below sketches signatures; it is illustrative, not required to compile.
   `T_sum_mul`). The Fourier-side statements (`FourierHecke.lean`) carry
   `f ∈ modFormCharSpace k χ` and `Nat.Coprime n N` — keep those hypotheses.
   ⚠ Adopt Diamond–Shurman's convention `χ(p) = 0` for `p ∣ N` (the `Newform.dirichletLift`
-  zero-extension), so the single recurrence also covers the bad-prime operator `Uₚ` (`p ∣ N`);
+  zero-extension), so the single recurrence also covers the bad-prime operator (`p ∣ N`);
   AINTLIB's `p ∣ N` branch indeed carries no `χ` term.
+- **`Uₚ` is an alias, and that is a milestone.** With the convention above, at `p ∣ N` the
+  recurrence reads `aₘ(Tₚ f) = a_{mp}(f)` — which is the *definition* of the operator modern
+  papers call `Uₚ`. Following Miyake, D–S and Shimura, `Tₙ` is the primitive notion, defined
+  for **all** `n`; `Uₚ` is introduced as notation at `p ∣ N` together with the lemma
+  **`Uₚ = Tₚ`**, so that literature stated either way can be consumed without a translation
+  layer. Similarly `T_{p^r} = Tₚ^r` at `p ∣ N` (AINTLIB `heckeT_ppow_eq_pow_of_not_coprime`),
+  the degenerate case of the prime-power recurrence once `⟨p⟩ = 0`. ⚠ Do not introduce `Uₚ` as
+  an independent operator, and do not let the zero-extended `⟨n⟩` masquerade as a diamond
+  automorphism at non-units (conventions).
 - **The diamond operators land in the Hecke algebra.** The slash-defined `⟨d⟩` of Layer 0 are
   recovered here as the double cosets of `Γ₀(N)/Γ₁(N) ≅ (ℤ/N)ˣ` (the diamond part of AINTLIB's
   `heckeRingDn : 𝕋 (Gamma0_pair N) ℤ`), and on `M_k(N, χ)` the ring acts through
@@ -312,6 +343,15 @@ below sketches signatures; it is illustrative, not required to compile.
   obligation of this layer, not a finished migration.
 
 ### Layer 4: eigenforms, newforms, primitive forms; the conductor
+
+⚠ **Naming, on porting.** The structure below is AINTLIB's, and it is the *good-`n`* notion:
+it constrains only `(n, N) = 1`. Per the conventions, it therefore ports as
+**`EigenformAwayFromLevel`**, and the bare name `Eigenform` is reserved for the full
+(all-`Tₙ`) notion of D–S Def. 5.8.1 — which AINTLIB currently carries as the predicate
+`IsFullEigenform`. (AINTLIB's docstring cites "DS Definition 5.5.4" for its structure; D–S
+5.5.4 is a *Theorem* — the good-Hecke simultaneous diagonalization — and the definition of
+"eigenform" is 5.8.1. Fix the citation with the rename.)
+
 - **Definitions — AINTLIB's actual shapes** (`Newforms/{Basic,Newform}.lean`), abridged:
   ```lean
   structure Eigenform (N : ℕ) [NeZero N] (k : ℤ)
@@ -329,11 +369,17 @@ below sketches signatures; it is illustrative, not required to compile.
   ```
   with `PrimitiveForm := Newform` (the object that carries an LMFDB label), the eigenvalue API
   `Eigenform.eigenvalue`/`ringEigenvalue`, and the propositional `IsEigenform`/`IsFullEigenform`.
+  Note the `Newform` shape matches Miyake's *primitive form* exactly — new subspace,
+  normalized, eigen away from the level — which is why `PrimitiveForm := Newform` is the right
+  identification and why the all-`n` upgrade stays a theorem.
   Two design points the packaging encodes, to keep: eigen-ness is demanded **only at `n`
   coprime to `N`** (the bad-`n` ring element lives in other double cosets), with the all-`n`
-  upgrade for a `Newform` the **Atkin–Lehner–Li theorem** (`Newform.isFullEigenform`), not a
+  upgrade for a `Newform` the **Atkin–Lehner–Li theorem** (`Newform.isFullEigenform`; D–S Thm
+  5.8.2 / Miyake Thm 4.6.13), not a
   structure field. ⚠ **The bad-index slot carries no arithmetic.** `ringEigenvalue n` for
-  `(n, N) > 1` is *not* the `U_n`-eigenvalue: the bad-prime ring element lies in a disjoint
+  `(n, N) > 1` is *not* the `Uₙ`-eigenvalue — the operator `Tₙ = Uₙ` exists perfectly well
+  (Layer 2) and a newform *is* an eigenvector for it; the point is only that this *ring-side
+  packaging* does not record it: the bad-prime ring element lies in a disjoint
   double-coset class and is not packaged by `isRingEigen` at all, so the slot is unconstrained
   and is **normalized to `0`** purely to avoid over-specification (without it, infinitely many
   `Eigenform` terms sit over one cusp form; with it, `Eigenform.ext_of_toCuspForm`). It is
