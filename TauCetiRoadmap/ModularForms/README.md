@@ -178,7 +178,8 @@ Lemma (D–S 5.7.1), the newform decomposition with its conductor, the bad-prime
 classification, and **strong multiplicity one**; Atkin–Lehner and Fricke operators and their
 signs; the L-function of a modular form with its **Euler product**, **completed form**,
 **functional equation**, and **analytic continuation**; the **coefficient field** and the proof
-that it is a number field; the LMFDB invariants (Satake parameters, Hecke characteristic
+that it is a number field — both **already constructed in AINTLIB**, so this one is a migration
+(§Layer 8, §Provenance); the LMFDB invariants (Satake parameters, Hecke characteristic
 polynomials, Galois orbits, labels, …); the **modular curve** `X(Γ)` as the compactified analytic
 quotient `Γ\ℍ`, with its cusps, elliptic points, and genus; the **dimension formulas** for
 `M_k(Γ)` and `S_k(Γ)` by the valence-formula route; and the level-one **Eichler–Selberg trace
@@ -560,9 +561,15 @@ reassigning any milestone as new work. The milestones:
   downstream result uses.
 
 - **The coefficient field** `CoefficientField f = ℚ(aₙ : n) ⊆ ℂ` of a newform (#34), and the
-  headline result that **it is a number field** — AINTLIB's shapes
-  (`Labels/{NewformOrbit,HeckeFieldArithmetic,HeckeAlgFiniteFinal}.lean`; port name
-  `CoefficientField` per the conventions):
+  headline result that **it is a number field**. ⚠ **This is already constructed and proved in
+  AINTLIB** — the layer's headline is a *migration*, not new mathematics: `Labels/NewformOrbit.lean`
+  defines `coeffField` and proves `coeffSeq_isIntegral` (the coefficients are algebraic
+  integers), `finiteDimensional_coeffField_of_rangeFinite`, the live **instance**
+  `instNumberFieldCoeffField`, and `coeffField_numberField_of_two_le`, on top of
+  `Labels/{HeckeFieldArithmetic,HeckeAlgFiniteFinal}.lean` (the integral Hecke algebra and its
+  finiteness) and the modular-symbol period route above. What is *not* already done is the
+  weight-1 branch (below) and the CI/axiom audit the migration owes. AINTLIB's shapes
+  (port name `CoefficientField` per the conventions):
   ```lean
   def coeffField (f : Newform N k) : IntermediateField ℚ ℂ
   instance instNumberFieldCoeffField (f : Newform N k) : NumberField (coeffField f)
@@ -861,8 +868,10 @@ general-`n` branch.
   (`lCoeff`, `lSeries`, `lSeries_eulerProduct`, `lcompletedΛN`,
   `lcompletedN_functional_equation`, `differentiable_lcompletedΛN`,
   `lSeriesN_hasEntireExtension`).
-- **Coefficient field (L8):** `Labels/{HeckeFieldArithmetic,HeckeAlgFiniteFinal,NewformOrbit}.lean`
+- **Coefficient field (L8) — constructed, not to build:** `Labels/{HeckeFieldArithmetic,HeckeAlgFiniteFinal,NewformOrbit}.lean`
   (`heckeAlgℤ`, `heckeAlgℤ_finite_of_two_le`/`heckeAlgℤ_finite_of_lattice`, `coeffField`,
+  `coeffSeq_isIntegral`, `finiteDimensional_coeffField_of_rangeFinite`, the instance
+  `instNumberFieldCoeffField`, `newformEigenHom_range_finite`,
   `coeffField_numberField_of_two_le`) plus the integral-period route in
   `HeckeRIngs/GL2/ModularSymbols/*`. Largely proved (`k ≥ 2` axiom-clean); residual `sorry`s are
   the weight-1 lattice `exists_HeckeStableLattice_one` (`Labels/HeckeFieldArithmetic.lean`) and
