@@ -478,7 +478,11 @@ here rather than hidden in a file path** (review): the coefficient field is a nu
 *because* of an integral structure, and the only route to that structure which stays inside
 this roadmap's analytic scope is **Eichler–Shimura via modular symbols**. (The alternative —
 `S_k(Γ) ≅ H⁰(X(Γ), ω^k)` over `ℚ` by GAGA and algebraic geometry — is a far bigger project
-than this roadmap and is **out of scope**.) The milestones:
+than this roadmap and is **out of scope**.) **Part of this development already exists, due to
+Nicola Falciola** ([@Nicola9Falciola](https://github.com/Nicola9Falciola), VU Amsterdam) —
+coordinate with that work rather than duplicating it, and credit it on migration; the AINTLIB
+files below are attributed collectively, so check with him which pieces are his before
+reassigning any milestone as new work. The milestones:
 
 - **The modular-symbol module.** For `k ≥ 2`, the coefficient system `Sym^{k−2}(ℤ²)` and the
   parabolic cohomology `H¹_par(Γ, Sym^{k−2}(ℤ²))` — a **finitely generated ℤ-module**: the
@@ -817,7 +821,10 @@ general-`n` branch.
   `HeckeRIngs/GL2/ModularSymbols/*`. Largely proved (`k ≥ 2` axiom-clean); residual `sorry`s are
   the weight-1 lattice `exists_HeckeStableLattice_one` (`Labels/HeckeFieldArithmetic.lean`) and
   the Eichler–Shimura Stokes wall `interior_edges_cancel_sum`
-  (`ModularSymbols/PeterssonStokes.lean`).
+  (`ModularSymbols/PeterssonStokes.lean`). ⚠ **Attribution:** part of the modular-symbol
+  development is due to **Nicola Falciola** (VU Amsterdam); the files carry a collective
+  "LeanModularForms contributors" header, so establish per-file authorship with him before
+  porting, and carry it into the ported headers.
 - **LMFDB layer (L9):** `Labels/{Label,Encoding,NewformOrbit,CharacterOrbit}.lean`.
 - **Dimensions / curve (L10):** `Modularforms/DimensionFormulas.lean` with
   `Modularforms/DimGenCongLevels/*` (`dim_gen_cong_levels` — general-level
