@@ -20,7 +20,11 @@ What is missing is the PDE theory on top: weak-derivative Sobolev spaces `W^{k,p
 a domain with their embedding/trace/compactness package (Lane A), the harmonic-analysis
 estimates (Lane B), maximum principles and potential theory (Lane C), elliptic existence
 via the energy method (Lane D), elliptic regularity (Schauder and De Giorgi–Nash–Moser;
-Lane E), and parabolic/evolution equations (Lane F). These live in
+Lane E), and parabolic/evolution equations (Lane F). Lane E itself has two deliberately
+separate tracks: divergence-form weak solutions (`H²` under Lipschitz coefficients,
+Meyers/VMO `W^{1,p}`, `C^{1,α}` Schauder, and De Giorgi–Nash–Moser), and
+non-divergence-form strong/classical solutions (ABP/Krylov–Safonov, `C^{2,α}` Schauder,
+and VMO `W^{2,p}`). These live in
 `TauCeti/Analysis/PDE/`, with supporting theories under `TauCeti/Analysis/Sobolev/` and
 `TauCeti/Analysis/HarmonicAnalysis/`.
 
@@ -35,7 +39,10 @@ natural first targets, in order:
 * Lane E: De Giorgi–Nash–Moser, showing that a weak `H¹` solution of a divergence-form
   equation with bounded measurable, not necessarily symmetric coefficients is locally
   Hölder continuous. Port and reconcile Armstrong–Kempe's existing `DeGiorgi`
-  formalization rather than rebuilding this theorem from scratch.
+  formalization rather than rebuilding this theorem from scratch. Keep this divergence
+  v1 milestone distinct from the later non-divergence track: bounded measurable
+  coefficients there lead to Krylov–Safonov for `W^{2,n}_loc` strong solutions,
+  `C^{0,α}` coefficients to Schauder `C^{2,α}`, and VMO coefficients to `W^{2,p}`.
 
 The intended uniform-ellipticity predicate must support non-symmetric coefficient fields.
 With explicit constants `0 < λ ≤ Λ`, its primitive almost-everywhere conditions are
