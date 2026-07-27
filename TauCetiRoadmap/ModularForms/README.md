@@ -61,13 +61,29 @@ Pin these conventions before writing code — implementors make bad, divergent c
   ⚠ Two normalizations of the Hecke action circulate (Shimura's vs Diamond–Shurman's, differing
   by a power of the determinant); **pin Diamond–Shurman's** as primary, and provide the
   Shimura-normalized action as a named bridge (AINTLIB has both via `ShimuraHom`), so any
-  half-integral-weight work downstream can use it without a silent reconvention.
+  half-integral-weight work downstream can use it without silently switching conventions.
+- **What "eigenform" means — the call, made once.** An **eigenform** of level `N`, weight `k`,
+  nebentypus `χ` is a cusp form in `M_k(N, χ)` that is an eigenvector for `Tₙ` at **every `n`
+  coprime to `N`** — and nothing more. Two consequences of that choice, both deliberate: the
+  diamond operators are handled by *living in* `M_k(N, χ)`, so an eigenform is a `⟨d⟩`-eigenvector
+  by construction rather than by hypothesis; and eigen-behaviour at `n` sharing a factor with
+  `N` is **not** assumed — for a newform it is a *theorem*, the Atkin–Lehner–Li all-`n` upgrade
+  (Layer 4), with the bad-prime eigenvalues classified there. Several inequivalent notions
+  circulate under the one word ("eigen for all `Tₙ`", "eigen for the good `Tₙ`", "eigen for
+  `Tₙ` and `⟨d⟩`"); this roadmap uses the good-`n` one throughout, matching Miyake §4.5 and
+  D–S §§5.5–5.7, and names the stronger notion `IsFullEigenform` where it is needed.
 - **Normalized eigenforms.** An eigenform is `normalized` when `a₁ = 1`; a **newform** is a
-  normalized eigenform in the new subspace. State eigenvalue results for normalized forms, so that
+  normalized eigenform in the new subspace — the orthogonal complement of the oldspace under
+  the Petersson product, defined in Layer 3, where the old/new decomposition is a milestone.
+  State eigenvalue results for normalized forms, so that
   `Tₙ f = aₙ(f) · f` (Hecke eigenvalue = Fourier coefficient).
 - **Coefficient field.** The coefficient field of a newform is `CoefficientField f = ℚ(aₙ : n ≥ 1)
   ⊆ ℂ`, an `IntermediateField ℚ ℂ`. (Name it `CoefficientField`, not after the form: no `K_f`.)
-  It is a *number field* — a theorem (Layer 8), not an assumption.
+  It is a *number field* — a theorem (Layer 8), not an assumption. The `IntermediateField ℚ ℂ`
+  typing is deliberate and load-bearing: because the forms here are complex-analytic, the
+  coefficient field comes with a **preferred embedding into `ℂ`**, and the Galois-orbit and
+  self-duality statements of Layer 9 are about that embedded field, not an abstract number
+  field.
 - **`q`-expansions are the computational interface.** State Hecke recurrences, Euler products,
   and eigenform characterizations on the Fourier coefficients `aₙ(f)` via `qExpansion`, not on
   bespoke coefficient types.
@@ -135,8 +151,9 @@ The valence formula at general level; the diamond operators `⟨d⟩` and the ch
 `M_k(N,χ)`; the Hecke operators `Tₙ`, `Tₚ` and the (commutative) Hecke-ring action on
 `M_k(N,χ)` — the abstract ring is Mathlib's, its `GL₂` realization and action are not; the Petersson inner product as
 an actual inner product and the self-adjointness of `Tₙ` for `(n,N)=1`; the old/new decomposition
-and its orthogonality; eigenforms, newforms, oldforms, primitive forms; the Main Lemma, the
-conductor theorem, and **strong multiplicity one**; Atkin–Lehner and Fricke operators and their
+and its orthogonality; eigenforms, newforms, oldforms, primitive forms; the Atkin–Lehner Main
+Lemma (D–S 5.7.1), the newform decomposition with its conductor, the bad-prime eigenvalue
+classification, and **strong multiplicity one**; Atkin–Lehner and Fricke operators and their
 signs; the L-function of a modular form with its **Euler product**, **completed form**,
 **functional equation**, and **analytic continuation**; the **coefficient field** and the proof
 that it is a number field; the LMFDB invariants (Satake parameters, Hecke characteristic
@@ -205,8 +222,9 @@ below sketches signatures; it is illustrative, not required to compile.
   `SL₂(ℤ)`-**orbits** of points of `ℍ` — `ord_P(f)` is constant on an orbit, hence well-defined
   on it — with the two **elliptic orbits** `[i]`, `[ρ]` weighted by the reciprocal `1/e_P` of
   their stabilizer orders (`e_i = 2`, `e_ρ = 3`) and the cusp `∞` contributing `ord_∞`. The
-  statement is AINTLIB's, already proved — port it as it stands
-  (`ForMathlib/ValenceFormulaFinal.lean`):
+  statement is AINTLIB's, already proved — port the statement as it stands
+  (`ForMathlib/ValenceFormulaFinal.lean`), under a Mathlib-style name: the `_textbook` suffix
+  is an AINTLIB-internal disambiguator and does **not** survive the port (`valence_formula`):
   ```lean
   theorem valence_formula_textbook {k : ℤ} (f : ModularForm (Gamma 1) k) (hf : f ≠ 0) :
       (orderAtCusp' f : ℂ) +
@@ -314,24 +332,49 @@ below sketches signatures; it is illustrative, not required to compile.
   Two design points the packaging encodes, to keep: eigen-ness is demanded **only at `n`
   coprime to `N`** (the bad-`n` ring element lives in other double cosets), with the all-`n`
   upgrade for a `Newform` the **Atkin–Lehner–Li theorem** (`Newform.isFullEigenform`), not a
-  structure field; and bad-index eigenvalue data is **pinned to `0`**, so an `Eigenform` is
-  determined by its underlying form and `χ`.
-- **The Main Lemma** (Diamond–Shurman Thm 5.7.1 / Miyake §4.6, the Atkin–Lehner key lemma): a
-  cusp form `f ∈ S_k(Γ₁(N))` whose Fourier coefficients vanish at every index coprime to `N`
-  (`aₙ = 0` whenever `(n, N) = 1`) is an **oldform**. In the latest AINTLIB this is **fully
+  structure field. ⚠ **The bad-index slot carries no arithmetic.** `ringEigenvalue n` for
+  `(n, N) > 1` is *not* the `U_n`-eigenvalue: the bad-prime ring element lies in a disjoint
+  double-coset class and is not packaged by `isRingEigen` at all, so the slot is unconstrained
+  and is **normalized to `0`** purely to avoid over-specification (without it, infinitely many
+  `Eigenform` terms sit over one cusp form; with it, `Eigenform.ext_of_toCuspForm`). It is
+  emphatically **not** a claim that `U_p f = 0` for `p ∣ N` — see the bad-prime milestone
+  below, where the genuine eigenvalues live. `IsFullEigenform` quantifies over a *fresh*
+  eigenvalue function, so no statement here is weakened by the convention.
+- **Bad-prime eigenvalues** (Atkin–Lehner–Li; Miyake Thm 4.6.17). The real content the slot
+  above deliberately omits: for a newform `f ∈ S_k(N, χ)` and `p ∣ N`, the eigenvalue of `U_p`
+  is the Fourier coefficient `a_p`, and with `c = v_p(cond χ)`,
+  **`a_p ≠ 0 ⟺ v_p(N) = max(1, c)`** — explicitly, `a_p² = χ^{(p)}(p)·p^{k-2}` (so
+  `|a_p| = p^{(k-2)/2}`, and `a_p = ±p^{(k-2)/2}` exactly when `χ^{(p)}(p) = 1`, e.g. trivial
+  nebentypus) when `v_p(N) = 1` and `c = 0`; `|a_p| = p^{(k-1)/2}` — note the **different
+  exponent** — when `v_p(N) = c ≥ 1`; and `a_p = 0` otherwise (`c = 0` with `v_p(N) ≥ 2`, or
+  `0 < c < v_p(N)`). Here `χ^{(p)}` is the prime-to-`p` part of `χ`. Worked instances: the
+  level-`11` weight-`2` newform has `a₁₁ = 1 = ±11^0`; the level-`7` weight-`3` newform
+  `7.3.b.a` has `a₇ = −7`, matching `7^{(3-1)/2}` and *not* `7^{(3-2)/2}`. This milestone is
+  the honest home of the bad-prime data.
+- **The Atkin–Lehner Main Lemma** (Diamond–Shurman Thm 5.7.1 — D–S title §5.7 "The Main Lemma"
+  and label the theorem so; outside that book the bare phrase is ambiguous, so always cite it):
+  a cusp form `f ∈ S_k(Γ₁(N))` whose Fourier coefficients vanish at every index coprime to `N`
+  (`aₙ = 0` whenever `(n, N) = 1`) is an **oldform** — in the sharp form D–S prove,
+  `f = Σ_{p ∣ N} ι_p f_p` with `f_p ∈ S_k(Γ₁(N/p))` and `(ι_p f_p)(z) = f_p(pz)`, which is
+  what the decomposition arguments downstream actually consume. In the latest AINTLIB this is **fully
   proved**, global statement included: `mainLemma` (`Newforms/MainLemmaProof.lean`) follows by
   nebentypus decomposition from the per-character route `mainLemma_charSpace_routeB`
   (`StrongMultiplicityOne.lean`, Miyake's sieve/conductor descent) — a migration, not a new
   proof obligation.
-- **The conductor dichotomy** (Miyake Thm 4.6.4). What AINTLIB proves — `sorry`-free, hypotheses
+- **The level-lowering dichotomy for rescaled forms** (Miyake Thm 4.6.4 — this *is* 4.6.4;
+  the packaged theorem below is Miyake **Cor 4.6.20**, so do not cite 4.6.4 for it). What
+  AINTLIB proves — `sorry`-free, hypotheses
   and all (`conductor_theorem_dichotomy_cuspForm_strong`, `Eigenforms/ConductorTheorem.lean`) —
   is the level-lowering step: for `l ∣ N`, `χ : DirichletCharacter ℂ N`, and a `T`-periodic
   `f : ℍ → ℂ` whose level-raise by `l` lies in `S_k(N, χ)`, **either** `χ` factors through `N/l`
   and `f` is itself a cusp form in `S_k(N/l, χ↓)` for the lowered character, **or** `f = 0`.
-  Port that statement as-is; the packaged **conductor theorem** — every normalized good-Hecke
+  Port that statement as-is; the packaged **newform decomposition** — the existence and
+  uniqueness of the associated primitive form; "the conductor theorem" is *not* standard
+  terminology and is avoided (Miyake Cor 4.6.20; Diamond–Shurman Thm 5.8.3 with Prop 5.8.4 and
+  Exercise 5.8.6(b), the last invoking strong multiplicity one for uniqueness) — every normalized good-Hecke
   eigenform at level `N` shares its eigenvalues away from `N` with a **unique** newform `g` of
   a **unique** minimal level `M ∣ N`, its **conductor**, and lies in the associated oldspace
-  `span { g(dz) : d ∣ N/M }` (Diamond–Shurman Thm 5.8.3) — is the target assembled from the
+  `span { g(dz) : d ∣ N/M }`, with `cond χ ∣ M` — is the target assembled from the
   dichotomy and the Main Lemma. ⚠ The uniqueness is of `(M, g)` — equivalently of the
   good-Hecke eigensystem, by Layer 5's strong multiplicity one — **not** of the eigenform
   itself: an `Eigenform` records eigen-ness only at `n` coprime to `N`, so at level `2M` every
@@ -368,9 +411,15 @@ below sketches signatures; it is illustrative, not required to compile.
   multiplicativity of the Dirichlet series.
 
 ### Layer 6: Atkin–Lehner and Fricke operators
-- The Atkin–Lehner involutions `W_Q` for each exact divisor `Q ‖ N` (#18), the **Fricke
+- The Atkin–Lehner involutions `W_Q` for each **exact divisor** `Q ‖ N` — meaning `Q ∣ N` with
+  `gcd(Q, N/Q) = 1`; standard (also "unitary divisor", "Hall divisor"), but **define the
+  notation**, since `pʳ ‖ N` elsewhere means exact `p`-adic divisibility — the **Fricke
   involution** `W_N` (the `Q = N` slash by `[0,-1;N,0]`), and their relations with `Tₙ`
-  (commute away from `Q`).
+  (commute away from `Q`). Every exact divisor is `∏_{p ∈ S} p^{v_p(N)}` for a set `S` of
+  primes dividing `N`, so the family is generated by the prime-power `W_{p^{v_p(N)}}` and (for
+  trivial nebentypus) `⟨W_{p^{v_p(N)}} : p ∣ N⟩ ≅ (ℤ/2)^{ω(N)}` with `W_Q W_R = W_{QR/gcd(Q,R)²}`:
+  general `Q` is packaging convenience, not extra content, and the prime-power case alone
+  suffices for the sign theory.
 - **The signs, at the right generality.** For **trivial nebentypus** — Atkin–Lehner's setting —
   the `W_Q` are involutions of `S_k(Γ₀(N))` commuting with the good `Tₙ`, and on a newform
   `W_Q f = ε_Q(f)·f` with `ε_Q ∈ {±1}`, the signs multiplying to the Fricke sign — the sign of
@@ -422,7 +471,44 @@ below sketches signatures; it is illustrative, not required to compile.
   at the central point. This is the definition; do not substitute another normalization
   without renaming.
 
-### Layer 8: coefficient fields and the integral Hecke algebra
+### Layer 8: modular symbols, the integral Hecke algebra, and coefficient fields
+
+⚠ **This layer contains the roadmap's one genuinely non-elementary machine, and it is named
+here rather than hidden in a file path** (review): the coefficient field is a number field
+*because* of an integral structure, and the only route to that structure which stays inside
+this roadmap's analytic scope is **Eichler–Shimura via modular symbols**. (The alternative —
+`S_k(Γ) ≅ H⁰(X(Γ), ω^k)` over `ℚ` by GAGA and algebraic geometry — is a far bigger project
+than this roadmap and is **out of scope**.) The milestones:
+
+- **The modular-symbol module.** For `k ≥ 2`, the coefficient system `Sym^{k−2}(ℤ²)` and the
+  parabolic cohomology `H¹_par(Γ, Sym^{k−2}(ℤ²))` — a **finitely generated ℤ-module**: the
+  Hecke-stable lattice of the whole story, and note where it lives — on the *symbol* side, so
+  **no lattice inside the space of forms is ever constructed**. Finitely many cusps, the
+  boundary map, and the finite generation are the content
+  (AINTLIB `ModularSymbols/{ModuleM,ModuleMFinite,CoefficientSystem,FinitelyManyCusps,CoinvariantsFinite}.lean`).
+- **Manin symbols and the fundamental domain.** The `SL₂(ℤ)`-generation and fundamental-domain
+  boundary apparatus that presents the symbol module concretely
+  (`ModularSymbols/{SL2Generation,ManinFD,FundamentalDomainBoundary}.lean`) — also the entry
+  point for any downstream *computation* (worked examples).
+- **The Hecke action on symbols**, its commutativity, and its integrality
+  (`ModularSymbols/{HeckeSymbol,HeckeCommute,HeckeFinite}.lean`).
+- **The period map** `S_k(Γ) → H¹_par(Γ, Sym^{k−2}(ℂ))`, `f ↦ [ω_f]` with
+  `ω_f = f(z)(zX + Y)^{k−2} dz`, together with its **Hecke- and diamond-equivariance**
+  (`ModularSymbols/{PeriodMap,PeriodIntegral,PeriodInvariant,PeriodHecke}.lean`).
+- **Injectivity of the period map** — the analytic heart. The honest description is
+  **Petersson positivity through a Haberland-type cup-product identity**
+  `[ω_f] ⌣ [ω̄_f] = c_k·⟨f, f⟩_Pet` with `c_k ≠ 0`: a vanishing period class forces
+  `⟨f, f⟩ = 0`, hence `f = 0`. Stokes' theorem enters *inside* that identity, on truncated
+  fundamental domains, with cuspidality killing the boundary terms at the cusps — so
+  "the Stokes step" names a lemma, not the mathematical content
+  (`ModularSymbols/{PeriodInjective,EichlerInjective,PeterssonStokes.lean}`).
+- **The consequence, stated carefully.** Injectivity of the *holomorphic* period map already
+  gives `ker(𝕋 → End L) ⊆ ker(𝕋 → End S_k)`, i.e. the Hecke algebra acting on forms is a
+  **quotient** of the integral cohomological one — which is all that finiteness needs. The
+  full Eichler–Shimura isomorphism `H¹_par(Γ, Sym^{k−2}(ℂ)) ≅ S_k(Γ) ⊕ \overline{S_k(Γ)}`,
+  with its conjugate summand, upgrades this to a faithful embedding; state which one each
+  downstream result uses.
+
 - **The coefficient field** `CoefficientField f = ℚ(aₙ : n) ⊆ ℂ` of a newform (#34), and the
   headline result that **it is a number field** — AINTLIB's shapes
   (`Labels/{NewformOrbit,HeckeFieldArithmetic,HeckeAlgFiniteFinal}.lean`; port name
@@ -433,19 +519,21 @@ below sketches signatures; it is illustrative, not required to compile.
   theorem coeffField_numberField_of_two_le (f : Newform N k) (hk : 2 ≤ k) :
       NumberField (coeffField f)          -- the axiom-clean route, no weight-1 input
   ```
-  proved via the **integral Hecke algebra `heckeAlgℤ N k` is a finitely generated ℤ-module** (the
-  integral `q`-expansion / Eichler–Shimura lattice, Shimura Thm 3.48/3.51/3.52, Miyake Thm
-  4.5.9/4.5.19).
-  ⚠ **Status (latest AINTLIB `dev/leanmodularforms`, 2026-07-17):** largely proved, not a lone gap.
-  For `k ≥ 2` the finiteness is `heckeAlgℤ_finite_of_two_le` via the integral modular-symbol
-  period route (`ModularSymbols.heckeAlgℤ_finite_of_period` — axiom-clean), and
-  `heckeAlgℤ_finite_of_lattice` covers `k < 2` from a Hecke-stable lattice; the unconditional
-  instance case-splits between the two. The residual `sorry`s are the **weight-1 Hecke-stable
-  lattice** `exists_HeckeStableLattice_one` (Deligne–Serre 1974 Prop 2.7, a citable classical
-  input — with `U_p`-stability at `p ∣ N` needing separate care) and the research-scale
-  Eichler–Shimura **Stokes / boundary-period step** `interior_edges_cancel_sum`
-  (`ModularSymbols/PeterssonStokes.lean`), which the `k ≥ 2` finiteness route does **not** pass
-  through — the deepest remaining analytic input for the LMFDB layer.
+  proved via the **integral Hecke algebra `heckeAlgℤ N k` is a finitely generated ℤ-module** —
+  from the modular-symbol lattice above, so that every `Tₙ` is integral over `ℤ`, every
+  eigenvalue `aₙ` is an **algebraic integer**, and `ℚ(aₙ : n)` is a finite-dimensional domain
+  over `ℚ`, hence a number field (Shimura Thm 3.48/3.51/3.52, Miyake Thm 4.5.9/4.5.19).
+  ⚠ **The weight split is real and is stated, not smoothed over.** For `k ≥ 2` the finiteness
+  is the modular-symbol period route above
+  (AINTLIB `heckeAlgℤ_finite_of_two_le` / `ModularSymbols.heckeAlgℤ_finite_of_period`,
+  axiom-clean), needing **no** lattice on the form side. **Weight 1 is outside this method
+  entirely** — `Sym^{−1}` does not exist and weight-one forms are not cohomological in this
+  sense — and is a separate milestone with its own input: either Deligne–Serre 1974 (Prop 2.7,
+  the classical route, via the attached Artin representation) or a `q`-expansion/integral-model
+  argument; AINTLIB's `k < 2` branch (`heckeAlgℤ_finite_of_lattice`) still rests on the
+  isolated unproved `exists_HeckeStableLattice_one`, with `U_p`-stability at `p ∣ N` needing
+  separate care. `k ≤ 0` is trivial. Do not present the unconditional statement as though one
+  argument covered all weights.
 
 ### Layer 9: the LMFDB invariant layer
 Each is a named definition with its basic API, mostly short once Layer 8 exists:
@@ -457,10 +545,16 @@ Each is a named definition with its basic API, mostly short once Layer 8 exists:
   it needs the Weil conjectures and Deligne's reduction of Ramanujan to them, which are far outside
   the analytic scope here.
 - **Galois-conjugate forms and orbits** (#38): `f^σ` (act on coefficients), the orbit `{f^σ}` and
-  `#orbit = dim` of the newform; **inner twists** (#42).
-- **Galois-group certification** (the coefficient-field summit's milestone): the Galois closure of
-  `CoefficientField f` and a decision procedure for its **solvability** — what the weight-60
-  non-solvable eigenform (worked examples) is certified against.
+  `#orbit = dim` of the newform; **inner twists** (#42). These consume Layer 8's integrality —
+  the coefficients must be algebraic for `σ` to act at all — so they sit downstream of the
+  modular-symbol machinery, not beside it.
+- **Galois-group certification** (the coefficient-field summit's interface): the Galois closure
+  of `CoefficientField f` and a decision procedure for its **solvability**, presented as a
+  *certificate checker* rather than a search — Dedekind/Frobenius **cycle-type certificates**
+  (factor the minimal polynomial modulo well-chosen primes, read off cycle types, conclude
+  transitivity plus a generating element) and the discriminant square test. This is the API a
+  downstream computational repo calls; `CBirkbeck/CertifyingInvariantsNF`, bridged into
+  LeanBridge, is the existing implementation (§Provenance).
 - **Dual / self-dual** (#55): `f̄` (conjugate coefficients) and `IsSelfDual f ↔ ∀n, (aₙ).im = 0`.
 - **Labels** (#33, #13): the LMFDB label `N.k.a.x` (level, weight, character Galois-orbit, newform
   Galois-orbit), Conrey labels and Galois orbits of Dirichlet characters.
@@ -549,7 +643,11 @@ ground, and no Lean prior art exists anywhere.
   `interior_edges_cancel_sum` gains a second consumer. Chosen over the kernel route (Miyake
   §§6.1–6.4; Zagier's appendix in Lang: the two-variable kernel
   `ω_n(z, w) = Σ_{ad−bc=n} (czw + dz + aw + b)^{−k}` as the Petersson kernel of `Tₙ`, unfolded
-  over conjugacy classes) because the kernel route requires the Petersson-coefficient /
+  over conjugacy classes — ⚠ and note that appendix's **published error**: Case 3 (p. 53,
+  hyperbolic matrices with rational fixed points) interchanges a sum and an integral without
+  absolute convergence, plus a sign slip; the fix, via truncated fundamental domains, is
+  Zagier's own *Correction* in LNM 627 (references), which anyone taking this route must
+  follow) because the kernel route requires the Petersson-coefficient /
   Poincaré-series machinery of Miyake Thms 2.6.9–2.6.10, which neither Mathlib nor AINTLIB
   has — that machinery is **out of scope for this layer** (it would be a subproject of its
   own), while the period-polynomial route consumes only rails Layers 2 and 8 already lay. The
@@ -574,23 +672,58 @@ ground, and no Lean prior art exists anywhere.
   in `Δ = q∏(1−qⁿ)²⁴`, equivalently `(E₄³ − E₆²)/1728`) — a fully computable acceptance test of the
   Hecke action (Layer 2).
 - **Level 11, weight 2** (`S₂(Γ₀(11))`, dimension 1): a single newform, the elliptic curve `11a`;
-  its Fricke sign (Layer 6) and the rank-0 functional equation (Layer 7).
-- **Level 37, weight 2** (two newforms with opposite Atkin–Lehner signs): the multiplicity-one /
-  sign acceptance test (Layers 5–6).
+  its Fricke sign (Layer 6) and the rank-0 functional equation (Layer 7). Like `Δ`, it has a
+  **product formula** making the coefficients computable by the same route:
+  `f = η(z)²η(11z)² = q∏_{n≥1}(1−qⁿ)²(1−q^{11n})²` (note the squares — `η(z)η(11z)` has weight
+  `1`), so `a₂ = −2`, and `a₁₁ = 1`, the bad-prime eigenvalue predicted by Layer 4's
+  classification at `v₁₁(N) = 1`, `χ` trivial (`±11^{(2−2)/2} = ±1`).
+- **Level 37, weight 2** — the honest version, split by what is *derivable* and what is
+  *computed*. Derivable here: `dim S₂(Γ₀(37)) = 2` (Layer 10); the space is **entirely new**,
+  since `37` is prime and `S₂(SL₂(ℤ)) = 0` leaves no oldforms; semisimplicity of the commuting
+  good Hecke operators plus multiplicity one (Layer 5) gives **exactly two normalized complex
+  eigenforms**, each — since `w₃₇` commutes with the good `Tₙ` and squares to `1` — an
+  Atkin–Lehner eigenvector of sign `±1` (Layer 6), so `tr(w₃₇) ∈ {−2, 0, 2}`. **Not** derivable
+  from those facts: that the two are *rational* newforms rather than one quadratic Galois orbit,
+  and that their signs are **opposite** (`tr w₃₇ = 0`). Both are computations — Manin symbols,
+  or the genus of `X₀(37)/w₃₇` — and belong to the downstream computational repo described in
+  the weight-60 entry below, not to this roadmap's acceptance criteria.
 - **A newform with non-real `aₙ`** (CM coefficient field): `CoefficientField f` a genuine
   imaginary-quadratic field, not totally real — the coefficient-field acceptance test (Layer 8) and
   the not-self-dual test (Layer 9).
 - **`η²⁴ = Δ`** as a weight-12 eta quotient (#19): develop `η = q^{1/24}∏(1−qⁿ)` and its `SL₂(ℤ)`
   transformation, and the Ligozat criterion, as an explicit worked example of a modular form rather
   than as general theory.
-- **The aspirational coefficient-field summit — a weight-60 level-one eigenform with non-solvable
+- **The coefficient-field summit — a weight-60 level-one eigenform with non-solvable
   coefficient field.** There is a normalized eigenform `f ∈ S₆₀(SL₂(ℤ))` whose coefficient field
   `CoefficientField f` has a Galois closure over `ℚ` that is **not solvable** — the first known
   example, computed by Buzzard in 1992 in answer to a question of Ramakrishnan
-  ([*J. Number Theory* **57** (1996)](https://www.sciencedirect.com/science/article/pii/S0022314X96900396)).
-  It is a finite, fully grounded computation once Layers 8–9 exist (the coefficient field of a
-  level-one eigenform and its Galois group), and is the headline acceptance test for the
-  coefficient-field layer.
+  ([*J. Number Theory* **57** (1996)](https://www.sciencedirect.com/science/article/pii/S0022314X96900396)),
+  and suggested for this roadmap by its author on the predecessor PR.
+  ⚠ **Scope split (review).** The explicit numerical verification is *not* a target of this
+  roadmap: it is an exact power-series-and-linear-algebra calculation of a different character
+  from everything above, and it belongs in a **separate repository depending on Tau Ceti**
+  (`CBirkbeck/LeanBridge` is the existing instance of exactly that — see §Provenance). What
+  this roadmap owes is the **reusable API that makes such a verification a finite calculation
+  and nothing more**, namely:
+  - the level-one **graded-ring structure** `M_*(SL₂(ℤ)) = ℂ[E₄, E₆]` with `S_k = Δ·M_{k−12}`
+    (Mathlib has `Δ = (E₄³ − E₆²)/1728` in `LevelOne/GradedRing.lean` but **not** the
+    generation statement — a genuine gap this roadmap fills), so any level-one form is named by
+    a polynomial in `E₄, E₆`;
+  - a **`q`-expansion evaluation interface**: the coefficients of such a polynomial expression
+    as computable rational data;
+  - the **Sturm-bound comparison lemma** — two level-one forms of weight `k` agreeing to
+    `⌊k/12⌋` are equal — which turns "match finitely many coefficients" into an identity
+    (Mathlib's `sturm_bound_levelOne`, consumed in Layer 10);
+  - the **`Tₙ` action on `q`-expansions** in the form `aₘ(Tₙf) = Σ_{d ∣ (m,n)} d^{k−1} a_{mn/d²}(f)`
+    (Layer 2), so Hecke matrices are extractable;
+  - the Layer-8 identification `CoefficientField f = ℚ(α)` for the eigenvalue field, and the
+    Layer-9 **Galois-group certification interface** (below), so that "non-solvable" is a
+    checkable property of an explicit minimal polynomial.
+  With those in place the remaining work is the calculation itself: at `k = 60` the space has
+  dimension `5`, the Sturm bound is `5`, expansions through `q¹⁰` suffice, and the
+  characteristic polynomial of `T₂` is an irreducible quintic whose Galois group is `S₅` —
+  certified by Frobenius cycle types (irreducible mod `83`, factoring as `2+1+1+1` mod `17`:
+  transitive plus a transposition in prime degree forces `S₅`).
 
 ## Ordering
 
@@ -608,6 +741,22 @@ and feeds Layer 9's characteristic-polynomial targets while cross-checking Layer
 one.
 
 ## Provenance (migrate and clean from AINTLIB `LeanModularForms`)
+
+**The downstream computational repository.** Distinct from the migration map below, and worth
+naming first because it fixes this roadmap's boundary: `CBirkbeck/LeanBridge` ("Link LMFDB and
+Lean") is a **separate repository that depends on the library**, where explicit numerical
+verifications live — exactly the split the weight-60 entry pins. It already contains, `sorry`-free,
+generated `q`-expansion certifications for level-one weights `12`–`316` (≈2150 files under
+`LeanBridge/ForMathlib/QExpansion/LMFDB/`), each constructing the LMFDB orbit explicitly in the
+`(E₄, E₆)` basis and proving a Sturm-bound **uniqueness theorem**. `Weight_60.lean` is the
+weight-60 case: the orbit `1.60.a.a`, the explicit degree-`5` minimal polynomial of `α`, the
+`q`-coefficients decomposed over `ℚ(α)`, and `identifies_lmfdb_1_60_a_orbit` via
+`ModularForm.eq_of_sturm_bound`. Its `add-galois-certification` branch bridges
+`CBirkbeck/CertifyingInvariantsNF` (Dedekind/Frobenius cycle-type certificates, the discriminant
+square test), which is the Layer-9 certification interface's implementation. Nothing in that
+repository is a target *of this roadmap*; it is the consumer that tells us which **API** the
+roadmap owes (Layer 9 and the weight-60 worked example list them), and the evidence that the
+remaining work there is calculation rather than theory.
 
 Secondary to the mathematics above: the migration map. The reference is the AINTLIB monorepo's
 `projects/LeanModularForms/` on branch **`dev/leanmodularforms`** (resynced **2026-07-17**, re-verified **2026-07-23**, at
@@ -690,9 +839,15 @@ catalogue the redundancy to collapse during migration.
   multiplicity one Thm 4.6.12) — the numbering the AINTLIB code follows; Ch. 6 (the trace
   formula: §§6.1–6.8, Thm 6.8.4 — Layer 11's kernel route, and the general-level scope wall).
 - D. Zagier, *The Eichler–Selberg trace formula on SL₂(ℤ)*, appendix to S. Lang, *Introduction to
-  Modular Forms* — the level-one normalization of Layer 11; A. Popa, D. Zagier, *A simple proof
+  Modular Forms* — the level-one normalization of Layer 11. ⚠ **Must be read with** D. Zagier,
+  *Correction to "The Eichler–Selberg trace formula on SL₂(ℤ)"*, in *Modular Functions of One
+  Variable VI*, Lecture Notes in Mathematics **627** (Springer, 1977), 171–173
+  ([doi:10.1007/BFb0065300](https://doi.org/10.1007/BFb0065300)): the appendix's Case 3
+  (p. 53) unfolds a non-absolutely-convergent expression by interchanging a sum and an
+  integral, and carries a sign error; the final formula is right, the printed derivation is
+  not. A. Popa, D. Zagier, *A simple proof
   of the Eichler–Selberg trace formula*
-  ([arXiv:1711.00327](https://arxiv.org/abs/1711.00327)) — the period-polynomial route.
+  ([arXiv:1711.00327](https://arxiv.org/abs/1711.00327)) — the period-polynomial route of record.
 - G. Shimura, *Introduction to the Arithmetic Theory of Automorphic Functions*: Ch. 3 (the Hecke
   algebra and its integral structure, Thms 3.48/3.51/3.52).
 - K. Buzzard, *On the eigenvalues of the Hecke operator T₂*, J. Number Theory **57** (1996) — the
