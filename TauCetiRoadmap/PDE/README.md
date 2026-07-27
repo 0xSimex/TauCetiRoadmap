@@ -24,7 +24,8 @@ for the Dirichlet problem `L u = f` in `Ω`, `u = g` on `∂Ω`:
    inequality plus Lax–Milgram; the Fredholm alternative when coercivity fails).
 2. **Regularity:** weak solutions are locally Hölder continuous
    (**De Giorgi–Nash–Moser**, the bounded-measurable-coefficient case), and smooth when
-   the coefficients and data are smooth (interior `Hᵏ`/Schauder estimates).
+   the coefficients and data are smooth (the interior `Hᵏ` bootstrap of Lane E.20;
+   divergence-form Schauder estimates give `C^{1,α}` under Hölder hypotheses).
 3. **The maximum principle** (weak and strong) and the **Harnack inequality** for the
    homogeneous equation, with the classical potential theory (mean-value property,
    Newtonian potential, Perron's method) as the constant-coefficient template.
@@ -75,15 +76,15 @@ separate hypothesis:
   separate extension of the roadmap. For the scalar principal-part models
   `Ldiv u = -div(a ∇u)` and `Lnondiv u = -aⁱʲ ∂ᵢ∂ⱼu`:
   - **Divergence form, weak solutions:** bounded measurable `a` gives
-    **De Giorgi–Nash–Moser** and Meyers gradient self-improvement near `p = 2`;
-    `a, F ∈ C^{0,α}` for `Ldiv u = f + div F` gives **Schauder `C^{1,α}`** regularity
-    (with the exponent also limited by the integrability of `f`); `a ∈ VMO` and
-    `F ∈ Lᵖ` gives **`W^{1,p}`** estimates for `1 < p < ∞`; and `a ∈ W^{1,∞}` with
-    `L²` data gives interior `H²`.
+    **De Giorgi–Nash–Moser** and Meyers gradient self-improvement for
+    `2 < p < 2 + ε`; `a, F ∈ C^{0,α}` and `f ∈ L^q`, `q > n`, for
+    `Ldiv u = f + div F` give interior **Schauder `C^{1,β}`** regularity with
+    `β = min(α, 1 - n/q)`; `a ∈ VMO` and `F ∈ Lᵖ` give interior **`W^{1,p}`**
+    estimates for `1 < p < ∞`; and `a ∈ W^{1,∞}` with `L²` data gives interior `H²`.
   - **Non-divergence form, strong/classical solutions:** bounded measurable `a` gives
     **Krylov–Safonov** `C^{0,α}` regularity for `W^{2,n}_loc` strong solutions;
     `a, f ∈ C^{0,α}` gives **Schauder `C^{2,α}`** estimates; and `a ∈ VMO`, `f ∈ Lᵖ`
-    gives **Calderón–Zygmund `W^{2,p}`** estimates for `1 < p < ∞`.
+    gives interior **Calderón–Zygmund `W^{2,p}`** estimates for `1 < p < ∞`.
   Both De Giorgi–Nash–Moser and Krylov–Safonov are scalar theories; do not silently
   generalize their conclusions to elliptic systems. Name the operator form, data slots,
   and solution concept in every theorem.
@@ -228,9 +229,10 @@ statement time is what keeps the formalized API reusable.
   vanishing-mean-oscillation characterization.
 - **Maximum principles & potential theory:** weak and strong maximum principles, the
   **Hopf lemma**, comparison principles, the **Aleksandrov–Bakelman–Pucci estimate** for
-  non-divergence-form operators, the **Harnack inequality**, the Newtonian potential /
-  fundamental solution of `Δ`, the Green's function, the Poisson kernel on `ℝⁿ` (the
-  half-space and the ball), and **Perron's method** for the Dirichlet problem.
+  non-divergence-form operators—including its convex-envelope, contact-set, and
+  area-formula/Alexandrov measure-theory inputs—the **Harnack inequality**, the Newtonian
+  potential / fundamental solution of `Δ`, the Green's function, the Poisson kernel on
+  `ℝⁿ` (the half-space and the ball), and **Perron's method** for the Dirichlet problem.
 - **Elliptic existence & regularity:** the energy/weak formulation for non-symmetric
   coefficients and Gårding's
   inequality (then Lax–Milgram, *consumed*); divergence-form `Hᵏ`, `W^{1,p}`, and
@@ -269,8 +271,11 @@ Almost everything downstream waits on this, so do it first and do it right.
 4. **Embeddings.** *Consume* Gagliardo–Nirenberg–Sobolev for `p<n`; **build** the Morrey
    embedding `W^{1,p}(Ω) ↪ C^{0,1−n/p}(Ω)` for `p>n`, and state (then prove) the
    borderline `p=n`.
-5. **Poincaré** on `W^{1,p}_0(Ω)` (bounded `Ω`) and **Poincaré–Wirtinger** (zero mean),
-   with explicit constant dependence.
+5. **Poincaré and Sobolev–Poincaré.** Prove Poincaré on `W^{1,p}_0(Ω)` (bounded `Ω`),
+   Poincaré–Wirtinger (zero mean), and the scale-compatible Sobolev–Poincaré inequality
+   on balls `‖u - u_B‖_{L^{p*}(B)} ≤ C‖∇u‖_{L^p(B)}` for `p < n`, with explicit constant
+   dependence. The last form turns Caccioppoli into the reverse-Hölder inequality used in
+   Lane E.21.
 6. **Trace, extension, Rellich.** The **trace operator** `W^{1,p}(Ω) → L^p(∂Ω)` with
    `ker = W^{1,p}_0` (Lipschitz `∂Ω`), an **extension operator** `W^{1,p}(Ω) → W^{1,p}(ℝⁿ)`,
    and **Rellich–Kondrachov**: `W^{1,p}(Ω) ↪↪ L^p(Ω)` **compact** for bounded `Ω` (via
@@ -305,8 +310,10 @@ The estimate engine for Calderón–Zygmund regularity and Schauder. Vendor heav
 
 ### Lane C: maximum principles and potential theory
 
-The classical, constant-coefficient theory; the cleanest lane and a good early win, with
-much of the `n=2` case already in Mathlib's complex harmonic-function files.
+Except for ABP, this is the classical, constant-coefficient theory: the cleanest lane and
+a good early win, with much of the `n=2` case already in Mathlib's complex
+harmonic-function files. ABP is a variable-coefficient extension with substantial
+geometric-measure prerequisites and should be scheduled separately.
 
 12. **Mean-value property and smoothness of harmonic functions** on `ℝⁿ` (consume the
     `n=2` complex theory; generalize the mean-value characterization to `ℝⁿ`).
@@ -314,7 +321,12 @@ much of the `n=2` case already in Mathlib's complex harmonic-function files.
     and then for general elliptic `L` (sign condition `c ≥ 0`), the **Hopf boundary-point
     lemma**, and the comparison principle. Separately prove the
     **Aleksandrov–Bakelman–Pucci estimate** for scalar non-divergence-form strong
-    solutions; it is the maximum-principle input to Krylov–Safonov in Lane E.24.
+    solutions; it is the maximum-principle input to Krylov–Safonov in Lane E.24. This
+    consumes the `W^{2,n}_loc` strong-solution language from Lane A.1 and additionally
+    requires convex envelopes, contact sets, and the measure estimate for the
+    gradient/normal map, via an area formula for Lipschitz maps or Alexandrov twice
+    differentiability. These inputs are not part of the otherwise-early Lane C theory and
+    must be roadmapped explicitly.
 14. **The Harnack inequality** for nonnegative harmonic functions, then for general
     elliptic `L` (this feeds De Giorgi–Nash–Moser in Lane E).
 15. **Fundamental solution / Newtonian potential** of `Δ` on `ℝⁿ`, the **Green's
@@ -350,7 +362,11 @@ Mathlib*. This lane mostly assembles Lane A and Mathlib.
 The deepest lane splits into two theories whose hypotheses and outputs must remain
 visible. The v1 deliverable is the divergence-form weak theory. Non-divergence-form
 strong/classical regularity is a separate extension, after the ABP and harmonic-analysis
-prerequisites land. Every item below is scalar unless it explicitly says otherwise.
+prerequisites land. The v1 statements are scalar. Items 23 and 24 are scalar by necessity:
+De Giorgi–Nash–Moser fails for general elliptic systems with bounded measurable
+coefficients, and Krylov–Safonov uses the maximum principle. Items 20–22 and 25–26 have
+systems analogues under the appropriate systems ellipticity hypotheses, so their APIs
+should not preclude a later vector-valued generalization.
 
 #### Divergence form: weak solutions
 
@@ -361,19 +377,25 @@ prerequisites land. Every item below is scalar unless it explicitly says otherwi
     separately with the needed boundary regularity and compatibility, and expose all
     coefficient-derivative dependence in rescaling-compatible form.
 21. **Gradient `W^{1,p}` estimates.** For `-div(a ∇u) = div F`, bounded measurable
-    coefficients give Meyers' estimate only for `p` in a quantitative neighborhood of
-    `2`, by Caccioppoli plus Gehring; expose how that neighborhood degenerates with the
-    ellipticity ratio. For `a ∈ VMO` and `F ∈ Lᵖ`, obtain the full range `1 < p < ∞`,
-    consuming Lane B's commutator/VMO theory and carrying the VMO modulus and small
-    radius `r₀` explicitly. Do not claim all-`p` gradient estimates for arbitrary bounded
-    measurable coefficients.
-22. **Divergence-form Schauder estimates.** For `-div(a ∇u) = f + div F`, Hölder
-    coefficients and data give `C^{1,α}`-type control of `u`; when `f ∈ L^q`, `q > n`,
-    the exponent is also limited by `1 - n/q`. State the precise local data spaces and
-    estimates before global solvability, whose boundary version needs corresponding
-    boundary and boundary-data regularity. A `C^{2,α}` conclusion requires one more
-    derivative of the divergence-form coefficients, or belongs to the non-divergence
-    track below.
+    coefficients, Caccioppoli, Sobolev–Poincaré, and Gehring give higher integrability of
+    an existing `H¹_loc` weak solution for `2 < p < 2 + ε(n, Λ / λ)` when
+    `F ∈ L^p_loc`. State the lower-side result `2 - ε < p < 2` separately: its content is
+    `W^{1,p}` well-posedness and the estimate `‖∇u‖_p ≤ C‖F‖_p`, with the needed domain
+    hypotheses, rather than self-improvement of an `H¹` solution. Expose how both ranges
+    degenerate with the ellipticity ratio and include Meyers' counterexample to an all-`p`
+    bounded-measurable-coefficient claim. For `a ∈ VMO` and `F ∈ Lᵖ`, obtain the full
+    **interior** range `1 < p < ∞`, consuming Lane B's commutator/VMO theory and carrying
+    the VMO modulus and small radius `r₀` explicitly. State the global Dirichlet estimate
+    separately: the full range needs, for example, `C¹` boundary, or a suitably small-BMO
+    coefficient field on a sufficiently flat Reifenberg domain.
+22. **Divergence-form Schauder estimates.** For `-div(a ∇u) = f + div F`, require
+    `a, F ∈ C^{0,α}` and `f ∈ L^q` for some `q > n`; then prove interior `C^{1,β}` control
+    of `u` with `β = min(α, 1 - n/q)`. Insufficient integrability of `f` removes this
+    conclusion rather than merely lowering the exponent; Morrey-space data provide a
+    useful alternative formulation. State the precise local estimate before global
+    solvability, whose boundary version needs corresponding boundary and boundary-data
+    regularity. A `C^{2,α}` conclusion requires one more derivative of the divergence-form
+    coefficients, or belongs to the non-divergence track below.
 23. **De Giorgi–Nash–Moser.** Local boundedness and **Hölder continuity** of weak
     solutions of divergence-form equations with **bounded measurable, not necessarily
     symmetric** coefficients, and the elliptic Harnack inequality in this generality.
@@ -386,8 +408,9 @@ prerequisites land. Every item below is scalar unless it explicitly says otherwi
 
 #### Non-divergence form: strong/classical solutions
 
-24. **ABP and Krylov–Safonov.** Consume the ABP estimate from Lane C.13 to prove the
-    Krylov–Safonov Harnack inequality and interior `C^{0,α}` estimate for scalar
+24. **ABP and Krylov–Safonov.** Combine the ABP estimate from Lane C.13 with the
+    barrier/measure estimate and the Krylov–Safonov dyadic covering lemma to prove the
+    Harnack inequality and interior `C^{0,α}` estimate for scalar
     `W^{2,n}_loc` strong solutions of `-aⁱʲ ∂ᵢ∂ⱼu = f` with bounded measurable uniformly
     elliptic coefficients and `f ∈ L^n_loc`. This regularity does not by itself produce
     `W^{2,p}` or `C^{1,α}` estimates. Viscosity solutions require a separate roadmap for
@@ -397,10 +420,12 @@ prerequisites land. Every item below is scalar unless it explicitly says otherwi
     `C^{2,α}` boundary and boundary-data hypotheses. Expose dependence on `λ, Λ`, `α`,
     dimension, geometry, and the rescaled coefficient Hölder seminorm.
 26. **Non-divergence Calderón–Zygmund estimates.** First prove the constant-coefficient
-    `W^{2,p}` estimate for `Δu = f`; then use Lane B's commutator/VMO machinery for
-    `-aⁱʲ ∂ᵢ∂ⱼu = f` with `a ∈ VMO`, obtaining `W^{2,p}` estimates for `1 < p < ∞`.
-    Carry the VMO modulus and small radius `r₀` explicitly; state global estimates only
-    with the required boundary regularity.
+    interior `W^{2,p}` estimate for `Δu = f`, expressing second derivatives through the
+    Newtonian potential from Lane C.15 and consuming Lane B.10's CZ singular-integral
+    bounds. Then use Lane B's commutator/VMO machinery for
+    `-aⁱʲ ∂ᵢ∂ⱼu = f` with `a ∈ VMO`, obtaining interior `W^{2,p}` estimates for
+    `1 < p < ∞`. Carry the VMO modulus and small radius `r₀` explicitly; state the global
+    Dirichlet estimate separately with, for example, `C^{1,1}` boundary.
 
 ### Lane F: parabolic and evolution equations
 
@@ -469,11 +494,16 @@ Concrete sanity checks that rule out vacuous or mis-stated definitions:
   divergence equations*](https://www.numdam.org/item/ASNSP_1963_3_17_3_189_0/): the
   bounded-measurable-coefficient self-improvement near `p = 2` in Lane E.21.
 - F. Chiarenza, M. Frasca, P. Longo,
+  [*Interior `W^{2,p}` estimates for nondivergence elliptic equations with discontinuous
+  coefficients*](https://hdl.handle.net/11568/17627) and
   [*`W^{2,p}`-solvability of the Dirichlet problem for nondivergence elliptic equations
-  with VMO coefficients*](https://doi.org/10.2307/2154379), and P. Auscher, M. Qafsaoui,
-  [*Observations on `W^{1,p}` estimates for divergence elliptic equations with VMO
-  coefficients*](https://www.bdim.eu/item?id=BUMI_2002_8_5B_2_487_0): the two distinct
-  VMO theories in Lanes E.21 and E.26.
+  with VMO coefficients*](https://doi.org/10.2307/2154379): respectively the interior
+  estimate and the global `C^{1,1}`-boundary theory in Lane E.26.
+- G. Di Fazio, [*`L^p` estimates for divergence form elliptic equations with discontinuous
+  coefficients*](https://www.iris.unict.it/handle/20.500.11769/2040), and P. Auscher,
+  M. Qafsaoui, [*Observations on `W^{1,p}` estimates for divergence elliptic equations
+  with VMO coefficients*](https://www.bdim.eu/item?id=BUMI_2002_8_5B_2_487_0): the
+  commutator method and its non-symmetric, `C¹`-boundary refinement for Lane E.21.
 - L. Grafakos, *Classical Fourier Analysis* (and *Modern*) / E. Stein, *Singular Integrals
   and Differentiability Properties of Functions*: maximal function, interpolation,
   Calderón–Zygmund, BMO. Baby versions in Stein–Shakarchi vol. 4, §3.3.
@@ -489,12 +519,13 @@ Concrete sanity checks that rule out vacuous or mis-stated definitions:
 
 **Lane A comes first** and to a high standard, because almost everything downstream needs
 `W^{k,p}(Ω)` and Rellich. Then Lanes B, C, D can proceed largely in parallel: Lane C
-(potential theory) is the easiest early win and partly exists in Mathlib already; Lane D
+minus its ABP extension is the easiest early win and partly exists in Mathlib already; Lane D
 (energy-method existence) is the shortest path to a real PDE theorem because Lax–Milgram
 is *already there*; Lane B (harmonic analysis) is the long pole that Lane E's regularity
 depends on. In Lane E, build the divergence-form v1 track first, including the imported
 De Giorgi development. Treat the non-divergence strong/classical track as a follow-up once
-ABP, Campanato, commutators, and VMO are available. Lane F and the stretch goals come last.
+ABP—including its convex-geometric measure theory—Campanato, commutators, and VMO are
+available. Lane F and the stretch goals come last.
 
 ## Acknowledgements
 

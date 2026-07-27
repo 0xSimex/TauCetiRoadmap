@@ -22,11 +22,16 @@ estimates (Lane B), maximum principles and potential theory (Lane C), elliptic e
 via the energy method (Lane D), elliptic regularity (Schauder and De Giorgi–Nash–Moser;
 Lane E), and parabolic/evolution equations (Lane F). Lane E itself has two deliberately
 separate tracks: divergence-form weak solutions (`H²` under Lipschitz coefficients,
-Meyers/VMO `W^{1,p}`, `C^{1,α}` Schauder, and De Giorgi–Nash–Moser), and
+Meyers/VMO `W^{1,p}`, `C^{1,β}` Schauder for `a, F ∈ C^{0,α}` and `f ∈ L^q`, `q > n`,
+with `β = min(α, 1 - n/q)`, and De Giorgi–Nash–Moser), and
 non-divergence-form strong/classical solutions (ABP/Krylov–Safonov, `C^{2,α}` Schauder,
 and VMO `W^{2,p}`). These live in
 `TauCeti/Analysis/PDE/`, with supporting theories under `TauCeti/Analysis/Sobolev/` and
 `TauCeti/Analysis/HarmonicAnalysis/`.
+
+De Giorgi–Nash–Moser and Krylov–Safonov are scalar theories. The smoother-coefficient
+items have systems analogues under the appropriate systems ellipticity hypotheses, so
+their eventual APIs should not block vector-valued generalization even though v1 is scalar.
 
 As each lane makes the next lane's *types* expressible in `TauCeti/`, state that lane's
 milestones here with `sorry` (human-owned roadmap territory, so `sorry` is allowed). The
@@ -41,8 +46,9 @@ natural first targets, in order:
   Hölder continuous. Port and reconcile Armstrong–Kempe's existing `DeGiorgi`
   formalization rather than rebuilding this theorem from scratch. Keep this divergence
   v1 milestone distinct from the later non-divergence track: bounded measurable
-  coefficients there lead to Krylov–Safonov for `W^{2,n}_loc` strong solutions,
-  `C^{0,α}` coefficients to Schauder `C^{2,α}`, and VMO coefficients to `W^{2,p}`.
+  coefficients with `f ∈ L^n_loc` there lead to Krylov–Safonov for `W^{2,n}_loc` strong
+  solutions, `C^{0,α}` coefficients and `C^{0,α}` data to Schauder `C^{2,α}`, and VMO
+  coefficients with `f ∈ Lᵖ` to interior `W^{2,p}`, `1 < p < ∞`.
 
 The intended uniform-ellipticity predicate must support non-symmetric coefficient fields.
 With explicit constants `0 < λ ≤ Λ`, its primitive almost-everywhere conditions are
