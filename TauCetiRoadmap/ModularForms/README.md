@@ -564,13 +564,27 @@ reassigning any milestone as new work. The milestones:
   point for any downstream *computation* (worked examples).
 - **The Hecke action on symbols**, its commutativity, and its integrality
   (`ModularSymbols/{HeckeSymbol,HeckeCommute,HeckeFinite}.lean`).
-- **The period map — an integration pairing, not a cohomology class.**
-  `periodMap' : S_k(Γ₁(N)) →ₗ[ℂ] (𝕄 N k →ₗ[ℤ] ℂ)`, sending `f` to the functional that
-  integrates `f(z)·P(z, 1) dz` along the geodesic between the two cusps of a symbol
-  (`P ∈ Sym^{k−2}`) — so a cusp form becomes a `ℤ`-linear functional on the lattice, with no
-  class in any cohomology group. Milestones: well-definedness (invariance under the group
-  action, i.e. that the integral descends to coinvariants), and **Hecke- and
-  diamond-equivariance**
+- **The period map — into the `ℤ`-dual of the symbols, in three steps.** ⚠ It is **not** a map
+  from forms to symbols: it is
+  `periodMap' : S_k(Γ₁(N)) →ₗ[ℂ] (𝕄 N k →ₗ[ℤ] ℂ)`, so a cusp form becomes a `ℤ`-linear
+  **functional on** the lattice. (That is the natural direction — symbols are cycles, forms are
+  the things you integrate over them — and it is why the lattice sits on the *source* of the
+  functionals and never has to be transported anywhere.) Build it as the provenance does:
+  **(i) the raw pairing.** `rawPairing f : (Div⁰ ℤ ⊗_ℤ Sym^{k−2} ℤ) →ₗ[ℤ] ℂ`, sending
+  `{α, β} ⊗ P` to `∫_β^α f(z)·P(z, 1) dz` along the geodesic — defined before any quotient,
+  hence with no well-definedness obligation yet.
+  **(ii) `Γ₁(N)`-invariance — the one analytic input of this step.** `IsPeriodInvariant f`:
+  precomposing `rawPairing f` with the diagonal action of `γ` leaves it unchanged
+  (Shimura (8.2.15)/(8.2.16)). Its algebraic half is the `Sym^{k−2}`-action identity; its
+  analytic half is **path-independence of the cusp-difference integral** — Cauchy's theorem on
+  the region between the geodesics `β → α` and `γβ → γα`. State this as its own milestone; it
+  is small, but it is where the analysis actually enters the *construction* (as opposed to the
+  injectivity proof).
+  **(iii) descent.** Given the invariance, `rawPairing f` descends through the coinvariants to
+  `𝕄 N k →ₗ[ℤ] ℂ`, and `periodMap'` is the resulting `ℂ`-linear map.
+  Then the **equivariance** milestones (`periodMap'_heckeEnd`, `periodMap'_diamond`):
+  `periodMap' (Tₙ f) = (periodMap' f) ∘ Tₙ^{sym}` — note the operator appears by
+  **precomposition**, i.e. as a transpose, which is exactly what the dual placement forces
   (`ModularSymbols/{PeriodMap,PeriodIntegral,PeriodInvariant,PeriodHecke}.lean`).
 - **Injectivity of the period map** — the analytic heart, and there are two routes; the
   roadmap takes the one the provenance actually proves.
@@ -592,13 +606,33 @@ reassigning any milestone as new work. The milestones:
   packaging — Haberland's cup-product formula on parabolic cohomology — is **not** used here
   and is **not** in the provenance; this roadmap deliberately keeps group cohomology out of
   the layer entirely, so do not describe the analytic heart as "a cup product".
-- **The consequence, stated carefully.** Injectivity of `periodMap'` plus its Hecke
-  equivariance embeds the Hecke algebra acting on `S_k` into `End_ℤ(𝕄 N k)` modulo the kernel:
-  `ker(𝕋 → End 𝕄) ⊆ ker(𝕋 → End S_k)`, so the form-side algebra is a **quotient** of the
-  integral symbol-side one — which is all that module-finiteness over `ℤ` needs, and it is
-  reached without ever proving an Eichler–Shimura *isomorphism*. Record that explicitly: the
-  full comparison `𝕄 ⊗ ℂ ≅ S_k ⊕ \overline{S_k}` would upgrade the quotient to a faithful
-  embedding, but nothing in Layers 8–9 requires it, so it is **not** a milestone here.
+- **The transfer to the form side — a free-algebra kernel inclusion, and no analysis at all.**
+  This is the step that answers "where is the Hecke-stable lattice?", so state it in full.
+  There is **no lattice inside `S_k`**: the integral object is `𝕄 N k`, integral by
+  construction, and Hecke-stable for free because the operators are *defined* on symbols. The
+  transfer is then pure algebra (`heckeAlgℤ_finite_of_period`):
+  **(i)** index the generators by `Idx = ℕ⁺ ⊕ (ZMod N)ˣ` and form two evaluation `ℤ`-algebra
+  maps out of the **free** `ℤ`-algebra on `Idx` — `evalS` into `End_ℂ(S_k)`, whose range *is*
+  `heckeAlgℤ N k`, and `evalM` into `End_ℤ(𝕄 N k)`. Free, so the universal property applies
+  even though the endomorphism rings are noncommutative.
+  **(ii)** `𝕄` is `ℤ`-finite and `ℤ` is noetherian, so `End_ℤ(𝕄)` is `ℤ`-finite, hence so is
+  `range evalM`.
+  **(iii)** the generator equivariance extends along the free algebra by induction, and
+  injectivity of `periodMap'` then gives **`ker evalM ≤ ker evalS`**.
+  **(iv)** so `FreeAlgebra ⧸ ker evalM ↠ FreeAlgebra ⧸ ker evalS ≅ range evalS = heckeAlgℤ`,
+  and `ℤ`-finiteness transports along the surjection.
+  ⚠ One hypothesis in (iii) is not decoration: the transpose `dualPrecomp` is an
+  **anti**-homomorphism, so the multiplicative step of the induction needs the two images to
+  commute — which is why **Hecke commutativity on the symbol side** is an explicit input.
+  Note what this argument does *not* need: no Eichler–Shimura **isomorphism**. Injectivity
+  alone makes the form-side algebra a *quotient* of the symbol-side one, which is all that
+  `ℤ`-module-finiteness requires. The full comparison `𝕄 ⊗ ℂ ≅ S_k ⊕ \overline{S_k}` would
+  upgrade the quotient to a faithful embedding, and is **not** a milestone here.
+- **And then the coefficient field, in two lines.** `heckeAlgℤ` module-finite over `ℤ` makes
+  every `Tₙ` integral over `ℤ`, hence every eigenvalue `aₙ` an **algebraic integer**; the
+  eigenvalue homomorphism therefore has `ℤ`-finite range (`newformEigenHom_range_finite`), so
+  `ℚ(aₙ : n)` is a finite-dimensional `ℚ`-algebra which is a domain, hence a field — a number
+  field (`finiteDimensional_coeffField_of_rangeFinite`).
 
 - **The coefficient field** `CoefficientField f = ℚ(aₙ : n) ⊆ ℂ` of a newform (#34), and the
   headline result that **it is a number field**. ⚠ **This is already constructed and proved in
