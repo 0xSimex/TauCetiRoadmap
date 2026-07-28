@@ -546,13 +546,27 @@ reassigning any milestone as new work. The milestones:
 - **The period map** `S_k(Γ) → H¹_par(Γ, Sym^{k−2}(ℂ))`, `f ↦ [ω_f]` with
   `ω_f = f(z)(zX + Y)^{k−2} dz`, together with its **Hecke- and diamond-equivariance**
   (`ModularSymbols/{PeriodMap,PeriodIntegral,PeriodInvariant,PeriodHecke}.lean`).
-- **Injectivity of the period map** — the analytic heart. The honest description is
-  **Petersson positivity through a Haberland-type cup-product identity**
-  `[ω_f] ⌣ [ω̄_f] = c_k·⟨f, f⟩_Pet` with `c_k ≠ 0`: a vanishing period class forces
-  `⟨f, f⟩ = 0`, hence `f = 0`. Stokes' theorem enters *inside* that identity, on truncated
-  fundamental domains, with cuspidality killing the boundary terms at the cusps — so
-  "the Stokes step" names a lemma, not the mathematical content
-  (`ModularSymbols/{PeriodInjective,EichlerInjective,PeterssonStokes.lean}`).
+- **Injectivity of the period map** — the analytic heart, and there are two routes; the
+  roadmap takes the one the provenance actually proves.
+  **Route of record — the Eichler integral (Bol).** For `f ∈ S_k` let `E_f` be its Eichler
+  integral, a `(k−1)`-fold antiderivative, so that `f = D^{k−1}E_f` with `D = d/dz` (Bol's
+  identity); `E_f` transforms in weight `2 − k` up to a period cocycle, so vanishing of *all*
+  periods makes `E_f` genuinely modular of weight `2 − k`, and — this is where the analysis
+  sits — **bounded at every cusp**, hence constant-like, hence `f = D^{k−1}E_f = 0`. The work
+  is the cusp-boundedness of the slashed Eichler integral at finite cusps and the
+  dominated cusp-decay bound at `i∞` (`ModularSymbols/EichlerInjective.lean`, whose capstone
+  `periodMap'_injective_eichler` is proved and **axiom-clean**).
+  **Alternative — Shimura's period pairing.** The real bilinear pairing `A(f, g)` of Shimura
+  §8.2 (8.2.17)/(8.2.22): a Green's/region-Stokes identity rewrites the Petersson *area*
+  integral over a fundamental domain as a *boundary* integral of an exact form, and
+  non-degeneracy of `A` then forces `f = 0`. This is the classical "periods determine the
+  Petersson norm" argument, and Haberland's cup-product formula on parabolic cohomology
+  (`H¹_par × H¹_par → H²_c ≅ ℂ`, induced by the symplectic pairing on `Sym^{k−2}`) is its
+  cohomological packaging. ⚠ **Neither the cup product nor Haberland's formula is in the
+  provenance** — `ModularSymbols/{PeriodInjective,PeterssonStokes}.lean` carry this route in
+  Shimura's integral form, and `PeterssonStokes.lean` is where the open analytic input
+  (`interior_edges_cancel_sum`) lives. Anyone stating this layer's analytic heart as "a cup
+  product" is describing the alternative, not what is proved.
 - **The consequence, stated carefully.** Injectivity of the *holomorphic* period map already
   gives `ker(𝕋 → End L) ⊆ ker(𝕋 → End S_k)`, i.e. the Hecke algebra acting on forms is a
   **quotient** of the integral cohomological one — which is all that finiteness needs. The
@@ -696,8 +710,12 @@ ground, and no Lean prior art exists anywhere.
   action and its trace on **period polynomials** — the world of AINTLIB's
   `HeckeRIngs/GL2/ModularSymbols/*` (`HeckeSymbol`, `PeriodHecke`, `SL2Generation`) — where
   the trace identity is provable with **no analytic input**; the transfer to `S_k(SL₂(ℤ))`
-  rides the Eichler–Shimura isomorphism, so the Layer-8 Stokes wall
-  `interior_edges_cancel_sum` gains a second consumer. Chosen over the kernel route (Miyake
+  rides the Eichler–Shimura comparison. ⚠ Which Layer-8 input that transfer needs is a
+  decision to make when the layer is reached, and it is not automatic: Layer 8's *injectivity*
+  goes through the Eichler-integral route and never touches `interior_edges_cancel_sum`, so
+  the Stokes wall acquires a second consumer only if the trace transfer needs the full
+  Eichler–Shimura **isomorphism** rather than injectivity alone. State which, before
+  starting. Chosen over the kernel route (Miyake
   §§6.1–6.4; Zagier's appendix in Lang: the two-variable kernel
   `ω_n(z, w) = Σ_{ad−bc=n} (czw + dz + aw + b)^{−k}` as the Petersson kernel of `Tₙ`, unfolded
   over conjugacy classes — ⚠ and note that appendix's **published error**: Case 3 (p. 53,
@@ -873,7 +891,11 @@ general-`n` branch.
   `coeffSeq_isIntegral`, `finiteDimensional_coeffField_of_rangeFinite`, the instance
   `instNumberFieldCoeffField`, `newformEigenHom_range_finite`,
   `coeffField_numberField_of_two_le`) plus the integral-period route in
-  `HeckeRIngs/GL2/ModularSymbols/*`. Largely proved (`k ≥ 2` axiom-clean); residual `sorry`s are
+  `HeckeRIngs/GL2/ModularSymbols/*` — where the working injectivity route is
+  `EichlerInjective.lean` (`periodMap'_injective_eichler`, proved, `#print axioms` clean, and
+  *not* passing through the Stokes wall), while `PeterssonStokes.lean` carries the alternative
+  Shimura/Green's-identity route and is where the open analytic input sits. Largely proved
+  (`k ≥ 2` axiom-clean); residual `sorry`s are
   the weight-1 lattice `exists_HeckeStableLattice_one` (`Labels/HeckeFieldArithmetic.lean`) and
   the Eichler–Shimura Stokes wall `interior_edges_cancel_sum`
   (`ModularSymbols/PeterssonStokes.lean`). ⚠ **Attribution:** part of the modular-symbol
