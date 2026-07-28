@@ -24,8 +24,11 @@ The summit is the **dimension formulas** for `M_k(Γ)` and `S_k(Γ)` at general 
 (Diamond–Shurman Thm 3.5.1), proved by the **classical analytic route**: the valence formula
 together with the elliptic-point and cusp counts of the quotient `Γ\ℍ`. Mere
 *finite-dimensionality* at general level is **not** the summit — it arrives in Mathlib by the
-elementary Sturm-bound route (see Layer 10) and this roadmap consumes it; the summit is the exact
-`ε₂, ε₃, ε∞, g` bookkeeping. The modular curve here
+elementary Sturm-bound route (see Layer 10) and this roadmap consumes it. What this roadmap adds
+is the **exact dimension formula** of Diamond–Shurman Thm 3.5.1 — `dim M_k(Γ)` and `dim S_k(Γ)`
+in terms of the genus `g` of `X(Γ)`, the numbers `ε₂` and `ε₃` of elliptic points of order `2`
+and `3`, and the number `ε∞` of cusps — which means computing those four invariants for a given
+`Γ`, not just knowing the spaces are finite-dimensional. The modular curve here
 **is** the analytic quotient `Γ\ℍ`, compactified by adjoining the cusps to a compact Riemann
 surface — defined directly, with no functor, no representability, and no algebraic moduli
 problem.
@@ -49,19 +52,24 @@ Pin these conventions before writing code — implementors make bad, divergent c
 - **Levels and characters.** Work with `Γ₁(N) ≤ Γ ≤ Γ₀(N)`. The space with **nebentypus** `χ` is
   `M_k(N, χ) = M_k(Γ₁(N), χ)`, the simultaneous `χ`-eigenspace of the diamond operators inside
   `M_k(Γ₁(N))` — a `Submodule`, defined in Layer 0 exactly as in AINTLIB. Reserve `M_k(Γ)` for a
-  bare congruence subgroup. The character has two faces, and AINTLIB uses both deliberately: a
+  bare congruence subgroup. ⚠ This gives **two ways to say `M_k(Γ₀(N))`** — as forms on the
+  bare group `Γ₀(N)`, and as `M_k(N, χ)` for `χ` trivial. That is unavoidable, so decide it
+  once: prove the two **isomorphic** (a named milestone), treat `M_k(Γ₀(N))` as the default
+  spelling for trivial nebentypus, and convert to it where possible. The character has two faces, and AINTLIB uses both deliberately: a
   unit homomorphism `χ : (ZMod N)ˣ →* ℂˣ` where it indexes eigenspaces, and Mathlib's
   `DirichletCharacter ℂ N` (`= MulChar (ZMod N) ℂ` — use it, do not reinvent) where a formula
   evaluates `χ` at arbitrary residues with `χ(p) = 0` for `p ∣ N`, bridged by
   `DirichletCharacter.toUnitHom` one way (so AINTLIB's conductor-theorem statements) and the
   zero-extension `Newform.dirichletLift` the other (so its Euler product). Keep both faces and
-  the named bridges; do not fuse them into a third notion.
+  the maps between them; do not fuse them into a third notion.
 - **The weight-`k` slash.** Use Mathlib's `SlashAction`/`ModularForm.slash` and its `k` and
   `GL₂(ℝ)⁺`/`GL₂(ℚ)⁺` conventions throughout; the Hecke double-coset operators are built from it.
-  ⚠ Two normalizations of the Hecke action circulate (Shimura's vs Diamond–Shurman's, differing
-  by a power of the determinant); **pin Diamond–Shurman's** as primary, and provide the
-  Shimura-normalized action as a named bridge (AINTLIB has both via `ShimuraHom`), so any
-  half-integral-weight work downstream can use it without silently switching conventions.
+  ⚠ Two normalizations of the Hecke action circulate, differing by a power of the determinant;
+  use the **arithmetic** one — Diamond–Shurman's, the one with no square roots in odd weight —
+  and use it *only*. The Shimura normalization is **not** wanted here: from the automorphic
+  side there is no canonical representation attached to a modular form anyway (one may twist
+  by `‖det‖^s`), so carrying a second normalization buys nothing this roadmap needs. AINTLIB
+  has a `ShimuraHom` comparison; it is not a target.
 - **`Tₙ` is defined for every `n`, and at `p ∣ N` it *is* `Uₚ`.** Miyake (§4.5, Lemma 4.5.7),
   Diamond–Shurman (Prop. 5.2.1–5.2.2, eq. (5.3)–(5.4)) and Shimura (3.5.12) all define `T(n)`
   for **all** `n ≥ 1`, with the nebentypus extended by `χ(d) = 0` for `(d, N) > 1`. The
@@ -170,7 +178,7 @@ Pin these conventions before writing code — implementors make bad, divergent c
 ## What is missing (build here)
 
 The valence formula at general level; the diamond operators `⟨d⟩` and the character spaces
-`M_k(N,χ)`; the Hecke operators `Tₙ`, `Tₚ` and the (commutative) Hecke-ring action on
+`M_k(N,χ)`; the Hecke operators `Tₙ` (`Tₚ` is the prime case, not a separate object) and the (commutative) Hecke-ring action on
 `M_k(N,χ)` — the abstract ring is Mathlib's, its `GL₂` realization and action are not; the Petersson inner product as
 an actual inner product and the self-adjointness of `Tₙ` for `(n,N)=1`; the old/new decomposition
 and its orthogonality; eigenforms, newforms, oldforms, primitive forms; the Atkin–Lehner Main
@@ -494,6 +502,13 @@ it constrains only `(n, N) = 1`. Per the conventions, it therefore ports as
   abscissa to `≤ k` is a milestone of this layer** — the honest D–S 5.9.1 bound, a
   divisor-sum estimate `aₙ = O(n^{k−1})` on the Eisenstein part, aligning the roadmap with the
   result it cites.
+- ⚠ **Where the character lives in the Euler product.** The formula below mentions `χ(p)`
+  while `f` has type `Newform N k`, which looks as though the type has lost the nebentypus. It
+  has not: `χ` is a **field of the structure** (conventions, Layer 4), carried by the form
+  itself, and the Euler product evaluates it through the zero-extension
+  `Newform.dirichletLift`. Whether `χ` should instead be a *type parameter* (`Newform N k χ`)
+  is a real design question for the port — decide it when the structure is migrated, and keep
+  the answer consistent with the character-space definition of Layer 0.
 - **The Euler product** for a newform (from Prop 5.8.5; AINTLIB `lSeries_eulerProduct`,
   `Modularforms/LFunctionEuler.lean`): for `f : Newform N k` and `Re s > k/2 + 1`,
   `L(s,f) = ∏_p (1 − aₚ p^{-s} + χ(p) p^{k-1-2s})^{-1}` (#30), the nebentypus zero-extended to
@@ -749,8 +764,29 @@ ground, and no Lean prior art exists anywhere.
   optimal-embedding counts, Eichler symbols, class numbers of non-maximal orders of `ℚ[α]`) — is
   **out of scope**: that apparatus shares nothing with this roadmap's layers and belongs to a
   future roadmap (Hijikata's formula), not to an extension of this layer.
+- **A second route to the weight-60 summit, once this layer works.** The characteristic
+  polynomial of `T₂` on `S_k(SL₂(ℤ))` is determined by the traces `tr(T_{2ⁿ})` for
+  `1 ≤ n ≤ dim S_k` (Newton's identities on the eigenvalues of `T₂`, since `T_{2ⁿ}` is a
+  polynomial in `T₂`), and at `k = 60` that is `n ≤ 5` — all computable from this layer's trace
+  formula. Whether that is cheaper than the Victor Miller route of the worked examples is an
+  open practical question and worth trying; record the answer when someone does. Either way it
+  gives Layer 11 a concrete downstream consumer.
 
 ## Worked examples (acceptance criteria, keeping the theory honest)
+
+⚠ **How the examples are computed — the policy, stated once.** There are two ways to get
+`q`-expansions of actual eigenforms. (1) Develop enough theory to compute at any weight and
+level; that means modular symbols with an explicit presentation and Hecke matrices, and it is
+substantial work. (2) Restrict to forms with an **eta-quotient expansion**, where the
+coefficients come out of a product formula by elementary manipulation. **This roadmap does
+(2).** The rule of thumb is `(N+1)k = 24`: `Δ` (`N = 1`, `k = 12`), the level-`11` weight-`2`
+newform (`12 · 2 = 24`), the level-`7` weight-`3` form (`8 · 3 = 24`) — and one is in good
+shape when the relevant cusp-form space is `1`-dimensional, so the eta quotient *is* the
+newform. Anything outside that class — level `37`, the weight-`60` charpoly, non-rational
+coefficient fields — is **not** an acceptance criterion of this roadmap and is routed to the
+downstream computational repository (weight-`60` entry below). Note the consequence for
+route (2): eta quotients have **rational** coefficients, so no example with non-real `aₙ` can
+be reached this way.
 
 - **Δ at level one** (`k = 12`, `N = 1`): the unique normalized cusp form; `τ(p)` are its Hecke
   eigenvalues; `aₙ` multiplicative with the `τ(p^r)` recurrence (Prop 5.8.5). The first eigenvalue
@@ -760,8 +796,11 @@ ground, and no Lean prior art exists anywhere.
 - **Level 11, weight 2** (`S₂(Γ₀(11))`, dimension 1): a single newform, the elliptic curve `11a`;
   its Fricke sign (Layer 6) and the rank-0 functional equation (Layer 7). Like `Δ`, it has a
   **product formula** making the coefficients computable by the same route:
-  `f = η(z)²η(11z)² = q∏_{n≥1}(1−qⁿ)²(1−q^{11n})²` (note the squares — `η(z)η(11z)` has weight
-  `1`), so `a₂ = −2`, and `a₁₁ = 1`, the bad-prime eigenvalue predicted by Layer 4's
+  `f = η(z)²η(11z)² = q∏_{n≥1}(1−qⁿ)²(1−q^{11n})²` — note the squares, and note that
+  `η(z)η(11z)` is *not* the weight-`1` form to reach for: it has no arithmetic subgroup as its
+  level, so "weight `1`" is not even meaningful for it; the genuine weight-`1` eta quotient is
+  `η(z)η(23z)`, from the same `(N+1)k = 24` rule — so `a₂ = −2`, and `a₁₁ = 1`, the bad-prime
+  eigenvalue predicted by Layer 4's
   classification at `v₁₁(N) = 1`, `χ` trivial (`±11^{(2−2)/2} = ±1`).
 - **Level 37, weight 2** — the honest version, split by what is *derivable* and what is
   *computed*. Derivable here: `dim S₂(Γ₀(37)) = 2` (Layer 10); the space is **entirely new**,
@@ -773,9 +812,13 @@ ground, and no Lean prior art exists anywhere.
   and that their signs are **opposite** (`tr w₃₇ = 0`). Both are computations — Manin symbols,
   or the genus of `X₀(37)/w₃₇` — and belong to the downstream computational repo described in
   the weight-60 entry below, not to this roadmap's acceptance criteria.
-- **A newform with non-real `aₙ`** (CM coefficient field): `CoefficientField f` a genuine
-  imaginary-quadratic field, not totally real — the coefficient-field acceptance test (Layer 8) and
-  the not-self-dual test (Layer 9).
+- **A newform with non-real `aₙ`** — ⚠ **not an acceptance criterion here**, and the entry is
+  kept only to say why. Such a form would exercise the coefficient-field (Layer 8) and
+  not-self-dual (Layer 9) statements, but eta quotients have rational coefficients, so the
+  computational policy above cannot reach one: exhibiting it needs an explicit `q`-expansion at
+  a specific level and weight, i.e. modular symbols. It therefore belongs to the downstream
+  computational repository, together with a definite target (a nebentypus newform such as
+  `13.2.e.a`) rather than an unnamed "some newform".
 - **`η²⁴ = Δ`** as a weight-12 eta quotient (#19): develop `η = q^{1/24}∏(1−qⁿ)` and its `SL₂(ℤ)`
   transformation, and the Ligozat criterion, as an explicit worked example of a modular form rather
   than as general theory.
