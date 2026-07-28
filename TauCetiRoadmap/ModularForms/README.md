@@ -531,11 +531,17 @@ coordinate with that work rather than duplicating it, and credit it on migration
 files below are attributed collectively, so check with him which pieces are his before
 reassigning any milestone as new work. The milestones:
 
-- **The modular-symbol module.** For `k ≥ 2`, the coefficient system `Sym^{k−2}(ℤ²)` and the
-  parabolic cohomology `H¹_par(Γ, Sym^{k−2}(ℤ²))` — a **finitely generated ℤ-module**: the
-  Hecke-stable lattice of the whole story, and note where it lives — on the *symbol* side, so
-  **no lattice inside the space of forms is ever constructed**. Finitely many cusps, the
-  boundary map, and the finite generation are the content
+- **The modular-symbol module `𝕄 N k` — no group cohomology.** ⚠ The lattice is built
+  **homologically and concretely**, not as parabolic cohomology: `𝕄 N k` is the
+  `Γ₁(N)`-**coinvariants** of `Div⁰(ℙ¹(ℚ)) ⊗_ℤ Sym^{k−2}(ℤ²)` — degree-zero divisors on the
+  cusps tensored with the weight coefficient system, modulo the group action. This is
+  deliberate: it needs no `H¹`, no parabolic subgroup bookkeeping, and no cohomological
+  comparison, and it is what the provenance actually uses. The milestone is that **`𝕄 N k` is a
+  finite `ℤ`-module**, by a Manin-style orbit-spanning argument — exhibit a finite set whose
+  `Γ₁(N)`-orbit spans, using finiteness of the cusps, the difference description of `Div⁰`, and
+  finite generation of `Γ₁(N)`. This is the Hecke-stable lattice of the whole story, and note
+  where it lives: on the *symbol* side, so **no lattice inside the space of forms is ever
+  constructed**
   (AINTLIB `ModularSymbols/{ModuleM,ModuleMFinite,CoefficientSystem,FinitelyManyCusps,CoinvariantsFinite}.lean`).
 - **Manin symbols and the fundamental domain.** The `SL₂(ℤ)`-generation and fundamental-domain
   boundary apparatus that presents the symbol module concretely
@@ -543,8 +549,13 @@ reassigning any milestone as new work. The milestones:
   point for any downstream *computation* (worked examples).
 - **The Hecke action on symbols**, its commutativity, and its integrality
   (`ModularSymbols/{HeckeSymbol,HeckeCommute,HeckeFinite}.lean`).
-- **The period map** `S_k(Γ) → H¹_par(Γ, Sym^{k−2}(ℂ))`, `f ↦ [ω_f]` with
-  `ω_f = f(z)(zX + Y)^{k−2} dz`, together with its **Hecke- and diamond-equivariance**
+- **The period map — an integration pairing, not a cohomology class.**
+  `periodMap' : S_k(Γ₁(N)) →ₗ[ℂ] (𝕄 N k →ₗ[ℤ] ℂ)`, sending `f` to the functional that
+  integrates `f(z)·P(z, 1) dz` along the geodesic between the two cusps of a symbol
+  (`P ∈ Sym^{k−2}`) — so a cusp form becomes a `ℤ`-linear functional on the lattice, with no
+  class in any cohomology group. Milestones: well-definedness (invariance under the group
+  action, i.e. that the integral descends to coinvariants), and **Hecke- and
+  diamond-equivariance**
   (`ModularSymbols/{PeriodMap,PeriodIntegral,PeriodInvariant,PeriodHecke}.lean`).
 - **Injectivity of the period map** — the analytic heart, and there are two routes; the
   roadmap takes the one the provenance actually proves.
@@ -560,19 +571,19 @@ reassigning any milestone as new work. The milestones:
   §8.2 (8.2.17)/(8.2.22): a Green's/region-Stokes identity rewrites the Petersson *area*
   integral over a fundamental domain as a *boundary* integral of an exact form, and
   non-degeneracy of `A` then forces `f = 0`. This is the classical "periods determine the
-  Petersson norm" argument, and Haberland's cup-product formula on parabolic cohomology
-  (`H¹_par × H¹_par → H²_c ≅ ℂ`, induced by the symplectic pairing on `Sym^{k−2}`) is its
-  cohomological packaging. ⚠ **Neither the cup product nor Haberland's formula is in the
-  provenance** — `ModularSymbols/{PeriodInjective,PeterssonStokes}.lean` carry this route in
-  Shimura's integral form, and `PeterssonStokes.lean` is where the open analytic input
-  (`interior_edges_cancel_sum`) lives. Anyone stating this layer's analytic heart as "a cup
-  product" is describing the alternative, not what is proved.
-- **The consequence, stated carefully.** Injectivity of the *holomorphic* period map already
-  gives `ker(𝕋 → End L) ⊆ ker(𝕋 → End S_k)`, i.e. the Hecke algebra acting on forms is a
-  **quotient** of the integral cohomological one — which is all that finiteness needs. The
-  full Eichler–Shimura isomorphism `H¹_par(Γ, Sym^{k−2}(ℂ)) ≅ S_k(Γ) ⊕ \overline{S_k(Γ)}`,
-  with its conjugate summand, upgrades this to a faithful embedding; state which one each
-  downstream result uses.
+  Petersson norm" argument. ⚠ It is carried in the provenance in Shimura's **integral** form
+  (`ModularSymbols/{PeriodInjective,PeterssonStokes}.lean`), and `PeterssonStokes.lean` is
+  where the open analytic input (`interior_edges_cancel_sum`) sits. Its usual cohomological
+  packaging — Haberland's cup-product formula on parabolic cohomology — is **not** used here
+  and is **not** in the provenance; this roadmap deliberately keeps group cohomology out of
+  the layer entirely, so do not describe the analytic heart as "a cup product".
+- **The consequence, stated carefully.** Injectivity of `periodMap'` plus its Hecke
+  equivariance embeds the Hecke algebra acting on `S_k` into `End_ℤ(𝕄 N k)` modulo the kernel:
+  `ker(𝕋 → End 𝕄) ⊆ ker(𝕋 → End S_k)`, so the form-side algebra is a **quotient** of the
+  integral symbol-side one — which is all that module-finiteness over `ℤ` needs, and it is
+  reached without ever proving an Eichler–Shimura *isomorphism*. Record that explicitly: the
+  full comparison `𝕄 ⊗ ℂ ≅ S_k ⊕ \overline{S_k}` would upgrade the quotient to a faithful
+  embedding, but nothing in Layers 8–9 requires it, so it is **not** a milestone here.
 
 - **The coefficient field** `CoefficientField f = ℚ(aₙ : n) ⊆ ℂ` of a newform (#34), and the
   headline result that **it is a number field**. ⚠ **This is already constructed and proved in
