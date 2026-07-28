@@ -20,10 +20,10 @@ field of a newform is a number field, and the level-one **Eichler–Selberg trac
 content of a masters/PhD course on the subject,
 resting throughout on complex analysis, Fourier analysis, and the arithmetic of `SL₂(ℤ)`.
 
-The summit is the **dimension formulas** for `M_k(Γ)` and `S_k(Γ)` at general level
+The hardest target is the **dimension formulas** for `M_k(Γ)` and `S_k(Γ)` at general level
 (Diamond–Shurman Thm 3.5.1), proved by the **classical analytic route**: the valence formula
 together with the elliptic-point and cusp counts of the quotient `Γ\ℍ`. Mere
-*finite-dimensionality* at general level is **not** the summit — it arrives in Mathlib by the
+*finite-dimensionality* at general level is **not** the hard part — it arrives in Mathlib by the
 elementary Sturm-bound route (see Layer 10) and this roadmap consumes it. What this roadmap adds
 is the **exact dimension formula** of Diamond–Shurman Thm 3.5.1 — `dim M_k(Γ)` and `dim S_k(Γ)`
 in terms of the genus `g` of `X(Γ)`, the numbers `ε₂` and `ε₃` of elliptic points of order `2`
@@ -110,7 +110,7 @@ Pin these conventions before writing code — implementors make bad, divergent c
 - **Coefficient field.** The coefficient field of a newform is `CoefficientField f = ℚ(aₙ : n ≥ 1)
   ⊆ ℂ`, an `IntermediateField ℚ ℂ`. (Name it `CoefficientField`, not after the form: no `K_f`.)
   It is a *number field* — a theorem (Layer 8), not an assumption. The `IntermediateField ℚ ℂ`
-  typing is deliberate and load-bearing: because the forms here are complex-analytic, the
+  typing is deliberate and does real work: because the forms here are complex-analytic, the
   coefficient field comes with a **preferred embedding into `ℂ`**, and the Galois-orbit and
   self-duality statements of Layer 9 are about that embedded field, not an abstract number
   field.
@@ -173,7 +173,7 @@ Pin these conventions before writing code — implementors make bad, divergent c
   [#39000](https://github.com/leanprover-community/mathlib4/pull/39000)
   (+[#39083](https://github.com/leanprover-community/mathlib4/pull/39083)/[#39086](https://github.com/leanprover-community/mathlib4/pull/39086)/[#39087](https://github.com/leanprover-community/mathlib4/pull/39087)/[#39088](https://github.com/leanprover-community/mathlib4/pull/39088):
   cusp widths, the modular norm map and its `q`-expansion decomposition). Layer 10 **consumes**
-  finite-dimensionality from here; the exact dimension formulas remain this roadmap's summit.
+  finite-dimensionality from here; the exact dimension formulas remain the hard target.
 
 ## What is missing (build here)
 
@@ -405,7 +405,7 @@ it constrains only `(n, N) = 1`. Per the conventions, it therefore ports as
   `0 < c < v_p(N)`). Here `χ^{(p)}` is the prime-to-`p` part of `χ`. Worked instances: the
   level-`11` weight-`2` newform has `a₁₁ = 1 = ±11^0`; the level-`7` weight-`3` newform
   `7.3.b.a` has `a₇ = −7`, matching `7^{(3-1)/2}` and *not* `7^{(3-2)/2}`. This milestone is
-  the honest home of the bad-prime data.
+  where the bad-prime data actually lives.
 - **The Atkin–Lehner Main Lemma** (Diamond–Shurman Thm 5.7.1 — D–S title §5.7 "The Main Lemma"
   and label the theorem so; outside that book the bare phrase is ambiguous, so always cite it):
   a cusp form `f ∈ S_k(Γ₁(N))` whose Fourier coefficients vanish at every index coprime to `N`
@@ -448,7 +448,7 @@ it constrains only `(n, N) = 1`. Per the conventions, it therefore ports as
   whose eigenvalues agree at every index `n` coprime to `N` outside a **finite exceptional set**
   are equal. Keep all three hypothesis groups: same level and weight (in the type), the shared
   `χ`, and the finite exceptional set of coprime indices (that finite slack is the "strong";
-  nothing is assumed at `p ∣ N`). The engine is `strongMultiplicityOne_constMul` — a `Newform`
+  nothing is assumed at `p ∣ N`). The key step is `strongMultiplicityOne_constMul` — a `Newform`
   and an `Eigenform` sharing eigenvalues are proportional — and `a₁ = 1` pins the constant to
   `1`.
 - On top of the migrated theorem, the further targets of this layer: **multiplicity one** (each
@@ -679,7 +679,7 @@ Each is a named definition with its basic API, mostly short once Layer 8 exists:
   `#orbit = dim` of the newform; **inner twists** (#42). These consume Layer 8's integrality —
   the coefficients must be algebraic for `σ` to act at all — so they sit downstream of the
   modular-symbol machinery, not beside it.
-- **Galois-group certification** (the coefficient-field summit's interface): the Galois closure
+- **Galois-group certification** (what the weight-60 example needs): the Galois closure
   of `CoefficientField f` and a decision procedure for its **solvability**, presented as a
   *certificate checker* rather than a search — Dedekind/Frobenius **cycle-type certificates**
   (factor the minimal polynomial modulo well-chosen primes, read off cycle types, conclude
@@ -705,7 +705,7 @@ representability, no moduli problem**.
   **modular norm map** route (`∏_γ f∣[k]γ` over coset representatives lands at level one, where
   the level-one bound kills it) — the same argument as AINTLIB's `dim_gen_cong_levels`
   (`Modularforms/DimGenCongLevels/*`), which it upstreams. Downstream, the Sturm bound is this
-  layer's **workhorse certificate**: two forms agreeing on the first `⌊k·[SL₂(ℤ):Γ]/12⌋ + 1`
+  layer's **main computational criterion**: two forms agreeing on the first `⌊k·[SL₂(ℤ):Γ]/12⌋ + 1`
   coefficients are equal, which is how the concrete dimension instances in `Suggested.lean` and
   the LMFDB layer's equality checks (Layer 9) become finite computations.
 - **The analytic theory of cusps and compactification.** Build `X(Γ) = Γ\ℍ*` as a compact Riemann
@@ -770,10 +770,10 @@ ground, and no Lean prior art exists anywhere.
   action and its trace on **period polynomials** — the world of AINTLIB's
   `HeckeRIngs/GL2/ModularSymbols/*` (`HeckeSymbol`, `PeriodHecke`, `SL2Generation`) — where
   the trace identity is provable with **no analytic input**; the transfer to `S_k(SL₂(ℤ))`
-  rides the Eichler–Shimura comparison. ⚠ Which Layer-8 input that transfer needs is a
+  uses the Eichler–Shimura comparison. ⚠ Which Layer-8 input that transfer needs is a
   decision to make when the layer is reached, and it is not automatic: Layer 8's *injectivity*
   goes through the Eichler-integral route and never touches `interior_edges_cancel_sum`, so
-  the Stokes wall acquires a second consumer only if the trace transfer needs the full
+  `interior_edges_cancel_sum` acquires a second consumer only if the trace transfer needs the full
   Eichler–Shimura **isomorphism** rather than injectivity alone. State which, before
   starting. Chosen over the kernel route (Miyake
   §§6.1–6.4; Zagier's appendix in Lang: the two-variable kernel
@@ -798,7 +798,7 @@ ground, and no Lean prior art exists anywhere.
   optimal-embedding counts, Eichler symbols, class numbers of non-maximal orders of `ℚ[α]`) — is
   **out of scope**: that apparatus shares nothing with this roadmap's layers and belongs to a
   future roadmap (Hijikata's formula), not to an extension of this layer.
-- **A second route to the weight-60 summit, once this layer works.** The characteristic
+- **A second route to the weight-60 example, once this layer works.** The characteristic
   polynomial of `T₂` on `S_k(SL₂(ℤ))` is determined by the traces `tr(T_{2ⁿ})` for
   `1 ≤ n ≤ dim S_k` (Newton's identities on the eigenvalues of `T₂`, since `T_{2ⁿ}` is a
   polynomial in `T₂`), and at `k = 60` that is `n ≤ 5` — all computable from this layer's trace
@@ -856,7 +856,7 @@ be reached this way.
 - **`η²⁴ = Δ`** as a weight-12 eta quotient (#19): develop `η = q^{1/24}∏(1−qⁿ)` and its `SL₂(ℤ)`
   transformation, and the Ligozat criterion, as an explicit worked example of a modular form rather
   than as general theory.
-- **The coefficient-field summit — a weight-60 level-one eigenform with non-solvable
+- **The coefficient-field example — a weight-60 level-one eigenform with non-solvable
   coefficient field.** There is a normalized eigenform `f ∈ S₆₀(SL₂(ℤ))` whose coefficient field
   `CoefficientField f` has a Galois closure over `ℚ` that is **not solvable** — the first known
   example, computed by Buzzard in 1992 in answer to a question of Ramakrishnan
@@ -938,7 +938,7 @@ general-`n` branch.
 - **Valence formula (L1):** `ForMathlib/ValenceFormulaFinal.lean` (`valence_formula_textbook`)
   on top of `ForMathlib/ValenceFormula*.lean` and `ForMathlib/ValenceFormula/WindingWeights/*`,
   with the FD-boundary bridge (`ForMathlib/*FDBoundary*`, `*CornerFTC*`, `*CrossingAt*`) over
-  the Contour Integration engine.
+  the Contour Integration roadmap's results.
 - **Hecke theory (L2):** `HeckeRIngs/AbstractHeckeRing/*` (the abstract ring — **being
   upstreamed** as Mathlib #41251 merged + #41253–#41256, #41277, #41279, #41328 in review; commutativity via
   `mul_comm_of_antiInvolution` with `GLn/TransposeAntiInvolution.lean`);
@@ -982,11 +982,11 @@ general-`n` branch.
   `coeffField_numberField_of_two_le`) plus the integral-period route in
   `HeckeRIngs/GL2/ModularSymbols/*` — where the working injectivity route is
   `EichlerInjective.lean` (`periodMap'_injective_eichler`, proved, `#print axioms` clean, and
-  *not* passing through the Stokes wall), while `PeterssonStokes.lean` carries the alternative
+  *not* passing through `interior_edges_cancel_sum`), while `PeterssonStokes.lean` carries the alternative
   Shimura/Green's-identity route and is where the open analytic input sits. Largely proved
   (`k ≥ 2` axiom-clean); residual `sorry`s are
   the weight-1 lattice `exists_HeckeStableLattice_one` (`Labels/HeckeFieldArithmetic.lean`) and
-  the Eichler–Shimura Stokes wall `interior_edges_cancel_sum`
+  the Eichler–Shimura boundary-cancellation step `interior_edges_cancel_sum`
   (`ModularSymbols/PeterssonStokes.lean`). ⚠ **Attribution:** part of the modular-symbol
   development is due to **Nicola Falciola** (VU Amsterdam); the files carry a collective
   "LeanModularForms contributors" header, so establish per-file authorship with him before
@@ -1029,7 +1029,7 @@ catalogue the redundancy to collapse during migration.
   LNM **1240** — the Sturm bound (Layer 10), heading into Mathlib via the modular norm map
   (#38993 merged, #39000 in review).
 - N. Hungerbühler, M. Wasem, *Non-integer valued winding numbers and a generalized Residue
-  Theorem*, arXiv:1808.00997 — the contour-integration engine behind the valence formula's
+  Theorem*, arXiv:1808.00997 — the contour-integration result behind the valence formula's
   elliptic-point weights (see the [Contour Integration roadmap](../ContourIntegration/README.md)).
 - A. Atkin, J. Lehner, *Hecke operators on Γ₀(m)*; A. Atkin, W. Li, *Twists of newforms and
   pseudo-eigenvalues of W-operators*, Invent. Math. **48** (1978) — Layer 6's sign theory at
@@ -1043,5 +1043,5 @@ The body of theory is **migrated and cleaned** from the AINTLIB `LeanModularForm
 ([github.com/CBirkbeck/AINTLIB](https://github.com/CBirkbeck/AINTLIB)), where the headline results
 are already `sorry`-free; thanks to its authors. The target definitions discharge a large set of
 "def-wanted" specifications from the [LeanBridge](https://github.com/CBirkbeck/LeanBridge)
-project: issues #13, #18, #19, #30–#35, #37, #38, #42, #54, #55. The Contour Integration engine the valence
+project: issues #13, #18, #19, #30–#35, #37, #38, #42, #54, #55. The Contour Integration results the valence
 formula depends on is the sibling [Contour Integration roadmap](../ContourIntegration/README.md).
