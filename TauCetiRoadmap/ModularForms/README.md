@@ -222,8 +222,8 @@ below sketches signatures; it is illustrative, not required to compile.
     ⨅ d : (ZMod N)ˣ, Module.End.eigenspace (diamondOpHom k d) (↑(χ d))   -- and cuspFormCharSpace
   ```
   These spaces are the general setting for the entire roadmap; all of the Hecke, Petersson, and
-  eigenform theory below lives on them. The classical **nebentypus transformation law is the
-  bridge theorem**, not the definition (AINTLIB `modFormCharSpace_iff_nebentypus`):
+  eigenform theory below lives on them. The classical **nebentypus transformation law is a
+  theorem here**, not the definition (AINTLIB `modFormCharSpace_iff_nebentypus`):
   `f ∈ M_k(N, χ) ↔ ∀ γ ∈ Γ₀(N), f ∣[k] γ = χ(d_γ) • f`.
   ⚠ Do **not** re-found these spaces by re-defining the slash action with a character built in
   (a `ModularFormWithChar` type): the eigenspace-in-a-`Submodule` definition keeps every Mathlib
@@ -462,7 +462,7 @@ it constrains only `(n, N) = 1`. Per the conventions, it therefore ports as
   (2)  a_{p^r} = a_p·a_{p^{r-1}} − χ(p)·p^{k-1}·a_{p^{r-2}}   for all primes p and r ≥ 2
   (3)  a_{mn} = a_m·a_n   whenever (m,n) = 1.
   ```
-  This is the bridge to the Euler product (Layer 7): conditions (2)–(3) are exactly
+  This is what the Euler product (Layer 7) rests on: conditions (2)–(3) are exactly
   multiplicativity of the Dirichlet series.
 
 ### Layer 6: Atkin–Lehner and Fricke operators
@@ -944,9 +944,10 @@ general-`n` branch.
   `mul_comm_of_antiInvolution` with `GLn/TransposeAntiInvolution.lean`);
   `HeckeRIngs/GL2/{Basic,HeckeT_p,HeckeT_p_Gamma0,HeckeT_p_Gamma1,HeckeT_p_GLpair,HeckeT_n,FourierHecke,MultiplicationTable,CongruenceIndex,Degree,LevelEmbed,LevelRaise}.lean`;
   the ring-action layer
-  `HeckeRIngs/GL2/Unified/{Gamma0RingDn,NebentypusHeckeRingHom,RingTransport,ShimuraHom,TwistedHeckeRing}.lean`
-  (`heckeRingDn`, `heckeRingHomCharSpace`, the Shimura-normalized
-  `heckeRingHomCharSpaceShimura`).
+  `HeckeRIngs/GL2/Unified/{Gamma0RingDn,NebentypusHeckeRingHom,RingTransport,TwistedHeckeRing}.lean`
+  (`heckeRingDn`, `heckeRingHomCharSpace`). ⚠ `ShimuraHom.lean` and
+  `heckeRingHomCharSpaceShimura` are **deliberately not ported**: the conventions fix the
+  arithmetic normalization as the only one, so the Shimura-normalized action stays behind.
 - **Petersson / old–new (L3):** `Modularforms/{PeterssonInner,PeterssonInnerProduct,PeterssonLevelN}.lean`
   (`petN`, `μ_hyp`), `HeckeRIngs/GL2/AdjointTheory*.lean` (`heckeT_n_adjoint`),
   `HeckeRIngs/GL2/Newforms/Basic.lean` (`cuspFormsOld`, `cuspFormsNew`, orthogonality,
