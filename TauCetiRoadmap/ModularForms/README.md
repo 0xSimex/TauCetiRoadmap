@@ -588,14 +588,26 @@ reassigning any milestone as new work. The milestones:
   (`ModularSymbols/{PeriodMap,PeriodIntegral,PeriodInvariant,PeriodHecke}.lean`).
 - **Injectivity of the period map** — the analytic heart, and there are two routes; the
   roadmap takes the one the provenance actually proves.
-  **Route of record — the Eichler integral (Bol).** For `f ∈ S_k` let `E_f` be its Eichler
-  integral, a `(k−1)`-fold antiderivative, so that `f = D^{k−1}E_f` with `D = d/dz` (Bol's
-  identity); `E_f` transforms in weight `2 − k` up to a period cocycle, so vanishing of *all*
-  periods makes `E_f` genuinely modular of weight `2 − k`, and — this is where the analysis
-  sits — **bounded at every cusp**, hence constant-like, hence `f = D^{k−1}E_f = 0`. The work
-  is the cusp-boundedness of the slashed Eichler integral at finite cusps and the
-  dominated cusp-decay bound at `i∞` (`ModularSymbols/EichlerInjective.lean`, whose capstone
-  `periodMap'_injective_eichler` is proved and **axiom-clean**).
+  **Route of record — the Eichler integral (Bol).** For `f ∈ S_k` let `E_f` be its **Eichler
+  integral**, the `(k−1)`-fold antiderivative, so that Bol's identity gives
+  `f = ((2πi)^{−1})^{k−1}·D^{k−1}E_f`. Assume every period of `f` vanishes. Then, in order:
+  **(i)** `E_f∣[2−k]γ − E_f` is the *period polynomial* of `f` at `γ`, of degree `≤ k−2` with
+  the periods as coefficients — so it vanishes, and `E_f` is genuinely `Γ₁(N)`-invariant in
+  weight `2 − k`;
+  **(ii)** `E_f` is **bounded at every cusp** — this is where the analysis sits, and it splits
+  in two: at `i∞` from cusp decay of `f` by a dominated-integral bound, and at a **finite**
+  cusp (`γ·∞ ≠ ∞`) by slashing and decomposing `(E_f)∣[2−k]γ = E_g − C_k·(cusp value of g)`
+  for the conjugate form `g = f∣[k]γ`, where the cusp-value term dies because vanishing periods
+  for `f` force them for `g` (`det γ = 1`), leaving `C_k·E_g`, bounded by the same estimate;
+  **(iii)** so `E_f` is holomorphic, invariant in weight `2 − k ≤ 0`, and bounded at all cusps
+  — hence **zero**, the non-positive weight being what forces vanishing rather than mere
+  constancy — and therefore `f = D^{k−1}E_f = 0`.
+  ⚠ Note `k ≥ 2` is used twice (Bol needs `k − 1 ≥ 1`; step (iii) needs `2 − k ≤ 0`), which is
+  precisely why weight `1` is outside this method. And note what never appears: no Stokes
+  theorem, no Petersson product, no cup product — only contour manipulation and growth
+  estimates, which is why this route came out axiom-clean while the alternative below did not
+  (`ModularSymbols/EichlerInjective.lean`: `eichler_slash_invariant`, `eichler_bdd_at_cusp`,
+  `eichler_eq_zero`, `bol_iterated_eichler`, capstone `periodMap'_injective_eichler`).
   **Alternative — Shimura's period pairing.** The real bilinear pairing `A(f, g)` of Shimura
   §8.2 (8.2.17)/(8.2.22): a Green's/region-Stokes identity rewrites the Petersson *area*
   integral over a fundamental domain as a *boundary* integral of an exact form, and
