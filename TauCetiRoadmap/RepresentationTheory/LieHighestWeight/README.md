@@ -397,7 +397,9 @@ Weyl-invariance, so that no later step silently assumes a decomposition that has
   pinned intermediate targets: the tensor-algebra-quotient presentation of `U(L)`; the PBW filtration;
   the associated-graded map from the symmetric algebra `Sym(L)`; the ordered-monomial basis for a chosen
   basis of `L`; functoriality for subalgebras and direct sums; and, from the root-space decomposition,
-  the **triangular decomposition** `U(L) ≅ U(n⁻) ⊗ U(H) ⊗ U(n⁺)`.
+  the **triangular decomposition** `U(L) ≅ U(n⁻) ⊗ U(H) ⊗ U(n⁺)`. This roadmap owns the shared concrete
+  PBW development; [Ado–Iwasawa](../AdoIwasawa/README.md) consumes its general-field filtration,
+  injectivity, ordered-monomial, domain, and Noetherian consequences.
 - **The Borel and the nilradicals.** Name the subalgebras the base determines, keeping `base` for the
   root-system base alone: `positiveNilradical base = n⁺ = ⨁_{α>0} Lα`, its opposite
   `negativeNilradical base = n⁻`, and `borelSubalgebra base = 𝔟 = H ⊕ n⁺`. The Verma tensor product is
