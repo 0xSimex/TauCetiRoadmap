@@ -14,7 +14,7 @@ the radical and maximal nilpotent ideal, Engel's theorem, Lie's theorem, and Kru
 infrastructure. It has no concrete PBW basis, no injectivity theorem for the canonical map into
 the enveloping algebra, no lift of Lie derivations to that algebra, no Ado theorem, and no
 positive-characteristic central `p`-polynomial construction. See `README.md` for the full
-dependency and coordination plan.
+dependency plan and the Tau Ceti-only execution boundary.
 -/
 
 namespace TauCetiRoadmap.RepresentationTheory.AdoIwasawa

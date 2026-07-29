@@ -87,6 +87,15 @@ Hochschild's central-ideal proof in positive characteristic because those routes
 Mathlib APIs. A future splitting-algebra development can coexist with this one, but it is not a hidden
 prerequisite here.
 
+## Execution boundary
+
+All implementation work specified by this roadmap belongs in the Tau Ceti implementation repository.
+Do **not** open, comment on, or modify Mathlib issues or pull requests; do **not** post on Zulip or contact
+external authors. External links below are read-only evidence about the current dependency landscape, not
+coordination tasks. If an API required here is absent from Tau Ceti and its pinned Mathlib version, implement
+it under the `TauCeti` namespace. Upstreaming and external communication are outside this roadmap and must
+not be performed.
+
 ## What Mathlib and Tau Ceti already provide
 
 - **Lie algebras, ideals, modules, and representations.** `Mathlib/Algebra/Lie/Basic.lean` and
@@ -108,25 +117,24 @@ prerequisite here.
   `L`, or that it has the PBW ordered-monomial basis needed here.
 - **Commutative algebra.** Mathlib already contains module-finiteness, Noetherian modules, integral
   dependence, and Krull intersection results in `Mathlib/RingTheory/Filtration.lean`, including
-  `Ideal.mem_iInf_smul_pow_eq_bot_iff` and torsion-free consequences. This roadmap should generalize or
-  adapt those results rather than reproving an Ado-specific intersection lemma.
+  `Ideal.mem_iInf_smul_pow_eq_bot_iff` and torsion-free consequences. The Tau Ceti implementation should
+  generalize or adapt those results locally rather than reproving an Ado-specific intersection lemma.
 - **Finite-target reductions.** The Etingof representation-theory formalization already states the
   arbitrary-field theorem and proves that it is equivalent to a finite-dimensional associative target of
   `U(L)` that remains injective on `L`; see
   [`Remark2_9_3.lean`](https://github.com/FormalFrontier/Etingof-RepresentationTheory-draft1/blob/master/EtingofRepresentationTheory/Chapter2/Remark2_9_3.lean).
   That project deliberately leaves the theorem itself outside its proof boundary. The reduction is useful
-  design evidence, not a proof source to copy without coordination.
+  design evidence, not a proof source to copy.
 
-## Work already in motion
+## Existing dependency context (read-only)
 
 The concrete PBW theorem is not in Mathlib. A 2025–2026
 [Lean Zulip thread](https://leanprover.zulipchat.com/#narrow/channel/287929-mathlib4/topic/The.20plan.20for.20PBW.20theorem/near/583326631)
 records two active approaches: an abstract categorical proof and a Diamond-Lemma/normal-form proof.
 [Mathlib PR #36936](https://github.com/leanprover-community/mathlib4/pull/36936) is an open draft of the
-abstract categorical PBW theorem. Implementors of Layers 1–2 must coordinate there before introducing a
-competing foundational API. If that PR lands, refactor onto it; if it supplies only an abstract monadic
-equivalence, still build the concrete filtration, injectivity, ordered-monomial, and finiteness corollaries
-specified below.
+abstract categorical PBW theorem. These links record existing work only: do not participate in the thread
+or pull request. Consume any relevant API already present in Tau Ceti's pinned Mathlib; implement the
+remaining concrete filtration, injectivity, ordered-monomial, and finiteness corollaries inside Tau Ceti.
 
 No open Tau Ceti roadmap issue or pull request found in the pre-authoring search claimed Ado, Iwasawa, or
 the finite-target construction.
@@ -180,8 +188,8 @@ Acceptance: the reduction specializes to the adjoint representation when `Z(L) =
 ### Layer 1: the PBW consequences Ado uses
 
 This layer consumes the PBW project owned by
-[the highest-weight roadmap](../LieHighestWeight/README.md), contributing shared corollaries there or to
-Mathlib rather than maintaining a second PBW theorem.
+[the highest-weight roadmap](../LieHighestWeight/README.md). Put shared corollaries in the common Tau Ceti
+PBW development rather than maintaining a second PBW theorem or creating upstream work.
 
 - **Canonical embedding.** Prove `Function.Injective (UniversalEnvelopingAlgebra.ι K)` over a field.
 - **PBW filtration and ordered monomials.** Expose the degree filtration, its multiplicativity, the
@@ -227,7 +235,7 @@ not.
 
 ### Layer 3: derivations of enveloping algebras and stable cofinite ideals
 
-- **Noncommutative derivations.** Introduce or upstream a structure for a `K`-linear endomorphism of a
+- **Noncommutative derivations.** Introduce in Tau Ceti a structure for a `K`-linear endomorphism of a
   possibly noncommutative `K`-algebra satisfying `D (ab) = D(a)b + aD(b)`. Supply composition,
   commutator, descent to stable quotients, and the resulting Lie-algebra structure. Keep this distinct
   from Mathlib's commutative-algebra `Derivation` until that API itself is generalized to bimodules.
@@ -379,10 +387,11 @@ placeholder for it.
 
 ## Ordering and parallel work
 
-Layer 0 can begin immediately. Layer 1 is the shared PBW dependency and must coordinate with
-Mathlib PR #36936 and the PBW work already named in `LieHighestWeight`. Layer 2 consumes Layers 0–1 and
-provides a substantial first deliverable: the arbitrary-characteristic nilpotent case by a weighted PBW
-quotient, independently of the central-ideal construction used later in characteristic `p`.
+Layer 0 can begin immediately. Layer 1 uses the shared PBW work named in `LieHighestWeight`, consuming
+whatever API is already available in Tau Ceti and its pinned Mathlib and implementing missing pieces in Tau
+Ceti. Layer 2 consumes Layers 0–1 and provides a substantial first deliverable: the
+arbitrary-characteristic nilpotent case by a weighted PBW quotient, independently of the central-ideal
+construction used later in characteristic `p`.
 
 After Layer 1, the two main tracks are independent. Layers 3–5 form the characteristic-zero track:
 derivation lifts and stable ideals, split-extension machinery, then the radical/Levi assembly. Layers 6–8
@@ -413,21 +422,21 @@ TauCeti/RepresentationTheory/Lie/Ado/CharP.lean
 TauCeti/RepresentationTheory/Lie/AdoIwasawa.lean
 ```
 
-Foundational results with clean statements belong upstream in Mathlib: PBW consequences, the augmentation
-API, derivation lifts, filtered-to-graded Noetherian/domain transfer, and the generalized Krull theorem.
-Tau Ceti should carry the integration while upstream PRs are reviewed, then refactor to the upstream names.
+All files and supporting results required by this roadmap are implemented in Tau Ceti. This includes PBW
+consequences, the augmentation API, derivation lifts, filtered-to-graded Noetherian/domain transfer, and the
+generalized Krull theorem when they are absent from the pinned dependencies. Do not create upstream issues
+or pull requests as part of this work.
 
-## Provenance and coordination
+## Provenance and reuse boundary
 
 The Etingof formalization's `Remark2_9_3.lean` already contains four proved reductions matching Layer 0 and
-a typechecked theorem marker, but deliberately no proof. Before adapting those declarations, coordinate
-with its maintainers and preserve attribution and license notices. The roadmap specifies the mathematics
-intrinsically; that file is not prescriptive about names or proof structure.
+a typechecked theorem marker, but deliberately no proof. The roadmap specifies the mathematics
+intrinsically; use the external file only as read-only design evidence and re-establish the interfaces in
+Tau Ceti rather than copying declarations or code.
 
-The PBW work has active authors and reviewers on Zulip and Mathlib PR #36936. Coordination is required
-before implementing Layer 1. The positive-characteristic route should also be announced on the same Lie
-algebra thread before opening foundational Mathlib PRs, because its p-center API will constrain later work
-on restricted Lie algebras.
+The PBW thread and Mathlib pull request cited above are read-only provenance. They create no instruction to
+post, comment, contact their authors, or open foundational Mathlib pull requests. The positive-characteristic
+p-center API is designed and implemented entirely within Tau Ceti under this roadmap's execution boundary.
 
 ## References
 
