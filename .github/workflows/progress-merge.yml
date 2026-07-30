@@ -74,16 +74,21 @@ jobs:
     # Pinned to a full TauCetiProgress SHA. `progress_ref` must be the SAME SHA: it selects the
     # validator code checked out inside, and a mismatch would validate with different rules than the
     # ones reviewed here.
-    uses: TauCetiProject/TauCetiProgress/.github/workflows/merge.yml@ad195ac4a3be2877912331a0742fcb0031c6d774
+    uses: TauCetiProject/TauCetiProgress/.github/workflows/merge.yml@dd7e39ceb2efc052c008f357a24f1aa859e22a60
     with:
       pr: ${{ fromJSON(needs.resolve.outputs.pr) }}
-      progress_ref: ad195ac4a3be2877912331a0742fcb0031c6d774
+      progress_ref: dd7e39ceb2efc052c008f357a24f1aa859e22a60
       # Numeric user ids permitted to author progress pull requests. Ids, never logins: a login can
       # be renamed and the old name re-registered by someone else.
       #   477956 = kim-em, the account the worker authenticates as.
       # This grants no privilege that account lacks -- it is already an OrganizationAdmin bypass
       # actor on this ruleset -- so the check's real job is excluding everyone else.
       allowed_user_ids: "477956"
+      # `tau-ceti-roadmap-sync`, the App this repository's ruleset lists as a bypass actor. It must be
+      # this one and not `secrets.APP_ID` (the review bot, which auto-merge.yml uses): the review bot
+      # bypasses TauCeti's ruleset, not this one, so a direct merge with its token would be refused
+      # for want of a code-owner review. auto-merge.yml can use it because it only *enables* GitHub's
+      # native auto-merge and lets the ruleset gate the merge; this workflow merges directly.
+      app_id: ${{ vars.SYNC_BOT_APP_ID }}
     secrets:
-      APP_ID: ${{ secrets.APP_ID }}
-      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+      APP_PRIVATE_KEY: ${{ secrets.SYNC_BOT_APP_PRIVATE_KEY }}
