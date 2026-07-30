@@ -74,10 +74,10 @@ jobs:
     # Pinned to a full TauCetiProgress SHA. `progress_ref` must be the SAME SHA: it selects the
     # validator code checked out inside, and a mismatch would validate with different rules than the
     # ones reviewed here.
-    uses: TauCetiProject/TauCetiProgress/.github/workflows/merge.yml@2f5da9af714160d5b33336081dcafc6653e1a427
+    uses: TauCetiProject/TauCetiProgress/.github/workflows/merge.yml@d1677d3da7cda234bc56552af0102e968a961d2b
     with:
       pr: ${{ fromJSON(needs.resolve.outputs.pr) }}
-      progress_ref: 2f5da9af714160d5b33336081dcafc6653e1a427
+      progress_ref: d1677d3da7cda234bc56552af0102e968a961d2b
       # Numeric user ids permitted to author progress pull requests. Ids, never logins: a login can
       # be renamed and the old name re-registered by someone else.
       #   477956 = kim-em, the account the worker authenticates as.
