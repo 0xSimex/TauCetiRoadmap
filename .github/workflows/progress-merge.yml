@@ -66,16 +66,19 @@ jobs:
             check_suite)
               # The open progress pull request for this head, if any.
               #
-              # Restricted to pull requests whose HEAD LIVES IN THIS REPOSITORY. A fork can create a
-              # branch at the very same commit, and an unfiltered "first match wins" would let that
-              # fork's pull request shadow the legitimate one: the gate would refuse the fork (as it
-              # should) and the real report would never be considered at all.
-              pr="$(gh pr list --repo "$REPO" --state open \
-                     --json number,headRefName,headRefOid,headRepositoryOwner \
-                     --jq '[.[] | select(.headRefName | startswith("progress/"))
-                                | select(.headRefOid == env.HEAD_SHA)
-                                | select(.headRepositoryOwner.login == env.OWNER)
-                                | .number] | first // ""')"
+              # Asked of the commit directly, not of a list of recent pull requests. `gh pr list`
+              # returns only the newest 30 by default, so anyone could open 30 newer pull requests and
+              # push the legitimate report out of the window -- its build would complete and this
+              # trigger would never find it.
+              #
+              # The result is also restricted to a head IN THIS REPOSITORY. A fork can create a branch
+              # at the very same commit, and "first match wins" would let it shadow the real one: the
+              # gate would refuse the fork, correctly, and the report would never be considered.
+              pr="$(gh api --paginate "repos/$REPO/commits/$HEAD_SHA/pulls" \
+                     --jq '[.[] | select(.state == "open")
+                                | select(.head.ref | startswith("progress/"))
+                                | select(.head.repo.full_name == env.REPO)
+                                | .number] | first // ""' 2>/dev/null | head -n1)"
               echo "pr=$pr" >> "$GITHUB_OUTPUT" ;;
           esac
 
@@ -85,10 +88,10 @@ jobs:
     # Pinned to a full TauCetiProgress SHA. `progress_ref` must be the SAME SHA: it selects the
     # validator code checked out inside, and a mismatch would validate with different rules than the
     # ones reviewed here.
-    uses: TauCetiProject/TauCetiProgress/.github/workflows/merge.yml@661c0067dddd2e22300f7196adea4d2ed2d6e537
+    uses: TauCetiProject/TauCetiProgress/.github/workflows/merge.yml@786bb153eacd99237cd2a51a636e13d237a78cfb
     with:
       pr: ${{ fromJSON(needs.resolve.outputs.pr) }}
-      progress_ref: 661c0067dddd2e22300f7196adea4d2ed2d6e537
+      progress_ref: 786bb153eacd99237cd2a51a636e13d237a78cfb
       # Numeric user ids permitted to author progress pull requests. Ids, never logins: a login can
       # be renamed and the old name re-registered by someone else.
       #   477956 = kim-em, the account the worker authenticates as.

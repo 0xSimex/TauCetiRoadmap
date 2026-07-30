@@ -24,9 +24,9 @@ concurrency:
 jobs:
   announce:
     # Same full SHA as progress-merge.yml uses; bump both together.
-    uses: TauCetiProject/TauCetiProgress/.github/workflows/announce.yml@661c0067dddd2e22300f7196adea4d2ed2d6e537
+    uses: TauCetiProject/TauCetiProgress/.github/workflows/announce.yml@786bb153eacd99237cd2a51a636e13d237a78cfb
     with:
-      progress_ref: 661c0067dddd2e22300f7196adea4d2ed2d6e537
+      progress_ref: 786bb153eacd99237cd2a51a636e13d237a78cfb
       channel: Tau Ceti
       topic: Progress logs
     secrets:
