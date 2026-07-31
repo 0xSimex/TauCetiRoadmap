@@ -191,8 +191,8 @@ that it is a number field — both **already constructed in AINTLIB**, so this o
 (§Layer 8, §Provenance); the LMFDB invariants (Satake parameters, Hecke characteristic
 polynomials, Galois orbits, labels, …); the **modular curve** `X(Γ)` as the compactified analytic
 quotient `Γ\ℍ`, with its cusps, elliptic points, and genus; the **dimension formulas** for
-`M_k(Γ)` and `S_k(Γ)` — the valence formula for the upper bounds, with analytic Riemann–Roch
-**consumed as an explicit external dependency** for the lower (Layer 10); and the level-one **Eichler–Selberg trace
+`M_k(Γ)` and `S_k(Γ)` — the valence formula for the upper bounds, the lower bounds **gated on a
+planned compact-Riemann-surfaces roadmap** supplying analytic Riemann–Roch (Layer 10); and the level-one **Eichler–Selberg trace
 formula** together with the **Hurwitz class numbers** it needs (absent from Mathlib). Apart from
 the abstract Hecke ring and the
 Sturm-bound finiteness now landing in Mathlib (consumed above), none of this is upstream.
@@ -770,14 +770,22 @@ representability, no moduli problem**.
   `X(Γ)` (with the `⌊·⌋`-corrections at elliptic points and cusps — D–S §§3.5–3.6), and apply
   **analytic Riemann–Roch** `ℓ(D) − ℓ(K−D) = deg D + 1 − g` on the compact Riemann surface
   `X(Γ)`, together with `S_2(Γ) ≅ H⁰(X(Γ), Ω¹)` and `dim H⁰(X, Ω¹) = g`.
-  ⚠ **Analytic Riemann–Roch is consumed here, not built**: divisors, line bundles, and
-  Riemann–Roch on compact Riemann surfaces are the business of a dedicated
-  compact-Riemann-surfaces roadmap — this layer's **explicit external dependency**, in the
-  spirit of the PR #36 review's advice (analytic curve, no GAGA, but Riemann–Roch actually
-  supplied). It is *not* the Jacobian Challenge's algebraic `χ(L) = deg L + 1 − g` (its
-  Layer B): identifying the analytic and algebraic theories is a comparison this roadmap
-  deliberately does not own. With those inputs, the formulas — extending Mathlib's level-one
-  `ModularForm.dimension_level_one` to general level — read, for **even `k`**:
+  ⚠ **Analytic Riemann–Roch is consumed here, not built — and its roadmap does not exist
+  yet.** Divisors and Riemann–Roch on compact Riemann surfaces belong to a **planned**
+  compact-Riemann-surfaces roadmap (in the spirit of the PR #36 review's advice: analytic
+  curve, no GAGA, but Riemann–Roch actually supplied). Until that roadmap is written and
+  cited here, **the exact general formulas below are *not* part of this roadmap's grounded
+  portion**: they are stated as the layer's summit and explicitly **gated** on that future
+  roadmap, per the repository rule that missing material must be a target here or in a cited
+  roadmap. What *is* grounded now: `X(Γ)` and its charts, the `ε₂, ε₃, ε∞` counts and the
+  genus, finite-dimensionality via the Sturm stack, the valence-formula **upper bounds**, and
+  the concrete `Suggested.lean` instances — whose lower bounds come from explicitly exhibited
+  forms (the level-`11` eta quotient, weight-`2` Eisenstein series), not from general
+  Riemann–Roch. That Riemann–Roch input is *not* the Jacobian Challenge's algebraic
+  `χ(L) = deg L + 1 − g` (its Layer B): identifying the analytic and algebraic theories is a
+  comparison this roadmap deliberately does not own. With the gated inputs, the formulas —
+  extending Mathlib's level-one `ModularForm.dimension_level_one` to general level — read,
+  for **even `k`**:
   ```text
   dim M_k(Γ) = (k-1)(g-1) + ⌊k/4⌋·ε₂ + ⌊k/3⌋·ε₃ + (k/2)·ε∞          (k ≥ 2)
   dim S_k(Γ) = (k-1)(g-1) + ⌊k/4⌋·ε₂ + ⌊k/3⌋·ε₃ + (k/2 - 1)·ε∞      (k ≥ 4),   dim S_2(Γ) = g
@@ -788,9 +796,10 @@ representability, no moduli problem**.
 - `Suggested.lean` seeds this layer with concrete instances at levels `> 1`: `dim S_2(Γ₀(11)) = 1`,
   `dim S_2(Γ₀(23)) = 2`, `dim S_2(Γ₀(2)) = 0`, `dim M_2(Γ₀(11)) = 2`. The general even-weight
   formula above is the layer's headline target; it is stated here in the README (its inputs are
-  the `ε₂, ε₃, ε∞, g` of `X(Γ)` from this same layer **plus the analytic Riemann–Roch
-  dependency above** — grounded modulo that named external input, not by the counts alone), and
-  is **not** seeded as a
+  the `ε₂, ε₃, ε∞, g` of `X(Γ)` from this same layer **plus the gated analytic Riemann–Roch
+  input above — so it sits outside the grounded portion until the compact-Riemann-surfaces
+  roadmap exists**; the concrete instances are grounded independently), and is **not** seeded
+  as a
   free-parameter `example` in `Suggested.lean`, since with `g, ε₂, ε₃, ε∞` as free variables it is
   false for the wrong data. We keep only the concrete, verifiable instances and pin the general
   statement in prose.
@@ -830,17 +839,26 @@ ground, and we found no Lean prior art (as of July 2026).
   `HeckeRIngs/GL2/ModularSymbols/*` (`HeckeSymbol`, `PeriodHecke`, `SL2Generation`) — where
   the trace identity is provable with **no analytic input**; the transfer to `S_k(SL₂(ℤ))`
   uses the Eichler–Shimura comparison. ⚠ **The transfer route is pinned now, not left to the
-  implementor: the dimension-count route.** Define the exact cuspidal period-polynomial
-  subspace the Hecke action preserves, compute its dimension **algebraically**, and combine
-  Layer 8's Hecke-equivariant *injective* period map (the Eichler-integral route) with
-  Mathlib's `ModularForm.dimension_level_one` to conclude surjectivity onto it — an
-  isomorphism by dimension count, through which traces transfer. Two consequences, both
-  deliberate: Layer 8's injectivity never touches `interior_edges_cancel_sum`, so that open
-  `sorry` acquires **no** second consumer (the full Eichler–Shimura isomorphism, with its
-  even/odd, Eisenstein, and coboundary bookkeeping, is never needed); and the
-  `tr T(1) = dim S_k` acceptance criterion below becomes a **consistency check** of the
-  transfer, not an independent re-derivation of the dimension formula, which is now one of its
-  inputs. Chosen over the kernel route (Miyake
+  implementor: the dimension-count route, with the comparison space named exactly.** Let
+  `w = k − 2` and define the period-polynomial space
+  `W_w = ker(1 + S) ∩ ker(1 + U + U²)` inside the degree-`≤ w` polynomials, where
+  `S = (0, −1; 1, 0)` and `U = (1, −1; 1, 0)` are the standard order-`2` and order-`3`
+  elements of `PSL₂(ℤ)`, with its even and odd parts `W_w^±`. Construct the **odd** period
+  map `S_k → W_w⁻` and the **extended even** period map `M_k → W_w⁺`, whose even part
+  includes the Eisenstein polynomial `X^w − Y^w` representing `E_k`; prove both
+  **Hecke-equivariant and injective** (the odd map is Layer 8's injectivity in
+  period-polynomial clothing); compute `dim W_w^±` **algebraically** — finite linear algebra
+  on polynomial spaces — and conclude from Mathlib's `ModularForm.dimension_level_one` the
+  Hecke-equivariant isomorphism `M_k ⊕ S_k ≅ W_w` by dimension count. Popa–Zagier's algebraic
+  trace computation then runs on the **full** `W_w` —
+  `tr(Tₙ | W_w) = tr(Tₙ | M_k) + tr(Tₙ | S_k)` — and the cusp-form trace is isolated by
+  subtracting the Eisenstein eigenvalue `σ_{k−1}(n)`. Two consequences, both deliberate:
+  Layer 8's injectivity never touches `interior_edges_cancel_sum`, so that open `sorry`
+  acquires **no** second consumer — what this route avoids is the *cohomological*
+  (coboundary / parabolic-cohomology) packaging, **not** the even/odd and Eisenstein
+  bookkeeping, which is real work and is named above as targets; and the `tr T(1) = dim S_k`
+  acceptance criterion below becomes a **consistency check** of the transfer, not an
+  independent re-derivation of the dimension formula, which is now one of its inputs. Chosen over the kernel route (Miyake
   §§6.1–6.4; Zagier's appendix in Lang: the two-variable kernel
   `ω_n(z, w) = Σ_{ad−bc=n} (czw + dz + aw + b)^{−k}` as the Petersson kernel of `Tₙ`, unfolded
   over conjugacy classes — ⚠ and note that appendix's **published error**: Case 3 (p. 53,

@@ -24,9 +24,13 @@ Computational Approach*). The general even-weight formula
 `dim M_k(Γ) = (k-1)(g-1) + ⌊k/4⌋ε₂ + ⌊k/3⌋ε₃ + (k/2)ε∞`  (and `(k/2-1)ε∞` for `S_k`, even `k ≥ 4`)
 is stated in the README. Its inputs are the genus `g` of the compact Riemann surface
 `X(Γ) = Γ\ℍ*` together with the counts `ε₂, ε₃` of elliptic points of period 2, 3 and the number
-of cusps `ε∞` — all built analytically in Layer 10 — **plus analytic Riemann–Roch on `X(Γ)`, an
-explicit external dependency** (the valence formula supplies only the upper bounds; see Layer 10
-in `README.md`). We do **not** seed that formula as
+of cusps `ε∞` — all built analytically in Layer 10 — **plus analytic Riemann–Roch on `X(Γ)`,
+gated on a planned compact-Riemann-surfaces roadmap that does not yet exist, so the general
+formula sits outside this roadmap's grounded portion until it does** (the valence formula
+supplies only the upper bounds; see Layer 10 in `README.md`). The concrete instances below are
+grounded independently of that gate: their upper bounds are the valence formula's, and their
+lower bounds come from explicitly exhibited forms (the level-`11` eta quotient, weight-`2`
+Eisenstein series). We do **not** seed that formula as
 a free-parameter `example` here: with `g, ε₂, ε₃, ε∞` as free variables it would be *false* for the
 wrong data (it is a theorem only when they are the genuine invariants of `X(Γ)`). Instead we seed
 concrete, verifiable instances whose invariants are known constants — centred on
