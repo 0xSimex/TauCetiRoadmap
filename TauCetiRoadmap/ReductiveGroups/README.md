@@ -68,9 +68,10 @@ prove them equivalent** rather than committing.
 Comodules over a coalgebra (**none in Mathlib**) and the finite-dimensional subcoalgebra
 theory; the convolution group structure on the functor of points; the fppf-sheaf /
 faithfully-flat-descent machinery on `CommAlgCat k`; the explicit Hopf ⇆
-affine-group-scheme equivalence (the Toric work,
-[mathlib4#39281](https://github.com/leanprover-community/mathlib4/pull/39281), is not in
-master); the Lie algebra `Lie(G)` and the adjoint representation; Hopf ideals / closed
+affine-group-scheme equivalence (the convolution source from
+[mathlib4#39281](https://github.com/leanprover-community/mathlib4/pull/39281) is present at the
+pinned Mathlib revision but still uses `suppress_compilation`, so it is not yet a compiled
+foundation); the Lie algebra `Lie(G)` and the adjoint representation; Hopf ideals / closed
 subgroup schemes and quotients; the identity component and component group; Jordan
 decomposition; diagonalizable / multiplicative-type groups and tori with character
 lattices; unipotent groups and the unipotent radical; reductive/semisimple groups, central

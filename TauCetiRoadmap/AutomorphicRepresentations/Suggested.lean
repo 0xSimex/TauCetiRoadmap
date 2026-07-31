@@ -25,27 +25,31 @@ universe u v w
 
 /-! ## Layer 0: quaternion algebras -/
 
-/-- A quaternion algebra is intrinsically a central simple algebra of rank four.
-The production declaration should ultimately live in Tau Ceti or Mathlib, not this namespace. -/
-class IsQuaternionAlgebra (F : Type u) [Field F] (D : Type v) [Ring D] [Algebra F D] : Prop where
-  isSimpleRing : IsSimpleRing D
-  isCentral : Algebra.IsCentral F D
-  rank_eq_four : Module.rank F D = 4
+/-- A quaternion algebra is intrinsically a central simple algebra of rank four. This is a
+predicate, not a class exporting `IsSimpleRing D`: Mathlib deliberately keeps the central and simple
+hypotheses separate because the center field cannot be inferred from `D`. -/
+def IsQuaternionAlgebra (F : Type u) [Field F] (D : Type v) [Ring D] [Algebra F D] : Prop :=
+  Algebra.IsCentral F D ∧ IsSimpleRing D ∧ Module.rank F D = 4
 
 namespace IsQuaternionAlgebra
 
 variable (F : Type u) [Field F] (D : Type v) [Ring D] [Algebra F D]
-  [IsQuaternionAlgebra F D]
-
-attribute [instance low] isSimpleRing isCentral
 
 /-- A quaternion algebra is finite-dimensional over its center. -/
-example : Module.Finite F D := by
-  exact FiniteDimensional.of_rank_eq_nat rank_eq_four
+example (hD : IsQuaternionAlgebra F D) : Module.Finite F D := by
+  exact FiniteDimensional.of_rank_eq_nat hD.2.2
 
 /-- Its finite dimension is four. -/
-example : Module.finrank F D = 4 := by
-  exact Module.finrank_eq_of_rank_eq rank_eq_four
+example (hD : IsQuaternionAlgebra F D) : Module.finrank F D = 4 := by
+  exact Module.finrank_eq_of_rank_eq hD.2.2
+
+/-- The split matrix algebra is the first inhabitation test. -/
+example : IsQuaternionAlgebra F (Matrix (Fin 2) (Fin 2) F) := by
+  sorry
+
+/-- Hamilton's quaternions are the ramified real inhabitation test. -/
+example : IsQuaternionAlgebra ℝ (Quaternion ℝ) := by
+  sorry
 
 end IsQuaternionAlgebra
 
@@ -59,10 +63,40 @@ variable (F : Type u) [Field F] [NumberField F]
 /-- The scalar extension of `D` to the full adèle ring. -/
 abbrev QuaternionAdeleAlgebra := NumberField.AdeleRing (𝓞 F) F ⊗[F] D
 
+/-- The finite-dimensional module topology on the adelic scalar extension. Layer 1 proves that the
+resulting ring topology is independent of coordinates and compares its unit topology with the
+idelic restricted product. -/
+@[reducible] noncomputable def quaternionAdeleTopology :
+    TopologicalSpace (QuaternionAdeleAlgebra F D) :=
+  moduleTopology (NumberField.AdeleRing (𝓞 F) F) (QuaternionAdeleAlgebra F D)
+
+/-- With the module topology, the adelic scalar extension is a topological ring. -/
+example (hD : IsQuaternionAlgebra F D) :
+    letI : TopologicalSpace (QuaternionAdeleAlgebra F D) := quaternionAdeleTopology F D
+    IsTopologicalRing (QuaternionAdeleAlgebra F D) := by
+  sorry
+
 /-- The adelic points of `Dˣ`, algebraically constructed as units. The production topological group
 must use the idelic restricted-product topology specified in `README.md`, not assume the subtype
 topology inherited from the adèle algebra. -/
 abbrev QuaternionAdeleGroup := (QuaternionAdeleAlgebra F D)ˣ
+
+/-- The scalar extension of `D` to the completion at a finite place. -/
+abbrev QuaternionFiniteLocalAlgebra (v : HeightOneSpectrum (𝓞 F)) :=
+  v.adicCompletion F ⊗[F] D
+
+/-- Its finite-dimensional module topology. -/
+@[reducible] noncomputable def quaternionFiniteLocalTopology
+    (v : HeightOneSpectrum (𝓞 F)) : TopologicalSpace (QuaternionFiniteLocalAlgebra F D v) :=
+  moduleTopology (v.adicCompletion F) (QuaternionFiniteLocalAlgebra F D v)
+
+/-- Finite local points of `Dˣ` are locally compact and totally disconnected. -/
+example (hD : IsQuaternionAlgebra F D) (v : HeightOneSpectrum (𝓞 F)) :
+    letI : TopologicalSpace (QuaternionFiniteLocalAlgebra F D v) :=
+      quaternionFiniteLocalTopology F D v
+    LocallyCompactSpace (QuaternionFiniteLocalAlgebra F D v)ˣ ∧
+      TotallyDisconnectedSpace (QuaternionFiniteLocalAlgebra F D v)ˣ := by
+  sorry
 
 end Adeles
 
@@ -71,14 +105,13 @@ end Adeles
 /-- A subgroup bundled with proofs that it is compact and open. This should be reconciled with a
 Mathlib bundled object if one is introduced. -/
 structure CompactOpenSubgroup (G : Type u) [Group G] [TopologicalSpace G]
-    extends Subgroup G where
+    extends OpenSubgroup G where
   isCompact_carrier : IsCompact (carrier : Set G)
-  isOpen_carrier : IsOpen (carrier : Set G)
 
 section SmoothRepresentation
 
-variable (k : Type u) [Field k] (G : Type v) [Group G] [TopologicalSpace G]
-  (V : Type w) [AddCommGroup V] [Module k V]
+variable {k : Type u} [Field k] {G : Type v} [Group G] [TopologicalSpace G]
+  {V : Type w} [AddCommGroup V] [Module k V]
 
 /-- The vectors fixed by a subgroup, using Mathlib's invariant-submodule construction. -/
 noncomputable def fixedVectors (ρ : Representation k G V) (K : Subgroup G) : Submodule k V :=
@@ -87,11 +120,12 @@ noncomputable def fixedVectors (ρ : Representation k G V) (K : Subgroup G) : Su
 /-- Algebraic smoothness for a representation of a locally profinite group: every vector has an
 open stabilizer. Later APIs should compare this with continuity for the discrete topology on `V`. -/
 def IsSmooth (ρ : Representation k G V) : Prop :=
-  ∀ x : V, ∃ K : Subgroup G, IsOpen (K : Set G) ∧ x ∈ fixedVectors k G V ρ K
+  ∀ x : V, ∃ K : OpenSubgroup G, x ∈ fixedVectors ρ K.toSubgroup
 
 /-- Admissibility: every compact-open fixed-vector space is finite-dimensional. -/
 def IsAdmissible (ρ : Representation k G V) : Prop :=
-  ∀ K : CompactOpenSubgroup G, Module.Finite k (fixedVectors k G V ρ K.toSubgroup)
+  ∀ K : CompactOpenSubgroup G,
+    Module.Finite k (fixedVectors ρ K.toOpenSubgroup.toSubgroup)
 
 end SmoothRepresentation
 
@@ -103,20 +137,18 @@ noncomputable def goodHeckePolynomial {E : Type u} [Field E] (Nv : ℕ) (av sv :
 
 /-! ## Layers 7--8: the coefficient shape of a compatible family -/
 
-/-- A continuous linear Galois representation, using the module topology on endomorphisms.
-Local restriction, unramifiedness, and Frobenius are Layer 7 targets. -/
-def GaloisRepresentation (K : Type u) [Field K]
-    (A : Type v) [CommRing A] [TopologicalSpace A]
-    (M : Type w) [AddCommGroup M] [Module A M] :=
-  letI := moduleTopology A (Module.End A M)
-  Field.absoluteGaloisGroup K →ₜ* Module.End A M
+/-- A framed continuous `d`-dimensional Galois representation. The topology on `GL_d(A)` is
+Mathlib's matrix/unit topology; the basis-free module formulation and its equivalence are Layer 7
+targets. -/
+def FramedGaloisRepresentation (K : Type u) [Field K]
+    (A : Type v) [CommRing A] [TopologicalSpace A] (d : ℕ) :=
+  Field.absoluteGaloisGroup K →ₜ* GL (Fin d) A
 
 /-- A `d`-dimensional `Q̄_p`-valued family indexed by primes and embeddings of its rationality
-field. Weak compatibility is added only after Layer 7 supplies local Frobenius and inertia. -/
+field. Good-place compatibility is added only after Layer 7 supplies local Frobenius and inertia. -/
 def PadicGaloisFamily (K : Type u) [Field K]
     (E : Type v) [Field E] [NumberField E] (d : ℕ) : Type _ :=
-  ∀ {p : ℕ} (_ : Fact p.Prime) (_φ : E →+* AlgebraicClosure ℚ_[p]),
-    GaloisRepresentation K (AlgebraicClosure ℚ_[p])
-      (Fin d → AlgebraicClosure ℚ_[p])
+  ∀ (p : ℕ) [Fact p.Prime], (E →+* AlgebraicClosure ℚ_[p]) →
+    FramedGaloisRepresentation K (AlgebraicClosure ℚ_[p]) d
 
 end TauCetiRoadmap.AutomorphicRepresentations
