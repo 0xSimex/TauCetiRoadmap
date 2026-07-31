@@ -22,9 +22,11 @@ This file seeds the **Layer 10 dimension-formula** milestones at levels other th
 (Diamond–Shurman Thm 3.5.1; the same numbers are tabulated in Stein, *Modular Forms: A
 Computational Approach*). The general even-weight formula
 `dim M_k(Γ) = (k-1)(g-1) + ⌊k/4⌋ε₂ + ⌊k/3⌋ε₃ + (k/2)ε∞`  (and `(k/2-1)ε∞` for `S_k`, even `k ≥ 4`)
-is stated in the README, where it is grounded: it needs the genus `g` of the compact Riemann
-surface `X(Γ) = Γ\ℍ*` together with the counts `ε₂, ε₃` of elliptic points of period 2, 3 and the
-number of cusps `ε∞`, all of which Layer 10 builds analytically. We do **not** seed that formula as
+is stated in the README. Its inputs are the genus `g` of the compact Riemann surface
+`X(Γ) = Γ\ℍ*` together with the counts `ε₂, ε₃` of elliptic points of period 2, 3 and the number
+of cusps `ε∞` — all built analytically in Layer 10 — **plus analytic Riemann–Roch on `X(Γ)`, an
+explicit external dependency** (the valence formula supplies only the upper bounds; see Layer 10
+in `README.md`). We do **not** seed that formula as
 a free-parameter `example` here: with `g, ε₂, ε₃, ε∞` as free variables it would be *false* for the
 wrong data (it is a theorem only when they are the genuine invariants of `X(Γ)`). Instead we seed
 concrete, verifiable instances whose invariants are known constants — centred on
@@ -55,8 +57,9 @@ open CongruenceSubgroup
 
 /-- **Weight-two cusp forms ↔ genus, level 11** (Diamond–Shurman Thm 3.5.1, `k = 2`):
 `dim_ℂ S_2(Γ₀(11)) = 1`. The genus of `X₀(11)` is `1`, and `S_2(Γ)` is the space of holomorphic
-differentials on `X(Γ)`, so its dimension is the genus — the bridge to the Jacobian-challenge genus
-`g = dim_ℂ H¹(X(Γ), 𝒪_X)` and to `dim Jac X(Γ) = g`. (`X₀(11)` is the elliptic curve `11a`.) -/
+differentials on `X(Γ)`, so its dimension is the genus — the *analytic* genus of the compact
+Riemann surface throughout; no identification with the Jacobian Challenge's algebraic
+`H¹(X, 𝒪_X)` genus is claimed or consumed here. (`X₀(11)` is the elliptic curve `11a`.) -/
 example : Module.finrank ℂ (CuspForm (Gamma0 11 : Subgroup (GL (Fin 2) ℝ)) 2) = 1 :=
   sorry
 
