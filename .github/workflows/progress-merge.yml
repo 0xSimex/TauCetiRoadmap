@@ -19,8 +19,14 @@ name: progress-merge
 on:
   pull_request_target:
     types: [opened, reopened, synchronize, ready_for_review]
-  # A progress PR usually opens before its `build` check finishes, so re-check when a check completes.
-  check_suite:
+  # A progress pull request usually opens before its `build` check finishes, so the gate has to be
+  # re-run when CI reports. This listens for the CI WORKFLOW rather than for `check_suite`: GitHub
+  # deliberately suppresses `check_suite` and `check_run` events for suites created by GitHub Actions
+  # (it would otherwise recurse), and `build` is a job in this repository's own Actions `CI`
+  # workflow. A `check_suite` trigger therefore never fires for it, and every report would sit
+  # unmerged after the first pass saw `build` still pending.
+  workflow_run:
+    workflows: [CI]
     types: [completed]
   workflow_dispatch:
     inputs:
@@ -33,9 +39,12 @@ permissions:
   contents: read
   pull-requests: read
 
-concurrency:
-  group: progress-merge
-  cancel-in-progress: false
+# No concurrency group HERE. GitHub keeps one running and one pending run per group and discards the
+# pending one when a newer event arrives, so a repository-wide group on the caller lets any pull
+# request activity evict a queued progress run. The merge itself still has to be serialised — the
+# compare-and-swap depends on `main` not moving underneath it — and the called workflow declares that
+# group itself, so serialisation happens where it is needed without letting unrelated events crowd
+# the queue.
 
 jobs:
   resolve:
@@ -52,7 +61,7 @@ jobs:
           OWNER: ${{ github.repository_owner }}
           # Quoted through env rather than interpolated into the script: everything from the event
           # payload is attacker-influenced, and this job holds a token.
-          HEAD_SHA: ${{ github.event.check_suite.head_sha }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
           case "$EVENT" in
@@ -63,7 +72,7 @@ jobs:
               echo "pr=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT" ;;
             workflow_dispatch)
               echo "pr=${{ inputs.pr }}" >> "$GITHUB_OUTPUT" ;;
-            check_suite)
+            workflow_run)
               # The open progress pull request for this head, if any.
               #
               # Asked of the commit directly, not of a list of recent pull requests. `gh pr list`
@@ -96,10 +105,10 @@ jobs:
     # Pinned to a full TauCetiProgress SHA. `progress_ref` must be the SAME SHA: it selects the
     # validator code checked out inside, and a mismatch would validate with different rules than the
     # ones reviewed here.
-    uses: TauCetiProject/TauCetiProgress/.github/workflows/merge.yml@1a53c9eb7bf4ca82b658165890e1ef3b84473dfa
+    uses: TauCetiProject/TauCetiProgress/.github/workflows/merge.yml@6d1f1d1d50bdfe869d254b0a93ffc5c10c64aefd
     with:
       pr: ${{ fromJSON(needs.resolve.outputs.pr) }}
-      progress_ref: 1a53c9eb7bf4ca82b658165890e1ef3b84473dfa
+      progress_ref: 6d1f1d1d50bdfe869d254b0a93ffc5c10c64aefd
       # Numeric user ids permitted to author progress pull requests. Ids, never logins: a login can
       # be renamed and the old name re-registered by someone else.
       #   477956 = kim-em, the account the worker authenticates as.

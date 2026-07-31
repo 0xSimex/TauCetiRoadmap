@@ -44,8 +44,9 @@ Each roadmap directory may carry two files that are **written by machine, not by
 - `PROGRESS.md` — an append-only log, one section per window of merged pull requests. New sections
   are announced in the **Tau Ceti > Progress logs** Zulip topic.
 
-Both are produced by [TauCetiProgress](https://github.com/TauCetiProject/TauCetiProgress) and merge
-without human review, under a gate that checks their structure. **Their prose is not
+Both are produced by [TauCetiProgress](https://github.com/TauCetiProject/TauCetiProgress). A pull
+request carrying them can merge without human review, but only when an automated gate accepts it;
+anything the gate declines is left for a human like any other contribution. **Their prose is not
 security-validated**: the gate proves which paths changed and that the log only grew at the end, but
 it cannot prove that the summary is accurate. Read them as a machine's account of the work, and treat
 the roadmap `README.md` beside them — which humans own and review — as the authority on what the

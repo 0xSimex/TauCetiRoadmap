@@ -11,22 +11,22 @@ on:
   push:
     branches: [main]
     paths:
-      - '**/PROGRESS.md'
+      # Scoped to the directories a generated report can touch. A bare `**/PROGRESS.md` also matches
+      # a file at the repository root or in any unrelated directory, so a hand-written one would
+      # trigger an announcement attempt for something that is not a report.
+      - 'TauCetiRoadmap/**/PROGRESS.md'
+      - 'Completed/**/PROGRESS.md'
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: progress-announce
-  cancel-in-progress: false
-
 jobs:
   announce:
     # Same full SHA as progress-merge.yml uses; bump both together.
-    uses: TauCetiProject/TauCetiProgress/.github/workflows/announce.yml@1a53c9eb7bf4ca82b658165890e1ef3b84473dfa
+    uses: TauCetiProject/TauCetiProgress/.github/workflows/announce.yml@6d1f1d1d50bdfe869d254b0a93ffc5c10c64aefd
     with:
-      progress_ref: 1a53c9eb7bf4ca82b658165890e1ef3b84473dfa
+      progress_ref: 6d1f1d1d50bdfe869d254b0a93ffc5c10c64aefd
       channel: Tau Ceti
       topic: Progress logs
     secrets:
