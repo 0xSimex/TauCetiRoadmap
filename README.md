@@ -41,8 +41,9 @@ Each roadmap directory may carry two files that are **written by machine, not by
 - `STATUS.md` — a snapshot of where that roadmap stands, rewritten whole on each update and headed
   by the Tau Ceti commit it describes. It is updated asynchronously from the work it reports, so it
   is never authoritative about the current tip.
-- `PROGRESS.md` — an append-only log, one section per window of merged pull requests. New sections
-  are announced in the **Tau Ceti > Progress logs** Zulip topic.
+- `PROGRESS.md` — an append-only log, one section per window of merged pull requests. Each new
+  section is normally announced in the **Tau Ceti > Progress logs** Zulip topic; announcing is a
+  separate step from merging, so it can fail without holding the report back.
 
 Both are produced by [TauCetiProgress](https://github.com/TauCetiProject/TauCetiProgress). A pull
 request carrying them can merge without human review, but only when an automated gate accepts it;

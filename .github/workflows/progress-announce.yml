@@ -11,11 +11,11 @@ on:
   push:
     branches: [main]
     paths:
-      # Scoped to the directories a generated report can touch. A bare `**/PROGRESS.md` also matches
-      # a file at the repository root or in any unrelated directory, so a hand-written one would
-      # trigger an announcement attempt for something that is not a report.
-      - 'TauCetiRoadmap/**/PROGRESS.md'
-      - 'Completed/**/PROGRESS.md'
+      # Exactly where a generated report can land: one area directory under either parent. `**` would
+      # match across slashes, so a nested or root-level PROGRESS.md written by hand would trigger an
+      # announcement attempt for something the gate would never have accepted.
+      - 'TauCetiRoadmap/*/PROGRESS.md'
+      - 'Completed/*/PROGRESS.md'
   workflow_dispatch:
 
 permissions:

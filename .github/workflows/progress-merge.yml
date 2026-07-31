@@ -62,13 +62,30 @@ jobs:
           # Quoted through env rather than interpolated into the script: everything from the event
           # payload is attacker-influenced, and this job holds a token.
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          # Through env, never interpolated into the script: both are attacker-controlled.
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
           case "$EVENT" in
             pull_request_target)
+              # Cheap prefilter, so that only a plausible report ever reaches the gate. The gate
+              # re-checks all of this and is the authority; the point here is queueing. The called
+              # workflow serialises on a single group, which permits one running and one pending run,
+              # so if every pull request in the repository were forwarded, ordinary contributor
+              # activity could keep evicting a queued report.
               if [ "${{ github.event.pull_request.draft }}" = "true" ]; then
                 echo "draft pull request; nothing to do"; echo "pr=" >> "$GITHUB_OUTPUT"; exit 0
               fi
+              if [ "$PR_HEAD_REPO" != "$REPO" ]; then
+                echo "head is in $PR_HEAD_REPO, not $REPO; not a generated report"
+                echo "pr=" >> "$GITHUB_OUTPUT"; exit 0
+              fi
+              case "$PR_HEAD_REF" in
+                progress/*) ;;
+                *) echo "head branch $PR_HEAD_REF is not a progress branch"
+                   echo "pr=" >> "$GITHUB_OUTPUT"; exit 0 ;;
+              esac
               echo "pr=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT" ;;
             workflow_dispatch)
               echo "pr=${{ inputs.pr }}" >> "$GITHUB_OUTPUT" ;;
