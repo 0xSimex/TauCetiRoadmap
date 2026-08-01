@@ -1214,13 +1214,19 @@ ground, and we found no Lean prior art (as of July 2026).
   normalization choice. ⚠ And "Popa–Zagier's algebraic trace computation" is itself the
   layer's hard core (their *A simple proof of the Eichler–Selberg trace formula*,
   arXiv:1711.00327), expanded into checkable milestones, not consumed as a black box:
-  (i) the determinant-`n` integral-matrix module and its right action on the polynomial
-  space; (ii) the standard Hecke representative set `Tₙ^∞`; (iii) the construction of the
-  special group-ring element `T̃ₙ`; (iv) the theorem that its action on period polynomials
-  agrees with the Hecke action; (v) both Manin-relation compatibility identities; (vi) the
-  right-coset coefficient/weight theorem; (vii) the trace reduction from `W_w` to the ambient
-  polynomial space; (viii) the contribution of every conjugacy type in the case split —
-  elliptic, scalar, parabolic, split hyperbolic — including the zero-contribution cases;
+  (i) the determinant-`n` matrix module `ℳₙ = {M ∈ M₂(ℤ) : det M = n}/{±1}` and the group
+  ring `ℛₙ = ℚ[ℳₙ]` with the left, right, and conjugation actions of `PSL₂(ℤ)`; (ii) the
+  standard representative set `Tₙ^∞` from representatives fixing `∞`; (iii) the construction
+  of the special element `T̃ₙ ∈ ℛₙ` satisfying the period relation
+  `(1 − S)·T̃ₙ − Tₙ^∞·(1 − S) ∈ (1 − T)·ℛₙ`; (iv) the theorem that its action on period
+  polynomials agrees with the Hecke action; (v) the two exchange relations
+  `T̃ₙ·(1 + S) ∈ (1 + U + U²)·ℛₙ` and `T̃ₙ·(1 + U + U²) ∈ (1 + S)·ℛₙ`, whence `T̃ₙ`
+  preserves `W_w = ker(1 + S) ∩ ker(1 + U + U²)`; (vi) the right-coset coefficient/weight
+  theorem `⟨T̃ₙ, X⟩ = w(X)` on conjugacy classes; (vii) the trace reduction
+  `tr(T̃ₙ | W_w) = tr(T̃ₙ | V_w)` to the ambient polynomial space, from the exchange of the
+  two kernels `A = ker(1 + S)`, `B = ker(1 + U + U²)` and `A + B = V_w`; (viii) the
+  contribution of every conjugacy type in the case split — scalar, elliptic, split
+  hyperbolic, non-split hyperbolic, parabolic — including the zero-contribution cases;
   (ix) the matrix-orbit ↔ binary-quadratic-form correspondence with its orientation and
   automorphism weights; (x) the comparison of the resulting operator with this roadmap's
   arithmetic normalization `aₘ(Tₙ f) = Σ_{d ∣ (m,n)} d^{k−1}·a_{mn/d²}(f)` (transposes and
