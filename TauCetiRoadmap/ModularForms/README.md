@@ -1143,7 +1143,8 @@ representability, no moduli problem**.
   (`ε∞^{reg} > 2g − 2` or not), as bounds and the `M₁`/`S₁` relation. `dim S_2(Γ) = g` is the
   statement that weight-two cusp forms are the holomorphic differentials on `X(Γ)`.
 - `Suggested.lean` seeds this layer with concrete instances at levels `> 1`: `dim S_2(Γ₀(11)) = 1`,
-  `dim S_2(Γ₀(23)) = 2`, `dim S_2(Γ₀(2)) = 0`, `dim M_2(Γ₀(11)) = 2`. The general even-weight
+  `dim S_2(Γ₀(23)) = 2`, `dim S_2(Γ₀(2)) = 0`, `dim M_2(Γ₀(11)) = 2`, and the non-`Γ₀`
+  instance `dim S_2(Γ₁(13)) = 2`. The general even-weight
   formula above is the layer's headline target; it is stated here in the README (its inputs are
   the `ε₂, ε₃, ε∞, g` of `X(Γ)` from this same layer **plus the Riemann–Roch chain above, built in
   this same layer**; the concrete instances below consume that same general theorem — their
@@ -1221,8 +1222,9 @@ ground, and we found no Lean prior art (as of July 2026).
   `(1 − S)·T̃ₙ − Tₙ^∞·(1 − S) ∈ (1 − T)·ℛₙ`; (iv) the theorem that its action on period
   polynomials agrees with the Hecke action; (v) the two exchange relations
   `T̃ₙ·(1 + S) ∈ (1 + U + U²)·ℛₙ` and `T̃ₙ·(1 + U + U²) ∈ (1 + S)·ℛₙ`, whence `T̃ₙ`
-  preserves `W_w = ker(1 + S) ∩ ker(1 + U + U²)`; (vi) the right-coset coefficient/weight
-  theorem `⟨T̃ₙ, X⟩ = w(X)` on conjugacy classes; (vii) the trace reduction
+  preserves `W_w = ker(1 + S) ∩ ker(1 + U + U²)`; (vi) the right-coset identity `⟨T̃ₙ, K⟩ = −1` for
+  every right `Γ`-coset `K`, and — a separate statement — the conjugacy-class weight
+  identity `⟨T̃ₙ, X⟩ = w(X)`; (vii) the trace reduction
   `tr(T̃ₙ | W_w) = tr(T̃ₙ | V_w)` to the ambient polynomial space, from the exchange of the
   two kernels `A = ker(1 + S)`, `B = ker(1 + U + U²)` and `A + B = V_w`; (viii) the
   contribution of every conjugacy type in the case split — scalar, elliptic, split
@@ -1428,11 +1430,12 @@ Secondary to the mathematics above: the migration map. The reference is the AINT
 `projects/LeanModularForms/` on branch **`dev/leanmodularforms`** (resynced **2026-07-17**, re-verified **2026-07-23**, at
 `112d12d95`); paths are relative to its `LeanModularForms/`. The tree is **actively
 restructured**, so verify names against the live tree before porting. Headline theorems are
-`sorry`-free unless flagged; the flagged open `sorry`s are exactly three —
+`sorry`-free unless flagged; the flagged **literal source `sorry`s** are exactly three —
 `exists_HeckeStableLattice_one` (L8), `interior_edges_cancel_sum` (L8), and
 `peterssonInner_aggregate_eq_zero_of_new_old` (L3, bad primes) — plus the
-`ModularSymbols/Skeleton.lean` spec file and the out-of-scope `GLn/PolynomialRing.lean`
-general-`n` branch.
+`ModularSymbols/Skeleton.lean` spec file. In addition, the **active** general-`n` target in
+`GLn/PolynomialRing.lean` has the two named source gaps recorded in Layer 2 and the status
+table; "three" counts literal source `sorry`s, not every unfinished target of the roadmap.
 
 - **Nebentypus / characters (L0):** `HeckeRIngs/GL2/Gamma1Pair.lean` (`diamondOp*`,
   `diamondOpHom`, `modFormCharSpace`, `cuspFormCharSpace`, the `*_iff_nebentypus` bridges);
