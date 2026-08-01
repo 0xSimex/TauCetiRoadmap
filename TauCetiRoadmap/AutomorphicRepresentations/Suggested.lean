@@ -2,7 +2,7 @@ import Mathlib
 import Mathlib.RepresentationTheory.Invariants
 
 /-!
-# Quaternionic automorphic representations and attached Galois representations: target signatures
+# Automorphic representations of `GL_n`, quaternionic inner forms, and attached Galois representations
 
 **This file is not the roadmap and is not exhaustive.** The definitive document is
 `README.md`. The statements here suggest Lean forms for particular milestones, so that
@@ -10,10 +10,12 @@ contributors and reviewers converge on names and signatures; discharging all of 
 finishes neither a layer nor the roadmap. `sorry` is allowed in this human-owned roadmap
 library.
 
-Only targets expressible using the pinned Mathlib API appear here. In particular, the summit
-attached-system declaration is not represented by empty `Prop` placeholders: it will be added after
+Only targets expressible using the pinned Mathlib API appear here. The roadmap has a shared
+automorphic track, a split `GL_n` track, a quaternionic track, and a Galois track; it does not make
+arbitrary inner forms `GL_m(D)` a completion requirement. In particular, the attached-system
+declaration is not represented by empty `Prop` placeholders: it will be added after
 the genuine automorphic-representation, relative-cohomology, Hecke-rationality, and compatible-
-system structures exist. See `README.md` for the dependency graph and exact summit contract.
+system structures exist. See `README.md` for the dependency graph and exact target contract.
 -/
 
 namespace TauCetiRoadmap.AutomorphicRepresentations
@@ -23,7 +25,7 @@ open scoped TensorProduct
 
 universe u v w
 
-/-! ## Layer 0: quaternion algebras -/
+/-! ## Layer 0: algebraic inputs -/
 
 /-- A quaternion algebra is intrinsically a central simple algebra of rank four. This is a
 predicate, not a class exporting `IsSimpleRing D`: Mathlib deliberately keeps the central and simple
@@ -53,7 +55,21 @@ example : IsQuaternionAlgebra ℝ (Quaternion ℝ) := by
 
 end IsQuaternionAlgebra
 
-/-! ## Layer 1: the concrete adelic group -/
+/-! ## Layer 1: split and quaternionic local/adelic groups -/
+
+section SplitGroups
+
+variable (F : Type u) [Field F] [NumberField F]
+
+/-- The algebraic `GL_n` over the full adèle ring. The production topology is compared with the
+restricted product based at `GL_n(𝒪_v)`; this abbreviation alone does not assert that comparison. -/
+abbrev SplitAdeleGroup (n : ℕ) := GL (Fin n) (NumberField.AdeleRing (𝓞 F) F)
+
+/-- The split general linear group at a finite completion. -/
+abbrev SplitFiniteLocalGroup (n : ℕ) (v : HeightOneSpectrum (𝓞 F)) :=
+  GL (Fin n) (v.adicCompletion F)
+
+end SplitGroups
 
 section Adeles
 

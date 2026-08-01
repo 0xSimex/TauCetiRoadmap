@@ -1,121 +1,140 @@
-# Galois representations attached to quaternionic automorphic representations
+# Automorphic representations of `GL_n` and quaternionic inner forms
 
-## Summit and boundary
+## Targets and boundary
 
-This roadmap builds enough reusable Lean infrastructure to state the following target without
-undefined mathematical nouns or vacuous predicates.
+This roadmap has two connected outputs. First, it builds reusable foundations for automorphic
+representations of split `GL_n` over a number field, with `GL_n` as the principal concrete test of
+every group-generic interface. Second, it builds the genuinely quaternionic material needed to
+state the following target without undefined mathematical nouns or vacuous predicates.
 
-> **Target statement.** Let `F` be a totally real number field, let `D` be a quaternion
+> **Attached-system target.** Let `F` be a totally real number field, let `D` be a quaternion
 > algebra over `F`, and let `π` be a cuspidal cohomological automorphic representation of
 > `Dˣ(𝔸_F)` which is not a character factoring through reduced norm. There are a number field `E`,
-> Hecke polynomials `P_v ∈ E[X]` at all but finitely many
-> finite places `v` of `F`, and a semisimple good-place compatible family of continuous
+> a finite set `S` of finite places containing every place where `D` is nonsplit or `π` is
+> ramified, Hecke polynomials `P_v ∈ E[X]` for every `v ∉ S`, and a semisimple family of continuous
 > two-dimensional representations
 > `ρ_{p,φ} : Gal(F̄/F) → GL₂(Q̄_p)`, indexed by primes `p` and embeddings
-> `φ : E → Q̄_p`, such that, whenever `v` is good and its residue characteristic differs from
-> `p`, `ρ_{p,φ}` is unramified at `v` and
+> `φ : E → Q̄_p`, such that, for `v ∉ S` whose residue characteristic differs from `p`,
+> `ρ_{p,φ}` is unramified at `v` and
 > `charpoly(ρ_{p,φ}(Frob_v^arith)) = φ(P_v)`.
 
-At a split unramified place the normalization target is
+Thus `IsGoodPlace π D S v` means that `v ∉ S`, with the record carrying proofs that this entails
+the split and unramified hypotheses needed to define the spherical operators. The condition that
+`v` does not lie over `p` is separate because it depends on the member of the Galois family. At a
+good place the normalization target is
 
 ```text
 P_v(X) = X² - a_v X + N(v) s_v,
 ```
 
-where `a_v` and `s_v` are the eigenvalues of the standard spherical operators `T_v` and `S_v`,
-the Haar measure gives the standard maximal compact subgroup volume one, and Frobenius is
-**arithmetic** Frobenius. This is the convention in Taylor's Hilbert-modular formulation and in the
-current FLT good-place compatibility predicate.
+where `a_v` and `s_v` are the eigenvalues of the standard unnormalized spherical operators `T_v`
+and `S_v`, the Haar measure gives the standard maximal compact subgroup volume one, and Frobenius
+is **arithmetic** Frobenius. This is the convention in Taylor's Hilbert-modular formulation and in
+the current FLT good-place compatibility predicate.
 
-The summit is a *statement*, not a proof of the conjecture. In particular, this roadmap does not
-formalize Jacquet--Langlands, the construction of the Galois representations, or the proof of local--
-global compatibility. Those are later roadmaps. Everything needed to typecheck every term and
-hypothesis above, including “cohomological,” “automorphic representation,” the local Hecke
-polynomial, and “good-place compatible,” is in scope here.
+The endpoint is a *statement*, not its proof. In particular, this roadmap does not formalize
+Jacquet--Langlands, construct the Galois representations, or prove local--global compatibility.
+Everything needed to typecheck every term and hypothesis above is in scope.
 
-The roadmap deliberately specializes the group to `Dˣ`. It consumes the general foundations in
-the [reductive-groups roadmap](../ReductiveGroups/README.md) where they are already available, but
-does not wait for the entire classification of reductive groups. In particular, after scalar
-extension to an archimedean completion, `D` is a finite-dimensional real normed algebra and its
-group of units already has a concrete manifold/Lie-group route. General analytification of smooth
-schemes is therefore not a prerequisite for the target statement. Algebraic coefficient systems
-on the critical path are constructed explicitly from archimedean weight data and differentiated on
-these concrete groups; comparison with the eventual group-scheme/comodule construction is not used
-to define “cohomological.”
+### One roadmap, three automorphic tracks
+
+```text
+shared automorphic foundations
+          │
+          ├── split GL_n ───────────┐
+          │                         │
+          └── quaternionic Dˣ ──────┼──▶ attached-system target
+                                    │
+local Galois/compatible systems ────┘
+```
+
+The shared track owns smooth and admissible representations, Harish--Chandra modules, automorphic
+forms, relative Lie-algebra cohomology, restricted tensor products, and the abstract-to-convolution
+Hecke interface. The split track owns `GL_n` points, standard compact subgroups and parabolics,
+principal series, archimedean instances, and Satake theory. The quaternionic track owns quaternion
+algebras, orders and ramification, reduced norm, `ℍˣ`, the restricted-product topology, and
+independence of splittings. The target uses the shared track, the `n=2` split instance at good
+places, and the quaternionic track.
+
+This is deliberately **not** a roadmap for every inner form `GL_m(D)` of every `GL_n`. Definitions
+should be parametrized generally when that costs nothing, and APIs must not obstruct that later
+extension, but arbitrary-degree central simple algebras, flags of right `D`-spaces, and
+`GL_m(ℍ)` are not completion requirements here. Likewise Whittaker theory, multiplicity one,
+Rankin--Selberg, Godement--Jacquet, Eisenstein/spectral decomposition, and local or global
+Jacquet--Langlands are successor roadmaps. Their analytic prerequisites—additive characters,
+Schwartz--Bruhat spaces, Poisson summation, reduction theory, and rapid decay—are not smuggled into
+the foundations below.
 
 ## Decisions pinned here, and decisions needing sign-off
 
-The following choices are part of this roadmap.
+1. Shared definitions are group-generic; split `GL_n` is their primary concrete instance and
+   quaternionic `Dˣ` is a sibling instance, not an encoding of `Dˣ` as `GL₂` at ramified places.
+2. A quaternion algebra means a four-dimensional central simple algebra, not a Hilbert-symbol
+   presentation.
+3. Global automorphic representations are bundled irreducible admissible subquotients of the
+   algebraically defined cuspidal automorphic space. Their local restricted-tensor-product data and
+   occurrence witness are fields, so the definition does not invoke an unstated Flath theorem.
+4. Cohomological means nonvanishing relative Lie-algebra cohomology with a finite-dimensional
+   algebraic coefficient representation.
+5. Good-place compatibility records common Frobenius polynomials outside a named finite set. The
+   representations live over `Q̄_p`, indexed by `E → Q̄_p`, and need not descend to `GL₂(E_λ)`.
+6. The Galois family is semisimple and uses arithmetic Frobenius.
 
-1. A quaternion algebra means a four-dimensional central simple algebra, not a particular Hilbert
-   symbol presentation.
-2. Global automorphic representations are irreducible admissible constituents, expressed as
-   subquotients of the cuspidal automorphic spectrum. The finite part is smooth; the infinite part
-   is a Harish--Chandra `(𝔤,K)`-module.
-3. Cohomological means nonvanishing relative Lie-algebra cohomology with coefficients in a
-   finite-dimensional algebraic representation.
-4. Compatibility records common Frobenius polynomials at almost all finite places. The coefficient
-   representations live over `Q̄_p` and are indexed by embeddings `E → Q̄_p`; they are not required
-   to descend to `GL₂(E_λ)`.
-5. The family is semisimple and uses arithmetic Frobenius.
+Three points still need expert sign-off before the attached-system declaration is frozen.
 
-Three points need an expert to confirm before the summit declaration is frozen. They are marked
-`SIGN-OFF` again at the layer where they arise.
-
-- **SIGN-OFF A — cuspidality and one-dimensional representations.** The Zulip formulation says
-  “cohomological automorphic representation,” without saying “cuspidal.” For split `D`, the usual
-  theorem takes cuspidal representations and excludes Eisenstein constituents. For division `D`,
-  there are no proper `F`-parabolics, so the standard constant-term definition of cuspidality is
-  vacuous and still includes the characters `χ ∘ Nrd`. The provisional summit therefore requires
-  both cuspidality and “not a reduced-norm character.” A reviewer should confirm that restriction or
-  specify the larger statement and its reducible systems for characters/Eisenstein constituents.
-- **SIGN-OFF B — cohomological normalization.** For even-rank groups, the passage between
-  cohomological/C-algebraic and L-algebraic normalizations involves a half-Tate shift. The displayed
-  polynomial follows Taylor's classical `T_v,S_v` convention. A specialist must check that the
-  chosen `W`-versus-`W^∨` convention, central character, Satake normalization, and reciprocity
-  convention produce exactly that polynomial. This roadmap separately pins the relative pair to the
-  full Lie algebra and a genuine maximal compact, without adjoining the split real center.
-- **SIGN-OFF C — strength of compatibility.** Carayol proves a strictly compatible system with
-  local Weil representations, while the FLT development currently asks only for good-place
-  characteristic polynomials. Some modern literature also builds de Rham/crystalline conditions
-  and embedding-independent Hodge--Tate weights into the term “weakly compatible system.” The
-  summit below intentionally uses the narrower name `GoodPlaceCompatible`. If the intended
-  challenge includes either the p-adic Hodge conditions or strict local compatibility, this roadmap
-  needs further layers for p-adic Hodge theory and/or Weil--Deligne/local Langlands data; that is not
-  a renaming of the current summit.
+- **SIGN-OFF A — cuspidality and one-dimensional representations.** For split `D`, the intended
+  theorem uses cuspidal representations. For division `D`, there are no proper `F`-parabolics, so
+  the standard constant-term predicate is vacuous and still includes `χ ∘ Nrd`. The provisional
+  target requires both cuspidality and “not a reduced-norm character.” Confirm that scope or state
+  the larger character/Eisenstein conclusions separately.
+- **SIGN-OFF B — cohomological normalization.** For `GL_n`, a C-algebraic representation is moved
+  to the L-algebraic normalization by the norm twist `|det|^{(n-1)/2}`; its exponent is
+  half-integral exactly when `n` is even. For the quaternionic inner form of `GL₂`, determinant is
+  replaced by reduced norm. The displayed polynomial follows Taylor's classical `T_v,S_v`
+  convention. Confirm that the chosen `W` versus `W^∨`, central character, the `|Nrd|^{1/2}`
+  normalization, Satake normalization, and reciprocity convention produce exactly that polynomial.
+  The relative pair itself is pinned to the full Lie algebra and a genuine maximal compact, without
+  adjoining the split real center.
+- **SIGN-OFF C — strength of compatibility.** Carayol proves strict compatibility with local Weil
+  representations, while the FLT predicate asks only for good-place characteristic polynomials.
+  Some modern uses of “weakly compatible” also require de Rham/crystalline and Hodge--Tate data.
+  This roadmap uses the narrower `GoodPlaceCompatible`; stronger meanings require further layers.
 
 ## Ground floor: existing material and coordination
 
-Before claiming work in a layer, recheck Mathlib, Tau Ceti, the FLT repository, and the linked open
+Before claiming work in a layer, recheck Mathlib, Tau Ceti, the FLT repository, and linked open
 work. APIs in this area are moving.
 
-Mathlib already supplies number fields and their finite, infinite, and full adèle rings; restricted
-products; completions at finite and infinite places; Haar measure; absolute Galois groups; algebraic
-closures of `ℚ_p`; ordinary representation theory; universal enveloping algebras; and the manifold
-structure on units of suitable normed algebras. It does not yet supply the full objects required
-here: quaternion algebras as central simple algebras, local Galois maps/inertia/Frobenius, smooth
-admissible representations of locally profinite groups, Harish--Chandra modules, relative
-`(𝔤,K)`-cohomology, automorphic representations, or good-place compatible systems.
+Mathlib supplies matrix general linear groups, number fields and their adèle rings, restricted
+products, completions, Haar measure, absolute Galois groups, algebraic closures of `ℚ_p`, ordinary
+representation theory, universal enveloping algebras, and manifolds on units of suitable normed
+algebras. It does not yet supply the smooth/automorphic stack, relative `(𝔤,K)`-cohomology, the
+quaternionic arithmetic interfaces, local Galois inertia/Frobenius, or compatible systems required
+here.
 
-The [reductive-groups roadmap](../ReductiveGroups/README.md) is the shared source for affine group
-schemes, Hopf algebras, algebraic representations, and Lie algebras. This roadmap consumes the
-landed interfaces from its Layers 0--2 at the concrete `Dˣ` boundary described in the reuse table;
-the unlanded comparison work in Layers 1--2 is not a summit prerequisite. It must not create a
-second incompatible representation/comodule dictionary. The open Mathlib work on
-[affine analytification](https://github.com/leanprover-community/mathlib4/pull/34626) remains
-important for the general theory but is not on this summit's critical path. The convolution source
-from [mathlib4#39281](https://github.com/leanprover-community/mathlib4/pull/39281) is present at the
-pinned Mathlib revision but still uses `suppress_compilation`, so it is not yet a compiled
-foundation. Also track the quaternion reorganization in
-[mathlib4#41538](https://github.com/leanprover-community/mathlib4/pull/41538) and check the
-finite-dimensional general-linear-group work in
-[mathlib4#40380](https://github.com/leanprover-community/mathlib4/pull/40380) before opening the
-relevant Tau Ceti PRs.
+The [Modular Forms roadmap, PR #47](https://github.com/TauCetiProject/TauCetiRoadmap/pull/47)
+owns the integral abstract double-coset Hecke ring at general `GL_n`, including the local--global
+comparison of structure constants and localization at the central coset. After it merges, its
+[Layer 2](../ModularForms/README.md#layer-2-hecke-operators-and-the-hecke-algebra) is an explicit
+input to Layer 6 below. At this repository's current Mathlib pin, `NumberTheory/HeckeRing` is not
+yet present: the roadmap PR follows the Mathlib #41251 and #41253--#41328 stack. Until compatible
+code lands and the pin advances, this is a planned dependency rather than a compiled foundation.
 
-FLT contains substantial prototypes. **Tau Ceti must never import FLT.** Coordinate with the FLT
-authors before moving code, submit self-contained Tau Ceti PRs against this roadmap, preserve
-authorship and the Apache-2.0 notices, and then change FLT to import the resulting Tau Ceti API.
-The provenance table near the end is an aid to migration, not a specification of the final API.
+The [reductive-groups roadmap](../ReductiveGroups/README.md) supplies affine group schemes, Hopf
+algebras, algebraic representations, and Lie algebras. Consume only landed interfaces and do not
+create a second representation/comodule dictionary. General affine analytification
+([mathlib4#34626](https://github.com/leanprover-community/mathlib4/pull/34626)) is important but not
+on this target's critical path: matrix groups and units of finite-dimensional real algebras have
+concrete topological and manifold routes. The convolution source from
+[mathlib4#39281](https://github.com/leanprover-community/mathlib4/pull/39281) is present at the pin
+but uses `suppress_compilation`; it is not a compiled foundation. Also coordinate with the
+quaternion reorganization [mathlib4#41538](https://github.com/leanprover-community/mathlib4/pull/41538)
+and finite-dimensional general-linear-group work
+[mathlib4#40380](https://github.com/leanprover-community/mathlib4/pull/40380).
+
+FLT contains substantial prototypes. **Tau Ceti must never import FLT.** Migrate only through
+self-contained Tau Ceti PRs, preserving attribution and Apache-2.0 notices, then change FLT to
+consume the Tau Ceti API. The provenance table is a coordination aid, not the final namespace plan.
 
 ### Exact reuse map from other Tau Ceti roadmaps
 
@@ -123,29 +142,30 @@ These are interface dependencies, not dependencies on completion of an entire ro
 
 | Existing roadmap target | Consumed here | Work still owned here |
 |---|---|---|
+| [Modular Forms, PR #47](https://github.com/TauCetiProject/TauCetiRoadmap/pull/47), [Layer 2](../ModularForms/README.md#layer-2-hecke-operators-and-the-hecke-algebra): abstract Hecke triples/rings, the integral `GL_n` diagonal-coset calculation, the `ℤ_p/ℚ_p` local comparison, and localization at the central coset | the abstract basis and multiplication and the rational-prime worked model | extension to arbitrary `𝒪_v/F_v`, locally constant convolution, Haar and opposite-ring conventions, normalized Satake, and adelic actions |
 | [Semisimple algebras, Layer 4](../RepresentationTheory/SemisimpleAlgebras/README.md#layer-4-central-simple-algebras-and-their-tensor-products): central simple algebras, tensor products, degree | intrinsic `IsQuaternionAlgebra`, scalar-extension dimension and simplicity | reduced trace/norm, involution, local ramification, and the quaternion split/division API |
 | [Semisimple algebras, Layers 5--6](../RepresentationTheory/SemisimpleAlgebras/README.md#layer-5-skolem-noether-and-the-centralizer-theorem): Skolem--Noether, base change, splitting fields, `ℍ` | independence up to inner conjugacy of chosen splittings `D_v ≃ M₂(F_v)`; real split/ramified examples | compatible topological and integral local models and their Hecke comparisons |
-| [Reductive groups, Layer 0](../ReductiveGroups/README.md#layer-0-the-functor-of-points-and-the-three-way-dictionary): Hopf algebra ↔ affine group scheme ↔ functor of points, and base change | the three synchronized models for `Dˣ` | its explicit reduced-norm localization, adèlic/restricted-product points, and comparison with concrete units |
-| [Reductive groups, Layer 1](../ReductiveGroups/README.md#layer-1-representations--comodules): finite-dimensional comodules and algebraic representations | the later comparison between intrinsic algebraic representations and the explicit coefficient systems used here | the summit uses explicit highest-weight coefficient systems, so this unlanded layer is not a critical-path dependency |
-| [Reductive groups, Layer 2](../ReductiveGroups/README.md#layer-2-lie-algebra-and-the-adjoint-representation): algebraic `Lie(G)` and `Ad` | comparison with the Lie algebra obtained from real points | the analytic differentiation comparison for each `D_vˣ` |
-| [Lie groups, Layers 0--2](../RepresentationTheory/LieGroups/README.md#the-build-in-layers): units of normed algebras, tangent Lie algebra, `Ad`, and the closed-subgroup theorem | the concrete Lie groups `D_vˣ`, Lie algebras of closed compact subgroups, and differentiated actions | explicit maximal compact subgroups of `GL₂(ℝ)` and `ℍˣ`, plus their conjugacy/comparison lemmas |
+| [Reductive groups, Layer 0](../ReductiveGroups/README.md#layer-0-the-functor-of-points-and-the-three-way-dictionary): Hopf algebra ↔ affine group scheme ↔ functor of points, and base change | the synchronized models for split `GL_n` and `Dˣ` | concrete local/adèlic points, determinant/reduced-norm localization, and comparison with units |
+| [Reductive groups, Layer 1](../ReductiveGroups/README.md#layer-1-representations--comodules): finite-dimensional comodules and algebraic representations | later comparison with the explicit coefficient systems used here | explicit highest-weight systems are the critical-path definitions, so the unlanded comodule comparison is not a blocker |
+| [Reductive groups, Layer 2](../ReductiveGroups/README.md#layer-2-lie-algebra-and-the-adjoint-representation): algebraic `Lie(G)` and `Ad` | comparison with the Lie algebra of real/complex matrix groups and quaternion units | analytic differentiation for the concrete groups |
+| [Lie groups, Layers 0--2](../RepresentationTheory/LieGroups/README.md#the-build-in-layers): units of normed algebras, tangent Lie algebra, `Ad`, and the closed-subgroup theorem | `GL_n(ℝ)`, `GL_n(ℂ)` as a real group, `D_vˣ`, and differentiated actions | the standard maximal compacts `O(n)`, `U(n)`, and `Sp(1)`, with their comparison and conjugacy lemmas |
 | [Lie groups, Layer 5](../RepresentationTheory/LieGroups/README.md#layer-5-simply-connected-covers-and-the-enveloping-algebra): universal enveloping algebra and PBW | the `U(𝔤_ℂ)` action on a Harish--Chandra module | `K`-finite compatibility and relative `(𝔤,K)` cohomology |
-| [Lie groups, Layer 9](../RepresentationTheory/LieGroups/README.md#layer-9-the-cartan-iwasawa-and-kak-decompositions): Cartan involution and the compact factor `K` | the general real-reductive comparison and conjugacy theory | concrete `D_vˣ` instances may land earlier and must not wait for all Iwasawa/KAK theory |
+| [Lie groups, Layer 9](../RepresentationTheory/LieGroups/README.md#layer-9-the-cartan-iwasawa-and-kak-decompositions): Cartan involution, Iwasawa, and the compact factor `K` | the general real-reductive interface | concrete Gram--Schmidt/Iwasawa results for matrix groups and quaternion units may land earlier |
 | [Compact groups, Layers 0--2](../RepresentationTheory/CompactGroups/README.md#the-build-in-layers): normalized Haar measure, unitarization, complete reducibility | finite-dimensional `K_v`-types and invariant complements | locally finite `K_v`-actions and their compatibility with the noncompact Lie algebra |
-| [Lie highest weight, Layers 7 and 9](../RepresentationTheory/LieHighestWeight/README.md#layer-7-the-center-of-ul-and-harish-chandra-freudenthal-and-serres-relations): `Z(U(𝔤))`, Harish--Chandra isomorphism, reductive `gl₂` weights | the algebra acting in the `Z(𝔤_ℂ)`-finite condition and the split-real weight calculation | infinite-dimensional Harish--Chandra modules; the existing roadmap treats finite-dimensional highest-weight modules |
-| [Classical groups, Layers 0--3](../RepresentationTheory/ClassicalGroups/README.md#the-build-in-layers): algebraic `GL₂` representations and highest weights | split coefficient-system examples | descent and inner forms for general `Dˣ` |
+| [Lie highest weight, Layers 7 and 9](../RepresentationTheory/LieHighestWeight/README.md#layer-7-the-center-of-ul-and-harish-chandra-freudenthal-and-serres-relations): `Z(U(𝔤))`, Harish--Chandra isomorphism, reductive `gl_n` weights | the center acting in the `Z(𝔤_ℂ)`-finite condition and split archimedean weight calculations | infinite-dimensional Harish--Chandra modules |
+| [Classical groups, Layers 0--3](../RepresentationTheory/ClassicalGroups/README.md#the-build-in-layers): algebraic `GL_n` representations and highest weights | split coefficient systems and the `n=2` systems transported to quaternionic groups over `ℂ` | archimedean tensor products, rational structures, and independence of quaternion splittings |
 
 The representation-theory index explicitly stops before infinite-dimensional representations of
 noncompact groups. Its induction/restriction roadmap is for finite groups. Consequently smooth
-induction for `D_vˣ`, admissibility, Harish--Chandra modules, and automorphic spectra are not silently
-delegated there: Layers 2--5 below own them. Conversely, this roadmap must reuse its algebraic,
-compact, and Lie-group interfaces rather than rebuild them.
+induction, admissibility, Harish--Chandra modules, and automorphic spaces are not silently delegated
+there: Layers 2--5 below own them for both tracks. Conversely, this roadmap reuses its algebraic,
+compact, and Lie-group interfaces rather than rebuilding them.
 
 Finite-separable Weil restriction belongs to the relative theory in the reductive-groups roadmap
-and is too large a prerequisite for this summit. Here a coefficient system is constructed directly
-from a highest weight at each embedding `F → ℝ`, using a complex splitting of the local quaternion
-algebra and proving independence by Skolem--Noether. Once Weil restriction and comodules land, a
-comparison theorem belongs at the boundary between the two roadmaps; no definition here waits for it.
+and is too large a prerequisite for the attached-system target. Split coefficient systems are
+constructed from `GL_n` highest weights; quaternionic systems use the `n=2` construction after a
+complex splitting and prove independence by Skolem--Noether. Once Weil restriction and comodules
+land, their comparison belongs at the boundary between the roadmaps; no definition here waits for it.
 
 ### Dependency-closure audit
 
@@ -159,13 +179,13 @@ are easy to skip over; they have been promoted to explicit work in the layer des
 
 | Layer | Inputs that must already compile | Formerly hidden work explicitly owned by this roadmap |
 |---|---|---|
-| 0 | Mathlib number fields, completions, tensor products; cited central-simple-algebra targets | reduced characteristic polynomial/trace/norm, quaternion involution, local splitting, ramification and finiteness of the ramified set |
-| 1 | Layer 0; reductive-groups Layer 0 where landed; Mathlib adèles and Haar topology | topology on finite-dimensional scalar extensions, the idelic restricted-product topology (not the adèle-subspace topology), noncommutative orders and their completions, compact-open unit groups and congruence bases, concrete parabolics of `Dˣ` |
-| 2 | Layer 1 topological groups; Mathlib invariant submodules | locally profinite interfaces, smooth-representation category and exact operations, smooth/compact induction function spaces, smooth dual, and restricted tensor products with local factors carried as data |
-| 3 | Layer 1 archimedean groups; cited Lie-groups and compact-groups targets | complexification of the analytic Lie algebra, differentiation of finite-dimensional compact-group actions, disconnected maximal compacts, and the category of Harish--Chandra pairs/modules |
-| 4 | Layers 1--3 | smooth/local-constant function space, right differential operators, an adelic height for moderate growth, central-character quotient, constant-term integrals and their Haar measures, and an algebraic spectrum model not relying on an unbuilt Hilbert decomposition |
-| 5 | Layers 0, 1, 3, 4; highest-weight interfaces for `gl₂`; Mathlib chain complexes and alternating maps | full Chevalley--Eilenberg differential and signs, relative cochains for disconnected `K`, explicit coefficient-system base change/duals, cohomology and Künneth comparisons |
-| 6 | Layers 1, 2, 4; Mathlib Haar measure | locally constant compact support, convolution integrability, finite double-coset sums, `GL₂` Cartan/Satake theory, the spherical fixed-line theorem, and a rationality *data structure* whose existence remains in the summit conclusion |
+| 0 | Mathlib matrix groups, number fields, completions and tensor products; cited central-simple-algebra targets | standard `GL_n` parabolics and integral models; reduced characteristic polynomial/trace/norm, quaternion involution, local splitting, ramification and finiteness of the ramified set |
+| 1 | Layer 0; landed reductive-group interfaces; Mathlib adèles and restricted products | local and adelic `GL_n` with standard compact opens; finite-dimensional scalar-extension topologies; the idelic topology on quaternionic units; noncommutative orders, completions, compact opens and congruence bases |
+| 2 | Layer 1 locally profinite groups; Mathlib invariant submodules | the shared smooth-representation category and exact operations, normalized induction with its modulus character, smooth dual, and restricted tensor products carrying spherical data |
+| 3 | Layer 1 archimedean groups; cited Lie/compact-group targets | shared Harish--Chandra pairs/modules, analytic-versus-algebraic Lie comparisons, differentiation, disconnected maximal compacts, and explicit `O(n)`, `U(n)`, `Sp(1)` instances |
+| 4 | Layers 0--3 | a shared automorphic-function space; right differential operators; a height seeing both `g` and `g⁻¹`; parabolic constant terms and compact quotient measures; the algebraic cuspidal space; occurrence witnesses without exhaustiveness claims |
+| 5 | Layers 0, 1, 3, 4; `gl_n` highest weights; Mathlib chain complexes and alternating maps | full Chevalley--Eilenberg signs, relative cochains for disconnected `K`, split `GL_n` coefficient systems, quaternionic splitting independence, cohomology and Künneth comparisons |
+| 6 | Layers 1, 2, 4; Modular Forms Layer 2 once landed; Mathlib Haar measure | extension of its `ℤ_p/ℚ_p` model to every `𝒪_v/F_v`; comparison with convolution (including inverse/opposite conventions); varying-level actions; general `GL_n` Cartan/Satake with exact `q_v` powers; the spherical-line theorem; quaternionic comparison; and a nonvacuous rationality model |
 | 7 | Mathlib absolute Galois groups, completions, module topology and `Q̄_p` | chosen embeddings of algebraic closures, local-to-global maps, inertia/Frobenius exact sequences, independence of Frobenius lifts, continuity of matrix realizations, and basis-independent characteristic polynomials |
 | 8 | Layer 7 | finite-place/residue-characteristic bookkeeping, monic exact-degree common polynomials, coefficient-field enlargement/equivalence, and semisimplicity as a predicate rather than an assumed semisimplification construction |
 | 9 | Layers 4, 5, 6, 8 | one declaration joining the actual automorphic model, coefficient system, Hecke rationality model, and compatible family; no proxy predicates |
@@ -178,30 +198,58 @@ unreviewed contributor glue.
 ## Dependency graph
 
 ```text
-0 quaternion algebras ──▶ 1 adelic/local groups ──▶ 2 smooth representations
-                                │                           │
-                                ▼                           ▼
-                    3 archimedean (𝔤,K) ──────────▶ 4 automorphic spectrum
-                                │                           │
-                                └──────────────┬────────────┤
-                                               ▼            ▼
-                                      5 cohomological   6 spherical Hecke
+0 conventions and algebraic input
+             │
+             ├──▶ 1G split GL_n local/adelic ──┐
+             │                                  ├──▶ 2 shared smooth representations
+             └──▶ 1D quaternion local/adelic ──┘
+                         │                                  │
+                         └────▶ 3 shared archimedean ◀─────┘
+                                          │                 │
+                                          └──▶ 4 automorphic forms
+                                                     │
+                                             ┌───────┴───────┐
+                                             ▼               ▼
+                                      5 cohomological   6 GL_n Satake /
+                                                           Dˣ Hecke
 
 7 local Galois theory ──▶ 8 good-place compatible systems
 
              4 automorphic + 5 cohomological + 6 Hecke + 8 Galois ──▶ 9 statement
 ```
 
-After Layer 1, the general smooth finite-place work in Layer 2 and the concrete archimedean work in
-Layer 3 may advance in parallel. Layer 4 consumes both. Layer 5 consumes Layers 3--4 and the Layer 0
-coefficient algebra; Layer 6's abstract convolution work can start after Layers 1--2, but its
-π-attached rationality interface also consumes Layer 4. Layers 7--8 are independent of automorphic
-forms. Layer 9 starts only when its four incoming interfaces have executable examples and stable
-names.
+The `1G` and `1D` tracks run in parallel and meet only through shared interfaces and explicit split
+comparisons. Layers 2 and 3 can also advance in parallel once their concrete groups exist. Layer 4
+consumes both; Layer 5 consumes Layers 3--4; Layer 6 can begin with the split `GL_n` and abstract
+Hecke inputs, while its `π`-attached rationality interface consumes Layer 4. Layers 7--8 are
+independent. Layer 9 starts only when all four incoming interfaces have executable examples and
+stable names.
 
-## Layer 0: conventions and quaternion algebras
+## Layer 0: conventions and algebraic group inputs
 
-### 0.1 Quaternion algebras
+### 0.1 Split `GL_n`
+
+For a positive natural number `n`, synchronize the concrete matrix group, the units of the matrix
+algebra, the determinant-localized affine group scheme, and the functor of points. Use Mathlib's
+`Matrix.GeneralLinearGroup`; do not create a second `GL_n`. Build the exact input later layers use:
+
+- base change over a commutative algebra and comparison between `GL_n(R)` and `(M_n(R))ˣ`;
+- determinant, inverse, center, scalar matrices, diagonal torus, upper-triangular Borel, and their
+  behavior under base change;
+- standard parabolics indexed by compositions of `n`, their block Levi factors and unipotent
+  radicals, inclusions under refinement, and conjugacy with parabolics of `GL_n` over a field;
+- the maximal-parabolic criterion for cuspidality: a constant term along an arbitrary proper
+  standard parabolic factors through one along a containing maximal standard parabolic;
+- the standard integral model `GL_n(𝒪_v)` inside `GL_n(F_v)` and its principal-congruence
+  subgroups, with no choice of basis beyond the defining `Fin n` matrix coordinates;
+- a faithful representation and a height input which later sees both a matrix and its inverse.
+
+The combinatorics of compositions, block matrices, dominant coweights, and the dominance order are
+shared with Cartan and Satake theory in Layer 6. They are implemented once, not separately for
+parabolics and double cosets. General parabolic conjugacy must not be assumed merely because the
+standard representatives have been defined.
+
+### 0.2 Quaternion algebras
 
 Introduce `IsQuaternionAlgebra F D` as the proposition that `D` is a central simple `F`-algebra of
 rank four. Establish the complete elementary API rather than tying the notion to one use:
@@ -231,11 +279,13 @@ Coordinate the concrete comparison work with the active Mathlib quaternion PRs. 
 belongs in Tau Ceti until Mathlib accepts an equivalent definition; downstream code must depend on
 the intrinsic interface, not on its temporary location.
 
-This layer is closed only when the scalar-extension theorem can be applied to `F_v`, reduced norm
-detects units, the split comparison produces `M₂(F_v)` with reduced norm equal to determinant, and a
-finite set containing every nonsplit finite place is available to Layer 1.
+The quaternionic part is closed only when scalar extension applies to `F_v`, reduced norm detects
+units, the split comparison produces `M₂(F_v)` with reduced norm equal to determinant, and a finite
+set containing every nonsplit finite place is available to Layer 1. The whole layer closes when the
+split `GL_n` parabolics and integral models use the same matrix-group API consumed by Layers 1, 4,
+and 6.
 
-### 0.2 Global conventions
+### 0.3 Global conventions
 
 Create one documented namespace for conventions used by every later layer:
 
@@ -245,17 +295,43 @@ Create one documented namespace for conventions used by every later layer:
 - Haar normalization `vol(K_v)=1` at unramified finite places;
 - left versus right actions (automorphic forms use right translation);
 - normalized versus unnormalized induction and Satake transforms;
+- for normalized Satake over `ℂ`, the positive square root of the residue cardinality; over a
+  general coefficient ring, the chosen square root or coefficient extension is explicit;
 - `T_v`, `S_v`, and `X²-a_vX+N(v)s_v`;
-- the relative-cohomology pair uses the full real Lie algebra and a genuine maximal compact
-  `K_v` (`O(2)` for `GL₂(ℝ)`, `Sp(1)` for `ℍˣ`), without adjoining the real split center to `K_v`;
+- the relative-cohomology pair uses the full real Lie algebra and a genuine maximal compact `K_v`
+  (`O(n)` for `GL_n(ℝ)`, `U(n)` for `GL_n(ℂ)`, and `Sp(1)` for `ℍˣ`), without adjoining the real
+  split center to `K_v`;
 - embeddings of the rationality field into `ℂ` and `Q̄_p`.
 
-Two later acceptance tests enforce these conventions without assuming an unbuilt classical-to-
-adelic dictionary: Layer 6 computes the polynomial of an explicit unramified principal series, and
-Layer 8 proves that the cyclotomic family has polynomial `X-N(v)`. The latter is the
-Frobenius-direction test; replacing arithmetic by geometric Frobenius makes it fail.
+Later acceptance tests enforce these conventions without assuming an unbuilt classical-to-adèlic
+dictionary: Layer 6 computes the Satake parameters of an explicit `GL_n` principal series and its
+`n=2` polynomial, and Layer 8 proves that the cyclotomic family has polynomial `X-N(v)`. The latter
+is the Frobenius-direction test; replacing arithmetic by geometric Frobenius makes it fail.
 
-## Layer 1: `Dˣ` locally and adelically
+## Layer 1: split `GL_n` and quaternionic groups locally and adelically
+
+### 1G. Split `GL_n`
+
+For every finite place `v`, construct `GL_n(F_v)` as a locally compact totally disconnected group
+with standard compact open `GL_n(𝒪_v)` and a neighborhood basis of principal-congruence subgroups.
+Then build:
+
+- the finite adèlic group as the restricted product of `GL_n(F_v)` with respect to
+  `GL_n(𝒪_v)`, and its homeomorphic comparison with units of the matrix algebra over the finite
+  adèles; this comparison must track the topology on units through both `g` and `g⁻¹`;
+- the full `GL_n(𝔸_F)`, its finite/infinite product decomposition, diagonal embedding of
+  `GL_n(F)`, global-to-local maps, center, determinant, and quotient topologies;
+- closedness and discreteness of the rational diagonal, and the measurable quotient structures
+  needed for automorphic forms;
+- local and adèlic points of the standard parabolics, Levis, and unipotent radicals from Layer 0,
+  including the compact quotient `U_P(F)\U_P(𝔸_F)` and its probability Haar measure;
+- comparison of the restricted-product construction with the functor of points of the determinant-
+  localized affine group scheme, without waiting for general scheme analytification.
+
+At archimedean places, construct `GL_n(ℝ)` and `GL_n(ℂ)` (the latter as a real Lie group) from
+matrix-algebra units. Their detailed maximal compact and Lie interfaces belong to Layer 3.
+
+### 1D. Quaternionic `Dˣ`
 
 For every `F`-algebra `R`, define the functor of points as `(R ⊗[F] D)ˣ` and reconcile it with the
 affine group scheme represented by localization of the coordinate algebra at reduced norm. Build:
@@ -297,17 +373,17 @@ and Lie-group structures are independent of the auxiliary norm and agree with `G
 real places and `ℍˣ` at ramified real places. This concrete path is the reason general scheme
 analytification is not a blocker.
 
-Acceptance examples are `F=ℚ,D=M₂(ℚ)` and a totally definite quaternion division algebra. Both must
-compute the expected local groups, standard compact subgroups, center, and diagonal action.
-Layer 1 is closed only when every finite local group and the finite adèlic group are actually locally
-compact totally disconnected topological groups, the standard compact opens form the required
-restricted-product datum, and Layers 2 and 4 can use the quotient and parabolic objects without
-choosing bases, orders, or splittings afresh.
+Acceptance examples are split `GL_n` for general positive `n`, `F=ℚ,D=M₂(ℚ)`, and a totally
+definite quaternion division algebra. Layer 1 closes only when the finite local and finite adèlic
+groups in both tracks are locally compact totally disconnected topological groups, their standard
+compact opens form the restricted-product data, `D=M₂(F)` agrees with the `GL₂` construction, and
+Layers 2 and 4 can use quotient and parabolic objects without choosing bases, orders, or splittings
+afresh.
 
 ## Layer 2: smooth admissible representations at finite places
 
 Build the algebraic definitions for a locally profinite group `G` over a field `k`, and use `k=ℂ`
-for the automorphic summit. Every Schur-lemma, central-character, or multiplicity-one theorem states
+for the automorphic tracks. Every Schur-lemma, central-character, or multiplicity-one theorem states
 the algebraic-closure/cardinality hypotheses it actually needs; characteristic zero alone is not a
 substitute. Build:
 
@@ -334,34 +410,46 @@ Do not encode smoothness as continuity of an action on a discrete vector space u
 equivalence has been proved. Use Mathlib's invariant-submodule construction after restricting to a
 subgroup, rather than introducing a second notion of fixed vectors.
 
-Test the API on characters, finite-dimensional representations of compact groups, unramified
-principal series of `GL₂(F_v)`, and their transport to split `D_vˣ`. The construction of principal
-series includes the normalized modulus character and proves its smoothness and admissibility; it is
-not an unexplained example imported from the literature. Layer 2 is closed when these examples,
-subquotients, smooth duals, and restricted tensor products use one common category. The
-one-dimensional spherical fixed-line theorem is deferred to Layer 6, where its Cartan/Satake proof
-lives.
+Test the API on characters, finite-dimensional representations of compact groups, normalized and
+unnormalized principal series of `GL_n(F_v)`, their `n=2` transport to split `D_vˣ`, and
+representations of division `D_vˣ`. Parabolic induction carries the explicit modulus character and
+chosen square root and proves the smoothness/admissibility statements it uses. For division
+`D_vˣ`, “irreducible representations are finite-dimensional” is a theorem only after the required
+admissibility and central-character/Schur hypotheses are available; it is not built into the
+definition merely because `D_vˣ` is compact modulo center.
+
+The Bernstein--Zelevinsky classification, Jacquet-module exactness, distributions on ℓ-spaces, and
+Gelfand--Kazhdan theory are not used by the attached-system statement. Do not take them as unnamed
+black boxes. They belong to later local-representation or Whittaker roadmaps if a downstream theorem
+needs them.
+
+Layer 2 closes when the examples, subquotients, smooth duals, normalized induction, and restricted
+tensor products use one common category. The spherical fixed-line theorem is deferred to Layer 6,
+where its Cartan/Satake proof lives.
 
 The general Flath factorization theorem—from an abstract irreducible admissible representation of a
-restricted product to local factors—is not needed to type the summit and is outside this statement
+restricted product to local factors—is not needed to type the target and is outside this statement
 roadmap. Layer 4 defines an automorphic representation with its local restricted-tensor-product data
 and occurrence witness together. A future local--global-compatibility roadmap may prove that this
 bundling is equivalent to starting from an abstract global constituent.
 
-## Layer 3: the archimedean `(𝔤,K)` interface
+## Layer 3: the shared archimedean `(𝔤,K)` interface
 
-For each infinite place `v`, construct the complexified Lie algebra `𝔤_v` of `D_vˣ`, use the
-Layer 0 maximal-compact convention, and prove independence under conjugacy. Develop Harish--Chandra
-modules as compatible data:
+Develop Harish--Chandra pairs and modules once, then instantiate them for `GL_n(ℝ)`, `GL_n(ℂ)`
+treated as a real group, and the two quaternionic groups `GL₂(ℝ)` and `ℍˣ`. For each infinite
+place construct the complexified Lie algebra, use the Layer 0 maximal-compact convention, and prove
+independence under conjugacy:
 
 - comparison between the algebraic Lie algebra from reductive-groups Layer 2, the tangent Lie
   algebra of the real unit group, and its scalar extension to `ℂ`;
-- explicit maximal compacts `O(2) ⊆ GL₂(ℝ)` and `Sp(1) ⊆ ℍˣ`, their closed Lie-subgroup structures,
-  maximality, and conjugacy of choices; retain component-group data because `O(2)` is disconnected;
+- explicit maximal compacts `O(n) ⊆ GL_n(ℝ)`, `U(n) ⊆ GL_n(ℂ)`, and
+  `Sp(1) ⊆ ℍˣ`, their closed Lie-subgroup structures, maximality, and conjugacy of choices; retain
+  component-group data because `O(n)` may be disconnected;
 - differentiation of finite-dimensional continuous `K_v`-representations, including automatic
   smoothness, functoriality, and agreement with the Lie algebra of the closed subgroup;
 - a Harish--Chandra pair and its module category: a complex `𝔤_v`-module and a locally finite
-  continuous `K_v`-action;
+  `K_v`-action, meaning every vector lies in a finite-dimensional continuous `K_v`-stable subspace;
+  do not silently put an unspecified topology on the whole algebraic module;
 - both compatibility axioms: the differentiated `K_v`-action agrees with the restricted
   Lie-algebra action, and conjugating the `𝔤_v`-action by `k` agrees with `Ad(k)`;
 - `K_v`-finite vectors, the universal-enveloping-algebra action, and the action of its center;
@@ -372,15 +460,22 @@ modules as compatible data:
 
 This layer should consume the Lie group and universal-enveloping-algebra work in the representation-
 theory roadmap. Concrete matrix and quaternion unit groups are mandatory tests; the API must not
-assume every maximal compact group is connected.
-Layer 3 is closed only when the `(𝔤,K)` module attached to smooth functions on the real group can be
-constructed in Layer 4 and relative cochains can restrict its actions without additional analytic
-or differentiation machinery.
+assume every maximal compact group is connected, and the noncompact center is retained explicitly.
+Casselman--Wallach globalization, continuous Fréchet contragredients, the unitary dual, and
+Harish--Chandra's admissibility theorem for irreducible unitary representations are outside this
+algebraic layer. They must be added as named analytic prerequisites before any later roadmap uses
+them.
+
+Layer 3 closes only when the `(𝔤,K)` modules attached to the archimedean action on automorphic
+functions can be constructed in Layer 4, and relative cochains can restrict their actions without
+additional differentiation or globalization machinery.
 
 ## Layer 4: automorphic forms and automorphic representations
 
-Define complex-valued automorphic forms on `Dˣ(F)\Dˣ(𝔸_F)` with all standard conditions stated as
-real predicates:
+Define the shared automorphic-form interface for a concrete adelic group equipped with rational
+points, center, archimedean Lie data, parabolics, and a height. Instantiate it for `GL_n` and
+quaternionic `Dˣ`; do not write two definitions which merely happen to have the same fields. The
+standard conditions are real predicates:
 
 - the ambient function space: smooth in the archimedean variables and locally constant in the
   finite-adèlic variable, with a proved equivalence to invariance under some compact open at the
@@ -390,44 +485,56 @@ real predicates:
   right translation, and `K_∞`-finiteness;
 - `Z(𝔤_ℂ)`-finiteness, pinned as annihilation by a finite-codimensional ideal (and compared with a
   finite-dimensional center orbit under the hypotheses where they agree);
-- a basis-independent adelic norm/height from a faithful algebraic representation, comparison of
-  two choices, and moderate growth in that height on the quotient modulo center;
+- a basis-independent adelic height from a faithful representation which sees both `g` and `g⁻¹`,
+  comparison of two choices, quasi-submultiplicativity with its archimedean constants retained, and
+  moderate growth in that height on the quotient modulo center; determinant and reduced norm alone
+  are not heights because they miss directions such as `diag(t,t⁻¹,1,…)`;
 - a continuous central character on `Fˣ\𝔸_Fˣ` and its transformation law where one is specified;
-- Haar measure on each compact quotient `N(F)\N(𝔸_F)`, the constant-term integral, its convergence
-  and independence of normalization for the zero condition, and cuspidality as vanishing along
-  every proper parabolic from Layer 1;
-- reduced-norm characters `χ ∘ Nrd` as a separately recognized class of one-dimensional
-  automorphic representations.
+- Haar measure on each compact quotient `U_P(F)\U_P(𝔸_F)`, including a filtration of `U_P` by
+  additive quotients, the cocompactness theorem ultimately reduced to `F\𝔸_F`, and the Fubini and
+  quotient-measure comparisons which make iterated constant terms agree; define the integral and
+  prove independence of Haar normalization for its vanishing;
+- cuspidality as vanishing along every proper parabolic, with the maximal-standard-parabolic
+  criterion for `GL_n` proved from factorization of constant terms;
+- determinant characters `χ ∘ det` for `GL_n` and reduced-norm characters `χ ∘ Nrd` for `Dˣ` as
+  separately recognized one-dimensional automorphic representations.
 
-For `Dˣ`, prove the expected simplifications in anisotropic/totally definite cases instead of
-baking those simplifications into the general definition. In particular, prove that cuspidality is
-vacuous when `D` is division, rather than claiming that it excludes characters. In the split case
-prove that the concrete constant term is the usual upper-unipotent integral and is independent of
-the chosen splitting.
-Construct the right regular action and prove it preserves every condition.
+Construct the right regular action and prove that it preserves every condition. For split `GL_n`,
+prove that the concrete block-unipotent integrals are the constant terms attached to the Layer 0
+parabolics. For `Dˣ`, prove the expected simplifications rather than baking them into the shared
+definition: cuspidality is vacuous when `D` is division; in the split case the constant term is the
+usual `GL₂` upper-unipotent integral and is independent of the splitting.
 
-Use the algebraic space of `K_∞`- and center-finite cuspidal automorphic forms for this summit. Define
-the cuspidal automorphic spectrum as its finite-adèlic representation together with its
+Use the algebraic space of `K_∞`- and center-finite cuspidal automorphic forms. Define the cuspidal
+automorphic space as its finite-adèlic representation together with its
 archimedean `(𝔤,K)` action. Do not appeal to a Hilbert-space direct-integral or spectral-decomposition
 theorem that has not been built; an `L²` comparison may be proved later as a separate interface.
+In particular, make no assertion that the discrete spectrum is only cuspidal representations plus
+characters: residual representations already invalidate that pattern in higher rank. Eisenstein
+series, residual spectra, rapid decay, finite covolume, and spectral decomposition are out of scope.
 
 An automorphic representation is bundled as commuting archimedean Harish--Chandra and finite-
 adèlic restricted-tensor-product actions, irreducible and admissible in that product category,
-together with a subquotient witness in this spectrum. Thus its local components are data, not the
+together with a subquotient witness in this space. Thus its local components are data, not the
 output of an unstated Flath theorem. Keep the witness: later theorems need to transport Hecke
 eigenvalues and cohomology along it. Define isomorphisms of these bundles and prove independence of
-the chosen occurrence model. Once a full factorization theorem exists, prove comparison with the
-unbundled “irreducible global constituent” definition.
+the chosen occurrence model. This bundling does **not** prove that such objects exhaust all
+irreducible constituents, nor may admissibility be inferred from the proposed local factors without
+the relevant finiteness theorem. Those comparisons require Flath and Harish--Chandra results and
+belong to a later roadmap.
 
 **SIGN-OFF A occurs here.** Keep `IsCuspidal` as the standard constant-term predicate and keep
-`IsReducedNormCharacter` separate. If the summit is to include reduced-norm characters,
+`IsReducedNormCharacter` separate. If the target is to include reduced-norm characters,
 noncuspidal discrete constituents, or Eisenstein constituents, introduce those spectra distinctly
 and state their reducible conclusions. Do not redefine “cuspidal” case-wise to conceal the
 anisotropic phenomenon, and do not silently broaden `IsAutomorphic`.
 
 Tests:
 
-- when `D=M₂(F)`, compare the definitions with the standard adelic `GL₂` definitions;
+- `GL₁` recovers algebraic Hecke characters at the level of definitions;
+- for general `n`, the standard parabolics give the usual `GL_n` constant terms;
+- when `D=M₂(F)`, compare the quaternionic definitions with the same `GL₂` interfaces, rather than
+  with a second copy of them;
 - when `D` is totally definite, identify fixed-level weight-two forms with functions on the finite
   double quotient and recover the current FLT-style model after migration;
 - check that right translation, central character, and local-component conventions agree in both
@@ -435,11 +542,13 @@ Tests:
 
 ### Inhabitation track
 
-Before the summit is accepted, construct one non-character object satisfying its automorphic
-hypotheses. Use Mathlib's nonzero weight-12 modular discriminant and the theorem that the level-one
-weight-12 cusp-form space has rank one. Build, rather than assume, the required bridge:
+Before the attached-system target is accepted, construct one non-character object satisfying its
+automorphic hypotheses. Use Mathlib's nonzero weight-12 modular discriminant and the theorem that
+the level-one weight-12 cusp-form space has rank one. Build, rather than assume, the required bridge:
 
-- strong approximation and the classical-to-adelic quotient at level `GL₂(ℤ̂)`;
+- additive strong approximation for `F ⊂ 𝔸_F^S`, strong approximation for `SL₂`, and the separate
+  determinant fibration over the idele class group needed for the classical-to-adèlic quotient at
+  level `GL₂(ℤ̂)`; strong approximation for `SL₂` alone is not the dictionary;
 - adelization of the discriminant, with classical cusp decay implying the adelic constant-term
   condition and weight 12 giving the archimedean `K`-type;
 - the commuting finite-adèlic and archimedean actions generated by this form, an irreducible
@@ -451,9 +560,14 @@ inhabitation proof, not the normalization test of Layer 6, and every bridge name
 the work; the existence of a classical cusp form alone does not manufacture an automorphic
 representation.
 
-Layer 4 is closed only when the automorphic-form space itself carries the Layer 2 and Layer 3
-actions, constant terms are actual integrals, and the witness that `π` is a subquotient transports
-local components and Hecke actions without a new choice of model.
+Do not reuse this strong-approximation argument for a totally definite quaternion norm-one group:
+its archimedean factors are compact and the relevant strong approximation statement fails. The
+finite double-coset model there instead uses compactness modulo center.
+
+Layer 4 closes only when the same automorphic-form structure works for split `GL_n` and `Dˣ`, its
+constant terms are actual integrals, the Layer 2 and Layer 3 actions are defined, and an occurrence
+witness transports local components and Hecke actions without a new choice of model. No closure
+criterion invokes reduction theory, rapid decay, an `L²` decomposition, or exhaustiveness.
 
 ## Layer 5: relative Lie-algebra cohomology and “cohomological”
 
@@ -470,72 +584,108 @@ comparison with the existing degree-zero/degree-one API. Then construct relative
   `K`-equivariant alternating-map formula;
 - independence of equivalent Harish--Chandra models and conjugate maximal compact subgroups;
 - products over archimedean places and Künneth statements needed for global coefficient systems;
-- explicit finite-dimensional coefficient systems: for every real embedding of `F`, use a complex
-  splitting of `D` and the `GL₂` representation `Sym^n ⊗ det^m` prescribed by an integral highest
-  weight, tensor these over the embeddings, and prove independence of splittings by Skolem--Noether;
-  include rational structures, duals, tensor products, differentiation to the concrete real Lie
-  groups, and the comparison with the comodule/Weil-restriction formulation once that separate
-  reductive-groups interface exists;
+- explicit split coefficient systems for `GL_n`: construct the algebraic representation prescribed
+  by an integral dominant highest weight at each archimedean embedding, including rational
+  structures, scalar extension, duals, tensor products, and differentiation to `GL_n(ℝ)` or
+  `GL_n(ℂ)` as appropriate;
+- quaternionic coefficient systems: at every real embedding use a complex splitting of `D` and the
+  `GL₂` representation `Sym^r ⊗ det^m`, tensor over the embeddings, and prove independence of the
+  splittings by Skolem--Noether; compare with the comodule/Weil-restriction formulation only after
+  that separate reductive-groups interface exists;
 - the predicate that `π` is cohomological when some relative cohomology group of
   `π_∞ ⊗ W` is nonzero, recording the coefficient system `W` and degree;
-- the classification/computation for `GL₂(ℝ)` and `ℍˣ`, enough to recover the familiar parallel and
-  nonparallel weight conditions.
+- the defining examples for general split `GL_n`, and the classification/computation for
+  `GL₂(ℝ)` and `ℍˣ` needed to recover the familiar parallel and nonparallel weight conditions.
 
 Do not replace the cohomology definition by a weight predicate. The weight classification is a
 theorem and a critical test, while relative cohomology is the invariant definition used at the
-summit.
+target.
 
-**SIGN-OFF B occurs here.** Confirm whether `W` or its dual appears and the C-algebraic/L-algebraic
-twist. The treatment of the real split center is already pinned in Layer 0; changing it changes the
-cohomological degrees as well as the predicate and requires a roadmap amendment. The finite-place
-polynomial in Layer 6 and the Galois representation in Layer 9 must be adjusted together if the
-algebraicity normalization changes.
+**SIGN-OFF B occurs here.** Confirm whether `W` or its dual appears. For `GL_n`, record explicitly
+that the C-to-L-algebraic change is `|det|^{(n-1)/2}`; for quaternionic `Dˣ` it is the `n=2`
+reduced-norm analogue. The treatment of the real split center is already pinned in Layer 0;
+changing it changes the cohomological degrees as well as the predicate. The finite-place polynomial
+in Layer 6 and the Galois representation in Layer 9 must change together if this normalization
+changes.
 
-Layer 5 is closed only when `π.IsCohomological` returns or contains an honest coefficient
-representation, cohomological degree, and nonzero class in a defined cohomology object, and when the
-split `GL₂(ℝ)` and ramified `ℍˣ` computations use that same definition.
+Layer 5 closes only when `π.IsCohomological` contains an honest coefficient representation,
+cohomological degree, and nonzero class in a defined cohomology object; the split `GL_n`
+coefficient systems elaborate uniformly; and the `GL₂(ℝ)` and `ℍˣ` computations use that same
+definition.
 
-## Layer 6: spherical Hecke algebras and rationality
+## Layer 6: double cosets, `GL_n` Satake theory, and quaternionic rationality
 
-At every split unramified finite place `v`, construct the spherical Hecke algebra of compactly
-supported, bi-`K_v`-invariant functions with convolution. Normalize Haar measure by `vol(K_v)=1`.
-Develop:
+### 6.1 Shared Hecke interface
 
-- locally constant compactly supported functions, closure and integrability of convolution, the
-  algebra laws, and comparison of convolution with the finite double-coset sum acting on smooth
-  representations and global automorphic forms;
-- finiteness of `K_v\K_vgK_v`, characteristic functions of double cosets, the `GL₂` Cartan
-  decomposition, the spherical Hecke algebra calculation, and the normalized Satake transform;
-- the standard operators `T_v` and `S_v`, including their matrix representatives and independence
-  from the choice `D_v ≃ M₂(F_v)`;
-- the action on `K_v`-fixed vectors and the theorem that this fixed space is one-dimensional for an
-  irreducible unramified admissible local representation; only then define its scalar eigenvalues
-  `a_v,s_v`;
-- compatibility with restricted tensor products and with global right translation;
-- the finite bad set combining ramification of `D`, ramification of the representation, and places
-  where the chosen integral/spherical data are unavailable;
-- a rationality-field *data structure* containing a number field `E`, an embedding `ι∞ : E → ℂ`,
-  the finite bad set, and polynomials `P_v=X²-a_vX+N(v)s_v ∈ E[X]`, together with the assertion that
-  mapping by `ι∞` gives the complex Hecke polynomial;
-- invariance of this package under isomorphism of automorphic representations and enlargement of
-  the bad set, and comparison of any two rationality models after embedding their coefficient
-  fields in a common overfield; in particular the good polynomial is an invariant of `π`, not free
-  data that can be chosen to fit an unrelated Galois family.
+Consume the abstract double-coset ring and integral `GL_n` calculations from the
+[Modular Forms roadmap](../ModularForms/README.md#layer-2-hecke-operators-and-the-hecke-algebra)
+once they have landed. Do not define a rival basis or multiplication. For a locally profinite group
+`G` and compact open `K`, construct the complex spherical Hecke algebra of compactly supported,
+locally constant, bi-`K`-invariant functions with convolution and `vol(K)=1`. Prove:
+
+- closure and integrability of convolution and the algebra laws;
+- finiteness of the relevant coset decompositions and comparison with the finite double-coset sum;
+- an explicit isomorphism from the scalar extension of the integral double-coset ring to the
+  convolution algebra, tracking whether `g ↦ g⁻¹` introduces an opposite ring;
+- compatible actions on `K`-fixed vectors and automorphic forms, transition maps when the level
+  changes, and compatibility with restricted tensor products and global right translation.
+
+The Modular Forms hand-off is proved first for `ℤ_p ⊂ ℚ_p`. Generalize the elementary-divisor and
+lattice-counting comparison to the valuation ring `𝒪_v ⊂ F_v` at an arbitrary number-field place,
+including existence and change of uniformizer, residue-cardinality bookkeeping, and preservation of
+structure constants. None of those results follows merely by renaming `p` to `v`.
+
+The full nonunital algebra `C_c^∞(G)=⋃_K H(G⫽K)` may be packaged from these levels, but an
+equivalence between all smooth representations and nondegenerate modules over it is not required by
+the attached-system target and must not be assumed. Iwahori calculations are likewise downstream.
+
+### 6.2 Split `GL_n` and Satake
+
+For `K_v=GL_n(𝒪_v)`, build the Cartan decomposition indexed by dominant coweights, its finiteness
+and convolution structure constants, and the Satake isomorphism. The implementation shares the
+composition/dominance combinatorics from Layer 0 and the localized integral ring from Modular Forms
+Layer 2. Pin both normalizations:
+
+- the normalized transform uses `δ_B^{1/2}` and, over `ℂ`, the positive square root of the residue
+  cardinality `q_v`; over other coefficients the required square root or extension is data;
+- the characteristic function of
+  `K_v diag(ϖ,…,ϖ,1,…,1) K_v` maps to the precisely stated `q_v`-power multiple of the corresponding
+  elementary symmetric polynomial, not to a bare generator;
+- the unnormalized transform and its twisted Weyl action are separately named.
+
+Prove that an irreducible admissible spherical `GL_n(F_v)` representation has a one-dimensional
+`K_v`-fixed space, relate its eigencharacter to the unordered Satake parameter, and test the formula
+on explicit unramified principal series. At `n=2`, recover the standard unnormalized `T_v,S_v` and
+
+```text
+P_v(X)=X²-a_vX+N(v)s_v.
+```
+
+### 6.3 Quaternionic good places and rationality
+
+At a split finite place, transport the `n=2` construction to `D_vˣ` and prove independence of
+`D_v ≃ M₂(F_v)` by inner conjugacy. Package a `RationalityModel π E` containing:
+
+- an embedding `ι∞ : E → ℂ` and a finite set `S` containing every nonsplit place, every place where
+  `π_v` is not spherical, and every place where the required integral data are unavailable;
+- a predicate `IsGoodPlace v := v ∉ S` together with the split/unramified consequences;
+- polynomials `P_v=X²-a_vX+N(v)s_v ∈ E[X]` for good `v`, and a proof that mapping by `ι∞` gives the
+  actual complex Hecke polynomial of `π`, not merely a polynomial with the desired shape;
+- invariance under isomorphism of automorphic representations and enlargement of `S`, and comparison
+  of two rationality models after embedding their coefficient fields in a common overfield.
 
 Use a record carrying the field and embeddings rather than asserting that all eigenvalues literally
-belong to a predetermined subfield of `ℂ`. Prove comparison theorems with classical Hilbert Hecke
-operators and with the migrated totally definite FLT operators. Coordinate with the open FLT work
-on commutativity of its `U` operators and Hecke algebra
-([FLT#584](https://github.com/ImperialCollegeLondon/FLT/issues/584),
-[FLT#585](https://github.com/ImperialCollegeLondon/FLT/issues/585)); the summit itself only uses good
-spherical operators.
+belong to a predetermined subfield of `ℂ`. Compare with the classical arithmetic normalization in
+Modular Forms PR #47 and with the migrated totally definite FLT operators. Coordinate with
+[FLT#584](https://github.com/ImperialCollegeLondon/FLT/issues/584) and
+[FLT#585](https://github.com/ImperialCollegeLondon/FLT/issues/585); the target uses only spherical
+good-place operators.
 
-The roadmap does not assume or separately prove a rationality theorem for every cohomological `π`:
-existence of `E` and of this rationality model is part of the attached-system statement. Layer 6
-builds the type and its comparison laws so that this existential conclusion has mathematical
-content. It is closed when the unramified-principal-series and totally definite examples produce
-the exact displayed polynomial and a change of local splitting or Haar presentation provably
-leaves it unchanged.
+Existence of a rationality model for every relevant `π` is not assumed: it is part of the
+attached-system conclusion. Layer 6 closes when the general `GL_n` principal-series test has the
+exact normalized `q_v` powers, the `n=2` and totally definite examples produce the displayed
+polynomial, and changes of level presentation, Haar presentation, or quaternionic splitting leave
+the represented Hecke data unchanged.
 
 ## Layer 7: local Galois theory at finite places
 
@@ -564,7 +714,7 @@ sums, conjugate representations, and base change along a number-field embedding.
 
 For this roadmap, semisimplicity is a predicate on a representation. A general continuous
 semisimplification construction, including proof that it preserves continuity over `Q̄_p`, is built
-before it is used by the operations library but is not smuggled into the summit merely by writing
+before it is used by the operations library but is not smuggled into the target merely by writing
 `ρᵐˢˢ`. Layer 7 is closed when unramified arithmetic-Frobenius characteristic polynomials are
 basis-, lift-, and local-embedding-independent and can be mapped along a coefficient embedding.
 
@@ -602,7 +752,7 @@ behavior of good polynomials under sums, duals, and Tate twists.
 **SIGN-OFF C occurs here.** Record explicitly that neither de Rham/crystalline behavior nor
 Hodge--Tate weights are fields of `GoodPlaceCompatible`. “Strict compatibility” is another stronger
 structure, requiring local Weil--Deligne representations and a common local parameter even at bad
-places. Neither stronger meaning is claimed by the summit theorem.
+places. Neither stronger meaning is claimed by the attached-system target.
 
 Equivalence of systems carries explicit pointwise intertwiners after a common coefficient-field
 extension; it is not defined as equality of good polynomials, which would hide Chebotarev and
@@ -643,41 +793,46 @@ The final declaration must expose, directly or through documented structures:
 - the precise automorphic spectrum, the standard cuspidality predicate, and the separate exclusion
   of reduced-norm characters;
 - the coefficient system witnessing cohomology;
-- a rationality field and good-place Hecke polynomials;
+- a rationality field, a finite bad set containing the nonsplit and nonspherical places, a named
+  `IsGoodPlace`, and Hecke polynomials attached to the actual `π` at every good place;
 - two-dimensional continuous semisimple representations for every `(p,φ)`;
-- a finite bad set, unramifiedness away from it and `p`, and arithmetic-Frobenius characteristic-
+- unramifiedness away from the named bad set and `p`, and arithmetic-Frobenius characteristic-
   polynomial equality.
 
 ## Acceptance suite
 
 The roadmap is complete only when all of the following compile as examples or theorems.
 
-1. `D=M₂(F)` produces the standard `GL₂(𝔸_F)` local and global interfaces.
-2. An explicit unramified principal series of `GL₂(F_v)` yields
-   `(X-α_v)(X-β_v)` from its Satake parameters under the pinned normalization, including the stated
-   formulas for `T_v`, `S_v`, and the norm factor.
-3. Over an even-degree totally real field, a totally definite quaternion algebra unramified at
+1. For every positive `n`, `GL_n(F_v)` and `GL_n(𝔸_F)` carry the stated local, restricted-product,
+   parabolic, quotient, and archimedean interfaces, with `GL₁` recovering the expected character
+   definitions.
+2. The scalar extension of `D=M₂(F)` produces the *same* `GL₂` local and global interfaces, up to
+   named equivalences, rather than a parallel hierarchy.
+3. The integral `GL_n` double-coset ring from Modular Forms Layer 2 maps to the `vol(K)=1`
+   convolution algebra with matching structure constants and the pinned inverse/opposite convention.
+4. An explicit unramified principal series of `GL_n(F_v)` gives the expected Satake parameter and
+   exact `q_v`-scaled elementary symmetric eigenvalues. At `n=2` its polynomial is
+   `(X-α_v)(X-β_v)=X²-a_vX+N(v)s_v` in the pinned unnormalized convention.
+5. Over an even-degree totally real field, a totally definite quaternion algebra unramified at
    every finite place, at parallel weight two and trivial central character, recovers the migrated
-   FLT automorphic-form and good `T_v` interfaces; its conjectural polynomial has trace `T_v` and
+   FLT automorphic-form and good `T_v` interfaces; its target polynomial has trace `T_v` and
    determinant `N(v)`.
-4. With the full Lie algebra and genuine-maximal-compact convention, the relative cohomology has
-   the expected algebraic weights and degrees: degrees `1,2` for the cohomological `GL₂(ℝ)` discrete
-   series and degrees `0,1` for `ℍˣ` when the infinitesimal central characters cancel (and it
-   vanishes for a mismatched central action).
-5. The cyclotomic characters satisfy the rank-one good-place-compatibility predicate with
-   `P_v(X)=X-N(v)` for arithmetic Frobenius.
-6. Enlarging the coefficient field or bad set does not change the represented good-place compatible
-   system.
-7. No Tau Ceti file imports `FLT`; the Tau Ceti code repository's human-owned CI carries a check for
-   this architectural boundary.
-8. The summit declaration elaborates with no proxy `Prop`, no suppressed compilation, and no
-   hypotheses that merely name missing mathematics.
-9. The adelized modular discriminant supplies a concrete `π` satisfying the cuspidal,
-   non-reduced-norm-character, and cohomological hypotheses, so the challenge statement's input
-   class is provably inhabited.
-10. A `RationalityModel` for `π` proves that its embedded polynomials equal `π`'s Hecke
-    polynomials, and two such models compare in a common overfield; unrelated polynomials and the
-    family `1 ⊕ χ_cyc` cannot witness the conclusion for an arbitrary `π`.
+6. With the full Lie algebra and genuine-maximal-compact convention, the relative cohomology has
+   the expected algebraic weights and degrees: degrees `1,2` for cohomological `GL₂(ℝ)` discrete
+   series and degrees `0,1` for `ℍˣ` when infinitesimal central characters cancel, vanishing for a
+   mismatched central action.
+7. The adelized modular discriminant supplies a concrete `GL₂` automorphic representation and,
+   through the split quaternion comparison, an input satisfying the target's cuspidal,
+   non-reduced-norm-character, and cohomological hypotheses. Its construction exhibits the additive,
+   `SL₂`, and determinant/idele-class steps separately.
+8. The cyclotomic characters satisfy good-place compatibility with `P_v(X)=X-N(v)` for arithmetic
+   Frobenius; enlarging the coefficient field or bad set gives an explicit equivalent system.
+9. A `RationalityModel` for `π` proves that its embedded polynomials equal `π`'s Hecke polynomials,
+   and two models compare in a common overfield; unrelated polynomials and `1⊕χ_cyc` cannot witness
+   the conclusion for arbitrary `π`.
+10. No Tau Ceti file imports `FLT`; the human-owned CI checks this architectural boundary.
+11. The attached-system declaration elaborates with no proxy `Prop`, suppressed compilation, or
+    hypotheses which merely name missing mathematics.
 
 ## Migration and provenance from FLT
 
@@ -707,6 +862,14 @@ lemmas with the specialized FLT definitions before deleting duplication.
 
 ## References
 
+- J. Getz and H. Hahn, [*An Introduction to Automorphic
+  Representations*](https://services.math.duke.edu/~jgetz/aut_reps.pdf), GTM 300 (2024): adelic
+  groups, Hecke algebras, automorphic forms, factorization, Satake theory, and `(𝔤,K)`-cohomology.
+- B. Gross, [*On the Satake
+  isomorphism*](https://people.math.harvard.edu/~gross/preprints/sat.pdf), in *Galois Representations in
+  Arithmetic Algebraic Geometry* (1998): the dominance-triangular construction and normalization.
+- G. Shimura, *Introduction to the Arithmetic Theory of Automorphic Functions*, Chapter 3: the
+  integral double-coset Hecke rings consumed through the Modular Forms roadmap.
 - R. Taylor, [*On Galois representations associated to Hilbert modular
   forms*](https://typo.iwr.uni-heidelberg.de/fileadmin/groups/arithgeo/templates/data/Hauptseminare/Literature-WS13/taylor_on_gal_reps_associated_to_HMF_1989__01.pdf),
   Invent. Math. 98 (1989), 265--280, Conjecture 1: the good-place `T_v,S_v` formulation and
