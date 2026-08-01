@@ -21,8 +21,9 @@ content of a masters/PhD course on the subject,
 resting throughout on complex analysis, Fourier analysis, and the arithmetic of `SL₂(ℤ)`.
 
 The hardest target is the **dimension formulas** for `M_k(Γ)` and `S_k(Γ)` at general level
-(Diamond–Shurman Thm 3.5.1), proved by the **classical analytic route**: the valence formula
-together with the elliptic-point and cusp counts of the quotient `Γ\ℍ`. Mere
+(Diamond–Shurman Thms 3.5.1 and 3.6.1), proved by the **classical analytic route**: the valence
+formula and the elliptic-point and cusp counts of the quotient `Γ\ℍ` for the upper bounds, and
+analytic Riemann–Roch on `X(Γ)` — built inside Layer 10, not assumed — for the lower bounds. Mere
 *finite-dimensionality* at general level is **not** the hard part — it arrives in Mathlib by the
 elementary Sturm-bound route (see Layer 10) and this roadmap consumes it. What this roadmap adds
 is the **exact dimension formula** of Diamond–Shurman Thm 3.5.1 — `dim M_k(Γ)` and `dim S_k(Γ)`
@@ -191,8 +192,9 @@ that it is a number field — both **already constructed in AINTLIB**, so this o
 (§Layer 8, §Provenance); the LMFDB invariants (Satake parameters, Hecke characteristic
 polynomials, Galois orbits, labels, …); the **modular curve** `X(Γ)` as the compactified analytic
 quotient `Γ\ℍ`, with its cusps, elliptic points, and genus; the **dimension formulas** for
-`M_k(Γ)` and `S_k(Γ)` — the valence formula for the upper bounds, the lower bounds **gated on a
-planned compact-Riemann-surfaces roadmap** supplying analytic Riemann–Roch (Layer 10); and the level-one **Eichler–Selberg trace
+`M_k(Γ)` and `S_k(Γ)` — the valence formula for the upper bounds, the lower bounds by **analytic
+Riemann–Roch on `X(Γ)`, built inside Layer 10** (finiteness of `H¹`, Serre duality,
+Riemann–Hurwitz — see there); and the level-one **Eichler–Selberg trace
 formula** together with the **Hurwitz class numbers** it needs (absent from Mathlib). Apart from
 the abstract Hecke ring and the
 Sturm-bound finiteness now landing in Mathlib (consumed above), none of this is upstream.
@@ -285,17 +287,48 @@ below sketches signatures; it is illustrative, not required to compile.
   dimension formulas.
 
 ### Layer 2: Hecke operators and the Hecke algebra
-- **(a) The abstract Hecke ring — consume Mathlib's.** The double-coset ring of a Hecke pair is
+- **(a) The Hecke ring, stated at `GL_n` — consume Mathlib's abstract ring, migrate AINTLIB's
+  `GLn/` development.** The double-coset ring of a Hecke pair is
   landing in Mathlib (`NumberTheory/HeckeRing/Defs.lean` #41251, merged; the convolution ring
   structure in review, #41253–#41256, #41277, #41279, #41328 — see *What Mathlib already has*): `IsHeckeTriple`,
   `HeckeCoset`, `𝕋 Δ H Z`, with the finiteness (`Γ ∩ gΓg⁻¹` of finite index, so `ΓgΓ = ⊔ᵢ gᵢΓ`
-  is a finite union of cosets) packaged in the commensurator conditions. What this roadmap adds
-  on top: the classical `GL₂(ℚ)` instances — `Γ₀(N)`, `Γ₁(N)` inside the integral-matrix
-  submonoid (AINTLIB `Gamma0_pair`, `Gamma1Pair.lean`) — the degree map, and **commutativity**
-  via the transpose anti-involution fixing every double coset (AINTLIB
-  `mul_comm_of_antiInvolution`, `GLn/TransposeAntiInvolution.lean`). Keep the
-  abstract ring separate from its action, so the structural facts (commutativity, generation by
-  `T_p`, `⟨p⟩`) are proved once.
+  is a finite union of cosets) packaged in the commensurator conditions. On top of it this
+  roadmap states the concrete theory at **general `n`**, where AINTLIB has already built most of
+  it (`HeckeRIngs/GLn/*`): the pair `(SL_n(ℤ), Δ_n)` with `Δ_n` the positive-determinant
+  integral matrices (Shimura §3.2; `GLn/Basic.lean`); **commutativity** via the transpose
+  anti-involution fixing every double coset (Shimura Prop 3.8; `mul_comm_of_antiInvolution`,
+  `GLn/TransposeAntiInvolution.lean` — sorry-free at general `n`); the degree map
+  (`GLn/Degree.lean`); the elementary-divisor parametrization of double cosets by diagonal
+  representatives with coprime factorization (`GLn/DiagonalCosets.lean`,
+  `GLn/PrimeDecomposition.lean`, `GLn/CoprimeMul.lean`); and the `p`-local ring `R_p` with
+  **Shimura's Theorem 3.20**: `R_p ≅ ℤ[T(p,1,…,1), …, T(p,…,p)]`, a polynomial ring on the `n`
+  diagonal prime cosets (`GLn/PolynomialRing.lean` — proved for `n = 2`; at general `n` two
+  named steps remain, and they must contain: uniqueness of the leading double coset in the
+  triangular expansion, leading coefficient `1` — a triangular formula whose leading coefficient
+  is a power of `p` gives rational but not integral generation — well-foundedness of the
+  weight-then-dominance order, and recovery of the generator exponents from the leading
+  elementary-divisor vector). Congruence level stays at `n = 2` (Shimura §3.3; AINTLIB
+  `GLn/CongruenceHecke/*`): the pairs `(Γ₀(N), Δ₀(N))`, `Γ₁(N)` (`Gamma0_pair`,
+  `Gamma1Pair.lean`), the surjection `R(SL₂(ℤ), Δ) →+* R(Γ₀(N), Δ₀(N))` of Shimura Thm 3.35
+  with kernel generated by `T(p,p)` for `p ∣ N`, and commutativity at level `N` by the
+  Atkin–Lehner anti-involution. Keep the abstract ring separate from its action, so the
+  structural facts are proved once, at the generality where they live.
+- **(a′) The hand-off to the automorphic-representations roadmap.** That roadmap's spherical
+  Hecke algebras are instances of this layer, so two milestones are stated here for it to
+  consume. First, the identification of the `p`-integral part with the genuinely `p`-adic
+  double-coset ring of the pair `(GL_n(ℤ_p), M_n(ℤ_p) ∩ GL_n(ℚ_p))`; Rhodes–Shemanske §2 give
+  the comparison chain `H(SL_n(ℤ), M_n^+(ℤ)) ↪ H(SL_n(ℤ), GL_n^+(ℚ)) ≅ H(GL_n(ℤ), GL_n(ℚ))`,
+  the left map an injection only. ⚠ The identification is more than a bijection of double-coset
+  bases: the structure constants must agree, which is a lattice-counting comparison under
+  `L ↦ L ⊗ ℤ_p` (finite-index sublattices of `ℤⁿ` with `p`-primary quotient correspond to
+  finite-index `ℤ_p`-lattices, preserving relative elementary divisors) — state "local–global
+  compatibility of the coset decompositions and structure constants" as its own milestone,
+  together with the determinant-sign lemmas (Smith normal form with positive diagonal entries
+  via `SL_n(ℤ)`-changes of basis; `−Iₙ` creates no new double coset for either parity of `n`;
+  embedding matrices into `ℚ_p` gives the ring homomorphism only once the coset decompositions
+  are matched, not before). Second, inverting the central coset `T(p,…,p)` to obtain the full
+  local algebra `ℤ[T_{p,1}, …, T_{p,n−1}, T_{p,n}^{±1}]` (Rhodes–Shemanske) — the ring on which
+  that roadmap's Satake theory begins.
 - **(b) The action on forms.** `Tₙ`, `Tₚ` as `ℂ`-linear endomorphisms of `M_k(Γ₁(N))` preserving
   `M_k(N,χ)` and `S_k(N,χ)`, the ring homomorphism from the abstract ring, and the explicit
   **`q`-expansion recurrences** — AINTLIB's shapes:
@@ -315,6 +348,10 @@ below sketches signatures; it is illustrative, not required to compile.
   ⚠ Adopt Diamond–Shurman's convention `χ(p) = 0` for `p ∣ N` (the `Newform.dirichletLift`
   zero-extension), so the single recurrence also covers the bad-prime operator (`p ∣ N`);
   AINTLIB's `p ∣ N` branch indeed carries no `χ` term.
+  ⚠ State and keep one **normalization lemma** identifying the abstract double coset
+  `[Γ₁(N)·diag(1,p)·Γ₁(N)]`, acting through the slash action, with the classical `Tₚ` of these
+  recurrences; without it, powers of `p` drift between the abstract and classical sides of the
+  ring homomorphism.
 - **`Uₚ` is an alias, and that is a milestone.** With the convention above, at `p ∣ N` the
   recurrence reads `aₘ(Tₚ f) = a_{mp}(f)` — which is the *definition* of the operator modern
   papers call `Uₚ`. Following Miyake, D–S and Shimura, `Tₙ` is the primitive notion, defined
@@ -333,7 +370,8 @@ below sketches signatures; it is illustrative, not required to compile.
   ⚠ The action must preserve cuspidality and the nebentypus; prove that, don't assume it.
 
 - The Hecke algebra in this roadmap is the classical double-coset ring of (a)–(b). Its adelic
-  reformulation is **out of scope** here and left to a future roadmap.
+  reformulation is **out of scope** here: the automorphic-representations roadmap consumes the
+  `GL_n` ring of (a)/(a′) and builds the convolution comparison on its own side.
 
 ### Layer 3: the Petersson inner product, adjoints, oldforms and newforms
 - **The Petersson inner product** as a genuine positive-definite Hermitian inner product on
@@ -757,12 +795,54 @@ representability, no moduli problem**.
   surface: the topology and complex charts at ordinary points, at the elliptic points (where the
   chart is `z ↦ z^{e_P}`), and at the cusps (the `q`-disc chart); the **cusp count** `ε∞ = #Γ\ℙ¹(ℚ)`
   and the **elliptic-point counts** `ε₂, ε₃` (periods `2, 3`, counted in the `PSL₂(ℤ)`-image where
-  the elliptic stabilizers are cyclic of order `2, 3`); and the **genus** `g` of `X(Γ)` as
-  the genus of this compact Riemann surface — via the Euler characteristic of the
-  `SL₂(ℤ)\ℍ*`-covering (Diamond–Shurman §3.1, §3.9). These
+  the elliptic stabilizers are cyclic of order `2, 3`); and the **genus** `g` of `X(Γ)` — defined
+  **analytically**, `g = dim H¹(X(Γ), 𝒪)` (equivalently `dim H⁰(Ω¹)`, by the duality below),
+  and computed by Riemann–Hurwitz over `X(1)` in the Riemann–Roch chain below, replacing
+  Diamond–Shurman's topological Euler-characteristic route (§3.1): no triangulations enter the
+  roadmap. These
   counts and the genus are the inputs to the dimension formulas; building them is part of this
   layer, not assumed.
-- **The dimension formulas** (Diamond–Shurman Thm 3.5.1) — honest about their two halves. The
+- **The Riemann–Roch input — built here, not assumed.** The lower bounds need analytic
+  Riemann–Roch on `X(Γ)`, and no compact-Riemann-surfaces roadmap exists to cite; so the
+  minimal chain is part of this layer (in the spirit of the PR #36 review's advice — analytic
+  curve, no GAGA — with Riemann–Roch actually supplied; Forster, *Lectures on Riemann
+  Surfaces*, GTM 81, §§14–17, is the reference for exactly this route). The milestones, in
+  order:
+  (i) the structure sheaf and the sheaves `𝒪_D` of a divisor on a compact Riemann surface,
+  Čech `H⁰` and `H¹` (refinement-independent via Forster's degree-one Leray theorem: a cover
+  by `𝒪`-acyclic opens computes `H¹`, with acyclicity of discs from the **local `∂̄`-lemma**
+  — the one piece of genuine PDE input, used again in (ii)); `H⁰(X, 𝒪) = ℂ` by compactness
+  and the maximum principle.
+  (ii) **finiteness**, `dim H¹(X, 𝒪_D) < ∞` — Forster §14: `L²` norms on Čech cochains over a
+  finite cover, Cauchy–Taylor estimates making restriction to a nested cover small in norm off
+  a finite-codimensional subspace, partitions of unity plus the local `∂̄`-lemma to compare
+  cocycles, the open-mapping theorem for a uniform lifting estimate, and iteration. This is
+  the hardest single input of the layer: Mathlib has the Čech complex, sheaf cohomology,
+  compact operators, and the open-mapping theorem, but no Riemann-surface structure sheaf,
+  no Leray theorem, no `∂̄`-solver — price it as a project, not an import.
+  (iii) **Riemann–Roch** in Euler-characteristic form, `χ(𝒪_D) = deg D + 1 − g` with
+  `g := dim H¹(X, 𝒪)` defined analytically, by induction along
+  `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0` and the six-term exact sequence (cohomology stops at `H¹`).
+  (iv) meromorphic differentials and their divisors, and **Serre duality** by the residue
+  pairing (Forster §17): `H¹(𝒪_D)^* ≅ H⁰(Ω_{−D})`, whence `ℓ(D) − ℓ(K−D) = deg D + 1 − g`,
+  `dim H⁰(Ω¹) = g`, `deg K = 2g − 2`, and the vanishing `H¹(𝒪_D) = 0` for `deg D > 2g − 2`
+  that the exact formulas below actually use.
+  (v) **Riemann–Hurwitz** for a finite holomorphic map of compact Riemann surfaces, from the
+  local normal form and the canonical-divisor pullback.
+  (vi) `X(1) ≅ ℙ¹` via the `j`-function, as an explicit lemma chain: `j` descends through the
+  elliptic charts (the orders of `j` and `j − 1728` at `ρ` and `i` are what make the descended
+  map regular there), one simple pole at the cusp and no others, the degree of a map to `ℙ¹`
+  equals the degree of its pole divisor, nonconstant maps from a compact surface are proper,
+  open, and surjective, and degree one forces a biholomorphism **via the local normal form**
+  (a continuous bijection gives only a homeomorphism). Then the **genus of `X(Γ)`** falls out
+  of (v) applied to `X(Γ) → X(1)`, with ramification from the stabilizer indices at the
+  elliptic orbits and the cusp widths:
+  `g = 1 + d/12 − ε₂/4 − ε₃/3 − ε∞/2`, `d = [PSL₂(ℤ) : Γ̄]` — ⚠ the `PSL₂`-index, not
+  `[SL₂(ℤ) : Γ]`. `dim S₂(Γ) = g` is then `S₂(Γ) ≅ H⁰(X(Γ), Ω¹)` plus (iv).
+  A fuller compact-Riemann-surfaces roadmap (Abel–Jacobi, uniformization, …) remains
+  desirable later and would absorb and extend (i)–(v); nothing here waits for it.
+- **The dimension formulas** (Diamond–Shurman Thm 3.5.1 for even weight, Thm 3.6.1 for odd) —
+  honest about their two halves. The
   Layer-1 valence formula with the `ε₂, ε₃, ε∞` counts and the genus `g` above yields the
   **upper bounds**: enough imposed zeros force a form to vanish. It does **not** by itself
   produce the required number of independent forms. The **lower bounds are Riemann–Roch**:
@@ -770,20 +850,32 @@ representability, no moduli problem**.
   `X(Γ)` (with the `⌊·⌋`-corrections at elliptic points and cusps — D–S §§3.5–3.6), and apply
   **analytic Riemann–Roch** `ℓ(D) − ℓ(K−D) = deg D + 1 − g` on the compact Riemann surface
   `X(Γ)`, together with `S_2(Γ) ≅ H⁰(X(Γ), Ω¹)` and `dim H⁰(X, Ω¹) = g`.
-  ⚠ **Analytic Riemann–Roch is consumed here, not built — and its roadmap does not exist
-  yet.** Divisors and Riemann–Roch on compact Riemann surfaces belong to a **planned**
-  compact-Riemann-surfaces roadmap (in the spirit of the PR #36 review's advice: analytic
-  curve, no GAGA, but Riemann–Roch actually supplied). Until that roadmap is written and
-  cited here, **the exact general formulas below are *not* part of this roadmap's grounded
-  portion**: they are stated as the layer's summit and explicitly **gated** on that future
-  roadmap, per the repository rule that missing material must be a target here or in a cited
-  roadmap. What *is* grounded now: `X(Γ)` and its charts, the `ε₂, ε₃, ε∞` counts and the
-  genus, finite-dimensionality via the Sturm stack, the valence-formula **upper bounds**, and
-  the concrete `Suggested.lean` instances — whose lower bounds come from explicitly exhibited
-  forms (the level-`11` eta quotient, weight-`2` Eisenstein series), not from general
-  Riemann–Roch. That Riemann–Roch input is *not* the Jacobian Challenge's algebraic
+  The Riemann–Roch input is the chain above — built in this layer, so the exact formulas
+  below sit inside this roadmap's grounded portion. That input is *not* the Jacobian Challenge's algebraic
   `χ(L) = deg L + 1 − g` (its Layer B): identifying the analytic and algebraic theories is a
-  comparison this roadmap deliberately does not own. With the gated inputs, the formulas —
+  comparison this roadmap deliberately does not own.
+  ⚠ **Even and odd weight are genuinely different, and the textbook's odd-weight route is not
+  the one to formalize.** For even `k`, identifying `M_k(Γ)` and `S_k(Γ)` with `L(D)` for the
+  floor-corrected divisors (D–S §3.5) needs only the chart-level statements this layer already
+  builds, after choosing an even-weight reference form (powers of `Δ` or of a weight-`2`
+  Eisenstein series suffice). For odd `k`, D–S's own existence argument for a nonzero
+  odd-weight form (their pp. 91–92) runs through Abel's theorem on the Jacobian, a meromorphic
+  square root, and a possible degree-two function-field extension — machinery far beyond this
+  roadmap. **Route around it**: prove the chain (i)–(iv) for the **weight-`k` automorphy line
+  bundle directly** — the invertible sheaf given by the explicit chart trivializations with
+  the elliptic/cusp floor corrections — rather than only for `𝒪_D` of a global divisor. The
+  same proofs go through verbatim, both parities of `k ≥ 3` follow uniformly, and no global
+  meromorphic reference form is ever chosen. Weight `1` stays exceptional and is stated as
+  such (bounds and the `M₁`/`S₁` relation; no closed formula in `g, ε₂, ε₃, ε∞` exists).
+  ⚠ **Adopt the corrected irregular-cusp order convention before proving anything.** The
+  official D–S errata (their pp. 74–75) fix the definition: at an irregular cusp of width `h`
+  the relevant period is `2h` **independently of the weight**, the order is read from the
+  `q_{2h}`-expansion and equals `m/2` — half-integral exactly when odd weight forces `m` odd —
+  and with this convention orders are additive under multiplication. The regular/irregular
+  bookkeeping of Thm 3.6.1 is then sound as printed (the errata also fix the `ε_{3,i}` typo on
+  their p. 90). Record alongside: at odd weight with `−I ∉ Γ` there are no period-`2` elliptic
+  points, and the `⌊·⌋`-identities for the rational divisors are proved coefficientwise.
+  With those inputs, the formulas —
   extending Mathlib's level-one `ModularForm.dimension_level_one` to general level — read,
   for **even `k`**:
   ```text
@@ -796,9 +888,8 @@ representability, no moduli problem**.
 - `Suggested.lean` seeds this layer with concrete instances at levels `> 1`: `dim S_2(Γ₀(11)) = 1`,
   `dim S_2(Γ₀(23)) = 2`, `dim S_2(Γ₀(2)) = 0`, `dim M_2(Γ₀(11)) = 2`. The general even-weight
   formula above is the layer's headline target; it is stated here in the README (its inputs are
-  the `ε₂, ε₃, ε∞, g` of `X(Γ)` from this same layer **plus the gated analytic Riemann–Roch
-  input above — so it sits outside the grounded portion until the compact-Riemann-surfaces
-  roadmap exists**; the concrete instances are grounded independently), and is **not** seeded
+  the `ε₂, ε₃, ε∞, g` of `X(Γ)` from this same layer **plus the Riemann–Roch chain above, built in
+  this same layer**; the concrete instances are grounded independently), and is **not** seeded
   as a
   free-parameter `example` in `Suggested.lean`, since with `g, ε₂, ε₃, ε∞` as free variables it is
   false for the wrong data. We keep only the concrete, verifiable instances and pin the general
