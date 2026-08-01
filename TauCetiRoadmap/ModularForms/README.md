@@ -1020,10 +1020,7 @@ representability, no moduli problem**.
   stabilizer indices at elliptic orbits, the cusp-width sum `Σ h_s = d`) as named lemmas —
   the inputs Riemann–Hurwitz consumes in 10B(vi). ⚠ This construction is **self-contained
   relative to 10B's compact-surface API**: it consumes no Schwarz reflection, no boundary
-  correspondence, and no universal covers — the Conformal Mapping roadmap's sibling note,
-  which lists its L4/L5 and `UniversalCovers` as inputs to the modular curves here,
-  describes a uniformization route (`λ`, Picard) this roadmap does not take, and should be
-  corrected on its side.
+  correspondence, and no universal covers.
 
 #### 10B — compact-Riemann-surface cohomology
 
