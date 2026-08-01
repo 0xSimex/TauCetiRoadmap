@@ -18,6 +18,15 @@ forms, no eigenform/newform theory, no L-function of a modular form, no valence 
 **general-level dimension formulas**. We build the classical arithmetic theory in
 `TauCeti/NumberTheory/ModularForms/`.
 
+⚠ Signature seeding beyond the dimension instances — the `EigenformAwayFromLevel`/`Eigenform`
+split, the newform–newform cross-level strong multiplicity one, the good- and bad-prime `Tₚ`
+coefficient formulas, the exact fixed-`χ` oldspace, period-map injectivity and equivariance,
+`CharacterField χ ≤ CoefficientField f` and Galois stability (Layer 8G), the headline
+Riemann–Roch theorem (Layer 10B), and the level-one trace formula (Layer 11) — requires the
+skeleton types those layers introduce; freezing names here against placeholder structures would
+not check interface coherence. Those signatures are added to this file as each layer's types
+land; until then the README's layer sections carry the intended statements.
+
 This file seeds the **Layer 10 dimension-formula** milestones at levels other than one
 (Diamond–Shurman Thm 3.5.1; the same numbers are tabulated in Stein, *Modular Forms: A
 Computational Approach*). The general even-weight formula
@@ -25,12 +34,15 @@ Computational Approach*). The general even-weight formula
 is stated in the README. Its inputs are the genus `g` of the compact Riemann surface
 `X(Γ) = Γ\ℍ*` together with the counts `ε₂, ε₃` of elliptic points of period 2, 3 and the number
 of cusps `ε∞` — all built analytically in Layer 10 — **plus analytic Riemann–Roch on `X(Γ)`,
-gated on a planned compact-Riemann-surfaces roadmap that does not yet exist, so the general
-formula sits outside this roadmap's grounded portion until it does** (the valence formula
-supplies only the upper bounds; see Layer 10 in `README.md`). The concrete instances below are
-grounded independently of that gate: their upper bounds are the valence formula's, and their
-lower bounds come from explicitly exhibited forms (the level-`11` eta quotient, weight-`2`
-Eisenstein series). We do **not** seed that formula as
+built inside Layer 10 itself** (sublayers 10A–10C: the analytic curve, the compact-Riemann-surface
+cohomology with the `H¹`-finiteness theorem, residue Serre duality and Riemann–Hurwitz, and the
+automorphy sheaves; nothing is gated on any future roadmap — the valence formula supplies the
+upper bounds; see Layer 10 in `README.md`). The concrete instances below are **acceptance
+criteria consuming that general theorem**: they are not independently grounded, and their role
+is to exercise the interfaces at both `Γ₀` and `Γ₁` levels once the theorem lands. (The
+level-`11` eta quotient and the weight-`2` Eisenstein series of the worked examples witness
+*nonvanishing* — one explicit cusp form, one explicit Eisenstein series — not these dimension
+counts.) We do **not** seed that formula as
 a free-parameter `example` here: with `g, ε₂, ε₃, ε∞` as free variables it would be *false* for the
 wrong data (it is a theorem only when they are the genuine invariants of `X(Γ)`). Instead we seed
 concrete, verifiable instances whose invariants are known constants — centred on
@@ -48,9 +60,11 @@ finite-index **Sturm bound** stack — mathlib4#39000 with #39083/#39086/#39087/
 the merged level-one #38993 — whose `Module.Finite ℂ (ModularForm 𝒢 k)` instance is the substrate
 these `finrank` instances sit on; the general-level *formula* via the analytic theory of `Γ\ℍ*`
 (Layer 10) is **new**. The Main Lemma is proved in AINTLIB; the open `sorry`s to discharge
-elsewhere are the weight-1 Hecke-stable lattice `exists_HeckeStableLattice_one` and the
-Eichler–Shimura Stokes step `interior_edges_cancel_sum` (both Layer 8), and the bad-prime
-old-stability `peterssonInner_aggregate_eq_zero_of_new_old` (Layer 3). The targets discharge
+elsewhere are the weight-1 Hecke-stable lattice `exists_HeckeStableLattice_one` (closed by
+sublayer 8W), the Eichler–Shimura Stokes step `interior_edges_cancel_sum` (Layer 8; the Bol
+route avoids it), and the bad-prime newspace stability
+`peterssonInner_aggregate_eq_zero_of_new_old` (Layer 3, route pinned). The Galois-stability
+sublayer 8G and Layers 10–11 have no AINTLIB counterpart and are new formalization. The targets discharge
 LeanBridge "def-wanted" issues #13, #18, #19, #30–#35, #37, #38, #42, #54, #55 (the geometric
 specs #27, #36, #39–#41, #68–#70 are out of scope here).
 -/

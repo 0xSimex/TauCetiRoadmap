@@ -269,13 +269,22 @@ below sketches signatures; it is illustrative, not required to compile.
   `tuv ∣ N`, the series `E_k^{ψ,φ,t} ∈ M_k(N, ψφ)` (zero-extended nebentypus at the level),
   with `q`-expansions via generalized Bernoulli numbers and twisted divisor sums, and the
   Eisenstein subspace they span. The exceptional weights are stated, not smoothed over: at
-  `k = 2` the trivial pair is not modular and the corrected combination `E₂(z) − t·E₂(tz)`
-  replaces it; weight `1` carries its own parity constraints. Connecting these to Mathlib's
+  `k = 2` the trivial pair is not modular and the corrected combination `E₂(z) − t·E₂(tz)`,
+  `t > 1`, replaces it (at `t = 1` it is zero and replaces nothing); weight `1` carries its
+  own parity constraints. Connecting these to Mathlib's
   `eisensteinSeries` (an additive congruence-lattice sum at level `Γ(N)`) is a genuine
   translation layer — finite Fourier inversion and Gauss sums — and is part of this milestone,
   not bookkeeping.
   ⚠ Match Mathlib's `eisensteinSeries`/`gammaSet` indexing; do not introduce a second Eisenstein
   API.
+- **The cusp–Eisenstein decomposition** `M_k(N,χ) = S_k(N,χ) ⊕ E_k(N,χ)` — the theorem, not
+  just the series: define the constant-term maps at **all** cusps, identify their common
+  kernel with `S_k(N,χ)`, prove the specified series span the image, and conclude directness
+  with the dimension of the Eisenstein subspace — the exceptional weights separated (at
+  `k = 2` the image satisfies the residue relation and the corrected combinations enter; at
+  `k = 1` spanning and the linear relations are their own statement). Layer 7's sharp
+  noncuspidal coefficient bound consumes exactly this decomposition; without it, an estimate
+  "on the Eisenstein part" applies only to forms already known to be Eisenstein.
 
 ### Layer 1: the valence formula (general level)
 - Consumes the [Contour Integration roadmap](../ContourIntegration/README.md). For a nonzero
@@ -305,18 +314,26 @@ below sketches signatures; it is illustrative, not required to compile.
   identification — the precise reason the elliptic weights are `1/e_P`.
 - **General level — by the coset norm, not "the covering".** The compactified map
   `X(Γ) → X(1)` is ramified, and a level-`Γ` form is not the pullback of a level-one form, so
-  nothing follows by "pushing through the covering". The elementary route is the **norm map**
-  `Nm(f) = ∏_{γ ∈ ±Γ\SL₂(ℤ)} f∣[k]γ` — a level-one form of weight `k·[SL₂(ℤ):±Γ]` — to which
-  the level-one formula applies; distributing orders over the product with the
-  orbit/stabilizer/cusp-width bookkeeping yields
-  `Σ_{P ∈ Γ\ℍ*} (1/e_P)·ord_P(f) = k·[SL₂(ℤ):±Γ]/12`, the input both to low-weight vanishing
-  and to the dimension formulas (Layer 10). The order dictionary this needs is a milestone set
+  nothing follows by "pushing through the covering". The elementary route is the **norm map**, indexed by the
+  **full** coset space — `Nm(f) = ∏_{γ ∈ Γ\SL₂(ℤ)} f∣[k]γ`, a level-one form of weight
+  `k·[SL₂(ℤ):Γ]`, exactly as in AINTLIB's `dim_gen_cong_levels` — and ⚠ never by projective
+  cosets: for odd `k` with `−I ∉ Γ` (the only case admitting nonzero odd-weight forms),
+  `f∣[k](−γ) = −f∣[k]γ`, so a `±Γ`-indexed product changes sign with the choice of
+  representatives and is not well-defined. When `−I ∈ Γ` or `k` is even the cosets pair under
+  `γ ↔ −γ` and the full-coset computation is twice the projective one — divide by `2` at the
+  end; equivalently, in odd weight one may apply the projective norm to `f²`, whose even
+  weight also doubles the half-integral irregular-cusp orders into integers, the cleanest way
+  to keep the order bookkeeping integral. Applying the level-one formula to `Nm(f)` and
+  distributing orders over the product with the orbit/stabilizer/cusp-width bookkeeping
+  yields `Σ_{P ∈ Γ\ℍ*} (1/e_P)·ord_P(f) = k·[SL₂(ℤ):±Γ]/12`, the input both to low-weight
+  vanishing and to the dimension formulas (Layer 10). The order dictionary this needs is a milestone set
   of this layer, stated here because the theorem quantifies over every finite-index `Γ`:
   orders at interior points through the finite `PSL₂`-stabilizers; orders at cusps read in the
   **width parameter** (`ℚ`-valued at irregular cusps in odd weight — the errata convention of
   Layer 10 is *hoisted here*, a standing convention from this layer on); and finite support of
-  the order divisor of a nonzero form (compactness of `X(Γ)`, or a direct accumulation
-  argument).
+  the order divisor of a nonzero form — proved **here**, from the norm map and the level-one
+  finite-zeros statement (the zeros of `Nm(f)` dominate those of `f`), keeping this layer
+  independent of the Layer-10 compactification.
 - The **Sturm bound** heading into Mathlib (`sturm_bound_finiteIndex`, Layer 10) is the
   *inequality shadow* of this formula — `ord_∞(f) ≤ k·[SL₂(ℤ):±Γ]/12` for `f ≠ 0` (the
   projective index; the `[SL₂(ℤ):Γ]` form is the weaker consequence when `−I ∉ Γ`), with
@@ -367,7 +384,13 @@ below sketches signatures; it is illustrative, not required to compile.
   embedding matrices into `ℚ_p` gives the ring homomorphism only once the coset decompositions
   are matched, not before). Second, inverting the central coset `T(p,…,p)` to obtain the full
   local algebra `ℤ[T_{p,1}, …, T_{p,n−1}, T_{p,n}^{±1}]` (Rhodes–Shemanske) — the ring on which
-  that roadmap's Satake theory begins.
+  that roadmap's Satake theory begins. (Consumer and status, so this block is not caught
+  between "required here" and "handed off": the consumer is the **automorphic-representations
+  roadmap, TauCetiRoadmap PR #120**, whose review pins exactly these two milestones as its
+  Hecke hand-off; the `n = 2` theory is complete in AINTLIB; general `n` has exactly the two
+  named steps recorded in (a); and the completion criterion is `R_p_isPolynomialRing`
+  sorry-free at general `n` together with the two hand-off milestones. Only the `n = 2`
+  specialization is consumed by the classical trunk of this roadmap.)
 - **(b) The action on forms.** `Tₙ`, `Tₚ` as `ℂ`-linear endomorphisms of `M_k(Γ₁(N))` preserving
   `M_k(N,χ)` and `S_k(N,χ)`, the ring homomorphism from the abstract ring, and the explicit
   **`q`-expansion recurrences** — AINTLIB's shapes:
@@ -439,13 +462,26 @@ below sketches signatures; it is illustrative, not required to compile.
   level-raising images `f(τ), f(dτ)` from proper divisors, the **new** subspace `S_k(N)^{new}` as
   its Petersson-orthogonal complement (AINTLIB `cuspFormsOld`, `cuspFormsNew`,
   `Newforms/Basic.lean`), their orthogonality and `Tₙ`-stability, and the fixed-character
-  refinement as a named lemma: `S_k(N,χ)^{new} = S_k(Γ₁(N))^{new} ∩ S_k(N,χ)`, equal to the
-  orthogonal complement of the `χ`-oldspace inside `S_k(N,χ)` by diamond stability.
+  refinement with the **exact indexing**, since the conductor and bad-prime statements later
+  hang on it: `S_k(N,χ)^{old} = Σ_{M ∣ N, cond χ ∣ M} Σ_{d ∣ N/M} V_d S_k(M, χ_M)`, where
+  `χ_M` is the level-`M` descent of the primitive character of `χ` (its `changeLevel` back to
+  `N` is `χ`), `V_d f(z) = f(dz)` is the level-raise in the fixed normalization, and the
+  level- and character-transport lemmas are part of the degeneracy-map API; then
+  `S_k(N,χ)^{new}` is the orthogonal complement of that subspace inside `S_k(N,χ)`, equal to
+  `S_k(Γ₁(N))^{new} ∩ S_k(N,χ)` by diamond stability — a named lemma, not a remark.
   ⚠ **New**-subspace stability under the bad-prime `Uₚ` (`p ∣ N`) — equivalently the pairing
   statement `⟨Uₚ f_new, g_old⟩ = 0`, which is AINTLIB's flagged open `sorry`
   (`peterssonInner_aggregate_eq_zero_of_new_old`, `Newforms/AdjointTheoryBadPrime.lean`) — is a
-  proof obligation of this layer, not a finished migration; a source-faithful Fricke-route
-  replacement is in progress (`Newforms/{BadPrimeFDTiling,BadPrimeTraceFricke,FrickeOldStable}.lean`).
+  proof obligation of this layer, not a finished migration. The Fricke route is pinned
+  theorem-by-theorem, so the gap has a definite closure and not a list of filenames:
+  (i) the fundamental-domain tiling / trace identity relating levels `N` and `N/p`
+  (`BadPrimeFDTiling`); (ii) Fricke transport of the degeneracy maps and of the oldspace
+  (`FrickeOldStable`); (iii) the adjoint formula for `Uₚ` in each `p`-adic exponent case;
+  (iv) orthogonality `⟪Uₚ f_new, V_d g⟫ = 0` against every degeneracy image; (v) the
+  stability `MapsTo Uₚ S^{new} S^{new}`; (vi) the simultaneous bad-prime eigenbehaviour of a
+  newform; (vii) the all-`Tₙ` upgrade (D–S Thm 5.8.2 / Miyake 4.6.13). State separately the
+  cases `p ‖ N`, `p² ∣ N`, and `p ∣ cond χ` — the adjoint formula and the classification of
+  Layer 4 differ across them.
   Note the direction: oldspace stability alone gives only `Uₚ*`-stability of the complement
   (`Uₚ` is not normal at `p ∣ N`); D–S Prop 5.6.2 asserts stability of **both** spaces under
   all operators, and that full statement is the target.
@@ -543,12 +579,15 @@ it constrains only `(n, N) = 1`. Per the conventions, it therefore ports as
   type-check: `g ∈ S_k(M, χ_M)` where `χ_M` is the level-`M` descent of the primitive
   character of `χ` and `changeLevel` returns it to `χ` at level `N` (in particular
   `cond χ ∣ M`), and the level-raise is `V_l f(z) = f(lz)` (this normalization, fixed once) —
-  is the target assembled from the dichotomy and the Main Lemma. ⚠ The uniqueness is of `(M, g)` — equivalently of the
-  good-Hecke eigensystem, by Layer 5's **cross-level** strong multiplicity one (Miyake Thm
-  4.6.19 — a different theorem from the fixed-space 4.6.12; see Layer 5, where it is a named
-  target and where this uniqueness half is actually proved) — **not** of the eigenform
-  itself: an `Eigenform` records eigen-ness only at `n` coprime to `N`, so at level `2M` every
-  normalized `g(z) + c·g(2z)` qualifies, and the `Uₚ`-eigenvectors in the oldspace are the
+  is the target assembled from the dichotomy and the Main Lemma. ⚠ The target splits in two, and the split is part of the dependency graph: **(4A,
+  existence)** — every normalized `EigenformAwayFromLevel` at ambient level `L` has an
+  associated primitive pair `(M, g)` with `M ∣ L`, lying in the oldspace generated by `g` —
+  is assembled here from the dichotomy and the Main Lemma; **(4B, uniqueness)** — the pair
+  `(M, g)` is unique — closes only after Layer 5, by the **newform–newform cross-level**
+  strong multiplicity one stated there (Miyake Thm 4.6.19; a different theorem from the
+  fixed-space 4.6.12). The uniqueness is of `(M, g)` — **not** of the eigenform
+  itself: an `EigenformAwayFromLevel` records eigen-ness only at `n` coprime to `N`, so at level `2M` every
+  normalized `g(z) + c·g(2z)` qualifies (generally *not* a `Uₚ`-eigenvector, hence not a full `Eigenform`), and the `Uₚ`-eigenvectors in the oldspace are the
   `p`-stabilizations — nontrivial combinations, not single degeneracy images `g(dz)`. Do not
   strengthen the conclusion to "`f` *is* a level-raise of `g`"; it is false in exactly these
   examples.
@@ -566,17 +605,23 @@ it constrains only `(n, N) = 1`. Per the conventions, it therefore ports as
   are equal. Keep all three hypothesis groups: same level and weight (in the type), the shared
   `χ`, and the finite exceptional set of coprime indices (that finite slack is the "strong";
   nothing is assumed at `p ∣ N`). The key step is `strongMultiplicityOne_constMul` — a `Newform`
-  and an `Eigenform` sharing eigenvalues are proportional — and `a₁ = 1` pins the constant to
-  `1`.
+  and an `EigenformAwayFromLevel` (AINTLIB's `Eigenform` structure, per the naming note of
+  Layer 4) sharing eigenvalues are proportional — and `a₁ = 1` pins the constant to `1`.
 - On top of the migrated theorem, the further targets of this layer: **multiplicity one**
   (each simultaneous eigenspace of the good `Tₙ` **within a fixed character space**
   `S_k(N,χ)^{new}` is one-dimensional) and the newforms as an **orthogonal basis** of
   `S_k(Γ₁(N))^{new}` (the closing clause of Diamond–Shurman Thm 5.8.2; Miyake Thm 4.6.13(2)).
-- **Cross-level strong multiplicity one** (Miyake Thm 4.6.19) — a newform of level `N` and a
-  good-Hecke eigenform of level `M` sharing eigenvalues at almost all indices force `M = N`
-  and equality. This is a **different theorem** from the fixed-space statement above, it is
-  what Layer 4's conductor uniqueness actually consumes, and it is a named target of this
-  layer — not a corollary of the fixed-space form.
+- **Cross-level strong multiplicity one, for newforms** (Miyake Thm 4.6.19): two normalized
+  newforms `f`, `g` of the same weight and of levels `N`, `M` whose eigenvalues `a_p` agree at
+  all but finitely many primes `p ∤ NM` satisfy `N = M`, have the same nebentypus, and are
+  equal. ⚠ The hypothesis must be **newform against newform** — a good-Hecke eigenform at an
+  ambient level does *not* determine its level: a newform `g` of level `N`, viewed at level
+  `Nq` for `q ∤ N`, is a normalized `EigenformAwayFromLevel` with the same good eigensystem at
+  the larger level, and so is every member of its oldspace. (Miyake's own 4.6.19 compensates
+  differently, assuming eigen-ness under `T(M) ∪ T*(M)`, adjoints included; the
+  newform–newform form is the one this roadmap consumes.) This is a **different theorem**
+  from the fixed-space statement above, it is what Layer 4's conductor uniqueness (its part
+  4B) actually consumes, and it is a named target of this layer.
 - **Diamond–Shurman Proposition 5.8.5** (the coefficient characterization): for `f ∈ M_k(N,χ)`,
   `f` is a normalized eigenform **iff** its Fourier coefficients satisfy
   ```text
@@ -751,9 +796,10 @@ reassigning any milestone as new work. The milestones:
   `i∞` estimate;
   **(iii)** so `E_f` is holomorphic, invariant in weight `2 − k ≤ 0`, and bounded at all cusps.
   ⚠ The step "bounded + invariant of weight `≤ 0` ⟹ constant (zero if the weight is negative)"
-  is a **named sub-theorem**, not a remark — the maximum-principle argument on the compactified
-  fundamental domain (the lemma underlying AINTLIB `eichler_eq_zero`); record it as a
-  milestone. For `k > 2` the strictly negative weight then forces `E_f = 0` outright; at
+  is a **named sub-theorem**, not a remark — the maximum-principle argument on a fundamental
+  domain with cusp neighbourhoods (the lemma underlying AINTLIB `eichler_eq_zero`), proved
+  **locally in this layer**: nothing is consumed from Layer 10's compactification. Record it
+  as a milestone. For `k > 2` the strictly negative weight then forces `E_f = 0` outright; at
   `k = 2` the weight is `0` and one gets only **constancy** — the constant then vanishes because the `q`-expansion
   Eichler integral is normalized with zero constant term (`eichlerCoeff f m = a_m/m^{k−1}`,
   `m ≥ 1`, so `E_f → 0` at `i∞`). Either way `f = D^{k−1}E_f = 0` — and constancy alone would
@@ -830,24 +876,64 @@ reassigning any milestone as new work. The milestones:
   (AINTLIB `heckeAlgℤ_finite_of_two_le` / `ModularSymbols.heckeAlgℤ_finite_of_period`,
   axiom-clean), needing **no** lattice on the form side. **Weight 1 is outside this method
   entirely** — `Sym^{−1}` does not exist and weight-one forms are not cohomological in this
-  sense — and is a separate milestone with its own input: either Deligne–Serre 1974 Prop 2.7 — which is the *integral-`q`-expansions-at-all-cusps*
-  lattice argument (a finite free Hecke-stable lattice for the good `Tₚ` and diamonds;
-  `Uₚ`-stability at `p ∣ N` is **not** included and needs its own step, e.g. from Layer 4's
-  bad-prime classification), preceding the Artin-representation construction, not via it — or
-  a `q`-expansion/integral-model argument; AINTLIB's `k < 2` branch (`heckeAlgℤ_finite_of_lattice`) still rests on the
-  isolated unproved `exists_HeckeStableLattice_one`, with `U_p`-stability at `p ∣ N` needing
-  separate care. `k ≤ 0` rests on the vanishing `S_k = 0` for `k ≤ 0` — cite the declaration on port, do not
+  sense. The headline theorem of this layer is therefore stated for `k ≥ 2`; weight `1`
+  closes only through its own pinned sublayer **8W**, whose route is Deligne–Serre 1974
+  Prop 2.7 — the *integral-`q`-expansions-at-all-cusps* lattice argument, preceding their
+  Artin-representation construction, not via it — with the steps named: integral forms at
+  all cusps; the finite free Hecke-stable lattice; stability under the good `Tₚ` and the
+  diamonds (what Prop 2.7 itself gives); the `Uₚ` step as its **own** milestone, from
+  Layer 4's bad-prime classification; and the passage from the lattice to algebraic-integral
+  eigenvalues. No alternative route is left to the implementor. AINTLIB's `k < 2` branch
+  (`heckeAlgℤ_finite_of_lattice`) still rests on the isolated unproved
+  `exists_HeckeStableLattice_one`; sublayer 8W is its closure. `k ≤ 0` rests on the vanishing `S_k = 0` for `k ≤ 0` — cite the declaration on port, do not
   call it definitional. Do not present the unconditional statement as though one
   argument covered all weights.
 
+### Layer 8G: Galois stability, the character field, and rationality
+
+⚠ **This sublayer exists because "the coefficients are algebraic, so `σ` acts" is not a
+proof.** An automorphism `σ ∈ Aut(ℂ/ℚ)` is not continuous, so it cannot be applied termwise
+to analytic limits or to the transformation law; and AINTLIB's `Labels/NewformOrbit.lean` is
+explicit that the well-definedness of `f ↦ f^σ` — that the conjugated system is again a
+newform — is a deep stability statement **not proved there** (its orbit relation only relates
+newforms already known to exist). The closure is algebraic, through the Hecke algebra, and is
+**new formalization**:
+
+- **The character field.** `CharacterField χ`, the subfield of `ℂ` generated by the values of
+  `χ`, with the elementary but load-bearing inclusion `CharacterField χ ≤ CoefficientField f`
+  for a newform `f ∈ S_k(N,χ)`: for `p ∤ N` the recurrence gives
+  `χ(p) = (a_p² − a_{p²})/p^{k−1} ∈ CoefficientField f`, and every unit mod `N` has a
+  positive representative coprime to `N`, whose prime factors are good, so multiplicativity
+  extends the membership to every `χ(d)`. This is what types the relative orbit statements
+  below.
+- **The semisimple Hecke-algebra correspondence.** The finite Hecke algebra of the newspace
+  over `ℚ(χ)` (or over `ℚ`, after summing the character orbit); the theorem that after
+  `⊗ ℂ` its characters — equivalently its eigenlines — are exactly the normalized newforms
+  of the space; and the observation that conjugating an algebra character by an embedding of
+  its value field produces another character of the same algebra, hence another occurring
+  eigensystem.
+- **Galois stability and the conjugate newform.** `f^σ` is *defined* as the unique normalized
+  newform with the conjugated eigensystem (uniqueness by Layer 5), for an **embedding**
+  `σ : CoefficientField f ↪ ℂ` — embeddings of `K_f`, not chosen extensions to `Aut(ℂ)` —
+  and the theorems `aₙ(f^σ) = σ(aₙ(f))` and `χ_{f^σ} = σ ∘ χ_f` follow. The orbit sizes are
+  then theorems: `#orbit = [CoefficientField f : ℚ]` over the character orbit, and
+  `[CoefficientField f : ℚ(χ)]` for embeddings fixing `CharacterField χ`.
+- **Rationality of characteristic polynomials.** For fixed `χ`, the newspace has a
+  `ℚ(χ)`-structure and `charpoly(Tₙ | S_k(N,χ)^{new}) ∈ ℚ(χ)[X]`, with the factorization
+  `∏_{[f]} Norm_{K_f/ℚ(χ)}(X − aₙ(f))` (repeated and reducible factors allowed); summing over
+  the character Galois orbit produces the corresponding polynomial over `ℚ`. These descent
+  statements precede — and are consumed by — every Layer-9 bullet that mentions a Galois
+  orbit or a characteristic polynomial.
+
 ### Layer 9: the LMFDB invariant layer
-Each is a named definition with its basic API, mostly short once Layer 8 exists:
+Each is a named definition with its basic API, mostly short once Layers 8 and 8G exist:
 - **Hecke characteristic polynomials** (#35): `charpoly(Tₙ | S_k(N,χ)^{new})`, its
-  coefficients from traces of powers via Newton's identities, and the factorization over the
-  base field into the **norm factors of the newform orbits** `∏_{[f]} Norm(X − aₙ(f))` — with
-  repeated and reducible factors allowed: a single `Tₙ` need not separate orbits or generate
-  the coefficient field, so the orbit decomposition is a statement about the joint Hecke
-  algebra, of which any one charpoly is a shadow.
+  coefficients from traces of powers via Newton's identities, and the factorization into the
+  norm factors of the newform orbits — **consumed from Layer 8G's rationality statements**,
+  which define the base field (`ℚ(χ)` for fixed `χ`; `ℚ` over the character orbit) and prove
+  the descent. A single `Tₙ` need not separate orbits or generate the coefficient field, so
+  the orbit decomposition is a statement about the joint Hecke algebra, of which any one
+  charpoly is a shadow.
 - **Satake parameters and angles** (#32): the unconditional object is the **unordered pair**
   `{α_p, β_p}` of roots of `X² − aₚX + χ(p)p^{k-1}` — defined for every good `p`, no hypotheses.
   A single **angle** is defined only where it is canonical: for trivial nebentypus (more
@@ -859,12 +945,18 @@ Each is a named definition with its basic API, mostly short once Layer 8 exists:
   conjectures and Deligne's reduction of Ramanujan to them, far outside the analytic scope
   here — which is exactly why the angle is packaged as conditional rather than presented as an
   unconditional invariant.
-- **Galois-conjugate forms and orbits** (#38): `f^σ` (act on coefficients) — noting that full
-  `ℚ`-conjugation moves the nebentypus, `(f, χ) ↦ (f^σ, χ^σ)`, so the orbit lives over the
-  **character orbit** `[χ]` (as in the LMFDB), with `#orbit = [CoefficientField f : ℚ]` across
-  `⊕_{χ' ∈ [χ]} S_k(N, χ')` (exact because the coefficients generate the field by definition);
-  within a fixed `χ` the relative statement is over `ℚ(χ)`, with orbit size
-  `[CoefficientField f : ℚ(χ)]`; **inner twists** (#42). These consume Layer 8's integrality —
+- **Galois-conjugate forms and orbits** (#38): `f^σ`, **as constructed in Layer 8G** — the
+  unique newform with the conjugated eigensystem, not a termwise action on an analytic
+  object — with the orbit over the **character orbit** `[χ]` (as in the LMFDB) of size
+  `[CoefficientField f : ℚ]`, and the relative orbit within fixed `χ` of size
+  `[CoefficientField f : ℚ(χ)]`, both from 8G.
+- **Inner twists** (#42) — a sublayer of its own, since the notion presupposes a twisting
+  API: the twist `f ⊗ ψ` of a `q`-expansion by a Dirichlet character `ψ`, with its
+  modularity and cuspidality, a level bound (dividing `lcm(N, cond(ψ)·cond(χψ), cond(ψ)²)`),
+  and nebentypus `χψ²`; the good-prime formula `a_p(f ⊗ ψ) = ψ(p)·a_p(f)`; the passage from
+  the twist to its **primitive associate** (Layer 4); the definition of an inner twist as a
+  pair `(σ, ψ)` with `f^σ = primitive(f ⊗ ψ)`; and the basic structure — the group law,
+  triviality for `ψ = 1`, and self-twists (CM forms) as the special case `σ = id`, `ψ ≠ 1`. These consume Layer 8's integrality —
   the coefficients must be algebraic for `σ` to act at all — so they sit downstream of the
   modular-symbol machinery, not beside it.
 - **Galois-group certification** (what the weight-60 example needs): the Galois closure
@@ -903,6 +995,8 @@ representability, no moduli problem**.
   layer's **main computational criterion**: two forms agreeing on the first `⌊k·[SL₂(ℤ):Γ]/12⌋ + 1`
   coefficients are equal, which is how the concrete dimension instances in `Suggested.lean` and
   the LMFDB layer's equality checks (Layer 9) become finite computations.
+#### 10A — the analytic modular curve
+
 - **The analytic theory of cusps and compactification.** Build `X(Γ) = Γ\ℍ*` as a compact
   Riemann surface — with the point-set work stated as milestones, not assumed: the effective
   `PSL₂` action, proper discontinuity (Mathlib's `ProperlyDiscontinuous.lean`), Hausdorffness
@@ -921,6 +1015,18 @@ representability, no moduli problem**.
   roadmap. These
   counts and the genus are the inputs to the dimension formulas; building them is part of this
   layer, not assumed.
+- **The finite map to level one.** `X(Γ) → X(1)` as a finite holomorphic map of compact
+  Riemann surfaces, with the fiber-counting identities (`Σ e_x = d` over every fiber, the
+  stabilizer indices at elliptic orbits, the cusp-width sum `Σ h_s = d`) as named lemmas —
+  the inputs Riemann–Hurwitz consumes in 10B(vi). ⚠ This construction is **self-contained
+  relative to 10B's compact-surface API**: it consumes no Schwarz reflection, no boundary
+  correspondence, and no universal covers — the Conformal Mapping roadmap's sibling note,
+  which lists its L4/L5 and `UniversalCovers` as inputs to the modular curves here,
+  describes a uniformization route (`λ`, Picard) this roadmap does not take, and should be
+  corrected on its side.
+
+#### 10B — compact-Riemann-surface cohomology
+
 - **The Riemann–Roch input — built here, not assumed.** The lower bounds need analytic
   Riemann–Roch on `X(Γ)`, and no compact-Riemann-surfaces roadmap exists to cite; so the
   minimal chain is part of this layer (in the spirit of the PR #36 review's advice — analytic
@@ -964,6 +1070,17 @@ representability, no moduli problem**.
   `[SL₂(ℤ) : Γ]`. `dim S₂(Γ) = g` is then `S₂(Γ) ≅ H⁰(X(Γ), Ω¹)` plus (iv).
   A fuller compact-Riemann-surfaces roadmap (Abel–Jacobi, uniformization, …) remains
   desirable later and would absorb and extend (i)–(v); nothing here waits for it.
+#### 10C — modular forms as section spaces, and the dimension formulas
+
+- **The automorphy sheaf, constructed and not gestured at.** The weight-`k` transformation
+  data on `Γ\ℍ` is orbifold data; the object with a Riemann–Roch theory is the induced
+  **invertible sheaf on the coarse compact curve** `X(Γ)`, built by explicit local descent:
+  at an elliptic point the invariant sections in the linearizing coordinate, at a (regular or
+  irregular) cusp the sections in the width parameter with the errata order convention — and
+  the local transition-function computation at each chart overlap is its own milestone, since
+  the `⌊·⌋`-corrections of the divisor are precisely its output. The `j`-function enters 10C
+  concretely: `j = E₄³/Δ`, `j − 1728 = E₆²/Δ`, with the orders of `j` and `j − 1728` at `ρ`
+  and `i` read off these identities — the inputs 10B(vi) needs.
 - **The dimension formulas** (Diamond–Shurman Thm 3.5.1 for even weight, Thm 3.6.1 for odd) —
   honest about their two halves. The
   Layer-1 valence formula with the `ε₂, ε₃, ε∞` counts and the genus `g` above yields the
@@ -1032,14 +1149,16 @@ representability, no moduli problem**.
   `dim S_2(Γ₀(23)) = 2`, `dim S_2(Γ₀(2)) = 0`, `dim M_2(Γ₀(11)) = 2`. The general even-weight
   formula above is the layer's headline target; it is stated here in the README (its inputs are
   the `ε₂, ε₃, ε∞, g` of `X(Γ)` from this same layer **plus the Riemann–Roch chain above, built in
-  this same layer**; the concrete instances are grounded independently), and is **not** seeded
+  this same layer**; the concrete instances below consume that same general theorem — their
+  role is acceptance, not independent grounding), and is **not** seeded
   as a
   free-parameter `example` in `Suggested.lean`, since with `g, ε₂, ε₃, ε∞` as free variables it is
   false for the wrong data. We keep only the concrete, verifiable instances and pin the general
   statement in prose.
 
 ### Layer 11: the Eichler–Selberg trace formula (level one)
-An independent lane off Layers 2–3 and **not an AINTLIB migration**: neither AINTLIB nor Mathlib
+A lane off Layers 2–3 **and Layer 8** — its route of record consumes the Layer-8
+modular-symbol machinery — and **not an AINTLIB migration**: neither AINTLIB nor Mathlib
 has any of it (no Hurwitz class numbers, no trace formula) — this layer is new formalization
 ground, and we found no Lean prior art (as of July 2026).
 
@@ -1048,7 +1167,10 @@ ground, and we found no Lean prior art (as of July 2026).
   binary quadratic forms `ax² + bxy + cy²` of discriminant `b² − 4ac = −D`, counting the classes
   of multiples of `x² + y²` with weight `1/2` and of `x² + xy + y²` with weight `1/3`
   (`H D = 0` for `D ≡ 1, 2 (mod 4)`). Define it by **reduced forms** — a finite, decidable
-  count: **no class groups, no class field theory** — and ship it with the first values
+  count: **no class groups, no class field theory** — with canonical representatives pinned
+  (`|b| ≤ a ≤ c`, and `b ≥ 0` whenever `|b| = a` or `a = c`), so the boundary identifications
+  cannot double-count and the weighted count is representative-independent — and ship it with
+  the first values
   `H 3 = 1/3`, `H 4 = 1/2`, `H 7 = 1`, `H 8 = 1` as `decide`-style tests. Independently
   Mathlib-worthy.
 - **The weight polynomials.** `P_k(t, n)`, the coefficient family with generating function
@@ -1093,13 +1215,24 @@ ground, and we found no Lean prior art (as of July 2026).
   `tr(Tₙ | M_k) = tr(Tₙ | S_k) + σ_{k−1}(n)`, the cusp-form trace is isolated as
   **`tr(Tₙ | S_k) = (tr(Tₙ | W_w) − σ_{k−1}(n))/2`** — the division by `2` is essential, not a
   normalization choice. ⚠ And "Popa–Zagier's algebraic trace computation" is itself the
-  layer's hard core, ticketed, not a black box: the special group-ring element `T̃ₙ` with its
-  Manin-relation compatibility, the right-coset weight identities, and the evaluation of the
-  elliptic, scalar, and split-hyperbolic contributions (their *A simple proof of the
-  Eichler–Selberg trace formula*, arXiv:1711.00327) — together with the proof that its action
-  matches this roadmap's arithmetic normalization
-  `aₘ(Tₙ f) = Σ_{d ∣ (m,n)} d^{k−1}·a_{mn/d²}(f)` (transposes and powers of `n` differ
-  between conventions). Two consequences, both deliberate:
+  layer's hard core (their *A simple proof of the Eichler–Selberg trace formula*,
+  arXiv:1711.00327), expanded into checkable milestones, not consumed as a black box:
+  (i) the determinant-`n` integral-matrix module and its right action on the polynomial
+  space; (ii) the standard Hecke representative set `Tₙ^∞`; (iii) the construction of the
+  special group-ring element `T̃ₙ`; (iv) the theorem that its action on period polynomials
+  agrees with the Hecke action; (v) both Manin-relation compatibility identities; (vi) the
+  right-coset coefficient/weight theorem; (vii) the trace reduction from `W_w` to the ambient
+  polynomial space; (viii) the contribution of every conjugacy type in the case split —
+  elliptic, scalar, parabolic, split hyperbolic — including the zero-contribution cases;
+  (ix) the matrix-orbit ↔ binary-quadratic-form correspondence with its orientation and
+  automorphism weights; (x) the comparison of the resulting operator with this roadmap's
+  arithmetic normalization `aₘ(Tₙ f) = Σ_{d ∣ (m,n)} d^{k−1}·a_{mn/d²}(f)` (transposes and
+  powers of `n` differ between conventions). Two conventions are pinned now, once: the
+  extended even period polynomial of `E_k` is a nonzero **scalar multiple** of `X^w − Y^w` —
+  either carry that scalar or renormalize the extended even period map so the image is
+  exactly `X^w − Y^w`, decided once; and the parity involution and the right-action
+  convention are stated explicitly, since "even" and "odd" swap under differing
+  polynomial/action conventions. Two consequences, both deliberate:
   Layer 8's injectivity never touches `interior_edges_cancel_sum`, so that open `sorry`
   acquires **no** second consumer — what this route avoids is the *cohomological*
   (coboundary / parabolic-cohomology) packaging, **not** the even/odd and Eisenstein
@@ -1230,20 +1363,45 @@ be reached this way.
   carries the explicit quintic, the two factorizations, and squarefreeness of both reductions
   (the certifying primes avoid the discriminant).
 
-## Ordering
+## Ordering — the dependency graph
 
-Layer 0 (diamond operators and nebentypus) and Layer 2 (Hecke operators) are the trunk and come
-first; the valence
-formula (Layer 1) is an independent early lane that only needs the Contour Integration roadmap.
-Layers 3–5 (Petersson → newforms → strong multiplicity one) are the core arithmetic and must be
-sequential. Layers 6–7 (Atkin–Lehner → L-functions) and Layer 8 (coefficient fields) consume
-Layer 5; Layer 9 (LMFDB invariants) consumes Layer 8. Layer 10 (the modular curve `Γ\ℍ` and the
-dimension formulas) consumes Layer 1 and Mathlib's Sturm-bound finiteness, and is otherwise
-independent. Layer 11 (the level-one trace formula) consumes Layer 2 and the Layer-8
-modular-symbol/Eichler–Shimura machinery on its period-polynomial route of record, is
-otherwise independent,
-and feeds Layer 9's characteristic-polynomial targets while cross-checking Layer 10 at level
-one.
+Not a linear order: a graph, with the consumption edges named ("→" means "consumes").
+
+- **Layer 0** (diamonds, nebentypus, Eisenstein series, the cusp–Eisenstein decomposition) → Mathlib only. Trunk root.
+- **Layer 1** (valence formula, the order dictionary, the full-coset norm map) → the [Contour Integration roadmap](../ContourIntegration/README.md). Independent of Layers 0/2; finite support of the divisor is proved *inside* the layer via the norm map — no Layer-10 input.
+- **Layer 2** (the Hecke ring at `GL_n`; the `n = 2` congruence theory and the action) → Layer 0, Mathlib's abstract Hecke ring (fallback: AINTLIB). The general-`n` block is consumed by the automorphic-representations roadmap (PR #120), not by this trunk.
+- **Layer 3** (Petersson, adjoints, old/new with the exact fixed-`χ` oldspace) → Layers 0, 2. Carries the pinned bad-prime stability route (known source gap).
+- **Layer 4A** (existence of the primitive associate; bad-prime eigenvalues; the Main Lemma) → Layers 2, 3.
+- **Layer 5** (fixed-space SMO; multiplicity one; **newform–newform cross-level SMO**) → Layers 3, 4A.
+- **Layer 4B** (uniqueness of the primitive pair — the conductor) → Layer 5. Layer 4 closes only here.
+- **Layer 6** (Atkin–Lehner and Fricke, normalized) → Layers 2, 3, and 4A for the newform sign statements.
+- **Layer 7** (L-functions) → Layers 4A/5 (Euler product), 6 (the sign), and Layer 0's cusp–Eisenstein decomposition (the sharp noncuspidal bound).
+- **Layer 8** (modular symbols, the integral Hecke algebra, the coefficient field at `k ≥ 2`) → Layers 2, 4A; the negative-weight maximum principle is proved inside the layer, not consumed from Layer 10.
+- **Layer 8W** (the weight-one lattice, Deligne–Serre route) → Layers 2, 4A.
+- **Layer 8G** (Galois stability, the character field, rationality) → Layers 5, 8.
+- **Layer 9** (LMFDB invariants; inner twists) → Layers 8, 8G, and 4A (primitive associates of twists).
+- **Layer 10A** (the analytic curve) → Layer 0 conventions only. **10B** (surface cohomology) → 10A. **10C** (section spaces and dimension formulas) → 10A, 10B, Layer 1 (upper bounds), Mathlib's Sturm finiteness (fallback: AINTLIB).
+- **Layer 11** (the level-one trace formula) → Layers 2, 8 (the period-polynomial route), Mathlib's level-one dimension formula; feeds Layer 9's charpoly targets and cross-checks 10C at level one.
+
+**Status, per major block** — so "three source `sorry`s" is never read as "three remaining pieces of work":
+
+| Block | Status |
+|---|---|
+| Layer 0 diamonds/nebentypus | migrate (AINTLIB); the cusp–Eisenstein decomposition is **new** |
+| Layer 1 valence formula | migrate (level one); the order dictionary and general level are **new** |
+| Layer 2 abstract ring | upstream Mathlib PR stack, AINTLIB fallback |
+| Layer 2 `GL_n` block | migrate; general `n`: two named steps open (**source gap**); consumer PR #120 |
+| Layer 3 Petersson, old/new | migrate; bad-prime newspace stability a **known source gap**, route pinned |
+| Layers 4A/5/4B newforms, SMO | migrate (fixed-space); cross-level newform SMO **new** |
+| Layer 6 Atkin–Lehner | migrate (Fricke side); the `𝒲_Q` family and sign theory **new** |
+| Layer 7 L-functions | migrate; abscissa tightening and rank-via-continuation **new** |
+| Layer 8 (`k ≥ 2`) | migrate; `interior_edges_cancel_sum` a **source gap** the Bol route avoids |
+| Layer 8W weight one | **new**, route pinned; closes `exists_HeckeStableLattice_one` |
+| Layer 8G Galois/rationality | **new**; closes the stability AINTLIB explicitly leaves unproved |
+| Layer 9 LMFDB, inner twists | **new** definitions over Layers 8/8G |
+| Layers 10A/10B/10C | **new**; hardest single input: `H¹` finiteness (10B) |
+| Layer 11 trace formula | **new**; hardest single input: the `T̃ₙ` construction |
+| Worked examples | consume the general theorems; eta-quotient computations |
 
 ## Provenance (migrate and clean from AINTLIB `LeanModularForms`)
 
