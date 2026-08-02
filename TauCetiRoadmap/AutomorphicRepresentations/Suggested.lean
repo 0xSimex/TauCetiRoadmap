@@ -61,12 +61,15 @@ section SplitGroups
 
 variable (F : Type u) [Field F] [NumberField F]
 
-/-- The algebraic `GL_n` over the full adèle ring. The production topology is compared with the
-restricted product based at `GL_n(𝒪_v)`; this abbreviation alone does not assert that comparison. -/
-abbrev SplitAdeleGroup (n : ℕ) := GL (Fin n) (NumberField.AdeleRing (𝓞 F) F)
+/-- The underlying algebraic `GL_n` over the full adèle ring. The production topological group is
+the restricted product based at `GL_n(𝒪_v)` and comes with a proved comparison to this object; this
+abbreviation alone deliberately does not assert that comparison. -/
+abbrev SplitAdeleGroupUnderlying (n : ℕ) [NeZero n] :=
+  GL (Fin n) (NumberField.AdeleRing (𝓞 F) F)
 
-/-- The split general linear group at a finite completion. -/
-abbrev SplitFiniteLocalGroup (n : ℕ) (v : HeightOneSpectrum (𝓞 F)) :=
+/-- The underlying split general linear group at a finite completion. -/
+abbrev SplitFiniteLocalGroupUnderlying (n : ℕ) [NeZero n]
+    (v : HeightOneSpectrum (𝓞 F)) :=
   GL (Fin n) (v.adicCompletion F)
 
 end SplitGroups
@@ -147,7 +150,9 @@ end SmoothRepresentation
 
 /-! ## Layer 6: the pinned good-place Hecke polynomial -/
 
-/-- The good-place polynomial in the arithmetic-Frobenius, classical `T_v,S_v` normalization. -/
+/-- The good-place polynomial in the arithmetic-Frobenius, coefficient-system-normalized classical
+`T_v,S_v` convention. It is not a claim about raw convolution eigenvalues on an arbitrary twist of
+an automorphic representation. -/
 noncomputable def goodHeckePolynomial {E : Type u} [Field E] (Nv : ℕ) (av sv : E) : E[X] :=
   X ^ 2 - C av * X + C (Nv : E) * C sv
 
@@ -157,14 +162,17 @@ noncomputable def goodHeckePolynomial {E : Type u} [Field E] (Nv : ℕ) (av sv :
 Mathlib's matrix/unit topology; the basis-free module formulation and its equivalence are Layer 7
 targets. -/
 def FramedGaloisRepresentation (K : Type u) [Field K]
-    (A : Type v) [CommRing A] [TopologicalSpace A] (d : ℕ) :=
+    (A : Type v) [CommRing A] [TopologicalSpace A] [IsTopologicalRing A]
+    (d : ℕ) [NeZero d] :=
   Field.absoluteGaloisGroup K →ₜ* GL (Fin d) A
 
 /-- A `d`-dimensional `Q̄_p`-valued family indexed by primes and embeddings of its rationality
-field. Good-place compatibility is added only after Layer 7 supplies local Frobenius and inertia. -/
-def PadicGaloisFamily (K : Type u) [Field K]
-    (E : Type v) [Field E] [NumberField E] (d : ℕ) : Type _ :=
-  ∀ (p : ℕ) [Fact p.Prime], (E →+* AlgebraicClosure ℚ_[p]) →
-    FramedGaloisRepresentation K (AlgebraicClosure ℚ_[p]) d
+field. The structure form leaves room for functorial operations and their proofs. Good-place
+compatibility is added only after Layer 7 supplies local Frobenius and inertia. -/
+structure PadicGaloisFamily (K : Type u) [Field K]
+    (E : Type v) [Field E] [NumberField E] (d : ℕ) [NeZero d] where
+  representation :
+    ∀ (p : ℕ) [Fact p.Prime], (E →+* AlgebraicClosure ℚ_[p]) →
+      FramedGaloisRepresentation K (AlgebraicClosure ℚ_[p]) d
 
 end TauCetiRoadmap.AutomorphicRepresentations
