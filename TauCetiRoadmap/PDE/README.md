@@ -43,11 +43,22 @@ for the Dirichlet problem `L u = f` in `Ω`, `u = g` on `∂Ω`:
 --     (f : Lp ℝ 2 (volume.restrict Ω)) :
 --     ∃! u : Wkp0 1 2 Ω, ∀ v : Wkp0 1 2 Ω, energyForm a b c u v = ∫ x in Ω, f x * v x
 --
--- De Giorgi–Nash–Moser interior regularity of the weak solution:
--- def holderExponent (n : ℕ) (λ Λ : ℝ) : ℝ
--- def holderConstant (n : ℕ) (λ Λ : ℝ) (K Ω : Set (EuclideanSpace ℝ (Fin n))) : ℝ
--- theorem weakSolution_holderOn (hu : IsWeakSolution L u f) (hcompact : K ⊆ Ω) (hK : IsCompact K) :
---     HolderOnWith (holderConstant n λ Λ K Ω) (holderExponent n λ Λ) u K
+-- De Giorgi–Nash–Moser interior regularity, for the homogeneous principal part
+-- `-∂ⱼ(aⁱʲ ∂ᵢ u) = 0`. Three things the statement must carry, none of them optional:
+-- the estimate is quantitative in `‖u‖` (a constant depending only on `n, λ, Λ, K, Ω` is
+-- false: `u_M = M x₁` is harmonic and scales), the exponent is a `ℝ≥0` with `0 < α ≤ 1`,
+-- and the Hölder conclusion holds for a *representative*, since an `H¹` weak solution is
+-- an a.e. equivalence class and may be altered on a null set.
+-- def holderExponent (n : ℕ) (Λ : ℝ) : ℝ≥0
+-- def holderConstant (n : ℕ) (Λ p₀ : ℝ) : ℝ≥0
+-- theorem holderExponent_pos … : 0 < holderExponent n Λ
+-- theorem holderExponent_le_one … : holderExponent n Λ ≤ 1
+-- theorem weakSolution_holderOn (hn : 3 ≤ n) (hp₀ : 1 < p₀)
+--     (helliptic : UniformlyElliptic λ Λ a) (hu : IsHomogeneousWeakSolution a u Ω)
+--     (hInt : IntegrableOn (fun x => |u x| ^ p₀) Ω) (hK : IsCompact K) (hKΩ : K ⊆ interior Ω) :
+--     ∃ v, v =ᵐ[volume.restrict Ω] u ∧
+--       HolderOnWith (holderConstant n Λ p₀ * ‖(‖u‖ ^ p₀)‖_{L¹(Ω)} ^ (1/p₀))
+--         (holderExponent n Λ) v K
 ```
 
 ## Standing hypotheses (spell them out)
@@ -67,24 +78,45 @@ separate hypothesis:
   `ξ · a(x)ξ ≥ λ‖ξ‖²` and `ξ · a(x)⁻¹ξ ≥ Λ⁻¹‖ξ‖²`. The first condition implies that
   `a(x)` is invertible. For symmetric `a(x)` these conditions are equivalent to the
   Loewner bounds `λI ≤ a(x) ≤ ΛI`; Loewner ordering is not a definition for a general
-  non-symmetric field. The inverse condition yields the quadratic and mixed upper bounds
-  with the same `Λ`. Do not replace it in the definition by `‖a(x)‖ ≤ Λ`: a norm bound is
-  equivalent only after changing constants and therefore loses sharp `Λ`-dependence.
+  non-symmetric field. Substituting `y = a(x)ξ` in the inverse condition gives
+  `‖a(x)ξ‖² ≤ Λ (ξ · a(x)ξ)`, and Cauchy–Schwarz then yields the quadratic bound
+  `ξ · a(x)ξ ≤ Λ‖ξ‖²`, the operator bound `‖a(x)ξ‖ ≤ Λ‖ξ‖`, and the mixed bound
+  `|ζ · a(x)ξ| ≤ Λ‖ζ‖‖ξ‖`, all with the same `Λ`. Derive those as theorems rather than
+  making an upper constant primitive.
+
+  The other common formulation asks for coercivity together with an operator bound
+  `‖a(x)‖ ≤ M`. It is **not** the same hypothesis at the same constants, and the inverse
+  form is the *stronger* one: coercivity plus `‖a(x)‖ ≤ M` gives only
+  `ξ · a(x)⁻¹ξ ≥ (λ/M²)‖ξ‖²`, so `(λ, M)` in the operator form becomes `(λ, M²/λ)` in the
+  inverse form, while `(λ, Λ)` in the inverse form gives `(λ, Λ)` in the operator form. The
+  gap is real, not an artifact: for `a = [[1, −k], [k, 1]]` the symmetric part of `a⁻¹` is
+  `I/(1+k²)`, so `λ = 1` and `M = √(1+k²)` while the inverse condition forces `Λ ≥ 1+k²`.
+  Record both formulations and both conversions, and state which one each estimate's
+  constants are calibrated against; do not describe either as the sharp one in general.
   Use a pointwise specialization when stronger coefficient regularity makes it appropriate.
 - **Coefficient regularity is a *dial*, but it turns separately for the two operator
   forms.** The v1 operator is divergence form; the non-divergence track in Lane E is a
-  separate extension of the roadmap. For the scalar principal-part models
-  `Ldiv u = -div(a ∇u)` and `Lnondiv u = -aⁱʲ ∂ᵢ∂ⱼu`:
+  separate extension of the roadmap. Every entry below is an **interior** estimate for a
+  solution that is assumed to exist, and every one of them is quantitative in the solution
+  as well as the data, so each carries a local norm of `u` on the right-hand side. For the
+  scalar principal-part models `Ldiv u = -div(a ∇u)` and `Lnondiv u = -aⁱʲ ∂ᵢ∂ⱼu`:
   - **Divergence form, weak solutions:** bounded measurable `a` gives
-    **De Giorgi–Nash–Moser** and Meyers gradient self-improvement for
-    `2 < p < 2 + ε`; `a, F ∈ C^{0,α}` and `f ∈ L^q`, `q > n`, for
-    `Ldiv u = f + div F` give interior **Schauder `C^{1,β}`** regularity with
-    `β = min(α, 1 - n/q)`; `a ∈ VMO` and `F ∈ Lᵖ` give interior **`W^{1,p}`**
-    estimates for `1 < p < ∞`; and `a ∈ W^{1,∞}` with `L²` data gives interior `H²`.
-  - **Non-divergence form, strong/classical solutions:** bounded measurable `a` gives
-    **Krylov–Safonov** `C^{0,α}` regularity for `W^{2,n}_loc` strong solutions;
-    `a, f ∈ C^{0,α}` gives **Schauder `C^{2,α}`** estimates; and `a ∈ VMO`, `f ∈ Lᵖ`
-    gives interior **Calderón–Zygmund `W^{2,p}`** estimates for `1 < p < ∞`.
+    **De Giorgi–Nash–Moser** for the homogeneous equation, and **Meyers** gradient
+    self-improvement for `2 < p < 2 + ε` for the homogeneous equation or for
+    `Ldiv u = div F` with `F ∈ Lᵖ`, where `ε` depends on the dimension and on `λ, Λ`;
+    Meyers is not unconditional self-improvement under arbitrary forcing. For
+    `Ldiv u = f + div F` with `a, F ∈ C^{0,α}` and `f ∈ L^q`, `q > n`, interior
+    **Schauder `C^{1,β}`** regularity holds with `β = min(α, 1 - n/q)`. For
+    `Ldiv u = div F` with `a ∈ VMO` and `F ∈ Lᵖ`, interior **`W^{1,p}`** estimates hold
+    for `1 < p < ∞`, carrying the VMO modulus and its small radius. And `a ∈ W^{1,∞}`
+    with **scalar forcing `f ∈ L²`** gives interior `H²`; a divergence datum `F ∈ L²`
+    only puts the right-hand side in `H^{-1}` and does not.
+  - **Non-divergence form, strong/classical solutions:** bounded measurable `a` with
+    `f ∈ L^n_loc` gives **Krylov–Safonov** `C^{0,α}` regularity for `W^{2,n}_loc` strong
+    solutions, the estimate carrying `‖f‖_{L^n}`; `a, f ∈ C^{0,α}` gives
+    **Schauder `C^{2,α}`** estimates; and `a ∈ VMO`, `f ∈ Lᵖ` gives interior
+    **Calderón–Zygmund `W^{2,p}`** estimates for `1 < p < ∞`. The last two are stated for
+    symmetric `a`, or equivalently for `a.symm`, per the symmetrization note below.
   Both De Giorgi–Nash–Moser and Krylov–Safonov are scalar theories; do not silently
   generalize their conclusions to elliptic systems. Name the operator form, data slots,
   and solution concept in every theorem.
@@ -399,12 +431,26 @@ should not preclude a later vector-valued generalization.
 23. **De Giorgi–Nash–Moser.** Local boundedness and **Hölder continuity** of weak
     solutions of divergence-form equations with **bounded measurable, not necessarily
     symmetric** coefficients, and the elliptic Harnack inequality in this generality.
-    Port and reconcile the Armstrong–Kempe development, whose coefficient structure uses
-    the two inverse-coercivity conditions above and derives its mixed upper bounds. Keep
-    the Hölder exponent and all estimate constants explicit in `λ, Λ` (or `Λ / λ`) and
-    dimension. Note that this is **divergence-form/weak**, whereas the non-divergence
-    analogue is Krylov–Safonov. Do not silently generalize this scalar conclusion to
-    elliptic systems.
+    State the **homogeneous** principal part first: Hölder continuity and Harnack are
+    theorems about `-div(a ∇u) = 0`, not about the standing operator with arbitrary
+    forcing and lower-order terms. Then do the inhomogeneous equation, where the estimate
+    acquires a norm of the data under an integrability hypothesis (`f ∈ L^q`, `q > n/2`,
+    or a divergence datum `F`), and then `b` and `c`, whose contributions enter through
+    the scaled quantities `r‖b‖∞` and `r²‖c‖∞` and which need a sign hypothesis for
+    Harnack. Keep the Hölder exponent and all estimate constants explicit in `λ, Λ` (or
+    `Λ / λ`) and dimension. Note that this is **divergence-form/weak**, whereas the
+    non-divergence analogue is Krylov–Safonov. Do not silently generalize this scalar
+    conclusion to elliptic systems.
+
+    Port and reconcile the Armstrong–Kempe development, whose coefficient structure is the
+    inverse-coercivity pair above and which derives its mixed upper bounds rather than
+    assuming them. Reconciling means closing four gaps between their statement and ours,
+    each of which is work this milestone owns: their `holder_Moser` is stated on the unit
+    ball for coefficients normalized to `λ = 1` and transfers to a general ball and general
+    `λ` only by scaling; it assumes `2 < n`; it concludes for a representative `v` with
+    `v =ᵐ u` rather than for `u` itself; and its constant carries
+    `(∫_{B₁} |u|^{p₀})^{1/p₀}` for `p₀ > 1`, so the estimate is quantitative in the
+    solution, not in the structural constants alone.
 
 #### Non-divergence form: strong/classical solutions
 
@@ -487,9 +533,13 @@ Concrete sanity checks that rule out vacuous or mis-stated definitions:
   (Ch. 8); the canonical elliptic reference.
 - S. Armstrong, J. Kempe, [*Formalization of De Giorgi–Nash–Moser Theory in
   Lean*](https://arxiv.org/abs/2604.05984), with the accompanying
-  [`scottnarmstrong/DeGiorgi`](https://github.com/scottnarmstrong/DeGiorgi) repository:
-  the sorry-free source for the non-symmetric inverse-coercivity definition, its derived
-  sharp upper bounds, and the Lane E.23 migration.
+  [`scottnarmstrong/DeGiorgi`](https://github.com/scottnarmstrong/DeGiorgi) repository
+  (Apache-2.0, `sorry`-free, no custom axioms): the source for the non-symmetric
+  inverse-coercivity definition (`EllipticCoeff`), its derived upper bounds
+  (`quadratic_upper`, `mixed_bound`, both with the same `Λ`), and the Lane E.23 migration.
+  Read `holder_Moser` in `DeGiorgi/Holder/PublicEstimate.lean` before writing Lane E.23's
+  statement: it fixes the normalization, dimension, homogeneity, representative, and norm
+  dependence that the migration has to reconcile.
 - N. G. Meyers, [*An `Lᵖ`-estimate for the gradient of solutions of second order elliptic
   divergence equations*](https://www.numdam.org/item/ASNSP_1963_3_17_3_189_0/): the
   bounded-measurable-coefficient self-improvement near `p = 2` in Lane E.21.
