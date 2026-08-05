@@ -308,7 +308,7 @@ Bourbaki node `i` sits at `Fin` index `i - 1`, and `cartanMatrix t i j = ⟨α_i
 the `A_n` chain runs `0, 1, …, n - 1` in order; `B_n` and `C_n` continue that chain with the double
 edge between `n - 2` and `n - 1`, the short simple root being the last node of `B_n` and the long
 one the last node of `C_n`; `D_n` forks at `n - 3`, with `n - 2` and `n - 1` the two fork nodes;
-`E_n` follows Bourbaki with node `1` (index `1`) the branch node off the `1-3-4-5-6` chain; `F₄` has
+`E_n` follows Bourbaki with node `2` (index `1`) the branch node off the `1-3-4-5-6` chain; `F₄` has
 `0, 1` long and `2, 3` short; and `G₂` has `0` short and `1` long, giving `!![2, -1; -3, 2]`.
 
 Anything that permutes simple roots must be stated against this numbering, and zero-based `Fin`
