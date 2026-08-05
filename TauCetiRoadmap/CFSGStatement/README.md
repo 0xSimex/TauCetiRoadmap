@@ -33,6 +33,10 @@ requirement. Nor does a predicate that characterizes a group by its order, invol
 or place in the classification. The resulting types should remain useful to downstream work even
 though CFSGStatement proves no structure theory about them.
 
+These requirements are enforced by review, not mechanically: Mathlib uses choice pervasively, so
+`#print axioms` cannot distinguish an honest construction from one that smuggles in
+`Classical.choose`. Reviewers of each milestone must read the definitions.
+
 ## The list and its conventions
 
 `CFSGIndex` has four constructors.
@@ -67,9 +71,19 @@ families
 ²B₂(2^(2m+1)),  ²G₂(3^(2m+1)),  ²F₄(2^(2m+1)).
 ```
 
-The Tits group `²F₄(2)'` has its own constructor. A `PrimePower` stores `p`, a positive exponent,
+The Tits group `²F₄(2)'` has its own constructor; that split is conventional rather than
+mathematical, since the uniform derived-subgroup-modulo-center construction below, applied to
+`²F₄` at field order two, produces the same group. A `PrimePower` stores `p`, a positive exponent,
 and proofs that `p` is prime and the exponent is positive, so the corresponding Mathlib
 `GaloisField` can be constructed without refactoring the index later.
+
+The parameter `q` in the twisted families follows the Gorenstein--Lyons--Solomon/ATLAS
+convention: `²A_n(q)` denotes the fixed points of the `q`-power Frobenius composed with the graph
+automorphism, so it is the unitary family `PSU_{n+1}(q)` whose matrix realization has entries in
+`𝔽_{q²}`, and likewise for `²D_n(q)`, `²E₆(q)`, and `³D₄(q)` (entries in `𝔽_{q³}`). Carter's
+books index the same groups by the larger field, writing `²A_n(q²)`; do not follow that
+convention here, since the small-field indexing is what makes the exclusions in
+`InStandardRange` correct.
 
 `LieTypeIndex.InStandardRange` pins the usual rank and small-field restrictions. In particular it
 uses `B_n(q)` only for odd `q` and `n ≥ 3`, leaving the characteristic-two `B_n = C_n` overlap to
@@ -158,6 +172,14 @@ twists. Extend that development with an explicit pinned construction and expose:
 This milestone ends with the actual body of `LieTypeIndex.AmbientGroup` and its `Group` instance.
 No finiteness statement is involved: the ambient group is generally infinite.
 
+We deliberately do not define the classical families as explicit matrix groups (`SL`, `SU`, `Sp`,
+and orthogonal groups over `𝔽_q`), although that route would unblock the six classical families
+without any scheme theory. The exceptional and twisted families need the pinned algebraic-group
+construction in any case, and a single uniform construction keeps the Steinberg-map interface in
+Milestone 2 small. The derived-subgroup-modulo-center convention transfers verbatim to matrix
+groups, so if the pinned construction stalls, refactoring the classical families onto matrix
+groups is a contained change rather than a redesign.
+
 ## Milestone 2: Steinberg maps and fixed points
 
 Define the field Frobenius on the algebraic closure and its action on the pinned algebraic group's
@@ -169,12 +191,15 @@ points. Then define the endomorphism attached to every `LieTypeIndex`:
 - the characteristic-two or characteristic-three exceptional isogeny, with its precise square
   relation to Frobenius, for `²B₂`, `²G₂`, and `²F₄`.
 
-Pin the exponents carefully: the Suzuki and Ree constructors use fields of order
+Here the field Frobenius attached to an index with parameter `q` is `x ↦ x ^ q.card`, so the
+twisted fixed-point groups are the small-field-indexed `²X(q)` described under "Lie-type
+families" above. Pin the exponents carefully: the Suzuki and Ree constructors use fields of order
 `2^(2m+1)`, `3^(2m+1)`, and `2^(2m+1)`. The `tits` constructor uses the same `²F₄` construction at
 field order two.
 
 For an endomorphism `F : G →* G`, define the fixed subgroup directly as
-`{g | F g = g}`. For each index `d`, set
+`{g | F g = g}`; this is Mathlib's `MonoidHom.eqLocus` against the identity homomorphism. For
+each index `d`, set
 
 ```text
 H_d = fixedSubgroup d.steinberg
@@ -198,7 +223,7 @@ Define a small presentation-data structure with a number of generators and a fin
 in `FreeGroup (Fin n)`. Its associated group is
 
 ```lean
-PresentedGroup (Set.range fun i : Fin relators.length => relators[i])
+PresentedGroup {r | r ∈ relators}
 ```
 
 For each `SporadicName`, fill in a published finite presentation, including the complete relator
@@ -208,10 +233,15 @@ generator convention is fully specified; uniformity of presentation style is les
 an auditable definition.
 
 The Monster is subject to the same rule: it gets a genuine finite presentation, not a name selected
-by order or local subgroup data. This milestone asks only for the presentation to be transcribed
-and for `PresentedGroup` to supply the group type. It does not ask for a proof that the presented
-group has the expected order, is nontrivial, finite, simple, or isomorphic to another construction
-of the named sporadic group.
+by order or local subgroup data. Beware a specific trap here: the best-known presentations in the
+Monster's orbit, such as the Coxeter-style `Y₅₅₅` presentations, present the Bimonster `M ≀ 2`,
+not `M` itself. A perfectly cited transcription of one of those would define the wrong group and
+silently falsify the final statement. Use a published presentation of the simple group itself
+(the literature derives such presentations from the `Y`-diagram ones by adjoining relators), and
+take the same care with the Baby Monster. This milestone asks only for the presentation to be
+transcribed and for `PresentedGroup` to supply the group type. It does not ask for a proof that
+the presented group has the expected order, is nontrivial, finite, simple, or isomorphic to
+another construction of the named sporadic group.
 
 ## Milestone 4: assemble and state CFSG
 
@@ -227,7 +257,7 @@ group delivered by the witness.
 ## Existing work and provenance
 
 The design was discussed in the Lean Zulip topic
-[“Formalized statement of CFSG?”](https://leanprover.zulipchat.com/#narrow/channel/583339-AI-authored-projects/topic/Formalized.20statement.20of.20CFSG.3F/with/614645364).
+[“Formalized statement of CFSG?”](https://leanprover.zulipchat.com/#narrow/channel/583339-AI-authored-projects/topic/Formalized.20statement.20of.20CFSG.3F/with/614411324).
 Thomas Browning identified fixed points of algebraic groups over finite fields as the proper
 definition of the Lie-type families; Kevin Buzzard suggested finite presentations as a manageable
 definition of the sporadics even before their finiteness is proved. Those are the two construction

@@ -29,9 +29,20 @@ structure PrimePower where
 def PrimePower.card (q : PrimePower) : ℕ := q.p ^ q.exponent
 
 /-- The families of finite groups of Lie type. The rank parameters follow the Dynkin subscripts.
+
+`q` follows the Gorenstein--Lyons--Solomon/ATLAS convention throughout: the Steinberg endomorphism
+attached to an index composes the pinned graph automorphism (where present) with the
+`q.card`-power field Frobenius. So `twistedA 2 q` with `q.card = 3` is `²A₂(3) = PSU₃(3)`, whose
+matrix realization has entries in the field of `q.card ^ 2` elements. Carter indexes the twisted
+groups by the larger field, as `²A_n(q²)`; do not follow that convention here, since the
+small-field indexing is what makes the exclusions in `InStandardRange` correct.
+
 The Suzuki and Ree constructors record `m`, with field sizes `2 ^ (2 * m + 1)`,
 `3 ^ (2 * m + 1)`, and `2 ^ (2 * m + 1)` respectively. The Tits group is represented separately
-from the simple Ree groups `²F₄(2 ^ (2 * m + 1))`, which have `m ≥ 1`. -/
+from the simple Ree groups `²F₄(2 ^ (2 * m + 1))`, which have `m ≥ 1`. That split is conventional
+rather than mathematical: the uniform derived-subgroup-modulo-center construction applied to `²F₄`
+at field order two would produce the same group, but the Tits group is traditionally listed apart
+from the groups of Lie type. -/
 inductive LieTypeIndex where
   | A (rank : ℕ) (q : PrimePower)
   | twistedA (rank : ℕ) (q : PrimePower)
@@ -81,21 +92,10 @@ predicate. -/
 def LieTypeIndex.Valid (d : LieTypeIndex) : Prop :=
   d.InStandardRange ∧ ¬d.IsDuplicateRepresentative
 
-/-- The fixed points of a group endomorphism. -/
-def fixedSubgroup {G : Type*} [Group G] (F : G →* G) : Subgroup G where
-  carrier := {g | F g = g}
-  one_mem' := by simp
-  mul_mem' := by
-    intro a b ha hb
-    change F a = a at ha
-    change F b = b at hb
-    change F (a * b) = a * b
-    rw [map_mul, ha, hb]
-  inv_mem' := by
-    intro a ha
-    change F a = a at ha
-    change F a⁻¹ = a⁻¹
-    rw [map_inv, ha]
+/-- The fixed points `{g | F g = g}` of a group endomorphism: Mathlib's `MonoidHom.eqLocus`
+against the identity. -/
+def fixedSubgroup {G : Type*} [Group G] (F : G →* G) : Subgroup G :=
+  F.eqLocus (MonoidHom.id G)
 
 /-- The points over an algebraic closure of the explicitly pinned simply connected
 Chevalley--Demazure group attached to `d`. The implementation must be the construction specified in
@@ -138,7 +138,7 @@ structure GroupPresentation where
 /-- The finite list of relator words, regarded as a set for `PresentedGroup`. -/
 def GroupPresentation.relatorSet (P : GroupPresentation) :
     Set (FreeGroup (Fin P.generatorCount)) :=
-  Set.range fun i : Fin P.relators.length => P.relators[i]
+  {r | r ∈ P.relators}
 
 /-- The group concretely defined by a finite presentation. -/
 abbrev GroupPresentation.Group (P : GroupPresentation) : Type :=
@@ -171,8 +171,11 @@ abbrev CFSGIndex.Group : CFSGIndex → Type
   | .lie index _ => index.Group
   | .sporadic name => name.Group
 
-instance (i : CFSGIndex) : Group i.Group := by
-  cases i <;> infer_instance
+instance : (i : CFSGIndex) → Group i.Group
+  | .cyclic .. => inferInstance
+  | .alternating .. => inferInstance
+  | .lie .. => inferInstance
+  | .sporadic .. => inferInstance
 
 /-- **Classification of finite simple groups, statement only.** Proving this example, or proving
 finiteness or simplicity of any listed group, is outside this roadmap. The existential is
