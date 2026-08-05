@@ -278,7 +278,7 @@ wrong, so the permutations are pinned as `Fin` data rather than as prose:
 | `²D_n` | `D_n` | `Equiv.swap (n - 2) (n - 1)`, the two fork nodes |
 | `²E₆` | `E₆` | `Equiv.swap 0 5 * Equiv.swap 2 4`, fixing `1` and `3` (Bourbaki `1 ↔ 6`, `3 ↔ 5`) |
 | `³D₄` | `D₄` | the three-cycle `(0 2 3)` on the outer nodes, fixing the centre `1` |
-| everything in the first row of the table above | itself | `1` |
+| the untwisted families | itself | `1`, so `γ` is the identity and no branch needs a dummy map |
 
 Each permutation must be proved to be an automorphism of the corresponding Cartan matrix. The
 defining equations are
