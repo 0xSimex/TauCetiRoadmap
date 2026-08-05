@@ -360,19 +360,54 @@ abbrev PresentationWord (n : ℕ) := List (GeneratorLetter n)
 def PresentationWord.toFreeGroup {n : ℕ} (w : PresentationWord n) : FreeGroup (Fin n) :=
   w.foldl (fun g x => g * x.toFreeGroup) 1
 
+/-- The transcription form of a relator. Published relators are written with powers and commutators,
+so this is the shape a reviewer compares against the source; `toWord` compiles it to the flat signed
+word, which stays the semantics and the input to the count check. Expanding
+`(a b₁ c₁ a b₂ c₂ a b₃ c₃) ^ 10` by hand is exactly the transcription this format exists to
+avoid. -/
+inductive Relator (n : ℕ) where
+  | gen (i : Fin n)
+  | inv (r : Relator n)
+  | mul (r s : Relator n)
+  | pow (r : Relator n) (k : ℕ)
+  | comm (r s : Relator n)
+
+/-- Reverse a word and flip every sign. -/
+def PresentationWord.inv {n : ℕ} (w : PresentationWord n) : PresentationWord n :=
+  (w.map fun | .of i => .inv i | .inv i => .of i).reverse
+
+/-- Compile a relator expression to the flat signed word. `comm` follows Mathlib's bracket,
+`⁅a, b⁆ = a * b * a⁻¹ * b⁻¹`; a source using the other convention is transcribed accordingly and
+that fact goes in `generatorConvention`. -/
+def Relator.toWord {n : ℕ} : Relator n → PresentationWord n
+  | .gen i => [.of i]
+  | .inv r => r.toWord.inv
+  | .mul r s => r.toWord ++ s.toWord
+  | .pow r k => (List.replicate k r.toWord).flatten
+  | .comm r s => r.toWord ++ s.toWord ++ r.toWord.inv ++ s.toWord.inv
+
 /-- Finite presentation data with its auditable source and transcription metadata. The source must
-be a full presentation of the abstract group, not a semi-presentation for recognizing generators in
-an already constructed group. -/
+be a full presentation of the abstract group, proved in that source to define it, not a
+semi-presentation for recognizing generators in an already constructed group.
+
+There is deliberately no checksum field. A checksum with no pinned normal form, no algorithm, and no
+function to recompute it against cannot be checked by a reviewer or by the kernel, and an
+unfalsifiable metadata string reads like a check without being one. The count check below is
+decidable, and everything else rests on the independent read-through required by `README.md`. -/
 structure GroupPresentation where
   generatorCount : ℕ
-  generatorNames : Fin generatorCount → String
+  generatorNames : List String
   source : String
   sourceLocator : String
   generatorConvention : String
   transcriptionNotes : String
+  expectedGeneratorCount : ℕ
   expectedRelatorCount : ℕ
-  normalizedChecksum : String
-  relators : List (PresentationWord generatorCount)
+  transcribed : List (Relator generatorCount)
+
+/-- The compiled relator words. -/
+def GroupPresentation.relators (P : GroupPresentation) : List (PresentationWord P.generatorCount) :=
+  P.transcribed.map Relator.toWord
 
 /-- The finite list of relator words, regarded as a set for `PresentedGroup`. -/
 def GroupPresentation.relatorSet (P : GroupPresentation) :
@@ -388,19 +423,23 @@ the actual signed relator words and source metadata; no branch may use a semi-pr
 a group from an existence or uniqueness theorem. -/
 def SporadicName.presentation (_s : SporadicName) : GroupPresentation := sorry
 
-/-- The recorded relator count agrees with the transcribed list. This is transcription metadata,
-not a claim about the presented group. -/
-def GroupPresentation.relatorsMatchMetadata (P : GroupPresentation) : Prop :=
-  P.relators.length = P.expectedRelatorCount
+/-- The recorded generator and relator counts agree with the transcribed data. This is transcription
+metadata, not a claim about the presented group. -/
+def GroupPresentation.matchesMetadata (P : GroupPresentation) : Prop :=
+  P.generatorCount = P.expectedGeneratorCount ∧
+    P.generatorNames.length = P.expectedGeneratorCount ∧
+    P.transcribed.length = P.expectedRelatorCount
 
-/-- Executable count check for every transcribed presentation. -/
-example (s : SporadicName) : s.presentation.relatorsMatchMetadata := sorry
+/-- Count check for every transcribed presentation. Named, not anonymous: closing an S1 row means
+discharging this. -/
+theorem presentation_matchesMetadata (s : SporadicName) :
+    s.presentation.matchesMetadata := sorry
 
 /-- The sporadic group defined by its pinned presentation. -/
 abbrev SporadicName.Group (s : SporadicName) : Type := s.presentation.Group
 
-/-- A small acceptance check that the enumeration has exactly twenty-six constructors. -/
-example : Fintype.card SporadicName = 26 := by decide
+/-- The enumeration has exactly twenty-six constructors. -/
+theorem card_sporadicName : Fintype.card SporadicName = 26 := by decide
 
 /-! ## The classification list and final statement -/
 

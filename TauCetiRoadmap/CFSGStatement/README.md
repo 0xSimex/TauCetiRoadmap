@@ -166,8 +166,8 @@ roadmap that owns them, not here.
 | L1: ordinary and graph Steinberg maps | L0 | Frobenius and numbered diagram maps | the simple-root-subgroup equations and the order relations are proved |
 | L2: exceptional Steinberg maps | L0 | Suzuki--Ree half-Frobenius maps | the long/short exponent equations and the square relation are proved |
 | L3: fixed groups | L1 and L2 | fixed points, derived subgroup, central quotient | every valid branch has a `Group` instance |
-| S0: presentation format and sources | Mathlib only | signed-word format and 26-row source manifest | every source is a full presentation and is locatable |
-| S1: presentation data | S0 | complete relator words for all sporadics | counts/checksums and independent transcription review |
+| S0: presentation format and sources | Mathlib only | relator expression type compiling to signed words, and a 26-row source manifest | every source is a full presentation, is locatable, and is proved to define its group |
+| S1: presentation data | S0 | complete relator words for all sporadics | relator counts match the manifest; independent transcription review |
 | A0: assembly | I0, L3, S1 | `CFSGIndex.Group`, `ClassificationStatement` | named proposition elaborates with no placeholder carriers |
 
 ### I0: indices and Mathlib glue
@@ -366,24 +366,42 @@ decomposition, simplicity, or recognition.
 
 ### S0: auditable presentation data and source selection
 
-Represent a presentation word as a left-to-right list of signed generator indices and compile it to
-`FreeGroup (Fin n)`. Do not store large relators directly as opaque nested `FreeGroup` expressions:
-the signed-word form must be readable in diffs, importable from source data, and countable. Store
-generator names, an exact bibliographic or stable database locator, the generator convention, and
-transcription notes with the relators. The associated group is still
+The stored form of a relator is a left-to-right list of signed generator indices, compiled to
+`FreeGroup (Fin n)`. Do not store large relators as opaque nested `FreeGroup` expressions: the
+signed-word form must be readable in diffs, importable from source data, and countable. The
+associated group is still
 
 ```lean
 PresentedGroup {r | r ∈ relators.map Word.toFreeGroup}.
 ```
 
+Published relators are written with powers and commutators, not as flat letter strings: `(ab)^11`,
+`[a,b]^5`, and the Monster's spider relator `(a b₁ c₁ a b₂ c₂ a b₃ c₃)^10`. Expanding those by hand
+into signed letters makes the longest and most error-prone relators the least reviewable, which is
+the opposite of what this lane is for. So transcribe into a small relator expression type with
+generator, inverse, product, power, and commutator constructors, and compile that to the flat signed
+word. The flat form remains the semantics and the input to any count or checksum; the expression
+form is what a reviewer compares against the source.
+
+Store generator names, an exact bibliographic or stable database locator, the generator convention,
+transcription notes, and the expected generator and relator counts with the relators. Both counts
+are then decidably checkable against the transcribed data.
+
+Do not carry a checksum field. A checksum with no pinned normal form, no named algorithm, and no
+function to recompute it against cannot be checked by a reviewer or by the kernel, so it reads like
+a check without being one. The two counts are real checks, and everything beyond them rests on the
+independent read-through below.
+
 Before transcribing, create a 26-row source manifest. Each row records the name, exact source,
 page/theorem or stable identifier, generator names, expected generator and relator counts,
-transcription artifact/checksum, and review status. A database entry labelled a *semi-presentation*
-or a set of relations for checking standard generators is not a presentation of the abstract group
-and must be rejected. For comparison, the ATLAS [Monster page](https://atlas.math.rwth-aachen.de/Atlas/v3/spor/M/)
-labels its generator-checking relations a semi-presentation, while the
+transcription artifact, and review status. A database entry labelled a *semi-presentation* or a set
+of relations for checking standard generators is not a presentation of the abstract group and must
+be rejected. For comparison, the ATLAS
+[Monster page](https://brauer.maths.qmul.ac.uk/Atlas/v3/spor/M/) labels its generator-checking
+relations a semi-presentation, while the
 [M₂₂ presentation page](https://brauer.maths.qmul.ac.uk/Atlas/v3/pres/M22G1-P1) explicitly gives a
-group presentation. Record which kind of source each manifest row uses.
+group presentation. Record which kind of source each manifest row uses, and cite for each row a
+source in which the presentation is *proved* to define the named group, not merely asserted to.
 
 ### S1: the twenty-six sporadic presentations
 
@@ -391,15 +409,37 @@ Fill every `SporadicName.presentation` branch with the complete signed relator w
 manifest. Short presentations are preferred only when the generator convention is fully specified;
 auditable data is more important than a uniform style.
 
-The Monster must receive a genuine finite presentation. Coxeter-style `Y₅₅₅` relations present the
-Bimonster `M ≀ 2`, not `M`, and ATLAS-style semi-presentations merely recognize generators in an
-already available group. Neither is sufficient. Use a published full presentation of the Monster
-itself and apply the same check to the Baby Monster and every other branch.
+The Monster must receive a genuine finite presentation, and one exists, so neither of the two
+tempting substitutes is acceptable. Coxeter-style `Y₅₅₅` relations plus the spider relation present
+the Bimonster `M ≀ 2`, not `M`; `M` sits inside it at index `2·|M|`, and no presentation of `M`
+follows from that in any usable form. ATLAS-style semi-presentations merely recognize generators in
+an already available group, and the ATLAS Monster page carries only one of those. Use instead the
+`Y₄₄₃` presentation: the 12 nodes of that diagram, the Coxeter relations, the spider relation, and
+`Z = 1` for the central involution `Z`, giving 12 generators and 80 relators. The theorem is
+Norton's (1990), simplified by Ivanov (1999); the explicit word list is on J. N. Bray's
+[Monster presentation page](https://webspace.maths.qmul.ac.uk/j.n.bray/web/Pres/Mnst.html), which
+displays `M × 2` and becomes `M` on adding `Z = 1`. Farooq, Norton, and Wilson,
+[*A presentation of the Monster and a set of matrices which satisfy it*](https://www.sciencedirect.com/science/article/pii/S0021869313000410),
+J. Algebra **379** (2013) 432-440, is an alternative.
 
-For each transcription, check the recorded generator and relator counts and a stable checksum of
-the normalized signed-word data. Require an independent source-to-Lean read-through before marking
-the row reviewed. This lane does not prove that the presented group has the expected order, is
-nontrivial, finite, simple, or isomorphic to another construction.
+Apply the same standard to the Baby Monster, whose `Y₄₃₃` presentation was conjectured in the ATLAS
+and proved by Ivanov, and to every other branch. Bray's
+[presentation pages](https://webspace.maths.qmul.ac.uk/j.n.bray/web/Pres/) carry most of the
+remaining sporadics directly, and the Fischer groups come from smaller Y-diagrams with the spider
+relation. Auditing that collection against all 26 names is the first S0 task, and any name it does
+not cover is to be recorded in the manifest with the source that does.
+
+For each transcription, check the recorded relator count against the transcribed list, and require
+an independent source-to-Lean read-through before marking the row reviewed. This lane does not prove
+that the presented group has the expected order, is nontrivial, finite, simple, or isomorphic to
+another construction.
+
+That gap is survivable, and it is worth saying why, because the reason is the whole argument for
+resting on review here. Each group on the list is simple, so a transcription error can only make
+`ClassificationStatement` false, never easier to prove: dropping a relator yields a proper cover of
+the intended group, and adding or corrupting one yields a proper quotient, hence the trivial group.
+In both cases nothing finite and simple is isomorphic to that branch. Review protects the truth of
+the final statement, not its provability.
 
 ### A0: assemble and state CFSG
 
