@@ -329,12 +329,21 @@ gives, on `Fin n`:
 | `G₂` | 3 | `Equiv.swap 0 1` | `α₂` long, so `0 ↦ 3` and `1 ↦ 1` |
 | `F₄` | 2 | `Fin.revPerm`, the reversal | `α₁, α₂` long, so `0, 1 ↦ 1` and `2, 3 ↦ 2` |
 
-Suzuki groups are actively being developed in Mathlib in
-[#42043](https://github.com/leanprover-community/mathlib4/pull/42043). A local construction may be
-used while that work is in motion. Whatever Suzuki implementation ultimately lands in Mathlib
-supersedes the local one: refactor this branch onto the landed Mathlib API and delete or abandon our
-version, following the standard practice for downstream developments. The current draft API is not
-a compatibility target.
+Suzuki groups are being developed in Mathlib in
+[feat(GroupTheory/SpecificGroups/Suzuki): define Suzuki groups](https://github.com/leanprover-community/mathlib4/pull/42043),
+still a draft at the time of writing. That construction is
+`suzukiGroup (n : ℕ) : Subgroup (GL (Fin 4) (GaloisField 2 (2 * n + 1)))`, the closure of explicit
+four-by-four unipotent and Weyl matrices. It is a different object from this lane's: not the fixed
+points of `τ_{B₂} ^ (2m + 1)` in a pinned ambient group, and its `n` is unrestricted, so
+`suzukiGroup 0` is the solvable `Sz(2)`.
+
+The pinned construction is the definition here, and the `suzuki` branch stays inside the uniform
+`AmbientGroup`, `steinberg`, `FixedPoints`, derived-subgroup-modulo-centre route that L0 to L3
+exist to build. Moving that one branch onto a matrix group would take it out of that route with no
+stated obligation that the two agree, which is worse than a little duplication. So: once the Mathlib
+work lands, add a target proving `²B₂(2^(2m+1)) ≃* suzukiGroup m` for `m ≥ 1`, and consume the
+Mathlib API through that isomorphism. Nothing in this roadmap is deleted, and the `m ≥ 1`
+restriction remains this roadmap's responsibility.
 
 ### L3: fixed points and the simple-group candidate
 
