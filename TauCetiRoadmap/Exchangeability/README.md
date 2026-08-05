@@ -707,8 +707,8 @@ The directing-measure theorem should expose a real API, not just an existence pr
     This interface is directly approachable from the de Finetti mixture representation, and depends
     neither on the preceding two interfaces nor on the full-path joint disintegration.
 
-  The product parameter is determined by the one-coordinate marginal; a separately bundled
-  uniqueness statement may be added where the affine representation API needs it.
+  The product parameter is determined by the one-coordinate marginal; bundle that uniqueness
+  where the affine representation API consumes it.
 
 This is the default route for the final public API.
 
