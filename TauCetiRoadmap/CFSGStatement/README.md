@@ -96,19 +96,18 @@ books index the same groups by the larger field, writing `²A_n(q²)`; do not fo
 convention here, since the small-field indexing is what makes the exclusions in
 `InStandardRange` correct.
 
-`LieTypeIndex.InStandardRange` pins the usual rank and small-field restrictions. In particular it
-uses `B_n(q)` only for odd `q` and `n ≥ 3`, leaving the characteristic-two `B_n = C_n` overlap to
-the `C` family; starts `C` at rank two and excludes `C₂(2)`; starts `D` and `²D` at rank four;
-excludes `A₁(2)`, `A₁(3)`, `²A₂(2)`, and `G₂(2)`; and starts each Suzuki--Ree parameter at `m = 1`.
-The separate Tits constructor supplies `²F₄(2)'`.
+`LieTypeIndex.InStandardRange` pins the usual rank and small-field restrictions. It starts `B` at
+rank two and excludes the nonsimple `B₂(2)`; starts `C` at rank three and restricts it to odd
+characteristic, leaving `B₂(q) = C₂(q)` and the characteristic-two overlap `B_n(q) = C_n(q)` to the
+`B` family; starts `D` and `²D` at rank four; excludes `A₁(2)`, `A₁(3)`, `²A₂(2)`, and `G₂(2)`; and
+starts each Suzuki--Ree parameter at `m = 1`. The separate Tits constructor supplies `²F₄(2)'`.
 
-The root-systems roadmap deliberately treats `B₂` as valid and `C₂` as its duplicate, while this
-roadmap uses the conventional finite-group name `C₂(q)` and omits `B₂(q)`. Pin the bridge as follows:
-the `C₂` branch uses the root-systems roadmap's pinned `B₂` datum after the explicit permutation that
-interchanges its two numbered nodes. Record the resulting pinned `B₂ ≅ C₂` identification in the
-API. Use that same rank-two pinned datum for the Suzuki construction; `²B₂` remains the printed
-finite-group name. No agent should create an unrelated second rank-two root datum to work around the
-different validity conventions.
+These are the ranges of the usual presentation of the list, and they are also the ranges carried by
+`DynkinType.Valid` in the [root-systems roadmap](../RepresentationTheory/RootSystems/README.md)
+(`A n (n ≥ 1)`, `B n (n ≥ 2)`, `C n (n ≥ 3)`, `D n (n ≥ 4)`). Every valid index here therefore names
+a valid Dynkin type there, and no agent should introduce a reindexed or otherwise second copy of a
+root datum to reconcile the two conventions. The Suzuki construction uses that same rank-two `B₂`
+datum, so `²B₂` is both the printed finite-group name and the underlying Dynkin type.
 
 ### Small isomorphism coincidences
 
@@ -122,7 +121,7 @@ representatives:
 | `A₁(9)` | `A₆` |
 | `A₂(2)` | `A₁(7)` |
 | `A₃(2)` | `A₈` |
-| `C₂(3)` | `²A₃(2)` |
+| `B₂(3)` | `²A₃(2)` |
 
 Thus `Valid` means “our preferred representative in the CFSG list,” not “proved finite and
 simple.” Its definition is just `InStandardRange ∧ ¬ IsDuplicateRepresentative`, with the finite
@@ -191,8 +190,7 @@ the existence half of the classification of reductive groups.
 Consume, rather than duplicate:
 
 - [root systems, Weyl groups, and the Cartan--Killing classification](../RepresentationTheory/RootSystems/README.md)
-  for the numbered `DynkinType`, Cartan matrices, and coordinate realizations, subject to the pinned
-  `B₂`/`C₂` bridge above;
+  for the numbered `DynkinType`, its Cartan matrices, and coordinate realizations;
 - [reductive algebraic groups](../ReductiveGroups/README.md) for root data, simply connected forms,
   base change, group schemes, and points.
 
@@ -243,7 +241,7 @@ Pinning must fix any signs or root-subgroup normalizations needed to make these 
 
 ### L2: exceptional Suzuki--Ree maps
 
-For `X = C₂` in characteristic two, `G₂` in characteristic three, and `F₄` in characteristic two,
+For `X = B₂` in characteristic two, `G₂` in characteristic three, and `F₄` in characteristic two,
 construct the pinned exceptional isogeny `τ_X` and prove
 
 ```text

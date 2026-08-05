@@ -65,12 +65,18 @@ inductive LieTypeIndex where
 /-- Conventional rank and small-field restrictions. These remove the nonsimple members and the
 systematic low-rank and characteristic-two overlaps before a preferred representative is chosen
 for the remaining sporadic coincidences. This predicate is indexing data only: it does not assert
-that the resulting group has been proved finite or simple in Lean. -/
+that the resulting group has been proved finite or simple in Lean.
+
+The `B` and `C` ranges are the usual ones: `B` from rank two, `C` from rank three and odd
+characteristic. `B₂(q)` is `C₂(q)` for every `q` and `B_n(q)` is `C_n(q)` for even `q`, so the `C`
+restrictions remove exactly the resulting duplicates. These are also the ranges carried by
+`DynkinType.Valid` in the root-systems roadmap, so every valid index here names a valid Dynkin
+type there. -/
 def LieTypeIndex.InStandardRange : LieTypeIndex → Prop
   | .A rank q => 1 ≤ rank ∧ (rank = 1 → 4 ≤ q.card)
   | .twistedA rank q => 2 ≤ rank ∧ (rank = 2 → 3 ≤ q.card)
-  | .B rank q => 3 ≤ rank ∧ Odd q.card
-  | .C rank q => 2 ≤ rank ∧ ¬(rank = 2 ∧ q.card = 2)
+  | .B rank q => 2 ≤ rank ∧ ¬(rank = 2 ∧ q.card = 2)
+  | .C rank q => 3 ≤ rank ∧ q.p ≠ 2
   | .D rank _ => 4 ≤ rank
   | .twistedD rank _ => 4 ≤ rank
   | .G2 q => 3 ≤ q.card
@@ -84,7 +90,7 @@ def LieTypeIndex.IsDuplicateRepresentative : LieTypeIndex → Prop
   | .A 1 q => q.card = 4 ∨ q.card = 5 ∨ q.card = 9
   | .A 2 q => q.card = 2
   | .A 3 q => q.card = 2
-  | .C 2 q => q.card = 3
+  | .B 2 q => q.card = 3
   | _ => False
 
 /-- A preferred representative in the CFSG list. This is not a finiteness or simplicity
@@ -107,9 +113,27 @@ example : ¬(LieTypeIndex.A 1 q4).Valid := by
 example : (LieTypeIndex.twistedA 2 q3).Valid := by
   norm_num [LieTypeIndex.Valid, LieTypeIndex.InStandardRange,
     LieTypeIndex.IsDuplicateRepresentative, PrimePower.card, q3]
-example : ¬(LieTypeIndex.C 2 q3).Valid := by
+/-- `B₂(2) = Sp₄(2)` is not simple; its derived subgroup is `A₆`, kept as `alternating 6`. -/
+example : ¬(LieTypeIndex.B 2 q2).InStandardRange := by
+  norm_num [LieTypeIndex.InStandardRange, PrimePower.card, q2]
+/-- `B₂(4)` is kept: the rank-two symplectic family is named `B`, not `C`, in every
+characteristic. -/
+example : (LieTypeIndex.B 2 q4).Valid := by
+  norm_num [LieTypeIndex.Valid, LieTypeIndex.InStandardRange,
+    LieTypeIndex.IsDuplicateRepresentative, PrimePower.card, q4]
+/-- `B₂(3) = Sp₄(3) ≅ PSU₄(2) = ²A₃(2)`, and we keep the unitary name. -/
+example : ¬(LieTypeIndex.B 2 q3).Valid := by
   norm_num [LieTypeIndex.Valid, LieTypeIndex.InStandardRange,
     LieTypeIndex.IsDuplicateRepresentative, PrimePower.card, q3]
+/-- `C₃(2) ≅ B₃(2)`, and even characteristic is carried by the `B` family. -/
+example : ¬(LieTypeIndex.C 3 q2).InStandardRange := by
+  norm_num [LieTypeIndex.InStandardRange, q2]
+/-- `C₃(3) = PSp₆(3)` is not `B₃(3) = Ω₇(3)`, so both survive in odd characteristic. -/
+example : (LieTypeIndex.C 3 q3).Valid := by
+  norm_num [LieTypeIndex.Valid, LieTypeIndex.InStandardRange,
+    LieTypeIndex.IsDuplicateRepresentative, q3]
+example : (LieTypeIndex.B 3 q3).Valid :=
+  ⟨by norm_num [LieTypeIndex.InStandardRange, PrimePower.card, q3], id⟩
 
 /-- A Lie-type index whose rank, field, and preferred-representative conditions hold. All
 carrier-valued constructions below take this subtype, so no implementation branch is required for
