@@ -156,8 +156,8 @@ cannot inspect its defining data in one sitting.
 | --- | --- | --- | --- |
 | I0: indices | Mathlib only | `PrimePower`, raw and valid Lie indices, sporadic names | range and duplicate examples reduce; 26-name check passes |
 | L0: pinned ambient groups | root systems, reductive groups | root datum, pinning, points, root subgroups | every valid family traces to explicit data |
-| L1: ordinary and graph Steinberg maps | L0 | Frobenius and numbered diagram maps | action on root subgroups and order relations are stated |
-| L2: exceptional Steinberg maps | L0 | Suzuki--Ree half-Frobenius maps | exceptional-isogeny square relations are proved |
+| L1: ordinary and graph Steinberg maps | L0 | Frobenius and numbered diagram maps | the simple-root-subgroup equations and the order relations are proved |
+| L2: exceptional Steinberg maps | L0 | Suzuki--Ree half-Frobenius maps | the long/short exponent equations and the square relation are proved |
 | L3: fixed groups | L1 and L2 | fixed points, derived subgroup, central quotient | every valid branch has a `Group` instance |
 | S0: presentation format and sources | Mathlib only | signed-word format and 26-row source manifest | every source is a full presentation and is locatable |
 | S1: presentation data | S0 | complete relator words for all sporadics | counts/checksums and independent transcription review |
@@ -167,8 +167,16 @@ cannot inspect its defining data in one sitting.
 
 Build `PrimePower`, `LieTypeIndex`, `LieTypeIndex.InStandardRange`,
 `LieTypeIndex.IsDuplicateRepresentative`, `LieTypeIndex.Valid`, `ValidLieTypeIndex`,
-`SporadicName`, and `CFSGIndex`. Keep parameters as data rather than encoding the list as a large
-disjunction. Only `ValidLieTypeIndex` may be passed to a Lie-type carrier or endomorphism.
+`LieTypeIndex.IsExceptional`, `ExceptionalLieTypeIndex`, `SporadicName`, and `CFSGIndex`. Keep
+parameters as data rather than encoding the list as a large disjunction. Only `ValidLieTypeIndex`
+may be passed to a Lie-type carrier or endomorphism, and only `ExceptionalLieTypeIndex` to a
+half-Frobenius.
+
+Build the numbered data read off an index: `ValidLieTypeIndex.rank`, `.characteristic`, and
+`.fieldOrder`; and the pinned permutations `graphPermA`, `graphPermD`, `graphPermE6`,
+`trialityPermD4`, `lengthPermRankTwo`, `lengthPermF4`, with the exponent tables
+`exceptionalExponentB2`, `exceptionalExponentG2`, and `exceptionalExponentF4`. These carry the
+conventions of L1 and L2 and are Mathlib-only, so they land here rather than waiting on L0.
 
 Consume Mathlib's existing `ZMod`, `Multiplicative`, `alternatingGroup`, `FreeGroup`,
 `PresentedGroup`, `Subgroup.center`, `commutator`, quotient groups, `GaloisField`, finite-field
@@ -225,19 +233,36 @@ Use the following exact maps:
 | `²A`, `²D`, `²E₆` | `γ₂ ∘ Frob_q` | `γ₂ ^ 2 = 1` and `γ₂` commutes with `Frob_q` |
 | `³D₄` | `γ₃ ∘ Frob_q` | `γ₃ ^ 3 = 1` and `γ₃` commutes with `Frob_q` |
 
-The `q` here is the small-field GLS/ATLAS parameter fixed above. Pin the diagram permutations
-against the numbered simple roots: reverse the `A_n` chain; exchange the two fork nodes of `D_n`;
-use the Bourbaki `E₆` reflection (`1 ↔ 6`, `3 ↔ 5`, with `2` and `4` fixed); and for `D₄` triality
-cycle the three outer nodes while fixing the central node. Translate these descriptions into the
-actual `Fin` permutations used by the root-system API and expose those permutations as declarations.
-The defining review equations are
+The `q` here is the small-field GLS/ATLAS parameter fixed above.
+
+Number the simple roots by the Bourbaki labels of the underlying untwisted diagram, and place
+Bourbaki node `i` at `Fin` index `i - 1`, so that a rank-`n` diagram is indexed by `Fin n` running
+from `0` to `n - 1`. This zero-based offset is the one thing an implementor is most likely to get
+wrong, so the permutations are pinned as `Fin` data rather than as prose:
+
+| Family | Underlying diagram | Permutation of `Fin n` |
+| --- | --- | --- |
+| `²A_n` | `A_n` | `Fin.revPerm`, the reversal `j ↦ n - 1 - j` |
+| `²D_n` | `D_n` | `Equiv.swap (n - 2) (n - 1)`, the two fork nodes |
+| `²E₆` | `E₆` | `Equiv.swap 0 5 * Equiv.swap 2 4`, fixing `1` and `3` (Bourbaki `1 ↔ 6`, `3 ↔ 5`) |
+| `³D₄` | `D₄` | the three-cycle `(0 2 3)` on the outer nodes, fixing the centre `1` |
+| everything in the first row of the table above | itself | `1` |
+
+Each permutation must be proved to be an automorphism of the corresponding Cartan matrix. The
+defining equations are
 
 ```text
-γ (x_α(t)) = x_{γ α}(t),
-Frob_q (x_α(t)) = x_α(t^q).
+γ (x_α(t)) = x_{γ α}(t)      for α simple,
+Frob_q (x_α(t)) = x_α(t^q)   for every root α.
 ```
 
-Pinning must fix any signs or root-subgroup normalizations needed to make these literal equations.
+The restriction of the first equation to simple roots is not a weakening, and it must not be
+strengthened. A pinning normalizes the root-subgroup parameters on the simple root subgroups, and
+`γ` is then the unique automorphism with that action, by Chevalley's isomorphism theorem for the
+corresponding root data. On a general root the equation reads `γ (x_α(t)) = x_{γ α}(ε_α t)` with
+`ε_α = ±1` forced by the Chevalley structure constants, and the signs cannot all be normalized to
+`1` at once: the type-`A` graph automorphism `X ↦ -J Xᵀ J` of `sl_n` already shows this. Record the
+general-root form as a consequence of the construction, never as a requirement on the pinning.
 
 ### L2: exceptional Suzuki--Ree maps
 
@@ -258,8 +283,28 @@ steinberg(m) ^ 2 = Frob_(p ^ (2m + 1)).
 Thus the fixed groups are `²B₂(2^(2m+1))`, `²G₂(3^(2m+1))`, and
 `²F₄(2^(2m+1))`. The Tits constructor is the `F₄`, `m = 0` map `τ_F₄`; the other constructors have
 `m ≥ 1`. Do not define these branches as `τ_X ∘ Frob_q`: the odd power of the half-Frobenius is the
-pinned construction. Besides the square relation, record the action of `τ_X` on the numbered long
-and short simple-root subgroups; the square relation alone is not the definition.
+pinned construction.
+
+The square relation is a consequence of the definition, not the definition. `τ_X` is pinned by its
+action on the numbered simple root subgroups. Writing `ᾱ` for the image of the simple root `α` under
+the length-exchanging diagram map,
+
+```text
+τ_X (x_α(t)) = x_{ᾱ}(t)      for α long,
+τ_X (x_α(t)) = x_{ᾱ}(t^p)    for α short.
+```
+
+The two exponents multiply to `p` along either composite, which is what makes `τ_X ^ 2 = Frob_p`
+come out. Attaching `1` to the long roots and `p` to the short ones is a genuine convention: the
+opposite assignment also squares to `Frob_p`, so leaving it to the implementor leaves the branch
+undetermined. Take the assignment above, and in the Bourbaki numbering of the previous section that
+gives, on `Fin n`:
+
+| `X` | `p` | Length-exchanging map | Exponent by index |
+| --- | --- | --- | --- |
+| `B₂` | 2 | `Equiv.swap 0 1` | `α₁` long, so `0 ↦ 1` and `1 ↦ 2` |
+| `G₂` | 3 | `Equiv.swap 0 1` | `α₂` long, so `0 ↦ 3` and `1 ↦ 1` |
+| `F₄` | 2 | `Fin.revPerm`, the reversal | `α₁, α₂` long, so `0, 1 ↦ 1` and `2, 3 ↦ 2` |
 
 Suzuki groups are actively being developed in Mathlib in
 [#42043](https://github.com/leanprover-community/mathlib4/pull/42043). A local construction may be

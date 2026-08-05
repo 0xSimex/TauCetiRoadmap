@@ -140,26 +140,107 @@ carrier-valued constructions below take this subtype, so no implementation branc
 an invalid Dynkin rank or excluded small group. -/
 abbrev ValidLieTypeIndex := {d : LieTypeIndex // d.Valid}
 
-/-- The kind of Steinberg endomorphism required by a valid family. For an exceptional entry
-`exceptional p m`, the required map is `τ ^ (2 * m + 1)`, where `τ ^ 2 = Frob_p`; `tits` is the
-`p = 2`, `m = 0` case. -/
-inductive SteinbergKind where
-  | ordinary
-  | graphTwist (order : ℕ)
-  | exceptional (p m : ℕ)
-  deriving DecidableEq
+/-- The exceptional families, whose Steinberg map is an odd power of a half-Frobenius rather than a
+Frobenius composed with a graph automorphism. -/
+def LieTypeIndex.IsExceptional : LieTypeIndex → Prop
+  | .suzuki _ | .reeG2 _ | .reeF4 _ | .tits => True
+  | _ => False
 
-/-- The construction lane for each valid Lie-type family. -/
-def ValidLieTypeIndex.steinbergKind (d : ValidLieTypeIndex) : SteinbergKind :=
+/-- A valid index in one of the Suzuki--Ree lanes. The half-Frobenius below takes this subtype, so
+no implementation branch is required for a family that has no exceptional isogeny. -/
+abbrev ExceptionalLieTypeIndex := {d : ValidLieTypeIndex // d.1.IsExceptional}
+
+/-! ### Numbered data attached to an index
+
+`rank`, `characteristic`, and `fieldOrder` read off the underlying untwisted Dynkin diagram and its
+field. They replace an earlier `SteinbergKind` summary, which did not determine the Steinberg map:
+`suzuki` and `reeF4` share a characteristic and a parameter, and knowing that a family is
+graph-twisted of order two does not say which order-two diagram automorphism is meant. -/
+
+/-- The rank of the underlying untwisted Dynkin diagram. -/
+def ValidLieTypeIndex.rank (d : ValidLieTypeIndex) : ℕ :=
   match d.1 with
-  | .A .. | .B .. | .C .. | .D .. | .E6 .. | .E7 .. | .E8 .. | .F4 .. | .G2 .. =>
-      .ordinary
-  | .twistedA .. | .twistedD .. | .twistedE6 .. => .graphTwist 2
-  | .trialityD4 .. => .graphTwist 3
-  | .suzuki m => .exceptional 2 m
-  | .reeG2 m => .exceptional 3 m
-  | .reeF4 m => .exceptional 2 m
-  | .tits => .exceptional 2 0
+  | .A n _ | .twistedA n _ | .B n _ | .C n _ | .D n _ | .twistedD n _ => n
+  | .E6 _ | .twistedE6 _ => 6
+  | .E7 _ => 7
+  | .E8 _ => 8
+  | .F4 _ | .reeF4 _ | .tits | .trialityD4 _ => 4
+  | .G2 _ | .reeG2 _ | .suzuki _ => 2
+
+/-- The characteristic of the field the ambient group is taken over. -/
+def ValidLieTypeIndex.characteristic (d : ValidLieTypeIndex) : ℕ :=
+  match d.1 with
+  | .A _ q | .twistedA _ q | .B _ q | .C _ q | .D _ q | .twistedD _ q
+  | .E6 q | .E7 q | .E8 q | .F4 q | .G2 q | .twistedE6 q | .trialityD4 q => q.p
+  | .reeG2 _ => 3
+  | .suzuki _ | .reeF4 _ | .tits => 2
+
+/-- The order `q` of the field of definition, in the small-field GLS/ATLAS convention: the parameter
+of `Frob_q` for the ordinary and graph-twisted lanes, and `p ^ (2 * m + 1)` for the exceptional
+ones. -/
+def ValidLieTypeIndex.fieldOrder (d : ValidLieTypeIndex) : ℕ :=
+  match d.1 with
+  | .A _ q | .twistedA _ q | .B _ q | .C _ q | .D _ q | .twistedD _ q
+  | .E6 q | .E7 q | .E8 q | .F4 q | .G2 q | .twistedE6 q | .trialityD4 q => q.card
+  | .suzuki m | .reeF4 m => 2 ^ (2 * m + 1)
+  | .reeG2 m => 3 ^ (2 * m + 1)
+  | .tits => 2
+
+/-! ### Numbered diagram permutations
+
+Bourbaki node `i` sits at `Fin` index `i - 1`, so a rank-`n` diagram is indexed by `Fin n` running
+from `0`. These are the permutations the L1 and L2 equations are stated against; pinning them as
+data rather than as prose is the point. -/
+
+/-- The `A_n` diagram automorphism: reverse the chain. Also the `F₄` length-exchanging map. -/
+def graphPermA (n : ℕ) : Equiv.Perm (Fin n) := Fin.revPerm
+
+/-- The `D_n` diagram automorphism: exchange the two fork nodes, fixing the chain. -/
+def graphPermD (n : ℕ) (hn : 2 ≤ n) : Equiv.Perm (Fin n) :=
+  Equiv.swap ⟨n - 2, by omega⟩ ⟨n - 1, by omega⟩
+
+/-- The `E₆` diagram automorphism: Bourbaki `1 ↔ 6` and `3 ↔ 5`, fixing `2` and `4`. -/
+def graphPermE6 : Equiv.Perm (Fin 6) := Equiv.swap 0 5 * Equiv.swap 2 4
+
+/-- `D₄` triality: cycle the three outer nodes, fixing the trivalent centre, which is Bourbaki node
+`2` and so `Fin` index `1`. -/
+def trialityPermD4 : Equiv.Perm (Fin 4) := Equiv.swap 0 3 * Equiv.swap 0 2
+
+/-- The `B₂` and `G₂` length-exchanging map. -/
+def lengthPermRankTwo : Equiv.Perm (Fin 2) := Equiv.swap 0 1
+
+/-- The `F₄` length-exchanging map: the diagram reversal. -/
+def lengthPermF4 : Equiv.Perm (Fin 4) := graphPermA 4
+
+/-- The exponent the pinned exceptional isogeny attaches to each numbered simple root subgroup: `1`
+on the long simple roots and `p` on the short ones. `B₂` has `α₁` long. -/
+def exceptionalExponentB2 : Fin 2 → ℕ
+  | 0 => 1
+  | 1 => 2
+
+/-- `G₂` has `α₂` long, so the assignment is the other way round from `B₂`. -/
+def exceptionalExponentG2 : Fin 2 → ℕ
+  | 0 => 3
+  | 1 => 1
+
+/-- `F₄` has `α₁` and `α₂` long, `α₃` and `α₄` short. -/
+def exceptionalExponentF4 : Fin 4 → ℕ
+  | 0 | 1 => 1
+  | 2 | 3 => 2
+
+/-- The diagram permutation realized by the graph automorphism of `d`. Every branch must unfold to
+one of the permutations above, or to `1` for an untwisted family. -/
+def ValidLieTypeIndex.diagramPerm (d : ValidLieTypeIndex) : Equiv.Perm (Fin d.rank) := sorry
+
+/-- The length-exchanging permutation realized by the exceptional isogeny of `e`, and the exponent
+it attaches to each numbered simple root subgroup. Every branch must unfold to `lengthPermRankTwo`
+or `lengthPermF4`, and to `exceptionalExponentB2`, `exceptionalExponentG2`, or
+`exceptionalExponentF4`. -/
+def ExceptionalLieTypeIndex.lengthPerm (e : ExceptionalLieTypeIndex) :
+    Equiv.Perm (Fin e.1.rank) := sorry
+
+/-- See `ExceptionalLieTypeIndex.lengthPerm`. -/
+def ExceptionalLieTypeIndex.exponent (e : ExceptionalLieTypeIndex) : Fin e.1.rank → ℕ := sorry
 
 /-- The fixed points `{g | F g = g}` of a group endomorphism: Mathlib's `MonoidHom.eqLocus`
 against the identity. -/
@@ -175,10 +256,68 @@ def ValidLieTypeIndex.AmbientGroup (_d : ValidLieTypeIndex) : Type := sorry
 /-- The group structure on the algebraic group's points. -/
 instance (d : ValidLieTypeIndex) : Group d.AmbientGroup := sorry
 
+/-- The algebraic closure of the prime field the ambient group is taken over. -/
+def ValidLieTypeIndex.Closure (_d : ValidLieTypeIndex) : Type := sorry
+
+instance (d : ValidLieTypeIndex) : Field d.Closure := sorry
+
+/-- The numbered simple root subgroup `x_{α_i}` of the pinning, as a map from the additive group of
+the algebraic closure. The full root-subgroup family is part of L0's contract; this is the piece the
+equations below are stated against, and the piece a pinning normalizes. -/
+def ValidLieTypeIndex.simpleRootSubgroup (d : ValidLieTypeIndex) (i : Fin d.rank)
+    (t : d.Closure) : d.AmbientGroup := sorry
+
+/-- Each simple root subgroup is a homomorphism from the additive group of the closure. -/
+theorem ValidLieTypeIndex.simpleRootSubgroup_add (d : ValidLieTypeIndex) (i : Fin d.rank)
+    (s t : d.Closure) :
+    d.simpleRootSubgroup i (s + t) = d.simpleRootSubgroup i s * d.simpleRootSubgroup i t := sorry
+
+/-- The `q`-power Frobenius induced on points, for `q = d.fieldOrder`. -/
+def ValidLieTypeIndex.frobenius (d : ValidLieTypeIndex) : d.AmbientGroup →* d.AmbientGroup := sorry
+
+/-- `Frob_q (x_α(t)) = x_α(t ^ q)`. Unlike the graph equation below, this one holds for every root,
+not only the simple ones. -/
+theorem ValidLieTypeIndex.frobenius_simpleRootSubgroup (d : ValidLieTypeIndex) (i : Fin d.rank)
+    (t : d.Closure) :
+    d.frobenius (d.simpleRootSubgroup i t) = d.simpleRootSubgroup i (t ^ d.fieldOrder) := sorry
+
+/-- The pinned graph automorphism realizing `d.diagramPerm`. It is the identity on an untwisted
+family, so no branch needs a dummy construction. -/
+def ValidLieTypeIndex.graphAut (d : ValidLieTypeIndex) : d.AmbientGroup →* d.AmbientGroup := sorry
+
+/-- `γ (x_α(t)) = x_{γ α}(t)` for `α` simple. This is the pinning condition, and it determines `γ`
+uniquely by Chevalley's isomorphism theorem. It must not be strengthened to arbitrary roots: there
+the equation carries signs `ε_α = ±1` forced by the structure constants, and the type-`A` graph
+automorphism `X ↦ -J Xᵀ J` of `sl_n` already exhibits them. -/
+theorem ValidLieTypeIndex.graphAut_simpleRootSubgroup (d : ValidLieTypeIndex) (i : Fin d.rank)
+    (t : d.Closure) :
+    d.graphAut (d.simpleRootSubgroup i t) = d.simpleRootSubgroup (d.diagramPerm i) t := sorry
+
+/-- The `p`-power Frobenius, the square of the exceptional isogeny. -/
+def ValidLieTypeIndex.primeFrobenius (d : ValidLieTypeIndex) :
+    d.AmbientGroup →* d.AmbientGroup := sorry
+
+/-- The pinned exceptional isogeny `τ_X`, defined by its action on the numbered simple root
+subgroups below. -/
+def ExceptionalLieTypeIndex.halfFrobenius (e : ExceptionalLieTypeIndex) :
+    e.1.AmbientGroup →* e.1.AmbientGroup := sorry
+
+/-- `τ_X (x_{α_i}(t)) = x_{ᾱ_i}(t ^ e_i)`, with `e_i = 1` on the long simple roots and `p` on the
+short ones. This pins `τ_X`; the square relation below follows from it. -/
+theorem ExceptionalLieTypeIndex.halfFrobenius_simpleRootSubgroup (e : ExceptionalLieTypeIndex)
+    (i : Fin e.1.rank) (t : e.1.Closure) :
+    e.halfFrobenius (e.1.simpleRootSubgroup i t)
+      = e.1.simpleRootSubgroup (e.lengthPerm i) (t ^ e.exponent i) := sorry
+
+/-- `τ_X ^ 2 = Frob_p`. A consequence of the pinning equation, not a substitute for it: the opposite
+assignment of the exponents `1` and `p` to long and short roots also squares to `Frob_p`. -/
+theorem ExceptionalLieTypeIndex.halfFrobenius_sq (e : ExceptionalLieTypeIndex) :
+    e.halfFrobenius.comp e.halfFrobenius = e.1.primeFrobenius := sorry
+
 /-- The Steinberg endomorphism defining the finite group attached to `d`. The ordinary and graph
-branches are `Frob_q` and `γ ∘ Frob_q`. An exceptional branch is `τ ^ (2 * m + 1)` with
-`τ ^ 2 = Frob_p`; it is not `τ ∘ Frob_q`. The numbered diagram permutations, root-subgroup action,
-commutation relations, and exceptional square relations are part of this target. -/
+branches are `d.frobenius` and `d.graphAut.comp d.frobenius`. An exceptional branch is
+`halfFrobenius ^ (2 * m + 1)`; it is not `τ ∘ Frob_q`. Completion means every branch unfolds to one
+of those, against the equations above. -/
 def ValidLieTypeIndex.steinberg (d : ValidLieTypeIndex) :
     d.AmbientGroup →* d.AmbientGroup := sorry
 
