@@ -152,10 +152,17 @@ lanes. They may proceed in parallel. The labels below are dependency identifiers
 each lane land as one enormous pull request; each item should be split further whenever a reviewer
 cannot inspect its defining data in one sitting.
 
+Two items, `U1` and `U2`, are work for the root-systems and reductive-groups roadmaps rather than
+for this one. They are listed here because `L0` cannot start without them and because neither
+roadmap currently targets them; see `L0` below for exactly what is missing. Claim them in the
+roadmap that owns them, not here.
+
 | Item | Depends on | Concrete result | Completion evidence |
 | --- | --- | --- | --- |
-| I0: indices | Mathlib only | `PrimePower`, raw and valid Lie indices, sporadic names | range and duplicate examples reduce; 26-name check passes |
-| L0: pinned ambient groups | root systems, reductive groups | root datum, pinning, points, root subgroups | every valid family traces to explicit data |
+| I0: indices and numbered conventions | Mathlib only | `PrimePower`, raw and valid Lie indices, sporadic names, rank/characteristic/field order, the pinned `Fin` permutations and exponent tables | range and duplicate examples reduce; 26-name check passes |
+| U1: numbered root data over `ℤ` | root systems roadmap | a named based root datum for each valid `DynkinType`, its simply connected form, and a fixed Bourbaki node numbering into `Fin` | each datum is a definition, not a carrier chosen from an existence theorem |
+| U2: pinned group schemes over `ℤ` | reductive groups roadmap, U1 | split reductive group schemes over a base, pinnings, base change, points over an algebraically closed field, root subgroups `x_α` | every declaration L0 consumes is named upstream |
+| L0: pinned ambient groups | U1, U2 | root datum, pinning, points, root subgroups | every valid family traces to explicit data |
 | L1: ordinary and graph Steinberg maps | L0 | Frobenius and numbered diagram maps | the simple-root-subgroup equations and the order relations are proved |
 | L2: exceptional Steinberg maps | L0 | Suzuki--Ree half-Frobenius maps | the long/short exponent equations and the square relation are proved |
 | L3: fixed groups | L1 and L2 | fixed points, derived subgroup, central quotient | every valid branch has a `Group` instance |
@@ -202,19 +209,35 @@ Consume, rather than duplicate:
 - [reductive algebraic groups](../ReductiveGroups/README.md) for root data, simply connected forms,
   base change, group schemes, and points.
 
-These dependencies do not currently supply the whole contract. Extend the appropriate upstream
-development rather than hiding the gap in `CFSGStatement`. The declarations this lane must consume
-or add are:
+Neither dependency currently targets what this lane consumes, so U1 and U2 above are the work that
+makes L0 groundable, and they are targets rather than an instruction to improvise. Concretely:
 
-- the explicit simply connected root datum and its numbered simple roots;
-- the pinned Chevalley--Demazure group scheme over `ℤ`;
-- base change to the prime field and its algebraic closure;
-- the group of algebraic-closure-valued points;
-- root-subgroup maps `x_α` and the equations expressing their compatibility with the pinning.
+- the root-systems roadmap's realization target `exists_rootPairing_of_dynkinType` is an
+  **existence** statement about a `RootPairing` over `ℚ`. There is no named based root datum, nothing
+  over `ℤ`, and no coroot lattice, so a carrier could only be extracted by `Classical.choose`, which
+  the rule above forbids. `DynkinType.cartanMatrix` is itself a `sorry` there, and no node-numbering
+  convention is fixed, which is what the L1 permutation table needs.
+- the reductive-groups roadmap fixes its standing hypotheses over a field and files relative theory
+  over a base under far-future generalizations. Its Layer 8 offers "Chevalley existence", which is
+  again an existence theorem. Group schemes over `ℤ`, pinnings, base change from `ℤ`, and
+  root-subgroup maps `x_α` are targeted nowhere.
 
-The output is the actual body of `ValidLieTypeIndex.AmbientGroup` and its `Group` instance. The
-ambient group is generally infinite. A reviewer must be able to follow each carrier through these
-named constructions; a theorem that merely asserts that a suitable pinned group exists is not a
+U1 and U2 are therefore to be written into those roadmaps, and this lane cites them rather than
+restating them. Until they land, L0 is blocked and should not be claimed; the I0 conventions, the
+numbered permutations, and the whole sporadic lane are independent of it and can proceed.
+
+The declarations L0 then consumes are:
+
+- the explicit simply connected root datum and its numbered simple roots (U1);
+- the pinned Chevalley--Demazure group scheme over `ℤ` (U2);
+- base change to the prime field and its algebraic closure (U2);
+- the group of algebraic-closure-valued points (U2);
+- root-subgroup maps `x_α` and the equations expressing their compatibility with the pinning (U2).
+
+The output is the actual body of `ValidLieTypeIndex.AmbientGroup`, its `Group` instance,
+`ValidLieTypeIndex.Closure`, and `ValidLieTypeIndex.simpleRootSubgroup`. The ambient group is
+generally infinite. A reviewer must be able to follow each carrier through these named
+constructions; a theorem that merely asserts that a suitable pinned group exists is not a
 substitute.
 
 The uniform pinned route is the target even though matrices could define the classical families
