@@ -469,7 +469,10 @@ universe u
 /-- **Classification of finite simple groups, statement only.** Proving this proposition, or
 proving finiteness or simplicity of any listed group, is outside this roadmap. The existential is
 intentional: `Valid` picks conventional representatives, but the interface does not claim a
-machine-checked uniqueness theorem for the index. -/
+machine-checked uniqueness theorem for the index.
+
+`CFSGIndex.Group` lands in `Type`, so `ClassificationStatement.{0}` is the substantive instance and
+every larger universe follows from it, with `Finite G` supplying the transport. -/
 def ClassificationStatement : Prop :=
   ∀ (G : Type u) [Group G] [Finite G] [IsSimpleGroup G],
     ∃ i : CFSGIndex, Nonempty (G ≃* i.Group)
