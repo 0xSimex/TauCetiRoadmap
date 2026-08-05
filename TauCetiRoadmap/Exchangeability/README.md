@@ -694,8 +694,31 @@ The directing-measure theorem should expose a real API, not just an existence pr
   theorem);
 * the mixture-of-product-measures form: `pathLaw X = ∫ p^{⊗ℕ} dπ(p)` with `π` the unique law
   of `ν` on `P(α)`;
-* the extreme-point corollary, once π-system uniqueness and the Hewitt–Savage input (Layer 2)
-  are available: the extreme exchangeable laws are exactly the i.i.d. laws.
+* the **zero-one, ergodic, and extreme interfaces** for exchangeable laws. For an exchangeable
+  probability law `ρ` on `ℕ → α`, with `α` standard Borel, the following characterize infinite
+  product laws:
+
+  1. the finite-permutation-invariant σ-field `exchangeableSigma` is `ρ`-trivial;
+  2. `ρ` is ergodic for the action of finitely supported coordinate permutations;
+  3. `ρ` is an extreme point among exchangeable probability laws;
+  4. there exists `p : ProbabilityMeasure α` with `ρ = p^{⊗ℕ}`.
+
+  These are distinct public interfaces and **need not be formalized in dependency order**:
+
+  - `exchangeableSigma_trivial_iff_iid` — (1) ⇔ (4). The product-to-zero–one direction is
+    Hewitt–Savage. The converse must show that triviality of `exchangeableSigma` makes the
+    directing measure almost surely constant, equivalently that the mixing law is Dirac;
+    `mixedIID_mixingLaw_unique` alone does not give this;
+  - the `ErgodicSMul` form — (1) ⇔ (2). ⚠ Ergodicity in (2) refers to the **finitely supported
+    permutation action**, and is distinct from one-sided shift ergodicity. This step bundles that
+    action and relates *exact* invariant events in `exchangeableSigma` to Mathlib's a.e.-invariant
+    formulation, which is a genuine API lemma rather than definitional plumbing;
+  - `exchangeable_extreme_iff_iid` — (3) ⇔ (4), the convex formulation advertised in Layer 7.
+    This interface is directly approachable from the de Finetti mixture representation, and depends
+    neither on the preceding two interfaces nor on the full-path joint disintegration.
+
+  The product parameter is determined by the one-coordinate marginal; bundle that uniqueness
+  where the affine representation API consumes it.
 
 This is the default route for the final public API.
 
@@ -757,7 +780,11 @@ Build:
 
 * finite de Finetti bounds, including quantitative approximation by mixtures of products;
 * de Finetti for other countable index types;
-* ergodic decomposition of exchangeable laws;
+* the affine and ergodic decomposition of exchangeable laws: package `p ↦ p^{⊗ℕ}` and the de
+  Finetti barycenter as an affine correspondence between mixing laws and exchangeable path laws.
+  The unique mixing law then gives the canonical decomposition supported on product — equivalently
+  extreme — laws. After the `ErgodicSMul` interface of Layer 6 is established, identify these
+  components with the ergodic components for the finitely supported permutation action;
 * Markov exchangeability;
 * exchangeable arrays and the Aldous–Hoover representation (a substantially larger tower than
   the sequence theorem, with its own prerequisites).
