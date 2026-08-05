@@ -228,7 +228,11 @@ makes L0 groundable, and they are targets rather than an instruction to improvis
   root-subgroup maps `x_α` are targeted nowhere.
 
 U1 and U2 are therefore to be written into those roadmaps, and this lane cites them rather than
-restating them. Until they land, L0 is blocked and should not be claimed; the I0 conventions, the
+restating them. They are proposed in
+[Pin the Bourbaki numbering and an integral root datum](https://github.com/TauCetiProject/TauCetiRoadmap/pull/158)
+and
+[Add pinned Chevalley-Demazure group schemes over the integers](https://github.com/TauCetiProject/TauCetiRoadmap/pull/157)
+respectively. Until they land, L0 is blocked and should not be claimed; the I0 conventions, the
 numbered permutations, and the whole sporadic lane are independent of it and can proceed.
 
 The declarations L0 then consumes are:
