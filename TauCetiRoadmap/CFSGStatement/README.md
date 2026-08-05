@@ -389,8 +389,8 @@ Published relators are written with powers and commutators, not as flat letter s
 into signed letters makes the longest and most error-prone relators the least reviewable, which is
 the opposite of what this lane is for. So transcribe into a small relator expression type with
 generator, inverse, product, power, and commutator constructors, and compile that to the flat signed
-word. The flat form remains the semantics and the input to any count or checksum; the expression
-form is what a reviewer compares against the source.
+word. The flat form remains the semantics; the expression form is what a reviewer compares against
+the source, and the transcribed list is what the relator count is taken of.
 
 Store generator names, an exact bibliographic or stable database locator, the generator convention,
 transcription notes, and the expected generator and relator counts with the relators. Both counts

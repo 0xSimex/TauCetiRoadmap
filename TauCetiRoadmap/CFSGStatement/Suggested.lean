@@ -153,9 +153,10 @@ abbrev ExceptionalLieTypeIndex := {d : ValidLieTypeIndex // d.1.IsExceptional}
 /-! ### Numbered data attached to an index
 
 `rank`, `characteristic`, and `fieldOrder` read off the underlying untwisted Dynkin diagram and its
-field. They replace an earlier `SteinbergKind` summary, which did not determine the Steinberg map:
-`suzuki` and `reeF4` share a characteristic and a parameter, and knowing that a family is
-graph-twisted of order two does not say which order-two diagram automorphism is meant. -/
+field. Do not replace them by a summary of which construction lane a family uses: such a summary does
+not determine the Steinberg map, since `suzuki` and `reeF4` share a characteristic and a parameter,
+and knowing that a family is graph-twisted of order two does not say which order-two diagram
+automorphism is meant. -/
 
 /-- The rank of the underlying untwisted Dynkin diagram. -/
 def ValidLieTypeIndex.rank (d : ValidLieTypeIndex) : ℕ :=
