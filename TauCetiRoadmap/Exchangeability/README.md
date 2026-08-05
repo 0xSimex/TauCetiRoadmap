@@ -676,6 +676,18 @@ The directing-measure theorem should expose a real API, not just an existence pr
   `μ.map ν = μ.map ν'`. Finiteness is load-bearing: without it, distinct mixing measures can give
   identical `∞`-valued finite-dimensional mixtures;
 * the finite-dimensional factorization identity;
+* the **full-path joint disintegration** associated to a `ConditionallyIIDWith` witness: for
+  `[IsFiniteMeasure μ]`, arbitrary measurable sample and state spaces, measurable coordinates
+  `X`, and `h : ConditionallyIIDWith μ X ν`,
+
+  ```lean
+  μ.map (fun ω => (ν ω, fun i => X i ω)) = iidMixtureLaw (μ.map ν) id
+  ```
+
+  This is the whole-path form of the predicate's finite selected-block identities. It retains
+  the directing measure as a coordinate and is therefore strictly stronger than the integrated
+  mixture identity for `pathLaw μ X`. It is a derived public API theorem, **not** a prerequisite
+  for the v1 summit, empirical-measure convergence, or the extreme-point theorem;
 * the empirical-measure form: `(1/n) Σ_{i<n} δ_{Xᵢ}(ω) ⇒ ν(ω)` weakly in `P(α)`, tested
   against bounded continuous functions (a milestone in its own right, bringing in the weak
   topology on `ProbabilityMeasure α`; not a prerequisite for the base directing-measure
@@ -725,6 +737,7 @@ deFinetti_viaL2
 deFinetti_viaKoopman
 
 deFinetti_empiricalMeasure
+ConditionallyIIDWith.jointPathLaw_eq_iidMixtureLaw
 deFinetti_mixture
 mixedIID_mixingLaw_unique
 conditionallyIID_ae_unique
