@@ -432,11 +432,23 @@ displays `M × 2` and becomes `M` on adding `Z = 1`. Farooq, Norton, and Wilson,
 J. Algebra **379** (2013) 432-440, is an alternative.
 
 Apply the same standard to the Baby Monster, whose `Y₄₃₃` presentation was conjectured in the ATLAS
-and proved by Ivanov, and to every other branch. Bray's
-[presentation pages](https://webspace.maths.qmul.ac.uk/j.n.bray/web/Pres/) carry most of the
-remaining sporadics directly, and the Fischer groups come from smaller Y-diagrams with the spider
-relation. Auditing that collection against all 26 names is the first S0 task, and any name it does
-not cover is to be recorded in the manifest with the source that does.
+and proved by Ivanov, and to every other branch. The Fischer groups come from smaller Y-diagrams
+with the spider relation.
+
+Do not assume a presentation is a link away for the rest. Bray's
+[presentation pages](https://webspace.maths.qmul.ac.uk/j.n.bray/web/Pres/) carry the Monster
+directly, but several entries are 1996 stubs that record only the order and a pointer to the ATLAS:
+the Baby Monster page states `Length ??, 2-generator, ?-relator`, and `Co1`, `Co2`, `Co3` are the
+same shape. The [ATLAS v3](https://brauer.maths.qmul.ac.uk/Atlas/v3/) they point to has a
+presentations section for some sporadics (`M11`, `J1`) and none for others (`B`, `Co1`, `M24`,
+`HS`), where it offers standard generators and a **semi-presentation** instead. A semi-presentation
+is not a presentation: it pins the generators up to automorphism so that standard generators can be
+checked, and it does not define the group. Transcribing one as a presentation is exactly the error
+this lane's review discipline exists to catch.
+
+So the first S0 task is to find, for each of the 26 names, a source that gives an actual
+presentation, and to record in the manifest both that source and the names for which no such source
+is readily available. Expect that second list to be nonempty.
 
 For each transcription, check the recorded relator count against the transcribed list, and require
 an independent source-to-Lean read-through before marking the row reviewed. This lane does not prove
