@@ -27,6 +27,7 @@ Tau Ceti is being incubated by the [Lean FRO](https://lean-lang.org/fro/) and th
 14. [Representation theory (semisimple algebras, character tables, Lie and classical groups, Schur-Weyl, Peter-Weyl)](TauCetiRoadmap/RepresentationTheory/README.md)
 15. [Modular forms — Hecke theory, newforms, and L-functions](TauCetiRoadmap/ModularForms/README.md)
 16. [Optimal transport and Wasserstein geometry](TauCetiRoadmap/OptimalTransport/README.md)
+17. [A statement of the classification of finite simple groups](TauCetiRoadmap/CFSGStatement/README.md)
 
 ## Completed roadmaps
 
