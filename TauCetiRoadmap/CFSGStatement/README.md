@@ -174,7 +174,7 @@ lanes. They may proceed in parallel. The labels below are dependency identifiers
 each lane land as one enormous pull request; each item should be split further whenever a reviewer
 cannot inspect its defining data in one sitting.
 
-`L0` rests on two bodies of work owned by other roadmaps, and both are now specified there:
+`L0` rests on two bodies of work owned by other roadmaps:
 
 - **Layer 6 of the [root-systems roadmap](../RepresentationTheory/RootSystems/README.md)**, the
   pinned Bourbaki numbering and a named simply connected root datum over `ℤ` for each valid
@@ -186,10 +186,9 @@ cannot inspect its defining data in one sitting.
   algebraically closed field, root subgroup maps `x_α`, the isomorphism theorem for pinned groups,
   and the special isogenies in characteristics two and three.
 
-Those are roadmap targets, not code: they are specified but not yet built. `L0` is therefore
-grounded rather than a leap, and remains blocked until they are built in Tau Ceti. Claim them in the
-roadmap that owns them. Everything outside `L0` to `L3`, which is `I0`, the whole sporadic lane, and
-the numbered conventions, is independent of both and can proceed now.
+Claim those in the roadmap that owns them. `L0` consumes them and does not restate them, so it
+proceeds once they exist in Tau Ceti. `I0`, the numbered conventions, and the whole sporadic lane
+depend on neither.
 
 | Item | Depends on | Concrete result | Completion evidence |
 | --- | --- | --- | --- |
@@ -198,7 +197,7 @@ the numbered conventions, is independent of both and can proceed now.
 | L1: ordinary and graph Steinberg maps | L0 | Frobenius and numbered diagram maps | the simple-root-subgroup equations and the order relations are proved |
 | L2: Suzuki--Ree Steinberg maps | L0 | selection of the upstream special isogeny, and its odd powers | the exponent and length conventions are matched to the upstream isogeny; `steinberg` unfolds on every branch |
 | L3: fixed groups | L1 and L2 | fixed points, derived subgroup, central quotient | every valid branch has a `Group` instance |
-| L4: the Mathlib Suzuki identification | L3, and https://github.com/leanprover-community/mathlib4/pull/42043 landing | `²B₂(2^(2m+1)) ≃* suzukiGroup m` for `m ≥ 1` | the isomorphism is proved, and the `suzuki` branch is unchanged by it |
+| L4: the Mathlib Suzuki identification | L3, Mathlib's `suzukiGroup` | `²B₂(2^(2m+1)) ≃* suzukiGroup m` for `m ≥ 1` | the isomorphism is proved, and the `suzuki` branch is unchanged by it |
 | S0: presentation format and sources | Mathlib only | relator expression type compiling to signed words, the compilation lemmas, and a 26-row source manifest | `Relator.toWord_toFreeGroup` is proved; every source is a full presentation, is locatable, and is proved to define its group |
 | S1: presentation data | S0 | complete relator words for all sporadics | relator counts match the manifest; independent transcription review; the cross-check below is recorded for every name it covers |
 | A0: assembly | I0, L3, S1 | `CFSGIndex.Group`, `ClassificationStatement`, `classificationStatement_of_zero` | named proposition elaborates with no placeholder carriers |
@@ -257,12 +256,12 @@ Consume, rather than duplicate:
 - [reductive algebraic groups](../ReductiveGroups/README.md), whose Layer 9 gives pinned
   Chevalley--Demazure group schemes over `ℤ`, base change, points, and root subgroups.
 
-Both of those layers exist because this lane asked for them. Neither existence theorem is a
-substitute for them: the root-systems realization target `exists_rootPairing_of_dynkinType` is an
-existence statement about a `RootPairing` over `ℚ`, and Layer 8's "Chevalley existence" is likewise
-an existence theorem, so a carrier could only be extracted from either by `Classical.choose`, which
-the rule above forbids. `DynkinType.simplyConnectedRootDatum` and the Layer 9 constructions are what
-replace them for a consumer that needs a named carrier.
+It is those two layers specifically, and not the existence theorems beside them. The root-systems
+realization target `exists_rootPairing_of_dynkinType` is an existence statement about a
+`RootPairing` over `ℚ`, and Layer 8's "Chevalley existence" is likewise an existence theorem, so a
+carrier could only be extracted from either by `Classical.choose`, which the rule above forbids.
+`DynkinType.simplyConnectedRootDatum` and the Layer 9 constructions are what a consumer needing a
+named carrier uses instead.
 
 The declarations L0 consumes are:
 
@@ -274,9 +273,6 @@ The declarations L0 consumes are:
 - the group of algebraic-closure-valued points (Layer 9);
 - root-subgroup maps `x_α` and the equations expressing their compatibility with the pinning
   (Layer 9).
-
-Those are specified upstream but not yet built, so L0 is grounded and still blocked. It should be
-claimed only once they are available in Tau Ceti.
 
 The output is the actual body of `ValidLieTypeIndex.AmbientGroup`, its `Group` instance,
 `ValidLieTypeIndex.Closure`, and `ValidLieTypeIndex.simpleRootSubgroup`. The ambient group is
@@ -397,11 +393,10 @@ Those three rows are worked consequences of the upstream predicate, not a second
 The length map must be proved to exchange long and short simple roots, which is
 `SuzukiReeIndex.isLongSimpleRoot_lengthPerm`.
 
-Suzuki groups are being developed in Mathlib in
-[feat(GroupTheory/SpecificGroups/Suzuki): define Suzuki groups](https://github.com/leanprover-community/mathlib4/pull/42043),
-still a draft at the time of writing. That construction is
+Mathlib has a separate Suzuki construction,
+[feat(GroupTheory/SpecificGroups/Suzuki): define Suzuki groups](https://github.com/leanprover-community/mathlib4/pull/42043):
 `suzukiGroup (n : ℕ) : Subgroup (GL (Fin 4) (GaloisField 2 (2 * n + 1)))`, the closure of explicit
-four-by-four unipotent and Weyl matrices. It is a different object from this lane's: not the fixed
+four-by-four unipotent and Weyl matrices. It is a different object from this lane's, not the fixed
 points of `τ_{B₂} ^ (2m + 1)` in a pinned ambient group, and its `n` is unrestricted, so
 `suzukiGroup 0` is the solvable `Sz(2)`.
 
@@ -411,9 +406,9 @@ exist to build. Moving that one branch onto a matrix group would take it out of 
 stated obligation that the two agree, which is worse than a little duplication.
 
 That leaves the two constructions unrelated, and relating them is real work, so it is the milestone
-`L4` in the table above rather than a promise to add a target later. `L4` is blocked on work outside
-this project, which is why it is last and separately claimable. The `m ≥ 1` restriction stays this
-roadmap's responsibility either way, since `suzukiGroup 0` is the solvable `Sz(2)`.
+`L4` rather than a promise to add a target later. `L4` depends on material outside this project,
+which is why it is last and separately claimable. The `m ≥ 1` restriction is this roadmap's
+responsibility either way, since `suzukiGroup 0` is the solvable `Sz(2)`.
 
 ### L3: fixed points and the simple-group candidate
 
@@ -434,9 +429,9 @@ is the simple group `²F₄(2)'`. Quotienting by the centre then does nothing in
 Completion requires every branch of `ValidLieTypeIndex.steinberg` to unfold to the L1 or L2 maps and
 `ValidLieTypeIndex.Group` to carry a `Group` instance. No finiteness or simplicity proof is involved.
 
-The open Mathlib PR [#40363, `(B, N)`-pairs](https://github.com/leanprover-community/mathlib4/pull/40363)
-is relevant future structure theory but is not a dependency: this roadmap does not prove Bruhat
-decomposition, simplicity, or recognition.
+Mathlib's [`(B, N)`-pairs](https://github.com/leanprover-community/mathlib4/pull/40363) are related
+structure theory and not a dependency: this roadmap does not prove Bruhat decomposition, simplicity,
+or recognition.
 
 ### S0: auditable presentation data and source selection
 
@@ -519,7 +514,7 @@ this lane's review discipline exists to catch.
 
 So the first S0 task is to find, for each of the 26 names, a source that gives an actual
 presentation, and to record in the manifest both that source and the names for which the first pass
-turned one up. Expect the remainder to be nonempty after that first pass.
+turned one up. Do not assume that first pass reaches all twenty-six.
 
 That remainder is an intermediate research artifact and not a permitted end state. S0 closes only
 when all 26 rows carry a full admissible source, so a name that resists the obvious places is a
@@ -537,9 +532,9 @@ Where an independent explicit construction of the same group exists, use it. The
 development cited below covers fourteen of the twenty-six names, with order and simplicity proved, so
 for those names a reviewer can ask whether the transcribed relators hold of its generators, which is
 a check on the relators that no amount of reading the source twice provides. Recording the outcome of
-that comparison, for every name it covers, is part of closing an S1 row. It is a review artifact and
-not a Lean target, because making it one would require importing that development, which the
-provenance section explains is not yet possible.
+that comparison, for every name it covers, is part of closing an S1 row. It is a review artifact
+rather than a Lean target, since making it one would mean importing that development, which the
+provenance section conditions on coordination with its author.
 
 That gap is survivable, and it is worth saying why, because the reason is the whole argument for
 resting on review here. A transcription error can only make `ClassificationStatement` false, never
@@ -585,7 +580,7 @@ choices pinned here.
 that builds a good part of this list by a different route: each group is the subgroup of
 `Equiv.Perm (Fin n)` generated by named permutations, and its order and simplicity are *proved*, by
 kernel-checked stabilizer chains with an axiom audit admitting only `propext`, `Classical.choice`,
-and `Quot.sound`. At the time of writing it covers `M11 M12 M22 M23 M24 J1 J2 HS McL Co2 Co3 Suz
+and `Quot.sound`. It covers `M11 M12 M22 M23 M24 J1 J2 HS McL Co2 Co3 Suz
 Fi22 He`, together with `L2(11) L3(4) U3(3) U4(2) U5(2) U6(2) G2(4)`.
 
 That is stronger evidence per group than a transcribed presentation, which nothing here verifies,
