@@ -6,9 +6,16 @@ gluing, and the tensor product is side-by-side juxtaposition. It sits at the cro
 low-dimensional topology (the Kauffman bracket and the Jones polynomial), operator algebras
 (Jones' index theorem and subfactors), representation theory (it is `Rep U_q(sl₂)` in
 disguise), and categorical algebra (it is the origin story of pivotal, spherical, and fusion
-categories). Nothing like it exists in Mathlib or, as far as we know, in any proof
-assistant: Mathlib has no diagram categories, no pivotal or spherical structure, no cellular
-algebras, no fusion categories.
+categories). Mathlib has none of it: no diagram categories, no pivotal or spherical structure,
+no cellular algebras, no fusion categories. Elsewhere the closest prior formalization we have
+found is the Isabelle AFP entry [*Knot Theory*](https://www.isa-afp.org/entries/Knot_Theory.html)
+(T. V. H. Prathamesh), which builds tangle diagrams from cups, caps and crossings modulo
+relations and reaches the bracket polynomial; that is the Layer 2 picture, without the linear,
+cellular or fusion theory above it. On the Lean side the material has been attempted and
+abandoned more than once — see
+[Zulip, *new members > knot theory*](https://leanprover.zulipchat.com/#narrow/channel/113489-new-members/topic/knot.20theory)
+(2022-05) on the Temperley–Lieb algebra, the Jones polynomial and planar algebras — and nothing
+was upstreamed.
 
 The end goals:
 
@@ -20,8 +27,8 @@ The end goals:
   `δ ∈ R`, with pivotal, spherical, and (after base change) braided and ribbon structure;
   the Temperley–Lieb algebras `TL_n`, the `e_i` presentation theorem, the Markov trace and
   its uniqueness; cell modules, the Gram determinant formula, and the **semisimplicity /
-  nondegeneracy classification** (nondegenerate iff `δ` is not `q + q⁻¹` for `q` a root of
-  unity).
+  nondegeneracy classification** (over a field of characteristic zero: nondegenerate iff `δ` is
+  not `ζ + ζ⁻¹` for a root of unity `ζ ≠ ±1`).
 - **v3 (Jones–Wenzl and the summits).** The Jones–Wenzl projections with both recursions and
   the explicit coefficient formula; the negligible ideal and the Goodman–Wenzl theorem that
   the Jones–Wenzl projection generates the unique proper nonzero tensor ideal at a root of
@@ -30,14 +37,21 @@ The end goals:
   categories in a proof assistant**.
 
 Suggested homes: `TauCeti/TemperleyLieb/` for everything specific to Temperley–Lieb
-(`Matching/`, `Category/`, `Algebra/`, `Cell/`, `JonesWenzl/`, `Karoubi/`), and two pieces
+(`Matching/`, `Category/`, `Algebra/`, `Cell/`, `JonesWenzl/`, `Karoubi/`), and three pieces
 of deliberately reusable infrastructure elsewhere: monoidal categories presented by
-generators and relations in `TauCeti/CategoryTheory/Monoidal/Presentation/`, and cellular
-algebras in `TauCeti/Algebra/Cellular/`. The general pivotal, spherical, balanced, and
-ribbon API is **not** built here: it is the target of the
+generators and relations in `TauCeti/CategoryTheory/Monoidal/Presentation/`, cellular
+algebras in `TauCeti/Algebra/Cellular/`, and the monoidal, linear and rigid structure of the
+additive-and-idempotent envelope, together with quotients by tensor ideals, in
+`TauCeti/CategoryTheory/Monoidal/Envelope/` (Layer 7 spells out what that means). The general
+pivotal, spherical, balanced, and ribbon API is **not** built here: it is the target of the
 [pivotal and spherical categories roadmap](../PivotalSpherical/README.md) (home
 `TauCeti/CategoryTheory/Monoidal/Pivotal/`), which this roadmap consumes and repays with
 its first diagrammatic instances.
+
+⚠ That roadmap is not yet in Tau Ceti: it is
+[#57](https://github.com/TauCetiProject/TauCetiRoadmap/pull/57), still open at the time of
+writing, and the cross-links here resolve only once it merges. Treat the pivotal/spherical API
+as a declared dependency on a roadmap, not as material already available.
 
 ## Standing conventions
 
@@ -68,7 +82,17 @@ its first diagrammatic instances.
   involution of `Fin (n+m)` whose pairs do not interleave, a condition invariant under
   rotation; the rectangle only matters for composition. This makes rotation, reflection, and
   corner-dragging cheap, and it is the design decision the operations of Layer 1 rest on.
-- **Composition order:** `f ≫ g` stacks `g` on top of `f`.
+- **Composition order:** `f ≫ g` stacks `g` on top of `f`. Two composites pin this down, and
+  every other cup/cap composite on this roadmap should be checked against them:
+  `cup ≫ cap = δ · 1_𝟙` (the closed circle) and `cap ≫ cup = e₁` (the endomorphism of `2`).
+- **Algebra multiplication is Mathlib's.** `TLAlg R δ n` is `End (TLCat.of n)`, so it inherits
+  Mathlib's `End` product, which *reverses* composition: `x * y = y ≫ x`
+  (`Mathlib/CategoryTheory/Endomorphism.lean`, "agrees with `Function.comp`, not with
+  `CategoryStruct.comp`"). So `x * y` stacks `x` on top of `y`. The relations of Layer 4 are
+  symmetric enough not to notice (`e_i² = δ·e_i`, `e_i e_{i±1} e_i = e_i`, distant commutation),
+  which is exactly why this needs pinning: the Jones normal form, the Markov property and the
+  Jones–Wenzl recursions are not symmetric, and an implementor who assumes the other convention
+  will not find out here.
 - **Closed circles are data, then coefficients.** In the diagram category a morphism carries
   its circle count as a natural number: discarding the count would silently impose `δ = 1`,
   and the universal property needs the circle to remain a nontrivial endomorphism of the
@@ -119,10 +143,24 @@ its first diagrammatic instances.
 ⚠ Mathlib has **no** pivotal, spherical, ribbon, or dagger categories, **no** monoidal
 categories presented by generating morphisms and relations, **no** cellular algebras, **no**
 semisimple-category API, **no** fusion categories, and **no** braid groups (a grep of the
-pinned toolchain finds nothing usable for any of these). Monoidal presentations and
-cellular algebras are targets here; the pivotal/spherical/ribbon API belongs to the
+pinned toolchain finds nothing usable for any of these). ⚠ It also has **no** monoidal and
+**no** `Linear` structure on `Mat_` or on `Karoubi`: those constructions are supplied as bare
+categories only, which is much less than Layer 7 needs. Monoidal presentations, cellular
+algebras, and the monoidal/linear/rigid structure of the envelope together with quotients by
+tensor ideals are targets here; the pivotal/spherical/ribbon API belongs to the
 [pivotal and spherical categories roadmap](../PivotalSpherical/README.md) and is consumed,
-not rebuilt; braid groups are deliberately deferred (see Non-goals).
+not rebuilt; braid groups are out of scope (see Non-goals).
+
+**Boundary with Schur–Weyl.** The
+[Schur–Weyl roadmap](../RepresentationTheory/SchurWeyl/README.md) builds the Brauer algebra
+`B_k(δ)` in its Layer 9 and cites this roadmap three times: for the subalgebra
+`TL_k(δ) ⊆ B_k(δ)`, for the diagram gluing of Layer 2, and for the cell theory of Layer 5.
+The split is: the **cellular-algebra infrastructure of Layer 5 is built here** and consumed
+there, as that roadmap says; the **Brauer diagram combinatorics and gluing are built there**,
+not here, because Brauer diagrams are not planar and the associativity argument does not
+transfer — Layer 2's gluing is deliberately TL-private. The inclusion
+`TL_k(δ) ⊆ B_k(δ)` is **owned there**, where both algebras are in scope; it is not a target of
+this roadmap.
 
 ## What is missing (build here)
 
@@ -133,9 +171,10 @@ the general API of the
 [pivotal and spherical categories roadmap](../PivotalSpherical/README.md)); the algebras, the
 `e_i` presentation, the Markov trace; cellular algebras in general and the TL cell theory
 with Gram determinants; the semisimplicity and nondegeneracy classifications; Jones–Wenzl
-projections; tensor ideals, negligibles, and Goodman–Wenzl; the Karoubi envelope
-classification and the root-of-unity fusion quotients. `Suggested.lean` pins the
-load-bearing definitions and named milestones as `sorry`-targets.
+projections; tensor ideals, negligibles, and Goodman–Wenzl; the monoidal, linear and rigid
+structure of the additive-and-idempotent envelope and quotients by tensor ideals, both in
+general; the Karoubi envelope classification and the root-of-unity fusion quotients.
+`Suggested.lean` pins the load-bearing definitions and named milestones as `sorry`-targets.
 
 ---
 
@@ -152,10 +191,21 @@ previous layers land.
   divisibility `[d] ∣ [n]` when `d ∣ n` (proved as polynomial statements where possible,
   evaluated afterwards).
 - **The `q`-side interface:** for a unit `q` with `δ = q + q⁻¹`,
-  `[n] = q^{n−1} + q^{n−3} + ⋯ + q^{1−n}` and `(q − q⁻¹)·[n] = qⁿ − q⁻ⁿ`. Over a field:
-  `[n](δ) = 0` for some `n ≥ 1` iff `δ = ζ + ζ⁻¹` for a root of unity `ζ` (in a quadratic
-  extension), with the order bookkeeping made precise. This is the dictionary between the
-  `δ`-language of the roadmap and the "`q` a root of unity" language of the literature.
+  `[n] = q^{n−1} + q^{n−3} + ⋯ + q^{1−n}` and `(q − q⁻¹)·[n] = qⁿ − q⁻ⁿ`. Over a field of
+  **characteristic zero**: `[n](δ) = 0` for some `n ≥ 1` iff `δ = ζ + ζ⁻¹` for a root of unity
+  `ζ ≠ ±1` (in a quadratic extension), with the order bookkeeping made precise. This is the
+  dictionary between the `δ`-language of the roadmap and the "`q` a root of unity" language of
+  the literature, and both restrictions on it are real: `ζ = 1` gives `δ = 2` and `[n](2) = n`,
+  `ζ = −1` gives `δ = −2` and `[n](−2) = (−1)^{n−1}·n`, neither of which ever vanishes in
+  characteristic zero, while in characteristic `p` both of them vanish at `n = p`. State the
+  characteristic-zero form as the milestone and the `[n](±2) = ±n` evaluations separately, so
+  the modular case is visible rather than hidden inside a false iff.
+- **A computable evaluator.** `qInt` is definitionally an evaluation of `Polynomial.Chebyshev.S`,
+  and Mathlib's `Polynomial` is noncomputable, so `qInt` itself can never be `#eval`ed. Provide
+  `qIntAux : R → ℕ → R` by the `ℕ`-recurrence (`[0] = 0`, `[1] = 1`, `[n+2] = δ·[n+1] − [n]`)
+  with `qIntAux δ n = qInt R δ n`, and use it wherever a milestone below asks for evaluation.
+  The Chebyshev definition stays the official one, because it is what carries the polynomial
+  identities.
 - **The quantum order of `δ`:** `ℓ(δ) :=` the least `ℓ ≥ 1` with `[ℓ](δ) = 0` (infinite in
   the generic case). All root-of-unity hypotheses below are phrased as `[ℓ] = 0` and
   `[k] ≠ 0` for `1 ≤ k < ℓ`.
@@ -166,7 +216,12 @@ previous layers land.
   whose pairs do not interleave in the linear order; prove that non-interleaving is a
   cyclic-order condition (invariant under rotation), so the circular picture of the standing
   conventions is theorem, not decree. `DecidableEq`, `Fintype`, and a `decide`/`#eval`-able
-  API are required, not nice-to-haves: this layer is the computational bedrock.
+  API are required, not nice-to-haves: this layer is the computational bedrock. The
+  requirement is on the *combinatorics* — matchings, diagrams, their operations and counts,
+  all of which are coefficient-free. It does not extend to the linear objects of Layers 3 to 7:
+  a bare `[CommRing R]` supplies no `DecidableEq R`, and already `TL_0 ≅ R`, so equality in
+  `TLAlg R δ n` is decidable only over coefficient rings where it is decidable. Keep the
+  abstract instances and the executable ones apart.
 - **The Dyck-word model and counting:** the equivalence
   `PlanarMatching (2k) ≃ {p : DyckWord // p.semilength = k}` (an innermost-cup induction),
   hence `card = catalan k`, and emptiness for odd `k`. The Dyck encoding doubles as the
@@ -174,9 +229,13 @@ previous layers land.
   closes).
 - **Through-strands and the refined count:** `through D`, the number of strands connecting
   bottom to top; `halfCount n k` (the number of half-diagrams on `n` points with `k`
-  defects), with `halfCount n k = C(n, (n−k)/2) − C(n, (n−k)/2 − 1)` for `k < n`,
-  `halfCount n n = 1`, the product formula for the number of `(n,m)`-diagrams with `k`
-  through-strands, and `Σ_k (halfCount n k)² = catalan n`.
+  defects), with `halfCount n k = C(n, (n−k)/2) − C(n, (n−k)/2 − 1)` for `k < n` **and `n − k`
+  even**, `halfCount n n = 1`, and `halfCount n k = 0` off that parity or for `k > n`. The
+  parity side condition is not decoration: at `n = 4`, `k = 1` the displayed formula returns
+  `C(4,1) − C(4,0) = 3` while there is no half-diagram at all, and the vanishing lemma is what
+  the counting and Gram-determinant statements below silently rest on, so name it. Then the
+  product formula for the number of `(n,m)`-diagrams with `k` through-strands, and
+  `Σ_k (halfCount n k)² = catalan n`.
 - **The innermost cup lemma:** every matching on `≥ 2` points pairs some cyclically adjacent
   boundary points. This single lemma powers the Dyck equivalence, the normal form of Layer
   2, and most inductions; name it once.
@@ -207,7 +266,17 @@ previous layers land.
   words, and relations, with its universal property (functors out = interpretations of the
   generators satisfying the relations). Mathlib's free monoidal category is free on a type
   only; this is the missing piece, and Brauer, partition, and symmetric-group diagram
-  categories will all reuse it.
+  categories will all reuse it. Three choices to pin before building it, because an
+  implementor should not have to guess them. The presented category is **strict** (as
+  `TLDiagCat` is: tensor is `+` on the underlying counts, an equality of objects). "Functors
+  out" means **strong** monoidal functors into an arbitrary, not necessarily strict, monoidal
+  target; no strictification theorem is needed for that, and Mathlib already has the shape in
+  `FreeMonoidalCategory.project` (`Mathlib/CategoryTheory/Monoidal/Free/Basic.lean`), which
+  produces a monoidal functor out of the free monoidal category into any monoidal `D`.
+  Relations are imposed as a **congruence** on the hom-sets of the free monoidal category,
+  closed under composition and whiskering on both sides — the same closure conditions as the
+  tensor ideals Layer 6 defines for a general monoidal linear category, so build the two
+  together rather than twice.
 - **The presentation theorem for `TLDiagCat` (the universal property):** `TLDiagCat` is the
   monoidal category presented by one generating object with morphisms `cup : 0 → 2`,
   `cap : 2 → 0` and exactly the two zigzag relations. Equivalently: monoidal functors
@@ -246,11 +315,13 @@ previous layers land.
   `diagBasis`.
 - **The braidings:** for a unit `A ∈ R` with `δ = −A² − A⁻²` (that is, `q = −A²`; this is
   where Tingley's minus sign lives, and the only place the roadmap leaves the bare
-  `δ = q + q⁻¹` convention), the Kauffman braiding `σ = A·1 + A⁻¹·(cup ≫ cap)` on `TL(R, δ)`:
+  `δ = q + q⁻¹` convention), the Kauffman braiding `σ = A·1 + A⁻¹·(cap ≫ cup)` on `TL(R, δ)`:
   `BraidedCategory`, the second braiding via `A ↦ A⁻¹`, their inverse relationship, and the
   **ribbon structure** (twist `θ₁ = −A³`), against the balanced/ribbon definitions of the
   [pivotal and spherical categories roadmap](../PivotalSpherical/README.md).
-- **The evaluation representation:** via the universal property, `V = R²` with the standard
+- **The evaluation representation:** for the same unit `A ∈ R` with `δ = −A² − A⁻²` as the
+  braidings need (there is no cup and cap over `R` alone giving circle value `q + q⁻¹`; the
+  square root is what `A` is for), via the universal property, `V = R²` with the standard
   cup and cap (matrix entries `0, ±A^{±1}`, circle value `δ`) gives a monoidal functor
   `TL(R, δ) ⥤ ModuleCat R`, hence algebra maps `TL_n → End((R²)^{⊗n})`. This is quantum
   `sl₂` Schur–Weyl with no quantum group in sight, the first real test of the universal
@@ -258,17 +329,34 @@ previous layers land.
   concrete matrix model.
 - **Monos and epis:** for a single diagram `D` (nontrivial `R`, `δ` a non-zero-divisor),
   `D` is mono iff all its bottom points are through-strands, and epi iff all its top points
-  are; the proofs are `D̄ ≫ D = δ^{#cups}·1` for the forward direction and the `e_i` trick
-  (`D ≫ e_i = δ·D = D ≫ (δ·1)`) for the converse. ⚠ At `δ = 0` even `cup` is not mono
-  (`cap ≫ cup = 0`); the hypothesis is real, and the ⚠ example is an acceptance test.
+  are. Forward (mono ⟹ through-strands), by contraposition: if `D` has an arc joining two of
+  its bottom points then planarity gives an innermost such arc, joining adjacent points `i`,
+  `i+1`, and `e_i ≫ D = δ·D = (δ·1_n) ≫ D` with `e_i ≠ δ·1_n`; dually `D ≫ e_i = δ·D` for epi,
+  using an arc among the top points. Converse (through-strands ⟹ mono): `D ≫ D̄ = δ^c·1_n`,
+  where `c` counts the arcs among `D`'s top points *and* twice its stored circles.
+  ⚠ The hypothesis on `δ` is real, but not for the reason one first guesses: `cup : 0 → 2` is
+  mono for **every** `δ`, since precomposition just adjoins a disjoint arc and closes no circle.
+  What `δ` a non-zero-divisor rules out is the stored circle count: the empty diagram `0 → 0`
+  carrying one circle has all (zero) bottom points through, yet is `δ · 1_𝟙`, which is `0` at
+  `δ = 0` and is multiplication by `2` over `ℤ/6`. Both are acceptance tests, and both are
+  invisible if one thinks only about circle-free diagrams.
 
 ### Layer 4: the algebras, the tower, and the Markov trace
 
-- **`TLAlg R δ n := End(n)`** as an `R`-algebra: free as an `R`-module with
-  `finrank = catalan n`, `DecidableEq`, computable multiplication, `StarRing` via vertical
-  reflection.
-- **Generators and the presentation theorem:** the `e_i := cup_i ≫ cap_i`
-  (`i ∈ Fin (n−1)`), with `e_i² = δ·e_i`, `e_i e_{i±1} e_i = e_i`, and distant commutation;
+- **`TLAlg R δ n := End(n)`**, literally Mathlib's `End (TLCat.of n)`, so the `Ring` and
+  `Algebra R` structures come from `CategoryTheory.Preadditive` and `CategoryTheory.Linear`
+  rather than being rebuilt (see the multiplication-order convention above). What is left to
+  prove: free as an `R`-module with `finrank = catalan n` (over a nontrivial `R` — over the
+  trivial ring Mathlib's `finrank` is `1`), a `StarRing` structure via vertical reflection, and
+  `star (r • x) = r • star x`, since `StarRing` alone constrains only the ring structure and
+  the reflection is claimed to be `R`-linear.
+- **Generators and the presentation theorem:** the `e_i := cap_i ≫ cup_i`, with `cap_i` the map
+  `n+1 → n−1` joining the adjacent points `i`, `i+1` and `cup_i` its reflection `n−1 → n+1`.
+  ⚠ In the other order `cup_i ≫ cap_i` is `δ·1`, not `e_i`, and it type-checks, so nothing will
+  catch the mistake. Index the generators of `TL_{n+1}` by `Fin n` rather than those of `TL_n`
+  by `Fin (n−1)`: truncated subtraction then never appears, and the last generator — the one
+  the Markov property and the Wenzl recursion both need — is literally `Fin.last`. Relations:
+  `e_i² = δ·e_i`, `e_i e_{i±1} e_i = e_i`, and distant commutation;
   the abstract algebra `PresentedTL R δ n` on these generators and relations (via
   `FreeAlgebra` and `RingQuot`), and the isomorphism `PresentedTL ≃ₐ TLAlg`. The proof
   forces the **Jones normal form** for reduced words in the `e_i` and the spanning argument,
@@ -298,27 +386,45 @@ previous layers land.
   general proofs are no harder than the TL-specific ones.
 - **The TL cell structure:** the through-strand filtration is a cell structure with cells
   indexed by `k ≡ n (mod 2)`, `0 ≤ k ≤ n`; the cell module `CellModule R δ n k` has the
-  half-diagram basis (`finrank = halfCount n k`, these are Layer 2's injective morphisms),
-  and the cell form `⟨u, v⟩` is defined by `ū ≫ v = ⟨u,v⟩ · 1_k + (lower through-strand
-  terms)`.
-- **The Gram determinant formula:** with `G_{n,k}` the Gram matrix in the half-diagram
-  basis, the denominator-free product formula
-  `det G_{n,k} · Π_{j=1}^{(n−k)/2} [j]^{m_j} = Π_{j=1}^{(n−k)/2} [k+j+1]^{m_j}` where
-  `m_j = halfCount n (k+2j)` (Westbury; Ridout–Saint-Aubin). Sanity anchors:
-  `det G_{2,0} = [2]`, `det G_{3,1} = [3]`, `det G_{4,2} = [4]`, `det G_{4,0} = [2]²[3]/[1]`.
+  half-diagram basis (`finrank = halfCount n k` over a nontrivial `R`, these are Layer 2's
+  injective morphisms), and the cell form `⟨u, v⟩` is defined by `ū ≫ v = ⟨u,v⟩ · 1_k + (lower
+  through-strand terms)`. The `TLAlg R δ n`-action and the `R`-action on `CellModule R δ n k`
+  are compatible (`IsScalarTower R (TLAlg R δ n) (CellModule R δ n k)`): without that they are
+  formally unrelated structures and `cellForm` being `R`-bilinear says less than intended.
+- **The Gram determinant formula, universally:** with `G_{n,k}` the Gram matrix in the
+  half-diagram basis, `det G_{n,k}` is the evaluation at `δ` of an explicit polynomial
+  `gramPoly n k ∈ ℤ[X]`, characterized in `ℤ[X]` (a domain, where every `[j]` is nonzero) by
+  `gramPoly n k · Π_{j=1}^{(n−k)/2} [j]^{m_j} = Π_{j=1}^{(n−k)/2} [k+j+1]^{m_j}` with
+  `m_j = halfCount n (k+2j)` (Westbury; Ridout–Saint-Aubin), and transported to any `R` by base
+  change. **The universal form is the milestone, not the specialized one.** Cross-multiplied and
+  then evaluated at a particular `δ`, the identity says nothing whenever some `[j]` with
+  `j ≤ (n−k)/2` vanishes, since then both sides are `0` and every `m_j` in range is positive —
+  and that is not a corner case, it is exactly where the classification below lives. It already
+  bites at `δ = 0`, `n = 4`, `k = 0`, whose denominator is `[1]³[2]`, so even the anchor
+  `det G_{4,0} = [2]²[3]` is not recoverable from the specialized identity there. Sanity anchors:
+  `det G_{2,0} = [2]`, `det G_{3,1} = [3]`, `det G_{4,2} = [4]`, `det G_{4,0} = [2]²[3]`,
+  `det G_{5,1} = [3]⁴·(δ²−2)`.
 - **Semisimplicity:** over a field, `IsSemisimpleRing (TLAlg K δ n)` iff every
-  `det G_{n,k} ≠ 0`; in particular semisimple whenever `[k] ≠ 0` for `1 ≤ k ≤ n`, and the
-  full root-of-unity classification via the quantum order `ℓ`.
+  `det G_{n,k} ≠ 0`; in particular semisimple whenever `[k] ≠ 0` for `1 ≤ k ≤ n`. Over a field
+  of **characteristic zero** this becomes the closed classification: `TL_n(K, δ)` is semisimple
+  iff `ℓ(δ) > n`, or `δ = 0` and `n` is odd.
   ⚠ **The `δ = 0` trap:** `[2](0) = 0` yet `TL_3(0)` *is* semisimple (the Gram determinants
   `det G_{3,1} = [3] = −1`, `det G_{3,3} = 1` are nonzero); `TL_2(0)` is not
-  (`det G_{2,0} = 0`). "Semisimple iff `[k] ≠ 0` for `k ≤ n`" is **false** as an iff, and
-  the correct classification at `δ = 0` depends on the parity of `n`. Any statement an AI
-  proposes here must be checked against these small cases; they are acceptance tests below.
+  (`det G_{2,0} = 0`). So "semisimple iff `[k] ≠ 0` for `k ≤ n`" is **false** as an iff, which
+  is what the `δ = 0`/odd-`n` clause above repairs.
+  ⚠ **And that clause is characteristic-zero.** `det G_{5,1} = [3]⁴·(δ²−2)`, which at `δ = 0`
+  is `−2`: nonzero in characteristic zero, zero in characteristic 2. So `TL_5(𝔽̄₂, 0)` is *not*
+  semisimple and the parity rule fails. Any statement proposed here must be checked against
+  `TL_2(0)`, `TL_3(0)` and `TL_5(𝔽̄₂, 0)`; they are acceptance tests below. The modular
+  classification in general is out of scope (see Non-goals).
 - **Nondegeneracy of the category:** the closure pairings
   `Hom(n,m) × Hom(m,n) → R` are nondegenerate for *all* `n, m` iff `[k] ≠ 0` for all
-  `k ≥ 1`; over an algebraically closed field this is exactly "`δ ≠ q + q⁻¹` for every root
-  of unity `q ≠ ±1`", plus `δ ≠ 0` (the case `q = ±i`). This is the clean category-level
-  statement, with no parity exception.
+  `k ≥ 1`. That `δ`-side statement holds over any field; it is the clean category-level one,
+  with no parity exception, and it is the form to state and prove. Over an algebraically closed
+  field of **characteristic zero** it translates to "`δ ≠ ζ + ζ⁻¹` for every root of unity
+  `ζ ≠ ±1`", which already excludes `δ = 0` (the case `ζ = ±i`). The characteristic hypothesis
+  is not decoration: in characteristic `p`, `δ = 2 = 1 + 1⁻¹` has `[p] = 0` while `ζ = 1` is
+  excluded by `ζ ≠ ±1`, so the translated form is simply false there.
 
 ### Layer 6: Jones–Wenzl projections
 
@@ -337,17 +443,41 @@ previous layers land.
 - **Traces:** `tr̂(f_n) = [n+1]` and the partial trace
   `condExp f_{n+1} = ([n+2]/[n+1]) · f_n`; absorption `f_n · incl(f_{n-1}) = f_n` and its
   tensor variants.
-- **Tensor ideals and negligibles:** the definition of a tensor ideal of `TL(R, δ)`
-  (hom-submodules closed under composition and whiskering on both sides), the negligible
-  ideal (`f` with `tr̂(f ≫ g) = 0` for all `g`), and: at quantum order `ℓ`, `f_{ℓ−1}` exists,
-  is negligible (`tr̂ f_{ℓ−1} = [ℓ] = 0`), and **generates the negligible ideal, which is
-  the unique proper nonzero tensor ideal** (Goodman–Wenzl). Generic complement: when
-  `[k] ≠ 0` for all `k ≥ 1`, the only tensor ideals are `0` and everything.
+- **Tensor ideals and negligibles:** the definition of a tensor ideal (hom-submodules closed
+  under composition and whiskering on both sides), stated for a general monoidal `R`-linear
+  category and not for `TL(R, δ)` alone — Layer 7 has to push one along `Mat_` and `Karoubi`
+  and quotient by it, and the same shape imposes the relations on a presented monoidal category
+  in Layer 2; the negligible ideal of `TL(R, δ)` (`f` with `tr̂(f ≫ g) = 0` for all `g`) is the
+  instance that matters here. Then: over a field of **characteristic zero**,
+  at quantum order `ℓ`, `f_{ℓ−1}` exists, is negligible (`tr̂ f_{ℓ−1} = [ℓ] = 0`), and
+  **generates the negligible ideal, which is the unique proper nonzero tensor ideal**
+  (Goodman–Wenzl). Generic complement: when `[k] ≠ 0` for all `k ≥ 1`, the only tensor ideals
+  are `0` and everything. The characteristic hypothesis is carried deliberately: Goodman–Wenzl
+  is a characteristic-zero theorem, and in characteristic `p` both the Jones–Wenzl projections
+  and the ideal lattice genuinely differ — the modular Temperley–Lieb algebra and the
+  mixed-case `SL₂` tilting picture are separate subjects, out of scope here (see Non-goals).
 
 ### Layer 7: the Karoubi envelope and the root-of-unity quotient
 
-- **The additive Karoubi envelope** `TLKar K δ := Karoubi (Mat_ (TL(K, δ)))` (both pieces
-  are in Mathlib), with its monoidal structure.
+- **The envelope, as reusable infrastructure.** `TLKar K δ := Karoubi (Mat_ (TL(K, δ)))` uses
+  two Mathlib constructions, but *only* as plain categories: on the pinned toolchain there is
+  no `MonoidalCategory` instance for either `Mat_ C` or `Karoubi C`, and no `Linear R` instance
+  for either. Both lifts are targets here, in general and not for `TL` alone: for a monoidal
+  preadditive (resp. `R`-linear) category `C`, the induced monoidal (resp. `R`-linear)
+  structure on `Mat_ C` and on `Karoubi C`, together with the induced rigid structure, and the
+  compatibility of the two lifts. Only the finite biproducts come free, from `Mat_` plus
+  `Mathlib/CategoryTheory/Idempotents/Biproducts.lean`. Everything Layer 7 says about tensor
+  products, duals or quantum dimensions in the envelope rests on this, so it is the first
+  milestone of the layer, and it belongs in `TauCeti/CategoryTheory/Monoidal/Envelope/`
+  alongside the quotient below: every diagram category that ever wants a semisimplified
+  quotient needs exactly this.
+- **Quotients by tensor ideals, as reusable infrastructure.** Layer 6's `negligibleIdeal` is a
+  tensor ideal of `TL(K, δ)`, but the quotient below is taken in `TLKar K δ`, and the passage
+  is not automatic. Targets: extension of a tensor ideal of `C` along `Mat_` and `Karoubi`; the
+  additive/`R`-linear quotient of a category by a tensor ideal; descent of the monoidal, rigid,
+  pivotal, spherical, braided and ribbon structure to that quotient; and idempotent
+  completeness of the result (or its idempotent completion, if the quotient loses it). Mathlib
+  has general categorical quotients but no monoidal quotient, so this is built here.
 - **The generic classification:** when `[k] ≠ 0` for all `k ≥ 1`: the images of the
   Jones–Wenzl projections are simple, pairwise non-isomorphic, every simple is one of them,
   and every object is a finite biproduct of them (semisimplicity, stated object-by-object
@@ -356,15 +486,19 @@ previous layers land.
   `X_a ⊗ X_b ≅ ⊞ X_c` (`c = |a−b|, |a−b|+2, …, a+b`); quantum dimensions `[n+1]`; the
   fusion ring is `ℤ[X]` with `X_n ↦ S_n`. This is the semisimple representation theory of
   `U_q(sl₂)` with no quantum group defined.
-- **The root-of-unity quotient:** at quantum order `ℓ`, the quotient of `TLKar K δ` by the
-  negligible ideal: semisimple with simples `X_0, …, X_{ℓ−2}`, truncated fusion rules (the
-  `A_{ℓ−1}` fusion rules), spherical with dimensions `[k+1]`, and braided/ribbon when the
-  braiding descends. Following the
+- **The root-of-unity quotient:** over an algebraically closed field `K` of characteristic
+  zero, at quantum order `ℓ`, the quotient of `TLKar K δ` by the negligible ideal (via the two
+  infrastructure bullets above): semisimple with simples `X_0, …, X_{ℓ−2}`, truncated fusion
+  rules (the `A_{ℓ−1}` fusion rules), spherical with dimensions `[k+1]`, and braided/ribbon
+  when the braiding descends. Following the
   [pivotal and spherical categories roadmap](../PivotalSpherical/README.md)'s convention,
-  "fusion" is stated as explicit hypotheses (`K`-linear, rigid, semisimple, finitely many
-  simples, simple unit) rather than a bundled class until a refactor earns one; prove the
-  quotients satisfy every one of them, making them the first fusion categories in a proof
-  assistant, and the entry point to the world mapped in C. Edie-Michell and S. Morrison,
+  "fusion" is stated as explicit hypotheses rather than a bundled class until a refactor earns
+  one, and the hypotheses are that roadmap's, verbatim, so that its results apply to these
+  categories: `K`-linear, rigid, semisimple, finitely many simple objects, and
+  `End 𝟙 ≅ K` (which is what "simple unit" has to mean here; over a general field the two are
+  not the same condition). Prove the quotients satisfy every one of them, making them the first
+  fusion categories in a proof assistant, and the entry point to the world mapped in
+  C. Edie-Michell and S. Morrison,
   [*A field guide to categories with `Aₙ` fusion rules*
   (arXiv:1710.07362)](https://arxiv.org/abs/1710.07362) (which is context here, not a
   target: this roadmap constructs the categories; the field guide's classification program
@@ -383,9 +517,13 @@ previous layers land.
 - **Jones–Wenzl:** `f_2 = 1 − [2]⁻¹·e₁`; `f_3 = 1 − ([2]/[3])(e₁ + e₂) + [3]⁻¹(e₁e₂ + e₂e₁)`;
   `tr̂ f_2 = [3]`, `tr̂ f_3 = [4]`; the coefficient formula reproduces both.
 - **Gram anchors:** `G_{3,1} = [[δ, 1], [1, δ]]` with determinant `[3]`;
-  `det G_{4,2} = [4]`; `det G_{4,0} = δ²(δ² − 1)`.
-- **The `δ = 0` trap, concretely:** `TL_2(0)` is not semisimple, `TL_3(0)` is.
-- **Monos:** `cup : 0 → 2` is mono iff `δ` is a non-zero-divisor; `cap ≫ cup = δ`.
+  `det G_{4,2} = [4]`; `det G_{4,0} = δ²(δ² − 1)`; `det G_{5,1} = [3]⁴·(δ² − 2)`, which the
+  cross-multiplied identity cannot see at `δ = 0` and the universal form can.
+- **The `δ = 0` trap, concretely:** `TL_2(0)` is not semisimple, `TL_3(0)` is, and `TL_5(0)`
+  is over a characteristic-zero field but not over `𝔽̄₂`.
+- **Monos:** `cup : 0 → 2` is mono for every `δ`, and `cup ≫ cap = δ`, `cap ≫ cup = e₁`. The
+  empty diagram `0 → 0` with one stored circle is `StringInjective` and is *not* mono at
+  `δ = 0`, nor over `ℤ/6` at `δ = 2`.
 - **Karoubi:** `X_1 ⊗ X_1 ≅ X_0 ⊞ X_2` when `[2] ≠ 0`; at `δ = 1` (quantum order `3`) the
   quotient has two simples with `X_1 ⊗ X_1 ≅ X_0`; at `δ = (1+√5)/2` (quantum order `5`)
   the quotient contains the Fibonacci fusion rules.
@@ -401,18 +539,28 @@ Layer 3, whose pivotal and spherical instances additionally wait on the
 (everything else in Layer 3 is independent of that roadmap). Layer 5's cellular
 infrastructure can start any time, but the TL instance needs Layer 4. Layer 6 needs Layers 4 and 0 only (the recursions live in the algebras), with the
 ideal-theoretic half needing Layer 5's pairings. Layer 7 is the summit and consumes
-everything.
+everything — except its two infrastructure milestones (the monoidal/linear/rigid structure of
+the envelope, and quotients by tensor ideals), which are general category theory, depend on
+nothing else here, and can be started as early as Layers 0 and 1. They are on the critical
+path to the fusion summit, so starting them early is worth doing.
 
-## Non-goals (for now)
+## Non-goals
+
+Each of these is out of scope for this roadmap, and each would make a good separate one;
+nothing here depends on any of them.
 
 - **Braid groups, the Kauffman bracket, and the Jones polynomial.** Mathlib has no braid
   groups, and the braiding of Layer 3 makes `σ_i ↦ A·1 + A⁻¹·e_i` a two-line definition
   once they exist, with the writhe-normalized Markov trace invariant under the Markov
   moves as the natural algebraic summit; a diagrammatic route to links could reuse the grid
   diagrams and Cromwell moves of the
-  [combinatorial Heegaard Floer roadmap](../CombinatorialHeegaardFloer/README.md). All of
-  this is deliberately deferred to a future roadmap; nothing in the present one depends
-  on it.
+  [combinatorial Heegaard Floer roadmap](../CombinatorialHeegaardFloer/README.md).
+- **The modular theory.** Every field-level result here is stated over characteristic zero
+  where the characteristic matters (the semisimplicity classification of Layer 5, Goodman–Wenzl
+  in Layer 6, the fusion quotients of Layer 7). Characteristic `p` is a different subject —
+  the modular Temperley–Lieb algebra, modular Jones–Wenzl projections, and `SL₂` tilting
+  modules in the mixed case — and the `δ`-level statements built here (the Gram determinants
+  as polynomials, the `[k] ≠ 0` criteria) are exactly what a modular roadmap would start from.
 - **Annular and affine Temperley–Lieb, and planar algebras.** The rotation and reflection
   operations here are their shadow; the general formalism is out of scope.
 - **Positivity, subfactors, and the Jones index theorem.** These need real-coefficient
@@ -451,3 +599,12 @@ everything.
 - C. Edie-Michell and S. Morrison, [*A field guide to categories with `Aₙ` fusion rules*
   (arXiv:1710.07362)](https://arxiv.org/abs/1710.07362): the landscape the Layer 7
   quotients live in.
+- T. V. H. Prathamesh, [*Knot Theory*](https://www.isa-afp.org/entries/Knot_Theory.html),
+  Archive of Formal Proofs, 2016: the closest prior formalization, in Isabelle — tangle
+  diagrams from cups, caps and crossings, and the bracket polynomial.
+- For the modular theory declared out of scope: R. Spencer,
+  [*The modular Temperley–Lieb algebra* (arXiv:2011.01328)](https://arxiv.org/abs/2011.01328),
+  and L. T. Jensen, D. Tubbenhauer and P. Wedrich,
+  [*Quantum `SL₂` tilting modules in the mixed case*
+  (arXiv:2105.07724)](https://arxiv.org/abs/2105.07724), for what changes in characteristic
+  `p` and why the characteristic-zero hypotheses above are not laziness.
