@@ -153,19 +153,11 @@ not rebuilt; braid groups are out of scope (see Non-goals).
 
 **Boundary with Schur–Weyl.** The
 [Schur–Weyl roadmap](../RepresentationTheory/SchurWeyl/README.md) builds the Brauer algebra
-`B_k(δ)` in its Layer 9 and cites this roadmap three times: for the subalgebra
-`TL_k(δ) ⊆ B_k(δ)`, for the diagram gluing of Layer 2, and for the cell theory of Layer 5.
-The split is: the **cellular-algebra infrastructure of Layer 5 is built here** and consumed
-there, as that roadmap says; the **Brauer diagram combinatorics and gluing are built there**,
-not here, because Brauer diagrams are not planar and the associativity argument does not
-transfer — Layer 2's gluing is deliberately TL-private.
-
-The inclusion `TL_k(δ) ⊆ B_k(δ)` is **not a target of either roadmap**. It is orientation, not
-infrastructure: nothing in Schur–Weyl's Layer 9 uses it (its milestones are the diagram basis,
-the loop rule, the dimension count, semisimplicity and the cell theory), and nothing here does
-either. Formalizing it would mean reconciling two independently chosen diagram encodings and
-two coefficient conventions — this roadmap works over any commutative ring, that one over `ℂ` —
-for no downstream use. If a later roadmap wants it, that is the roadmap that should own it.
+`B_k(δ)` in its Layer 9, and the two roadmaps meet twice. The **cellular-algebra
+infrastructure of Layer 5 is built here** and consumed there, as that roadmap says. The
+**Brauer diagram combinatorics and gluing are built there**, not here: Brauer diagrams are not
+planar and the associativity argument does not transfer, so Layer 2's gluing is deliberately
+TL-private.
 
 ## What is missing (build here)
 
