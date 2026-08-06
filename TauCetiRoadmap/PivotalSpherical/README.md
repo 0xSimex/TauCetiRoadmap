@@ -6,11 +6,18 @@ dual-object notation `Xᘁ` / `ᘁX`, the adjoint mates `fᘁ` / `ᘁf`, `RigidC
 functors `rightDualFunctor`/`leftDualFunctor : C ⥤ (Cᵒᵖ)ᴹᵒᵖ`), braided and symmetric categories
 (`Monoidal/Braided/*`), the Drinfel'd centre (`Monoidal/Center.lean`, braided), and the rigid
 symmetric example `FDRep k G` (`RepresentationTheory/FDRep.lean`, whose `RightRigidCategory`
-instance is what Mathlib registers). It has **no pivotal categories, no
+instance is what Mathlib registers). On `master` it has **no pivotal categories, no
 spherical categories, no categorical trace or quantum dimension**, and no cocycle-twisted graded
-category. The file `Rigid/Basic.lean` even carries the standing TODO *"Define pivotal categories
-(rigid categories equipped with a natural isomorphism `ᘁᘁ ≅ 𝟙 C`)."* This roadmap discharges that
-TODO and builds the theory it opens onto.
+category, and `Rigid/Basic.lean` carries the standing TODO *"Define pivotal categories
+(rigid categories equipped with a natural isomorphism `ᘁᘁ ≅ 𝟙 C`)."*
+
+As this roadmap is written, Jack McKoen has an open Mathlib series building the double-dual functor,
+pivotal categories, traces and spherical categories. That series is **not** a reason for this
+roadmap to leave those out or to wait: everything here is built in Tau Ceti, starting now. What the
+series changes is the *names and shapes* we adopt, so that if it merges we can delete our copy and
+import Mathlib's instead of rewriting. See [Relationship to the in-flight Mathlib
+series](#relationship-to-the-in-flight-mathlib-series) below, which is binding on everything that
+follows.
 
 The target is the theory of **pivotal** and **spherical** categories: the trivialization of the
 double-dual functor, the left and right categorical traces and dimensions it makes possible, the
@@ -24,6 +31,63 @@ categories*, arXiv:1509.02937, Figure 2).
 Suggested home: `TauCeti/CategoryTheory/Monoidal/Pivotal/` (mirroring Mathlib's
 `Mathlib/CategoryTheory/Monoidal/Rigid/`).
 
+## Relationship to the in-flight Mathlib series
+
+Four open Mathlib pull requests, by Jack McKoen, build the bottom of this roadmap:
+
+- https://github.com/leanprover-community/mathlib4/pull/42145 feat(CategoryTheory/Monoidal/Rigid):
+  the double right dual functor is monoidal
+- https://github.com/leanprover-community/mathlib4/pull/42150 feat(CategoryTheory/Monoidal/Rigid):
+  pivotal categories
+- https://github.com/leanprover-community/mathlib4/pull/42191 feat(CategoryTheory/Monoidal/Rigid):
+  spherical categories
+- https://github.com/leanprover-community/mathlib4/pull/42192 feat(CategoryTheory/Monoidal/Rigid):
+  symmetric rigid categories are spherical
+
+Between them they add `Rigid/Pivotal.lean`, `Rigid/Trace.lean` and `Rigid/Spherical.lean`, covering
+Layer 0, the core of Layer 1, the trace definitions of Layer 2, and the structures of Layer 3. **None
+of it has merged**, so none of it is available to us, so all of it is Tau Ceti work today.
+
+**The policy for this roadmap is:**
+
+1. **Tau Ceti never waits for Mathlib.** ⚠ This is the rule the other three serve, and it overrides
+   any reading of them to the contrary. Every item below is a Tau Ceti target that a contributor can
+   pick up and build **today**, in Tau Ceti, against Mathlib `master` as it currently is. An open
+   upstream PR covering the same ground is *not* a blocker, *not* a reason to leave a gap, and *not*
+   a reason to work on something else first. If you need the double-dual functor and #42145 has not
+   merged, build the double-dual functor. Nothing on this roadmap is ever "pending upstream".
+2. **We adopt upstream's names and shapes now, so the later refactor is cheap.** Citing an open PR
+   changes *what we call things and how we shape them*, not *what we build or when*. Layers 0 to 3
+   use `doubleRightDualFunctor`, `PivotalCategory`, `SphericalCategory`, `leftTrace`, `rightTrace`,
+   `trace` and upstream's field names because that makes the eventual swap a deletion plus an import
+   rather than a rewrite. Where the PRs have not decided something, we decide it here and say so.
+3. **Mathlib is upstream and wins, later.** Whatever shape those pull requests land in is the shape
+   Tau Ceti ends up with. If Jack renames `PivotalCategory`, moves to a different base class, changes
+   the trace formula's packaging, or abandons a PR and someone else lands a different design, **Tau
+   Ceti refactors onto whatever lands**, deletes its own copy, and does not argue for its spelling
+   against Mathlib's. That refactor is itself in scope for this roadmap. It is work we do *after*
+   something lands, never work we anticipate by idling.
+4. **Divergences must be deliberate and recorded.** Where this roadmap knowingly differs from an open
+   PR, the difference is stated in the relevant layer with the reason. There is exactly one such
+   divergence today, recorded in Layer 1 (`PivotalCategory` over `RightRigidCategory` versus
+   `RigidCategory`), and it resolves in Mathlib's favour when #42150 lands.
+
+If any wording below still reads as though an open PR supplies something, read it as *"build this
+here now, shaped the way that PR shapes it, and delete it in favour of Mathlib's if and when that PR
+merges"*. It never means "leave it out", "come back later", or "go do it in Mathlib instead".
+
+`#42145` is the most settled of the four (its CI is green and it is the base of the other three), so
+Layer 0 is shaped against **`#42145` as it is expected to land**, including the
+`ExactPairing.rightMate` API and the `rightDualTensorIso_hom_naturality` lemma requested in review.
+Adopting a shape is free; waiting for one is not, so nothing in Layer 0 is deferred on that account.
+
+**We do not push work to Mathlib.** Everything on this roadmap is built in Tau Ceti and stays in Tau
+Ceti. Some of it (the `LeftRigidCategory (FGModuleCat K)` instance of Layer 3, the trace API of Layer
+2) would be perfectly good Mathlib material, and Mathlib contributors are welcome to take any of it
+at any time; deciding what Mathlib absorbs is entirely theirs, not ours. Do not treat any target here
+as "really belonging upstream", do not hold one back for that reason, and do not open Mathlib pull
+requests as part of discharging it.
+
 ## Standing conventions
 
 - **Generality bar.** The *definitions* — dual functor, double-dual functor, pivotal structure,
@@ -36,34 +100,64 @@ Suggested home: `TauCeti/CategoryTheory/Monoidal/Pivotal/` (mirroring Mathlib's
   hypotheses that make up "fusion" (rigid, `k`-linear, semisimple, finitely many simple objects,
   `End 𝟙_C ≅ k`) explicitly on the results, and factor out a `FusionCategory` predicate only if a
   later refactor shows it earns its keep.
-- **Which dual.** Fix the **right dual** `Xᘁ` as primary throughout (matching `rightDualFunctor` and
-  `FDRep`'s `rightDual`). In a rigid category left and right duals both exist; state the left-handed
-  mirror of each definition and relate the two, but pin right duals so signatures do not drift. The
-  double dual `Xᘁᘁ`, the pivotal structure, and both trace formulas use only right duals, so the Lean
-  definitions are stated over `RightRigidCategory` (which is also all Mathlib registers for `FDRep`);
-  "rigid" below always means the usual two-sided notion, of which this is the right-handed presentation.
+- **Which dual.** Fix the **right dual** `Xᘁ` as primary throughout (matching `rightDualFunctor`,
+  `doubleRightDualFunctor`, and `FDRep`'s `rightDual`). In a rigid category left and right duals both
+  exist; state the left-handed mirror of each definition and relate the two, but pin right duals so
+  signatures do not drift.
+- **Base class: `RigidCategory`.** Everything the double dual and both trace formulas need is
+  right-handed, so `RightRigidCategory` would be the minimal bar. We nevertheless state the classes
+  over `RigidCategory`, matching #42150, because that is what the roadmap will have to refactor onto
+  and there is no benefit in diverging first. The consequence for `FDRep k G` (which Mathlib
+  registers only as right rigid) is dealt with in Layer 3, not by weakening the class.
 - **The double dual lands back in `C`.** The dual functor is `(-)ᘁ : C ⥤ (Cᵒᵖ)ᴹᵒᵖ` (contravariant,
-  `ᵒᵖ`, and tensor-reversing, `ᴹᵒᵖ`). The **double dual** is obtained by applying it twice and then
-  transporting along the canonical monoidal equivalences `(Dᵒᵖ)ᵒᵖ ≃ D` and `(Dᴹᵒᵖ)ᴹᵒᵖ ≃ D` to return
-  to `C`; it is a covariant strong monoidal endofunctor `(-)ᘁᘁ : C ⥤ C`. ⚠ These two identifications
-  are not bookkeeping to be hand-waved: on objects `Xᘁᘁ = (Xᘁ)ᘁ` is `rfl` (Mathlib's
-  `leftDual_rightDual`/`rightDual_leftDual`), but the **functor** `(-)ᘁᘁ` and its monoidal structure
-  must be assembled through the equivalences, and that assembly is Layer 0, not assumed.
+  `ᵒᵖ`, and tensor-reversing, `ᴹᵒᵖ`). Applying it twice and transporting back to `C` gives the
+  covariant strong monoidal endofunctor `doubleRightDualFunctor : C ⥤ C`, `X ↦ Xᘁᘁ`. ⚠ `Xᘁᘁ` is just
+  how `(Xᘁ)ᘁ` parses; there is nothing to prove at the level of objects, and Mathlib's
+  `leftDual_rightDual : ᘁ(Xᘁ) = X` and `rightDual_leftDual : (ᘁX)ᘁ = X` are about the *mixed*
+  composites, not about this. The content is the functor's action on morphisms and its monoidal
+  structure, and **both are Layer-0 work here**, shaped as #42145 shapes them (`Functor.opMop`,
+  `rightDualFunctorMonoidal`,
+  `doubleRightDualFunctor` with `deriving Functor.Monoidal`, and `doubleRightDualFunctor_ε` /
+  `doubleRightDualFunctor_μ`). Build it here in that shape now, and swap to Mathlib's when #42145
+  merges; do not wait, and do not invent a different assembly.
+- **The two double duals are inverse, not isomorphic.** ⚠ The double right dual `(-)ᘁᘁ` and the double
+  left dual `ᘁᘁ(-)` are **inverse** autoequivalences of a rigid category. A natural isomorphism
+  `(-)ᘁᘁ ≅ ᘁᘁ(-)` would force the quadruple dual to be the identity and is **not** available. What is
+  canonical is the pair of mixed composites `ᘁ(-)ᘁ ≅ 𝟭_C` and `(ᘁ-)ᘁ ≅ 𝟭_C`, whose object-level
+  shadows are the two Mathlib lemmas above. Left and right duals become isomorphic *once a pivotal
+  structure is chosen*, which is the content of #42150's `leftDualIsoRightDual` and `dualFunctorIso`,
+  not a fact about bare rigid categories.
 - **Pivotal = a trivialization of the double dual.** A pivotal structure is a **monoidal** natural
-  isomorphism `φ : 𝟭_C ≅ (-)ᘁᘁ`. "Monoidal" (that `φ_{X⊗Y}` agrees with `φ_X ⊗ φ_Y` through the
-  monoidal comparison of `(-)ᘁᘁ`) is part of the data-plus-axiom, not optional; a bare natural iso to
-  the double dual is **not** a pivotal structure. The redundant Freyd–Yetter axiom
-  `φ_{Xᘁ} = (φ_X⁻¹)ᘁ` is a **theorem**, not an axiom (Selinger, *A survey of graphical languages*,
-  Lem 4.11); prove it rather than assume it.
-- **Traces live in `End 𝟙_C`.** The left and right traces of an endomorphism, and the left and right
-  dimensions of an object, are elements of the endomorphism monoid of the unit, `End 𝟙_C`. Over a
-  fusion category `End 𝟙_C ≅ k`, so they are scalars, but the definitions do not need that.
-- **Vocabulary.** Use Mathlib's `RigidCategory`, `Xᘁ`, `η_`/`ε_`, `BraidedCategory`,
-  `SymmetricCategory`, `Center`, `FDRep`, `MonoidHom G Kˣ` for characters, and the general
-  `groupCohomology` cochain complex for cocycles. Do not introduce a private dialect where Mathlib
-  already has the word.
+  isomorphism `φ : 𝟭_C ≅ (-)ᘁᘁ`. "Monoidal" is Mathlib's `NatTrans.IsMonoidal` applied to `φ.hom`
+  against the `Functor.Monoidal` instance on `doubleRightDualFunctor`; it is part of the
+  data-plus-axiom, not optional, and a bare natural iso to the double dual is **not** a pivotal
+  structure. The redundant Freyd–Yetter axiom `φ_{Xᘁ} = (φ_X⁻¹)ᘁ` is a **theorem**, not an axiom
+  (Selinger, *A survey of graphical languages*, Lem 4.11); prove it rather than assume it.
+- **Traces are morphisms `𝟙_C ⟶ 𝟙_C`.** The left and right traces of an endomorphism, and the left and
+  right dimensions of an object, are endomorphisms of the unit. Write the type as `𝟙_ C ⟶ 𝟙_ C`,
+  matching #42191; `End (𝟙_ C)` is definitionally the same thing (`End X := X ⟶ X`) and may be used
+  where the monoid structure is what matters. Over a fusion category `End 𝟙_C ≅ k`, so traces are
+  scalars, but the definitions do not need that.
+- **Vocabulary.** Use Mathlib's `RigidCategory`, `Xᘁ`, `η_`/`ε_`, `ExactPairing.rightMate`,
+  `BraidedCategory`, `SymmetricCategory`, `Center`, `FDRep`, `MonoidHom G Kˣ` for characters, and the
+  general `groupCohomology` cochain complex for cocycles. Do not introduce a private dialect where
+  Mathlib already has the word, and prefer the *in-flight* spelling (`PivotalCategory`,
+  `SphericalCategory`, `leftTrace`, `rightTrace`, `trace`, `doubleRightDualFunctor`) over inventing a
+  Tau Ceti one.
+- **Explicit pairings over ambient instances.** When a statement needs a dual that is not the ambient
+  `HasRightDual` choice, take the `ExactPairing` explicitly and use #42145's
+  `ExactPairing.rightMate pX pY f` rather than juggling `letI` instances. Instance arguments are part
+  of the elaborated term, so a `rw` against an ambient-instance statement only fires when the
+  instances are the same structures; the explicit-pairing form avoids that trap. `tensorOf`,
+  `hasRightDual`, `rightHom_ext`, `rightMate_comp_evaluation` and `rightDualTensorIso_hom_naturality`
+  are the working set.
 
 ## What Mathlib already has (consume)
+
+Everything in this section is on Mathlib `master` today and should simply be used, **except** the
+entry marked *(#42145, expected to land)*, which is not yet available and is therefore Tau Ceti work
+until it merges. It is listed here rather than under *What is missing* only so that its intended
+final shape is in one place.
 
 - **Rigid categories and duals:** `Mathlib/CategoryTheory/Monoidal/Rigid/Basic.lean` —
   `ExactPairing X Y` with `coevaluation`/`evaluation` (notation `η_ X Y : 𝟙_ C ⟶ X ⊗ Y`,
@@ -71,11 +165,28 @@ Suggested home: `TauCeti/CategoryTheory/Monoidal/Pivotal/` (mirroring Mathlib's
   (`fᘁ : Yᘁ ⟶ Xᘁ`), `leftAdjointMate` (`ᘁf`), `RightRigidCategory`/`LeftRigidCategory`/`RigidCategory`,
   and `rightDual_leftDual`/`leftDual_rightDual` (`ᘁXᘁ = X`, `(ᘁX)ᘁ = X` as `rfl`).
 - **The dual functors:** `Mathlib/CategoryTheory/Monoidal/Rigid/Functor.lean` —
-  `rightDualFunctor`/`leftDualFunctor : C ⥤ (Cᵒᵖ)ᴹᵒᵖ`, `X ↦ Xᘁ` / `X ↦ ᘁX`. Its own `Future work`
-  comment ("Show that in a `RigidCategory`, these functors are monoidal equivalences") is a Layer-0
-  sub-target.
+  `rightDualFunctor`/`leftDualFunctor : C ⥤ (Cᵒᵖ)ᴹᵒᵖ`, `X ↦ Xᘁ` / `X ↦ ᘁX`. Its `Future work`
+  comment ("Show that in a `RigidCategory`, these functors are monoidal equivalences") is still open
+  and is the one genuine Layer-0 target left to us.
+- **The monoidal dual functor and the double dual — *(#42145, expected to land; build here in the
+  meantime)*:**
+  `Rigid/Functor.lean` gains `rightDualFunctorCoreMonoidal` / `rightDualFunctorMonoidal` (the dual
+  functor is strong monoidal, comparison `rightDualTensorIso`) and
+  `doubleRightDualFunctor : C ⥤ C` with a `Functor.Monoidal` instance and the structure-map lemmas
+  `doubleRightDualFunctor_ε` / `doubleRightDualFunctor_μ`; `Monoidal/Opposite.lean` gains
+  `Functor.opMop` with its monoidal structure. `Rigid/Basic.lean` gains the explicit-pairing API
+  (`ExactPairing.tensorOf`, `hasRightDual`, `hasLeftDual`, `rightHom_ext`, `leftHom_ext`,
+  `rightMate` with `rightMate_comp_evaluation` / `coevaluation_comp_rightMate` /
+  `rightMate_tensor` / `rightMate_associator` / `rightMate_leftUnitor` / `rightMate_rightUnitor`),
+  `ExactPairing.unit_coevaluation` / `unit_evaluation`, `rightDualIso_inv` / `rightDualIso_hom_trans`
+  / `rightDualIso_tensor` / `rightDualIso_hom_naturality`, `rightDualTensorIso_hom_naturality`, and
+  `leftAdjointMate_rightAdjointMate` / `rightAdjointMate_leftAdjointMate`; `Rigid/Braided.lean` gains
+  `exactPairingSwap_coevaluation` / `exactPairingSwap_evaluation` and `rightMate_swap_rightMate`.
+  **This is all of Layer 0 except the monoidal-equivalence statement above.** Build whatever of it
+  Layer 0 needs, in this shape, and delete it in favour of Mathlib's when #42145 merges.
 - **Monoidal opposite:** `Mathlib/CategoryTheory/Monoidal/Opposite.lean` — `Cᴹᵒᵖ`, `mop`/`unmop` (the
-  tensor-reversing opposite the dual functor lands in).
+  tensor-reversing opposite the dual functor lands in), and `opOpEquivalence` with its
+  `IsMonoidal` instance.
 - **Braided/symmetric:** `Mathlib/CategoryTheory/Monoidal/Braided/Basic.lean` — `BraidedCategory`
   (field `braiding X Y : X ⊗ Y ≅ Y ⊗ X`, hexagons), `SymmetricCategory`;
   `Mathlib/CategoryTheory/Monoidal/Rigid/Braided.lean` (in a braided category a right dual is a left
@@ -86,10 +197,12 @@ Suggested home: `TauCeti/CategoryTheory/Monoidal/Pivotal/` (mirroring Mathlib's
   `MonoidalCategory`, and a `RightRigidCategory` when `G` is a group and `k` a field (via
   `Mathlib/CategoryTheory/Action/Monoidal.lean`'s `RightRigidCategory (Action V H)` and
   `Mathlib/Algebra/Category/FGModuleCat/Basic.lean`'s `rightRigidCategory`), with dual-representation
-  lemmas `rightDual_ρ` and `dualTensorIsoLinHom`. ⚠ Mathlib registers the **right**-rigid instance;
-  `FDRep k G` is rigid (both sides) mathematically, but the full `RigidCategory` instance is not
-  upstream, so the Lean definitions here are stated over `RightRigidCategory` (right duals suffice for
-  the double dual and both traces). `Rep k G` is `SymmetricCategory` (`Rep/Basic.lean`).
+  lemmas `rightDual_ρ` and `dualTensorIsoLinHom`. `FDRep k G` is also `BraidedCategory` and
+  `SymmetricCategory` (via `Action.instSymmetricCategory`). ⚠ Mathlib registers only the
+  **right**-rigid instance, so `RigidCategory (FDRep k G)` does not synthesize; supplying it is a
+  Layer-3 target. Note that `Rep k G` (all representations, not just finite-dimensional ones) is
+  symmetric but has **no** rigid instance of any handedness, and is not a legitimate example anywhere
+  in this roadmap; every "the symmetric example" below means `FDRep k G`.
 - **Graded objects:** `Mathlib/CategoryTheory/GradedObject/Monoidal.lean` — a monoidal structure on
   `GradedObject β C`, but with the *untwisted* associator; the cocycle twist for `Vec^ω_G` is built
   here.
@@ -102,17 +215,33 @@ Suggested home: `TauCeti/CategoryTheory/Monoidal/Pivotal/` (mirroring Mathlib's
 
 ## What is missing (build here)
 
-The double-dual endofunctor `(-)ᘁᘁ : C ⥤ C` and its monoidal structure; **pivotal categories**
-(`𝟭_C ≅ (-)ᘁᘁ`) and pivotal functors; the **left/right categorical trace and dimension** and their
-basic theory; **spherical categories**; **quantum/global dimension** and **Frobenius–Perron
-dimension**; **`Vec^ω_G`** (pointed fusion categories with a cocycle-twisted associator) and the
-classification of its pivotal structures; **gradings of a fusion category by a group**, the **adjoint
-subcategory** and the **universal grading group**, and the theorem identifying
-`Aut_⊗(𝟭_C)` with `Hom(U(C), kˣ)`; a degree-3 cocycle API; and **Frobenius–Schur indicators**. None
-of this is upstream.
+Nothing in this list is on Mathlib `master`, so **all of it is Tau Ceti work and all of it can start
+today**. Entries marked *(also in flight as #N)* have someone building the same thing upstream: build
+them here anyway, in the shape that PR uses, and delete ours when theirs merges. The marking tells
+you what to *name* things, not whether to *do* them.
 
-`Suggested.lean` pins the load-bearing objects (`doubleDualFunctor`, `Pivotal`, `Spherical`,
-`leftTrace`/`rightTrace`, `quantumDim`, `VecTwisted`, `IsThreeCocycle`, `universalGradingGroup`) and
+- The double-dual endofunctor `(-)ᘁᘁ : C ⥤ C` and its monoidal structure *(expected from #42145)*.
+- The dual functor as a monoidal **equivalence** on a `RigidCategory` (ours; #42145 leaves this in
+  `Future work`).
+- **Pivotal categories** (`𝟭_C ≅ (-)ᘁᘁ`) *(also in flight as #42150)*, and **pivotal functors**.
+- The **left and right categorical trace** *(definitions also in flight as #42191)*, and all of
+  their **basic theory** (which no upstream PR touches: #42191 defines the two traces and proves
+  nothing about them).
+- **Spherical categories** *(also in flight as #42191)*, and the canonical spherical structure on a
+  symmetric rigid category *(also in flight as #42192)*.
+- **Left and right dimension**, **quantum and global dimension**, **Frobenius–Perron dimension**
+  (FP dimension additionally needs a Perron–Frobenius theorem, which Mathlib also lacks and which is
+  therefore ours to build too, though https://github.com/leanprover-community/mathlib4/pull/39922 is
+  building one).
+- `RigidCategory (FDRep k G)` and the identification of its trace with the linear trace.
+- **`Vec^ω_G`** and the classification of its pivotal structures; a degree-3 cocycle API;
+  **Frobenius–Schur indicators**; **gradings of a fusion category**, the **adjoint subcategory**, the
+  **universal grading group** and `Aut_⊗(𝟭_C) ≅ Hom(U(C), kˣ)`; the synoptic chart of Layer 6. None
+  of this overlaps anyone else's work at all.
+
+`Suggested.lean` pins the load-bearing objects (`doubleRightDualFunctor`, `PivotalCategory`,
+`SphericalCategory`, `leftTrace`/`rightTrace`/`trace`, `quantumDim`, `VecTwisted`, `IsThreeCocycle`,
+`universalGradingGroup`) and
 the named milestones below as `sorry`-targets, so each is claimable and the summit statements are
 machine-checked to be expressible against the pinned Mathlib.
 
@@ -125,26 +254,55 @@ milestones go into `Suggested.lean` (with `sorry`).
 
 ### Layer 0: the dual and double-dual functors
 
-- **The dual functor as a strong monoidal functor.** Upgrade `rightDualFunctor : C ⥤ (Cᵒᵖ)ᴹᵒᵖ` to a
-  strong monoidal functor (the comparison `Xᘁ ⊗ Yᘁ ≅ (Y ⊗ X)ᘁ` from `rightDualTensorIso`), and prove
-  it is a monoidal **equivalence** on a `RigidCategory` (the `Future work` note in `Rigid/Functor.lean`).
-- **The double-dual endofunctor** `(-)ᘁᘁ : C ⥤ C`. Compose the dual functor with itself and transport
-  along the canonical monoidal equivalences `(Dᵒᵖ)ᵒᵖ ≃ D`, `(Dᴹᵒᵖ)ᴹᵒᵖ ≃ D` to land back in `C`.
-  Establish it is a **covariant strong monoidal** endofunctor, and a monoidal equivalence on a rigid
-  category. ⚠ On objects `Xᘁᘁ = (Xᘁ)ᘁ` and `ᘁᘁX = X` hold as `rfl`, but the functor's action on
-  morphisms and its monoidal coherence come from the two equivalences and are the actual content.
-- **The left double dual `ᘁᘁ(-)`** and the canonical natural iso `(-)ᘁᘁ ≅ ᘁᘁ(-)` relating the right
-  and left double duals, so both handednesses are available and pivotal structures can be stated on
-  either.
+**Build this layer now.** None of it is on Mathlib `master`, so all of it is Tau Ceti work today:
+`rightDualFunctorMonoidal` (the dual functor `C ⥤ (Cᵒᵖ)ᴹᵒᵖ` is strong monoidal, with comparison
+`rightDualTensorIso`), `doubleRightDualFunctor` (covariant strong monoidal `C ⥤ C`, `X ↦ Xᘁᘁ`, built
+through `Functor.opMop`), the structure-map lemmas `doubleRightDualFunctor_ε` /
+`doubleRightDualFunctor_μ`, and as much of the explicit-pairing API as the later layers need.
+
+Shape all of it the way #42145 shapes it, and use its names: that PR is the most likely eventual
+source, and matching it makes the swap a deletion plus an import. But **do not wait for it**, do not
+leave a hole where it would go, and do not invent a different assembly in the meantime. If it merges
+first, delete ours; if it does not, we already have the layer.
+
+Beyond what #42145 covers:
+
+- **The dual functor is a monoidal equivalence** on a `RigidCategory`. This is the one item
+  `Rigid/Functor.lean` still lists under `Future work`, and #42145 does not close it. It gives
+  `doubleRightDualFunctor` as a monoidal autoequivalence as a corollary.
+- **The left double dual `ᘁᘁ(-)`, and its correct relationship to the right double dual.**
+  ⚠ `(-)ᘁᘁ` and `ᘁᘁ(-)` are **inverse** monoidal autoequivalences; there is no natural iso between
+  them (that would force the quadruple dual to be the identity). Build the two canonical mixed
+  trivializations, `ᘁ((-)ᘁ) ≅ 𝟭_C` and `(ᘁ(-))ᘁ ≅ 𝟭_C`, upgrading Mathlib's object-level
+  `leftDual_rightDual` and `rightDual_leftDual` to monoidal natural isomorphisms, and deduce that the
+  two double duals are inverse. Both handednesses are then available, and a pivotal structure on
+  either transports to the other; that is what makes it harmless to pin the right-handed one.
 
 ### Layer 1: pivotal structures
 
-- **`Pivotal C`** — the data of a **monoidal natural isomorphism** `φ : 𝟭_C ≅ (-)ᘁᘁ` on a rigid
-  category: components `φ_X : X ≅ Xᘁᘁ`, natural in `X`, and monoidal
-  (`φ_{X⊗Y}` compatible with `φ_X ⊗ φ_Y` under the monoidal structure of `(-)ᘁᘁ`), together with the
-  unit compatibility. This is the definition discharging the `Rigid/Basic.lean` TODO.
+**Build `PivotalCategory` now, shaped as #42150 shapes it**: a class over `[RigidCategory C]` with fields
+`pivotalIso : 𝟭 C ≅ doubleRightDualFunctor C` and `pivotalIso_isMonoidal : NatTrans.IsMonoidal
+pivotalIso.hom` (the latter registered as an instance), together with `pivotalExactPairing X :
+ExactPairing Xᘁ X`, `leftDualIsoRightDual`, `dualFunctorIso` and
+`rightAdjointMate_rightAdjointMate`. Use those names and that shape, and delete ours if and when that
+PR merges.
+
+> **Recorded divergence.** Everything the class needs is right-handed, and `pivotalExactPairing`
+> shows that a pivotal structure on a merely right rigid category *produces* left duals, so
+> `[RightRigidCategory C]` is the honest bar and would apply to `FDRep k G` directly. #42150 uses
+> `[RigidCategory C]`. **We follow #42150.** The cost is one instance, discharged in Layer 3. If
+> #42150 relaxes its hypothesis before landing, we relax with it, and nobody should build against the
+> weaker bar in the meantime.
+
+What remains for us:
+
 - **The Freyd–Yetter redundancy** `φ_{Xᘁ} = (φ_X⁻¹)ᘁ`, proved as a lemma (Selinger Lem 4.11), so the
-  historical fourth axiom is not carried.
+  historical fourth axiom is not carried. Note this is *not* #42150's
+  `rightAdjointMate_rightAdjointMate` (`(fᘁ)ᘁ = φ_X⁻¹ ≫ f ≫ φ_Y`), which is about morphisms rather
+  than about `φ` at a dual object; state both and relate them.
+- **`doubleRightDualFunctor` is a monoidal autoequivalence trivialized by `φ`**, and consequently a
+  pivotal category is rigid even when only right rigidity was assumed (the `def` form of the
+  divergence above, useful for transporting structures even though the class takes `RigidCategory`).
 - **Pivotal functors.** A monoidal functor `F : C ⥤ D` between pivotal categories is **pivotal** when
   `F(φ_X) = δ_{Xᘁ}⁻¹ ≫ (δ_X)ᘁ ≫ φ_{F X}`, where `δ` is the canonical iso `F(Xᘁ) ≅ (F X)ᘁ` that a
   monoidal functor between rigid categories carries (HPT §2.1). The identity and composite of pivotal
@@ -156,28 +314,38 @@ milestones go into `Suggested.lean` (with `sorry`).
 
 ### Layer 2: traces, dimensions, and spherical categories
 
-- **Left and right trace** of `f : X ⟶ X` in a pivotal category, valued in `End 𝟙_C`
-  (Henriques–Penneys–Tener, §2.1), written with Mathlib's convention `η_ A B : 𝟙 ⟶ A ⊗ B`,
-  `ε_ A B : B ⊗ A ⟶ 𝟙` (for `[ExactPairing A B]`):
-  - `tr_L f = ε_ X (Xᘁ) ∘ (𝟙_{Xᘁ} ⊗ f) ∘ (𝟙_{Xᘁ} ⊗ φ_X⁻¹) ∘ η_ (Xᘁ) (Xᘁᘁ)` — coevaluate the pair
-    `(Xᘁ, Xᘁᘁ)`, land in `Xᘁ ⊗ X` after `φ_X⁻¹` and `f`, and close with the evaluation `ε_ X (Xᘁ)`
-    of the pair `(X, Xᘁ)`; and the mirror
-  - `tr_R f = ε_ (Xᘁ) (Xᘁᘁ) ∘ (φ_X ⊗ 𝟙_{Xᘁ}) ∘ (f ⊗ 𝟙_{Xᘁ}) ∘ η_ X (Xᘁ)` — land in `Xᘁᘁ ⊗ Xᘁ`
-    after `φ_X`, and close with the evaluation `ε_ (Xᘁ) (Xᘁᘁ)` of the pair `(Xᘁ, Xᘁᘁ)`.
-  ⚠ The closing evaluations differ between the two traces: `tr_L` closes with the evaluation of
-  `(X, Xᘁ)` and `tr_R` with that of `(Xᘁ, Xᘁᘁ)`; keeping them straight is exactly what the Mathlib
-  `η_`/`ε_` typing enforces.
+**Build the two trace definitions and the `SphericalCategory` class now**, shaped as #42191 shapes
+them, with `trace` for the common value. Note that #42191 supplies the definitions and **no lemmas
+whatsoever about them**, so the whole basic API below is ours no matter what merges upstream, and it
+is the most valuable part of this layer.
 
-  Basic theory (the point of a roadmap — the whole basic API, not just the headline): `ℤ`/`k`-linearity
-  where applicable; **cyclicity** `tr_L (g ∘ f) = tr_L (f ∘ g)`; **monoidality**
-  `tr_L (f ⊗ g) = tr_L f · tr_L g`; the value of a scalar `a : 𝟙_C ⟶ 𝟙_C` is `a`; and
-  `tr_L f = tr_R (fᘁ)`.
-- **Left and right dimension** `dim_L X = tr_L (𝟙 X)`, `dim_R X = tr_R (𝟙 X)`, with
-  `dim_L X = dim_R (Xᘁ)`, additivity on direct sums, multiplicativity on `⊗`, and `dim_L 𝟙_C = 1`.
-- **`Spherical C`** — a pivotal category with `tr_L f = tr_R f` for **every** endomorphism `f`
-  (equivalently, in the fusion case, `dim_L X = dim_R X` for every object). The common value is the
-  **spherical trace** `tr` and the **spherical dimension** `dim`; it is symmetric, cyclic, monoidal,
-  and satisfies `dim X = dim (Xᘁ)`.
+- **Left and right trace** of `f : X ⟶ X` in a pivotal category, as `𝟙_ C ⟶ 𝟙_ C`
+  (Henriques–Penneys–Tener, §2.1). #42191 packages these through
+  `pivotalExactPairing X : ExactPairing Xᘁ X`, which absorbs `φ` into the pairing and leaves the
+  naive formulas
+  - `leftTrace f = η_ Xᘁ X ≫ Xᘁ ◁ f ≫ ε_ X Xᘁ`
+  - `rightTrace f = η_ X Xᘁ ≫ f ▷ Xᘁ ≫ ε_ Xᘁ X`
+
+  where the outer coevaluation of one and the evaluation of the other come from the pivotal pairing.
+  Unfolding `pivotalExactPairing` recovers HPT's formulas with `φ_X` and `φ_X⁻¹` inserted explicitly,
+  and both spellings should be available as lemmas. ⚠ The two traces close with *different*
+  evaluations, which is exactly what the `η_`/`ε_` typing enforces; the packaged form makes this hard
+  to get wrong, so prefer it.
+
+  Basic theory (the point of a roadmap: the whole basic API, not just the headline, and none of it is
+  upstream or in flight): `leftTrace (𝟙 X)` and the dimensions below; **cyclicity**
+  `leftTrace (f ≫ g) = leftTrace (g ≫ f)` for `f : X ⟶ Y`, `g : Y ⟶ X`; **monoidality**
+  `leftTrace (f ⊗ₘ g) = leftTrace f ≫ leftTrace g` modulo unitors; the value on a scalar
+  `a : 𝟙_C ⟶ 𝟙_C` is `a`; `leftTrace f = rightTrace fᘁ`; and `ℤ`- or `k`-linearity where the ambient
+  category is preadditive or linear (state the hypothesis, do not assume it globally).
+- **Left and right dimension** `dim_L X = leftTrace (𝟙 X)`, `dim_R X = rightTrace (𝟙 X)`, with
+  `dim_L X = dim_R Xᘁ`, multiplicativity on `⊗`, `dim_L 𝟙_C = 1`, and additivity on direct sums
+  (which needs a preadditive or additive ambient category; carry that hypothesis on the statement
+  rather than assuming it for the layer).
+- **`SphericalCategory C`** — a pivotal category with `leftTrace f = rightTrace f` for **every**
+  endomorphism `f` (equivalently, in the fusion case, `dim_L X = dim_R X` for every object)
+  *(also in flight as #42191, with `trace` for the common value)*. Ours either way: that `trace` is
+  cyclic, monoidal, and satisfies `dim X = dim Xᘁ`.
 - **Quantum/global dimension.** For a fusion category, the **global dimension**
   `dim C = Σ_i dim(X_i) · dim(X_iᘁ)` over representatives `X_i` of the simple objects (independent of
   the pivotal structure), and, at the fusion bar, the **Frobenius–Perron dimension** `FPdim` (the
@@ -187,14 +355,32 @@ milestones go into `Suggested.lean` (with `sorry`).
 
 ### Layer 3: `FDRep G` is pivotal and spherical (the standard structure)
 
-- **The standard pivotal structure.** For `G` a group and `k` a field, the canonical evaluation
-  isomorphism `V ≅ Vᘁᘁ` of finite-dimensional representations (the finite-dimensional double-duality
-  iso, `G`-equivariant) is a monoidal natural isomorphism `𝟭 ≅ (-)ᘁᘁ`: the **standard** pivotal
-  structure on `FDRep k G`.
-- **Traces are ordinary traces.** Under it, `tr_L f = tr_R f` is the ordinary linear trace of `f` (a
-  scalar in `k = End 𝟙_{FDRep k G}`), so `FDRep k G` is **spherical**, and `dim V = finrank k V` — the
-  quantum dimension is the ordinary vector-space dimension.
-- These are the acceptance criteria that keep Layers 1–2 honest.
+#42192 shortens this layer to almost nothing, and that is a good outcome rather than a loss. It
+proves that **any** rigid symmetric monoidal category carries a canonical pivotal structure (the
+Drinfeld isomorphism `drinfeldIso`, monoidal exactly because the braiding is symmetric) and that it
+is spherical. `FDRep k G` is already `SymmetricCategory` in Mathlib, so the standard structure is a
+corollary rather than a hand construction. Do **not** build a bespoke `FDRep` double-duality
+isomorphism.
+
+- **Register `RigidCategory (FDRep k G)`.** Mathlib registers only `RightRigidCategory (FGModuleCat K)`,
+  so `RigidCategory (FDRep k G)` does not synthesize and Layer 1's class does not apply.
+  `BraidedCategory.rigidCategoryOfRightRigidCategory` produces it in one line from the existing
+  symmetric and right-rigid instances, but it is deliberately not an instance. The right fix is a
+  genuine `LeftRigidCategory (FGModuleCat K)`, since the dual vector space is canonical there and
+  should not be routed through the braiding. Build it here, in Tau Ceti, as part of this layer.
+- **The standard pivotal and spherical structures** on `FDRep k G` are then the instances from #42192
+  applied to the symmetric structure. State them, and prove they agree with the classical
+  finite-dimensional double-duality isomorphism `V ≅ V**`, which is what a reader expects "the
+  standard pivotal structure" to mean.
+- **Traces are ordinary traces.** `trace f` is the ordinary linear trace of `f` (a scalar in
+  `k = End 𝟙_{FDRep k G}`), and `dim V = finrank k V`: the quantum dimension is the vector-space
+  dimension. The symmetric-category trace formula
+  `trace f = η_ X Xᘁ ≫ f ▷ Xᘁ ≫ (β_ X Xᘁ).hom ≫ ε_ X Xᘁ` is the natural starting point, and is a
+  named target here regardless of whether #42192 ever names it (that PR currently has it as an
+  anonymous `example`).
+- These are the acceptance criteria that keep Layers 1–2 honest, and they remain so even though the
+  structures now come for free: the content has moved from "construct the pivotal structure" to
+  "identify its trace with the linear trace", which is the part that actually tests Layer 2's API.
 
 ### Layer 4: the pointed categories `Vec^ω_G` and their pivotal structures
 
@@ -236,16 +422,21 @@ milestones go into `Suggested.lean` (with `sorry`).
 
 State the whole chart — the definitions of the remaining nodes and every arrow between them.
 
-- **The nodes.** In addition to `MonoidalCategory` (tensor), `RigidCategory` (rigid), `Pivotal`,
-  `Spherical` above:
+- **The nodes.** In addition to `MonoidalCategory` (tensor), `RigidCategory` (rigid),
+  `PivotalCategory`, `SphericalCategory` above:
   - **Braided** (`BraidedCategory`, consume) and its rigid, balanced, and pivotal combinations;
-  - **Balanced** = braided with a **twist** `θ_X : X ≅ X` natural in `X` and satisfying
-    `θ_{X⊗Y} = (β_{Y,X} ∘ β_{X,Y}) ∘ (θ_X ⊗ θ_Y)`;
-  - **Ribbon** = balanced and rigid with `θ_{Xᘁ} = (θ_X)ᘁ`.
+  - **`BalancedCategory`** = braided with a **twist** `θ_X : X ≅ X` natural in `X` and satisfying
+    `θ_{X⊗Y} = (β_{Y,X} ∘ β_{X,Y}) ∘ (θ_X ⊗ θ_Y)`. ⚠ Do not call this `Balanced`: Mathlib already has
+    `CategoryTheory.Balanced` (mono plus epi implies iso), and the clash is silent because the local
+    declaration wins.
+  - **`RibbonCategory`** = balanced and rigid with `θ_{Xᘁ} = (θ_X)ᘁ`.
 - **Forgetful and axiom-imposing arrows.** The plain forgetful maps (braided → tensor, rigid →
   tensor, balanced → braided, pivotal → rigid, spherical → pivotal as a full subclass by imposing
-  `tr_L = tr_R`, ribbon → balanced+rigid), matching the two arrow types of Figure 2 (forget data /
-  impose axioms).
+  `leftTrace = rightTrace`, ribbon → balanced+rigid), matching the two arrow types of Figure 2
+  (forget data / impose axioms). ⚠ #42192 registers `symmetricPivotalCategory` and
+  `symmetricSphericalCategory` as global instances, so on a rigid symmetric category the pivotal and
+  spherical structures are already chosen; arrows out of the symmetric node must be stated against
+  those instances rather than against an arbitrary structure.
 - **The Drinfel'd-centre arrows.** `Z(-)` sends each row to its braided enrichment:
   `Z(tensor)` is braided, `Z(rigid)` is braided+rigid, `Z(pivotal)` is braided+pivotal, and
   `Z(spherical)` is **ribbon** (Müger). Consume `Center C` and `braidedCategoryCenter`; the key
@@ -267,8 +458,8 @@ State the whole chart — the definitions of the remaining nodes and every arrow
 - **Frobenius–Schur indicators** of the `δ_g` in `Vec^ω_G`, and of the irreducibles in `FDRep G`,
   computed from the pivotal structure (Layers 3–4).
 - **The twist from a braided pivotal category** (eq (3)) recovers the balanced/ribbon structure, and
-  on a symmetric example (`Rep k G` with the standard pivotal structure) gives the trivial twist
-  `θ = 𝟙` (Layer 6).
+  on a symmetric example (`FDRep k G` with the standard pivotal structure of Layer 3) gives the
+  trivial twist `θ = 𝟙` (Layer 6).
 - **`Z(spherical)` is ribbon** on a small pointed example (Layer 6).
 - **`U(Vec^ω_G) = G`** and the induced torsor count matches Layer 4 (Layer 5).
 
@@ -282,7 +473,32 @@ chart) depends on the braided/balanced/ribbon definitions and the Drinfel'd cent
 for the pivotal/spherical nodes; the central equivalence and the centre arrows are its most technical
 part.
 
+**Sequencing against the Mathlib series.** The four open PRs change nothing about this ordering.
+Every layer is startable now, and a contributor who wants the Layer 0 or Layer 1 definitions should
+build them here, in the shape those PRs use, rather than treating the PRs as a reason to pick
+something else. The only thing the overlap affects is that those particular items are the ones most
+likely to be deleted later in favour of Mathlib's, which is a cheap outcome and not a cost worth
+steering around. If you would rather spend effort where a later deletion is least likely, the Layer 2
+trace API (#42191 defines the two traces and proves nothing about them), the
+`LeftRigidCategory (FGModuleCat K)` instance of Layer 3, the monoidal-equivalence statement left open
+in `Rigid/Functor.lean`, and the whole of Layers 4 to 6 all qualify.
+
 ## References
+
+### In-flight Mathlib work
+
+- J. McKoen, https://github.com/leanprover-community/mathlib4/pull/42145 (the double right dual
+  functor is monoidal), https://github.com/leanprover-community/mathlib4/pull/42150 (pivotal
+  categories), https://github.com/leanprover-community/mathlib4/pull/42191 (spherical categories),
+  https://github.com/leanprover-community/mathlib4/pull/42192 (symmetric rigid categories are
+  spherical). See [Relationship to the in-flight Mathlib
+  series](#relationship-to-the-in-flight-mathlib-series).
+- The Perron–Frobenius series, e.g.
+  https://github.com/leanprover-community/mathlib4/pull/39922 (Perron–Frobenius for irreducible
+  matrices) and https://github.com/leanprover-community/mathlib4/pull/39925 (simplicity of the
+  Perron root), which Layer 2's Frobenius–Perron dimension waits on.
+
+### Mathematical references
 
 - A. Henriques, D. Penneys, J. Tener, *Categorified trace for module tensor categories over braided
   tensor categories*, arXiv:1509.02937 — §2.1 (flavours of tensor category, the trace formulas),
