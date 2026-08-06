@@ -158,9 +158,14 @@ not rebuilt; braid groups are out of scope (see Non-goals).
 The split is: the **cellular-algebra infrastructure of Layer 5 is built here** and consumed
 there, as that roadmap says; the **Brauer diagram combinatorics and gluing are built there**,
 not here, because Brauer diagrams are not planar and the associativity argument does not
-transfer — Layer 2's gluing is deliberately TL-private. The inclusion
-`TL_k(δ) ⊆ B_k(δ)` is **owned there**, where both algebras are in scope; it is not a target of
-this roadmap.
+transfer — Layer 2's gluing is deliberately TL-private.
+
+The inclusion `TL_k(δ) ⊆ B_k(δ)` is **not a target of either roadmap**. It is orientation, not
+infrastructure: nothing in Schur–Weyl's Layer 9 uses it (its milestones are the diagram basis,
+the loop rule, the dimension count, semisimplicity and the cell theory), and nothing here does
+either. Formalizing it would mean reconciling two independently chosen diagram encodings and
+two coefficient conventions — this roadmap works over any commutative ring, that one over `ℂ` —
+for no downstream use. If a later roadmap wants it, that is the roadmap that should own it.
 
 ## What is missing (build here)
 
