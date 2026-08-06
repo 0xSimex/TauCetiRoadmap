@@ -10,11 +10,13 @@ finishes neither a layer nor the roadmap. `sorry` is allowed in this human-owned
 library -- these are goals, not proofs.
 
 Mathlib has the universal enveloping algebra and its universal property, Lie derivations,
-the radical and maximal nilpotent ideal, Engel's theorem, Lie's theorem, and Krull-intersection
-infrastructure. It has no concrete PBW basis, no injectivity theorem for the canonical map into
-the enveloping algebra, no lift of Lie derivations to that algebra, no Ado theorem, and no
-positive-characteristic central `p`-polynomial construction. See `README.md` for the full
-dependency plan.
+`LieAlgebra.radical`, Engel's theorem, Lie's theorem (with a triangularizability hypothesis), and
+the generalized Krull intersection theorem `Ideal.mem_iInf_smul_pow_eq_bot_iff`, which Layer 7
+applies as it stands. It has **no nilradical** in the sense used here (the largest nilpotent ideal
+-- `LieAlgebra.maxNilpotentIdeal` is a different, in general smaller, ideal), no concrete PBW
+basis, no injectivity theorem for the canonical map into the enveloping algebra, no lift of Lie
+derivations to that algebra, no Ado theorem, and no positive-characteristic central
+`p`-polynomial construction. See `README.md` for the full dependency plan.
 -/
 
 namespace TauCetiRoadmap.RepresentationTheory.AdoIwasawa
@@ -23,12 +25,28 @@ open scoped Polynomial
 
 universe u
 
-attribute [local instance 100] LieRing.ofAssociativeRing
-
 variable (K : Type u) [Field K]
 variable (L : Type u) [LieRing L] [LieAlgebra K L]
 
-/-! ## Layer 0: finite associative and enveloping targets -/
+/-! ## Layer 0: the nilradical, and finite associative and enveloping targets -/
+
+/-- The **nilradical** of `L`: the largest ideal that is nilpotent *as a Lie algebra*.
+
+Mathlib has no such declaration, and this is deliberately **not**
+`LieAlgebra.maxNilpotentIdeal K L`, which is the largest ideal on which `L` acts nilpotently.
+The two differ already for the two-dimensional nonabelian algebra; see `README.md`. -/
+def nilradical : LieIdeal K L :=
+  sSup { I : LieIdeal K L | LieRing.IsNilpotent I }
+
+/-- Mathlib's `maxNilpotentIdeal` is contained in the nilradical, and the containment is strict
+in general. This is the lemma that keeps the two notions from being confused. -/
+theorem maxNilpotentIdeal_le_nilradical :
+    LieAlgebra.maxNilpotentIdeal K L ≤ nilradical K L := sorry
+
+/-- Elements of the nilradical are `ad`-nilpotent, so Hochschild's pointwise condition implies
+the nilrepresentation condition. -/
+theorem isNilpotent_ad_of_mem_nilradical [FiniteDimensional K L] {x : L}
+    (hx : x ∈ nilradical K L) : IsNilpotent (LieAlgebra.ad K L x) := sorry
 
 /-- A faithful embedding in a finite-dimensional associative algebra gives a faithful
 finite-dimensional representation by left multiplication. -/
@@ -97,20 +115,34 @@ theorem adoCharZero [CharZero K] [FiniteDimensional K L] :
     ∃ (V : Type u) (_ : AddCommGroup V) (_ : Module K V) (_ : FiniteDimensional K V)
       (ρ : L →ₗ⁅K⁆ Module.End K V), Function.Injective ρ := sorry
 
+/-- Hochschild's strengthening in characteristic zero. This, not `adoCharZero`, is what Layer 9
+dispatches on, and it is a separate argument on top of Ado rather than a corollary of it. -/
+theorem exists_faithful_preserving_ad_nilpotence_charZero [CharZero K] [FiniteDimensional K L] :
+    ∃ (V : Type u) (_ : AddCommGroup V) (_ : Module K V) (_ : FiniteDimensional K V)
+      (ρ : L →ₗ⁅K⁆ Module.End K V),
+      Function.Injective ρ ∧
+        ∀ x : L, IsNilpotent (LieAlgebra.ad K L x) → IsNilpotent (ρ x) := sorry
+
 /-- The load-bearing positive-characteristic construction: every `x` has a monic linearized
 `p`-polynomial with zero constant term that is central in `U(L)`. The displayed indexing gives
 the leading term exponent `p^e` and lower terms `p^i` for `i : Fin e`; it does not assert that
-`e` is minimal. -/
+`e` is minimal. Every exponent is at least `p^0 = 1`, so the element also lies in the
+augmentation ideal, which is what Layer 7 needs of it. -/
 theorem exists_pCentralPolynomial (p : ℕ) [Fact p.Prime] [CharP K p]
     [FiniteDimensional K L] (x : L) :
     ∃ (e : ℕ) (a : Fin e → K),
-      ∀ y : UniversalEnvelopingAlgebra K L,
-        ((UniversalEnvelopingAlgebra.ι K x) ^ (p ^ e) +
-            ∑ i : Fin e, algebraMap K (UniversalEnvelopingAlgebra K L) (a i) *
-              (UniversalEnvelopingAlgebra.ι K x) ^ (p ^ (i : ℕ))) * y =
-          y * ((UniversalEnvelopingAlgebra.ι K x) ^ (p ^ e) +
-            ∑ i : Fin e, algebraMap K (UniversalEnvelopingAlgebra K L) (a i) *
-              (UniversalEnvelopingAlgebra.ι K x) ^ (p ^ (i : ℕ))) := sorry
+      (UniversalEnvelopingAlgebra.ι K x) ^ (p ^ e) +
+          ∑ i : Fin e, a i • (UniversalEnvelopingAlgebra.ι K x) ^ (p ^ (i : ℕ)) ∈
+        Subalgebra.center K (UniversalEnvelopingAlgebra K L) := sorry
+
+/-- Hochschild's strengthening in characteristic `p`, from the central ideal and Krull
+intersection. Here it is the primary theorem and `adoCharP` is its corollary. -/
+theorem exists_faithful_preserving_ad_nilpotence_charP (p : ℕ) [Fact p.Prime] [CharP K p]
+    [FiniteDimensional K L] :
+    ∃ (V : Type u) (_ : AddCommGroup V) (_ : Module K V) (_ : FiniteDimensional K V)
+      (ρ : L →ₗ⁅K⁆ Module.End K V),
+      Function.Injective ρ ∧
+        ∀ x : L, IsNilpotent (LieAlgebra.ad K L x) → IsNilpotent (ρ x) := sorry
 
 /-- The positive-characteristic Ado theorem from the central ideal and Krull intersection. -/
 theorem adoCharP (p : ℕ) [Fact p.Prime] [CharP K p] [FiniteDimensional K L] :
@@ -132,5 +164,10 @@ a faithful finite-dimensional representation. -/
 theorem adoIwasawa [FiniteDimensional K L] :
     ∃ (V : Type u) (_ : AddCommGroup V) (_ : Module K V) (_ : FiniteDimensional K V)
       (ρ : L →ₗ⁅K⁆ Module.End K V), Function.Injective ρ := sorry
+
+/-- The matrix form of the summit, and the shape the Lie-groups roadmap consumes at `K = ℝ`:
+every finite-dimensional Lie algebra embeds in some `𝔤𝔩ₙ`. -/
+theorem adoIwasawa_matrix [FiniteDimensional K L] :
+    ∃ (n : ℕ) (ρ : L →ₗ⁅K⁆ Matrix (Fin n) (Fin n) K), Function.Injective ρ := sorry
 
 end TauCetiRoadmap.RepresentationTheory.AdoIwasawa
