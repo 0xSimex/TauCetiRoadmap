@@ -20,9 +20,17 @@ or the classification theorem itself. Those are separate developments that can c
 concrete definitions built here by assuming `ClassificationStatement.{u}`.
 
 `CFSGIndex.Group` lands in `Type`, so `ClassificationStatement.{0}` is the substantive instance and
-every larger universe follows from it, `Finite G` supplying the transport. A downstream development
-should assume the universe it needs and derive the rest, rather than assume `.{0}` and find it does
-not apply.
+every larger universe follows from it, `Finite G` supplying the transport. That implication is itself
+a target, `classificationStatement_of_zero`, and not merely an observation: a downstream development
+that assumes the universe it needs has to be able to derive it, rather than assume `.{0}` and find it
+does not apply.
+
+Nothing here is proved about the constructed groups, and a consumer needs to know where that theory
+is meant to come from. Finiteness, simplicity, orders, and the identifications between the
+constructions given here and any other realization of the same group are all downstream work, which
+this roadmap enables by giving those groups names and does not itself begin. The one place that gap
+is partly closed is the cross-check in S1 below, which is a review obligation rather than a Lean
+target.
 
 Suggested home in Tau Ceti: `TauCeti/GroupTheory/SpecificGroups/CFSG/`, with reusable algebraic-group
 machinery placed under the homes chosen by the reductive-groups and root-systems roadmaps.
@@ -102,17 +110,26 @@ convention here, since the small-field indexing is what makes the exclusions in
 `InStandardRange` correct.
 
 `LieTypeIndex.InStandardRange` pins the usual rank and small-field restrictions. It starts `B` at
-rank two and excludes the nonsimple `B₂(2)`; starts `C` at rank three and restricts it to odd
-characteristic, leaving `B₂(q) = C₂(q)` and the characteristic-two overlap `B_n(q) = C_n(q)` to the
-`B` family; starts `D` and `²D` at rank four; excludes `A₁(2)`, `A₁(3)`, `²A₂(2)`, and `G₂(2)`; and
-starts each Suzuki--Ree parameter at `m = 1`. The separate Tits constructor supplies `²F₄(2)'`.
+rank two and excludes `B₂(2)`; starts `C` at rank three and restricts it to odd characteristic,
+leaving `B₂(q) = C₂(q)` and the characteristic-two overlap `B_n(q) = C_n(q)` to the `B` family;
+starts `D` and `²D` at rank four; excludes `A₁(2)`, `A₁(3)`, `²A₂(2)`, and `G₂(2)`; and starts each
+Suzuki--Ree parameter at `m = 1`. The separate Tits constructor supplies `²F₄(2)'`.
+
+Those last exclusions are of two kinds, and the distinction is worth keeping straight because the
+predicate is doing two jobs. `A₁(2)`, `A₁(3)`, and `²A₂(2)` are degenerate: the uniform recipe below
+sends them to the trivial group. `B₂(2)` and `G₂(2)` are duplicates: the recipe sends them to `A₆`
+and to `²A₂(3)`, both of which the list already carries under another name. The same holds for the
+Suzuki--Ree parameter bound, where `²B₂(2)` is degenerate while `²G₂(3)` duplicates `A₁(8)`.
 
 These are the ranges of the usual presentation of the list, and they are also the ranges carried by
 `DynkinType.Valid` in the [root-systems roadmap](../RepresentationTheory/RootSystems/README.md)
 (`A n (n ≥ 1)`, `B n (n ≥ 2)`, `C n (n ≥ 3)`, `D n (n ≥ 4)`). Every valid index here therefore names
-a valid Dynkin type there, and no agent should introduce a reindexed or otherwise second copy of a
-root datum to reconcile the two conventions. The Suzuki construction uses that same rank-two `B₂`
-datum, so `²B₂` is both the printed finite-group name and the underlying Dynkin type.
+a valid Dynkin type there. That correspondence is a target and not an exhortation:
+`ValidLieTypeIndex.dynkinType` returns the upstream `DynkinType`, `dynkinType_valid` proves it valid,
+and `ValidLieTypeIndex.rank` is *defined* as `d.dynkinType.rank`, so `Fin d.rank` is the upstream
+index type and a reindexed second copy of a root datum is not expressible rather than merely
+discouraged. The Suzuki construction names the same rank-two `B₂` type, `²B₂` being the printed
+finite-group name for a group built from the `B 2` diagram.
 
 ### Small isomorphism coincidences
 
@@ -157,38 +174,63 @@ lanes. They may proceed in parallel. The labels below are dependency identifiers
 each lane land as one enormous pull request; each item should be split further whenever a reviewer
 cannot inspect its defining data in one sitting.
 
-Two items, `U1` and `U2`, are work for the root-systems and reductive-groups roadmaps rather than
-for this one. They are listed here because `L0` cannot start without them and because neither
-roadmap currently targets them; see `L0` below for exactly what is missing. Claim them in the
-roadmap that owns them, not here.
+`L0` rests on two bodies of work owned by other roadmaps, and both are now specified there:
+
+- **Layer 6 of the [root-systems roadmap](../RepresentationTheory/RootSystems/README.md)**, the
+  pinned Bourbaki numbering and a named simply connected root datum over `ℤ` for each valid
+  `DynkinType`. `DynkinType.simplyConnectedRootDatum`, `DynkinType.simplyConnectedBase`,
+  `DynkinType.numRoots`, and `DynkinType.IsLongSimpleRoot` are the declarations this roadmap uses,
+  and `Suggested.lean` here imports that file rather than restating any of them.
+- **Layer 9 of the [reductive-groups roadmap](../ReductiveGroups/README.md)**, pinned
+  Chevalley--Demazure group schemes over `ℤ` with pinnings, base change, points over an
+  algebraically closed field, root subgroup maps `x_α`, the isomorphism theorem for pinned groups,
+  and the special isogenies in characteristics two and three.
+
+Those are roadmap targets, not code: they are specified but not yet built. `L0` is therefore
+grounded rather than a leap, and remains blocked until they are built in Tau Ceti. Claim them in the
+roadmap that owns them. Everything outside `L0` to `L3`, which is `I0`, the whole sporadic lane, and
+the numbered conventions, is independent of both and can proceed now.
 
 | Item | Depends on | Concrete result | Completion evidence |
 | --- | --- | --- | --- |
-| I0: indices and numbered conventions | Mathlib only | `PrimePower`, raw and valid Lie indices, sporadic names, rank/characteristic/field order, the pinned `Fin` permutations and exponent tables | range and duplicate examples reduce; 26-name check passes |
-| U1: numbered root data over `ℤ` | root systems roadmap | a named based root datum for each valid `DynkinType`, its simply connected form, and a fixed Bourbaki node numbering into `Fin` | each datum is a definition, not a carrier chosen from an existence theorem |
-| U2: pinned group schemes over `ℤ` | reductive groups roadmap, U1 | split reductive group schemes over a base, pinnings, base change, points over an algebraically closed field, root subgroups `x_α` | every declaration L0 consumes is named upstream |
-| L0: pinned ambient groups | U1, U2 | root datum, pinning, points, root subgroups | every valid family traces to explicit data |
+| I0: indices and numbered conventions | Mathlib, root systems Layer 6 | `PrimePower`, raw and valid Lie indices, the map to `DynkinType`, sporadic names, characteristic and field order, the pinned `Fin` permutations | range and duplicate examples reduce; `dynkinType_valid` is proved; 26-name check passes |
+| L0: pinned ambient groups | I0, reductive groups Layer 9 | root datum, pinning, points, root subgroups | every valid family traces to explicit data |
 | L1: ordinary and graph Steinberg maps | L0 | Frobenius and numbered diagram maps | the simple-root-subgroup equations and the order relations are proved |
-| L2: exceptional Steinberg maps | L0 | Suzuki--Ree half-Frobenius maps | the long/short exponent equations and the square relation are proved |
+| L2: Suzuki--Ree Steinberg maps | L0 | selection of the upstream special isogeny, and its odd powers | the exponent and length conventions are matched to the upstream isogeny; `steinberg` unfolds on every branch |
 | L3: fixed groups | L1 and L2 | fixed points, derived subgroup, central quotient | every valid branch has a `Group` instance |
-| S0: presentation format and sources | Mathlib only | relator expression type compiling to signed words, and a 26-row source manifest | every source is a full presentation, is locatable, and is proved to define its group |
-| S1: presentation data | S0 | complete relator words for all sporadics | relator counts match the manifest; independent transcription review |
-| A0: assembly | I0, L3, S1 | `CFSGIndex.Group`, `ClassificationStatement` | named proposition elaborates with no placeholder carriers |
+| L4: the Mathlib Suzuki identification | L3, and https://github.com/leanprover-community/mathlib4/pull/42043 landing | `²B₂(2^(2m+1)) ≃* suzukiGroup m` for `m ≥ 1` | the isomorphism is proved, and the `suzuki` branch is unchanged by it |
+| S0: presentation format and sources | Mathlib only | relator expression type compiling to signed words, the compilation lemmas, and a 26-row source manifest | `Relator.toWord_toFreeGroup` is proved; every source is a full presentation, is locatable, and is proved to define its group |
+| S1: presentation data | S0 | complete relator words for all sporadics | relator counts match the manifest; independent transcription review; the cross-check below is recorded for every name it covers |
+| A0: assembly | I0, L3, S1 | `CFSGIndex.Group`, `ClassificationStatement`, `classificationStatement_of_zero` | named proposition elaborates with no placeholder carriers |
 
 ### I0: indices and Mathlib glue
 
 Build `PrimePower`, `LieTypeIndex`, `LieTypeIndex.InStandardRange`,
 `LieTypeIndex.IsDuplicateRepresentative`, `LieTypeIndex.Valid`, `ValidLieTypeIndex`,
-`LieTypeIndex.IsExceptional`, `ExceptionalLieTypeIndex`, `SporadicName`, and `CFSGIndex`. Keep
-parameters as data rather than encoding the list as a large disjunction. Only `ValidLieTypeIndex`
-may be passed to a Lie-type carrier or endomorphism, and only `ExceptionalLieTypeIndex` to a
-half-Frobenius.
+`LieTypeIndex.UsesHalfFrobenius`, `SuzukiReeIndex`, `GraphTwistedIndex`, `SporadicName`, and
+`CFSGIndex`. Keep parameters as data rather than encoding the list as a large disjunction. Only
+`ValidLieTypeIndex` may be passed to a Lie-type carrier or endomorphism, only `SuzukiReeIndex` to a
+half-Frobenius, and only `GraphTwistedIndex` to a diagram permutation or graph automorphism, so that
+no branch of any of the three is a value invented to fill a hole.
 
-Build the numbered data read off an index: `ValidLieTypeIndex.rank`, `.characteristic`, and
-`.fieldOrder`; and the pinned permutations `graphPermA`, `graphPermD`, `graphPermE6`,
-`trialityPermD4`, `lengthPermRankTwo`, `lengthPermF4`, with the exponent tables
-`exceptionalExponentB2`, `exceptionalExponentG2`, and `exceptionalExponentF4`. These carry the
-conventions of L1 and L2 and are Mathlib-only, so they land here rather than waiting on L0.
+`UsesHalfFrobenius` is named for what it selects. It is not `IsExceptional`: the exceptional Dynkin
+types are `E₆`, `E₇`, `E₈`, `F₄`, and `G₂`, and the predicate is false on all of them. Nor is it "has
+an exceptional isogeny", which `B₂(q)` in characteristic two does whether or not its Steinberg map
+uses one.
+
+Build the numbered data read off an index. `ValidLieTypeIndex.dynkinType` names the underlying
+untwisted diagram as the root-systems roadmap's `DynkinType`, `dynkinType_valid` proves it valid, and
+`.rank` is then *defined* as `d.dynkinType.rank` rather than tabulated again, so every `Fin d.rank`
+in this roadmap is an index into the upstream Bourbaki numbering. `.characteristic`,
+`characteristic_prime`, and `.fieldOrder` complete the numeric data, and `.Closure` is
+`AlgebraicClosure (ZMod d.characteristic)`, so its `Field`, `IsAlgClosed`, and `CharP` instances come
+from Mathlib.
+
+Then the pinned permutations `graphPermA`, `graphPermD`, `graphPermE6`, `trialityPermD4`,
+`lengthPermRankTwo`, and `lengthPermF4`. There is deliberately no table of exceptional exponents:
+which simple roots are long is `DynkinType.IsLongSimpleRoot` upstream, and L2's convention is stated
+against it, so a second table here could only disagree with the diagram. These carry the conventions
+of L1 and L2 and need nothing from Layer 9, so they land here rather than waiting on L0.
 
 Consume Mathlib's existing `ZMod`, `Multiplicative`, `alternatingGroup`, `FreeGroup`,
 `PresentedGroup`, `Subgroup.center`, `commutator`, quotient groups, `GaloisField`, finite-field
@@ -209,39 +251,32 @@ the existence half of the classification of reductive groups.
 
 Consume, rather than duplicate:
 
-- [root systems, Weyl groups, and the Cartan--Killing classification](../RepresentationTheory/RootSystems/README.md)
-  for the numbered `DynkinType`, its Cartan matrices, and coordinate realizations;
-- [reductive algebraic groups](../ReductiveGroups/README.md) for root data, simply connected forms,
-  base change, group schemes, and points.
+- [root systems, Weyl groups, and the Cartan--Killing classification](../RepresentationTheory/RootSystems/README.md),
+  whose Layer 6 gives the pinned Bourbaki numbering and, for each valid `DynkinType`, a named simply
+  connected root datum over `ℤ`;
+- [reductive algebraic groups](../ReductiveGroups/README.md), whose Layer 9 gives pinned
+  Chevalley--Demazure group schemes over `ℤ`, base change, points, and root subgroups.
 
-Neither dependency currently targets what this lane consumes, so U1 and U2 above are the work that
-makes L0 groundable, and they are targets rather than an instruction to improvise. Concretely:
+Both of those layers exist because this lane asked for them. Neither existence theorem is a
+substitute for them: the root-systems realization target `exists_rootPairing_of_dynkinType` is an
+existence statement about a `RootPairing` over `ℚ`, and Layer 8's "Chevalley existence" is likewise
+an existence theorem, so a carrier could only be extracted from either by `Classical.choose`, which
+the rule above forbids. `DynkinType.simplyConnectedRootDatum` and the Layer 9 constructions are what
+replace them for a consumer that needs a named carrier.
 
-- the root-systems roadmap's realization target `exists_rootPairing_of_dynkinType` is an
-  **existence** statement about a `RootPairing` over `ℚ`. There is no named based root datum, nothing
-  over `ℤ`, and no coroot lattice, so a carrier could only be extracted by `Classical.choose`, which
-  the rule above forbids. `DynkinType.cartanMatrix` is itself a `sorry` there, and no node-numbering
-  convention is fixed, which is what the L1 permutation table needs.
-- the reductive-groups roadmap fixes its standing hypotheses over a field and files relative theory
-  over a base under far-future generalizations. Its Layer 8 offers "Chevalley existence", which is
-  again an existence theorem. Group schemes over `ℤ`, pinnings, base change from `ℤ`, and
-  root-subgroup maps `x_α` are targeted nowhere.
+The declarations L0 consumes are:
 
-U1 and U2 are therefore to be written into those roadmaps, and this lane cites them rather than
-restating them. They are proposed in
-[Pin the Bourbaki numbering and an integral root datum](https://github.com/TauCetiProject/TauCetiRoadmap/pull/158)
-and
-[Add pinned Chevalley-Demazure group schemes over the integers](https://github.com/TauCetiProject/TauCetiRoadmap/pull/157)
-respectively. Until they land, L0 is blocked and should not be claimed; the I0 conventions, the
-numbered permutations, and the whole sporadic lane are independent of it and can proceed.
+- `DynkinType.simplyConnectedRootDatum` and `DynkinType.simplyConnectedBase`, reached through
+  `ValidLieTypeIndex.dynkinType` and `dynkinType_valid`, together with the Bourbaki numbering their
+  `Fin` indices carry (root systems Layer 6);
+- the pinned Chevalley--Demazure group scheme over `ℤ` (reductive groups Layer 9);
+- base change to the prime field and its algebraic closure (Layer 9);
+- the group of algebraic-closure-valued points (Layer 9);
+- root-subgroup maps `x_α` and the equations expressing their compatibility with the pinning
+  (Layer 9).
 
-The declarations L0 then consumes are:
-
-- the explicit simply connected root datum and its numbered simple roots (U1);
-- the pinned Chevalley--Demazure group scheme over `ℤ` (U2);
-- base change to the prime field and its algebraic closure (U2);
-- the group of algebraic-closure-valued points (U2);
-- root-subgroup maps `x_α` and the equations expressing their compatibility with the pinning (U2).
+Those are specified upstream but not yet built, so L0 is grounded and still blocked. It should be
+claimed only once they are available in Tau Ceti.
 
 The output is the actual body of `ValidLieTypeIndex.AmbientGroup`, its `Group` instance,
 `ValidLieTypeIndex.Closure`, and `ValidLieTypeIndex.simpleRootSubgroup`. The ambient group is
@@ -249,15 +284,17 @@ generally infinite. A reviewer must be able to follow each carrier through these
 constructions; a theorem that merely asserts that a suitable pinned group exists is not a
 substitute.
 
-The uniform pinned route is the target even though matrices could define the classical families
-earlier. If this route stalls, moving only the six classical branches to explicit `SL`, `SU`, `Sp`,
-and orthogonal matrix groups is an allowed contained refactor, but it must be recorded as a change
-of construction rather than silently mixed into L0.
+The uniform pinned route is the construction, for every family including the six classical ones,
+even though matrices could define those earlier. Defining the classical branches as explicit `SL`,
+`SU`, `Sp`, and orthogonal matrix groups is not a fallback held in reserve here: it would take them
+out of the `AmbientGroup`, `steinberg`, `FixedPoints` route that L0 to L3 exist to build, and would
+carry no obligation that the two agree. Deciding otherwise is a decision to make in this roadmap,
+before the work starts, not a contingency to leave open inside L0.
 
 ### L1: ordinary and graph-twisted Steinberg maps
 
-Let `Frob_q` be the endomorphism induced on points by `x ↦ x ^ q.card` on the algebraic closure.
-Use the following exact maps:
+Let `Frob_q` be the endomorphism induced on points by `x ↦ x ^ d.fieldOrder` on the algebraic
+closure. Use the following exact maps:
 
 | Families | Steinberg map | Required relation |
 | --- | --- | --- |
@@ -276,9 +313,14 @@ wrong, so the permutations are pinned as `Fin` data rather than as prose:
 | --- | --- | --- |
 | `²A_n` | `A_n` | `Fin.revPerm`, the reversal `j ↦ n - 1 - j` |
 | `²D_n` | `D_n` | `Equiv.swap (n - 2) (n - 1)`, the two fork nodes |
-| `²E₆` | `E₆` | `Equiv.swap 0 5 * Equiv.swap 2 4`, fixing `1` and `3` (Bourbaki `1 ↔ 6`, `3 ↔ 5`) |
-| `³D₄` | `D₄` | the three-cycle `(0 2 3)` on the outer nodes, fixing the centre `1` |
-| the untwisted families | itself | `1`, so `γ` is the identity and no branch needs a dummy map |
+| `²E₆` | `E₆` | `Equiv.swap 0 5 * Equiv.swap 2 4`, fixing Bourbaki `2` and `4` (Bourbaki `1 ↔ 6`, `3 ↔ 5`) |
+| `³D₄` | `D₄` | the three-cycle `(0 2 3)` on the outer nodes, fixing the centre, `Fin` index `1` |
+| the untwisted families | itself | `1`, so `γ` is the identity |
+
+The table is exhaustive for `GraphTwistedIndex`, which is what `diagramPerm` and `graphAut` take.
+The Suzuki--Ree and Tits branches do not appear because they are not in that subtype: their Steinberg
+map is an odd power of the half-Frobenius and consumes no diagram permutation, so there is no value
+to invent for them.
 
 Each permutation must be proved to be an automorphism of the corresponding Cartan matrix. The
 defining equations are
@@ -290,22 +332,30 @@ Frob_q (x_α(t)) = x_α(t^q)   for every root α.
 
 The restriction of the first equation to simple roots is not a weakening, and it must not be
 strengthened. A pinning normalizes the root-subgroup parameters on the simple root subgroups, and
-`γ` is then the unique automorphism with that action, by Chevalley's isomorphism theorem for the
-corresponding root data. On a general root the equation reads `γ (x_α(t)) = x_{γ α}(ε_α t)` with
+`γ` is then the unique automorphism with that action. That uniqueness is the isomorphism theorem for
+pinned groups, which is a Layer 9 target upstream and is cited here rather than reproved. On a
+general root the equation reads `γ (x_α(t)) = x_{γ α}(ε_α t)` with
 `ε_α = ±1` forced by the Chevalley structure constants, and the signs cannot all be normalized to
 `1` at once: the type-`A` graph automorphism `X ↦ -J Xᵀ J` of `sl_n` already shows this. Record the
 general-root form as a consequence of the construction, never as a requirement on the pinning.
 
-### L2: exceptional Suzuki--Ree maps
+### L2: Suzuki--Ree Steinberg maps
 
-For `X = B₂` in characteristic two, `G₂` in characteristic three, and `F₄` in characteristic two,
-construct the pinned exceptional isogeny `τ_X` and prove
+The exceptional isogeny itself is **not** built here. For `X = B₂` in characteristic two, `G₂` in
+characteristic three, and `F₄` in characteristic two, the special isogeny `τ_X` of pinned group
+schemes, its action on the long and short root subgroups, and
 
 ```text
-τ_X ^ 2 = Frob_p.
+τ_X ^ 2 = Frob_p
 ```
 
-For the constructor parameter `m`, define
+are Layer 9 targets in the [reductive-groups roadmap](../ReductiveGroups/README.md), which says of
+them that they are statements about group schemes and belong there rather than in any consumer. That
+is right, and this lane consumes them.
+
+What L2 owns is everything between that isogeny and a finite group: selecting `τ_X` for a given
+`SuzukiReeIndex`, checking that the upstream isogeny is the one this roadmap's conventions describe,
+and taking the odd power. For the constructor parameter `m`, define
 
 ```text
 steinberg(m) = τ_X ^ (2m + 1),
@@ -317,9 +367,9 @@ Thus the fixed groups are `²B₂(2^(2m+1))`, `²G₂(3^(2m+1))`, and
 `m ≥ 1`. Do not define these branches as `τ_X ∘ Frob_q`: the odd power of the half-Frobenius is the
 pinned construction.
 
-The square relation is a consequence of the definition, not the definition. `τ_X` is pinned by its
-action on the numbered simple root subgroups. Writing `ᾱ` for the image of the simple root `α` under
-the length-exchanging diagram map,
+The square relation is inherited, not proved here, and it is not what identifies `τ_X`. What
+identifies it is its action on the numbered simple root subgroups. Writing `ᾱ` for the image of the
+simple root `α` under the length-exchanging map,
 
 ```text
 τ_X (x_α(t)) = x_{ᾱ}(t)      for α long,
@@ -329,14 +379,23 @@ the length-exchanging diagram map,
 The two exponents multiply to `p` along either composite, which is what makes `τ_X ^ 2 = Frob_p`
 come out. Attaching `1` to the long roots and `p` to the short ones is a genuine convention: the
 opposite assignment also squares to `Frob_p`, so leaving it to the implementor leaves the branch
-undetermined. Take the assignment above, and in the Bourbaki numbering of the previous section that
-gives, on `Fin n`:
+undetermined. Take the assignment above.
+
+Which simple roots are long is not restated here either. `DynkinType.IsLongSimpleRoot` in the
+root-systems roadmap pins it, and the convention above is stated against that predicate, as
+`SuzukiReeIndex.exponent_of_isLongSimpleRoot` and its negative counterpart. In the pinned Bourbaki
+numbering that predicate makes `B₂` index `0` long, `G₂` index `1` long, and `F₄` indices `0` and `1`
+long, so the convention reads:
 
 | `X` | `p` | Length-exchanging map | Exponent by index |
 | --- | --- | --- | --- |
 | `B₂` | 2 | `Equiv.swap 0 1` | `α₁` long, so `0 ↦ 1` and `1 ↦ 2` |
 | `G₂` | 3 | `Equiv.swap 0 1` | `α₂` long, so `0 ↦ 3` and `1 ↦ 1` |
 | `F₄` | 2 | `Fin.revPerm`, the reversal | `α₁, α₂` long, so `0, 1 ↦ 1` and `2, 3 ↦ 2` |
+
+Those three rows are worked consequences of the upstream predicate, not a second definition of it.
+The length map must be proved to exchange long and short simple roots, which is
+`SuzukiReeIndex.isLongSimpleRoot_lengthPerm`.
 
 Suzuki groups are being developed in Mathlib in
 [feat(GroupTheory/SpecificGroups/Suzuki): define Suzuki groups](https://github.com/leanprover-community/mathlib4/pull/42043),
@@ -349,10 +408,12 @@ points of `τ_{B₂} ^ (2m + 1)` in a pinned ambient group, and its `n` is unres
 The pinned construction is the definition here, and the `suzuki` branch stays inside the uniform
 `AmbientGroup`, `steinberg`, `FixedPoints`, derived-subgroup-modulo-centre route that L0 to L3
 exist to build. Moving that one branch onto a matrix group would take it out of that route with no
-stated obligation that the two agree, which is worse than a little duplication. So: once the Mathlib
-work lands, add a target proving `²B₂(2^(2m+1)) ≃* suzukiGroup m` for `m ≥ 1`, and consume the
-Mathlib API through that isomorphism. Nothing in this roadmap is deleted, and the `m ≥ 1`
-restriction remains this roadmap's responsibility.
+stated obligation that the two agree, which is worse than a little duplication.
+
+That leaves the two constructions unrelated, and relating them is real work, so it is the milestone
+`L4` in the table above rather than a promise to add a target later. `L4` is blocked on work outside
+this project, which is why it is last and separately claimable. The `m ≥ 1` restriction stays this
+roadmap's responsibility either way, since `suzukiGroup 0` is the solvable `Sz(2)`.
 
 ### L3: fixed points and the simple-group candidate
 
@@ -364,10 +425,14 @@ H_d = fixedSubgroup d.steinberg
 d.Group = [H_d, H_d] / Z([H_d, H_d]).
 ```
 
-The center is the center of the derived subgroup, not the center of `H_d`. This uniform convention
-handles the exceptional small cases, including the Tits group. Completion requires every branch of
-`ValidLieTypeIndex.steinberg` to unfold to the L1 or L2 maps and `ValidLieTypeIndex.Group` to carry a
-`Group` instance. No finiteness or simplicity proof is involved.
+Taking the derived subgroup is what handles the small cases where `H_d` is not perfect, and the Tits
+group is the one such case that survives the range restrictions: `H` there is `²F₄(2)` and `[H, H]`
+is the simple group `²F₄(2)'`. Quotienting by the centre then does nothing in that branch, since
+`Z(²F₄(2)')` is trivial. The centre is nonetheless the centre of the derived subgroup and not of
+`H_d`, which is the reading that makes the two steps compose in the stated order on every branch.
+
+Completion requires every branch of `ValidLieTypeIndex.steinberg` to unfold to the L1 or L2 maps and
+`ValidLieTypeIndex.Group` to carry a `Group` instance. No finiteness or simplicity proof is involved.
 
 The open Mathlib PR [#40363, `(B, N)`-pairs](https://github.com/leanprover-community/mathlib4/pull/40363)
 is relevant future structure theory but is not a dependency: this roadmap does not prove Bruhat
@@ -375,26 +440,32 @@ decomposition, simplicity, or recognition.
 
 ### S0: auditable presentation data and source selection
 
-The stored form of a relator is a left-to-right list of signed generator indices, compiled to
-`FreeGroup (Fin n)`. Do not store large relators as opaque nested `FreeGroup` expressions: the
-signed-word form must be readable in diffs, importable from source data, and countable. The
-associated group is still
+There are two forms, and it matters which is which. The **stored** form of a relator is a `Relator`
+expression, built from generator, inverse, product, power, and commutator constructors. The
+**semantic** form is a left-to-right list of signed generator indices, produced from the stored form
+by `Relator.toWord` and read into `FreeGroup (Fin n)`. The associated group is
 
 ```lean
-PresentedGroup {r | r ∈ relators.map Word.toFreeGroup}.
+PresentedGroup {r | r ∈ relators.map PresentationWord.toFreeGroup}.
 ```
 
-Published relators are written with powers and commutators, not as flat letter strings: `(ab)^11`,
-`[a,b]^5`, and the Monster's spider relator `(a b₁ c₁ a b₂ c₂ a b₃ c₃)^10`. Expanding those by hand
-into signed letters makes the longest and most error-prone relators the least reviewable, which is
-the opposite of what this lane is for. So transcribe into a small relator expression type with
-generator, inverse, product, power, and commutator constructors, and compile that to the flat signed
-word. The flat form remains the semantics; the expression form is what a reviewer compares against
-the source, and the transcribed list is what the relator count is taken of.
+The expression form is stored rather than the flat one because published relators are written with
+powers and commutators, not as flat letter strings: `(ab)^11`, `[a,b]^5`, and the Monster's spider
+relator `(a b₁ c₁ a b₂ c₂ a b₃ c₃)^10`. Expanding those by hand into signed letters makes the longest
+and most error-prone relators the least reviewable, which is the opposite of what this lane is for.
+Equally, do not store relators as opaque nested `FreeGroup` expressions: the point of both forms is
+that they are readable in diffs, importable from source data, and countable.
+
+A reviewer checks the stored expression against the published source, and the group is built from the
+compiled word. So `Relator.toWord` sits between what was checked and what was defined, and
+`Relator.toWord_toFreeGroup`, which says the compiled word denotes what the expression denotes, is
+part of S0 rather than an afterthought. Without it the transcription review has a step in it that
+nothing justifies.
 
 Store generator names, an exact bibliographic or stable database locator, the generator convention,
-transcription notes, and the expected generator and relator counts with the relators. Both counts
-are then decidably checkable against the transcribed data.
+transcription notes, and the expected generator and relator counts with the relators. The arity is
+the length of the generator-name list and is not recorded twice; both counts are then decidably
+checkable against the transcribed data.
 
 Do not carry a checksum field. A checksum with no pinned normal form, no named algorithm, and no
 function to recompute it against cannot be checked by a reviewer or by the kernel, so it reads like
@@ -447,20 +518,43 @@ checked, and it does not define the group. Transcribing one as a presentation is
 this lane's review discipline exists to catch.
 
 So the first S0 task is to find, for each of the 26 names, a source that gives an actual
-presentation, and to record in the manifest both that source and the names for which no such source
-is readily available. Expect that second list to be nonempty.
+presentation, and to record in the manifest both that source and the names for which the first pass
+turned one up. Expect the remainder to be nonempty after that first pass.
+
+That remainder is an intermediate research artifact and not a permitted end state. S0 closes only
+when all 26 rows carry a full admissible source, so a name that resists the obvious places is a
+reason to widen the search, to the coset-enumeration literature and the machine-computed
+presentations in the Havas--Sims tradition. A name that still resists is a roadmap issue to be
+raised, and the roadmap is then wrong and needs a different construction for that name. It is not a
+gap S0 may close over, because S1 must fill every branch and A0 depends on S1.
 
 For each transcription, check the recorded relator count against the transcribed list, and require
 an independent source-to-Lean read-through before marking the row reviewed. This lane does not prove
 that the presented group has the expected order, is nontrivial, finite, simple, or isomorphic to
 another construction.
 
+Where an independent explicit construction of the same group exists, use it. The permutation-group
+development cited below covers fourteen of the twenty-six names, with order and simplicity proved, so
+for those names a reviewer can ask whether the transcribed relators hold of its generators, which is
+a check on the relators that no amount of reading the source twice provides. Recording the outcome of
+that comparison, for every name it covers, is part of closing an S1 row. It is a review artifact and
+not a Lean target, because making it one would require importing that development, which the
+provenance section explains is not yet possible.
+
 That gap is survivable, and it is worth saying why, because the reason is the whole argument for
-resting on review here. Each group on the list is simple, so a transcription error can only make
-`ClassificationStatement` false, never easier to prove: dropping a relator yields a proper cover of
-the intended group, and adding or corrupting one yields a proper quotient, hence the trivial group.
-In both cases nothing finite and simple is isomorphic to that branch. Review protects the truth of
-the final statement, not its provability.
+resting on review here. A transcription error can only make `ClassificationStatement` false, never
+easier to prove. If a branch is not the group it is named for, then the group it is named for is
+isomorphic to no branch, and the statement is false; a wrong branch never supplies an index for a
+group that would otherwise lack one. Review protects the truth of the final statement, not its
+provability.
+
+Do not reach for the sharper-sounding version of that argument, which is false. It is tempting to say
+that dropping a relator gives a proper cover and that adding or corrupting one gives a proper
+quotient, hence the trivial group, since each group on the list is simple. None of the three holds.
+Published presentations are often redundant, so a dropped relator may change nothing; an added
+relator that already holds also changes nothing; and a corrupted relator, `r` replaced by some `r'`,
+gives neither a cover nor a quotient, so the result can be any group at all, including an infinite
+one. The conclusion above survives all of that, which is why it is the one stated.
 
 ### A0: assemble and state CFSG
 
@@ -468,7 +562,12 @@ Define `CFSGIndex.Group` by cases, supply its dependent `Group` instance, and de
 `ClassificationStatement` displayed at the top. Do not replace the existential by a disjunction of
 predicates or by `∃!`.
 
-Completion requires the statement to elaborate at every universe with no placeholder carrier, no
+Prove `classificationStatement_of_zero`, that `ClassificationStatement.{0}` implies
+`ClassificationStatement.{u}`. A finite `G : Type u` is equivalent to `Fin (Nat.card G)`, and its
+group and simplicity structure transport along that equivalence. Without this the claim that `.{0}`
+is the substantive instance is one a downstream development cannot act on.
+
+Completion requires the universe-polymorphic statement to elaborate with no placeholder carrier, no
 raw invalid Lie index reaching a carrier-valued definition, and no `Finite` or `IsSimpleGroup`
 instance assumed for `i.Group`. Review the four branches by following their definitions to `ZMod`,
 `alternatingGroup`, the pinned fixed-point construction, or the audited presentation data.

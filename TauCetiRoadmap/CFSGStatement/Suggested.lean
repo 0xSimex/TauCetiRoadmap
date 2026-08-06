@@ -1,4 +1,5 @@
 import Mathlib
+import TauCetiRoadmap.RepresentationTheory.RootSystems.Suggested
 
 /-!
 # A statement of the classification of finite simple groups: target signatures
@@ -12,9 +13,15 @@ definitions or proofs.
 The scope ends at the final named proposition: this roadmap defines the groups on the CFSG list well
 enough to state that every finite simple group is isomorphic to one of them. It does not ask for
 proofs that the listed groups are finite or simple, or for a proof of the classification.
+
+This file imports the root-systems roadmap's targets rather than restating them. `DynkinType` and its
+pinned Bourbaki numbering are that roadmap's, and every Lie-type index here is required to name one,
+so that nothing downstream has to reconcile two numberings of the same diagram.
 -/
 
 namespace TauCetiRoadmap.CFSGStatement
+
+open TauCetiRoadmap.RepresentationTheory.RootSystems
 
 /-! ## Parameters and the groups of Lie type -/
 
@@ -140,15 +147,26 @@ carrier-valued constructions below take this subtype, so no implementation branc
 an invalid Dynkin rank or excluded small group. -/
 abbrev ValidLieTypeIndex := {d : LieTypeIndex // d.Valid}
 
-/-- The exceptional families, whose Steinberg map is an odd power of a half-Frobenius rather than a
-Frobenius composed with a graph automorphism. -/
-def LieTypeIndex.IsExceptional : LieTypeIndex → Prop
+/-- The indices whose Steinberg map is an odd power of a half-Frobenius rather than a Frobenius
+composed with a graph automorphism.
+
+Deliberately not called `IsExceptional`: in Lie theory the exceptional types are `E₆`, `E₇`, `E₈`,
+`F₄` and `G₂`, and this predicate is `False` on all of them. Nor is it "has an exceptional isogeny",
+which `B₂(q)` in characteristic two does whether or not its Steinberg map uses one. What the four
+branches share is precisely that they use the half-Frobenius. -/
+def LieTypeIndex.UsesHalfFrobenius : LieTypeIndex → Prop
   | .suzuki _ | .reeG2 _ | .reeF4 _ | .tits => True
   | _ => False
 
-/-- A valid index in one of the Suzuki--Ree lanes. The half-Frobenius below takes this subtype, so
-no implementation branch is required for a family that has no exceptional isogeny. -/
-abbrev ExceptionalLieTypeIndex := {d : ValidLieTypeIndex // d.1.IsExceptional}
+/-- A valid index whose Steinberg map is an odd power of a half-Frobenius: the three Suzuki--Ree
+families together with Tits. The half-Frobenius below takes this subtype, so no implementation branch
+is required for a family that does not use one. -/
+abbrev SuzukiReeIndex := {d : ValidLieTypeIndex // d.1.UsesHalfFrobenius}
+
+/-- A valid index whose Steinberg map is a Frobenius composed with a diagram automorphism, that
+automorphism being the identity on an untwisted family. `diagramPerm` and `graphAut` take this
+subtype, so the Suzuki--Ree and Tits branches, which consume neither, need no dummy value. -/
+abbrev GraphTwistedIndex := {d : ValidLieTypeIndex // ¬ d.1.UsesHalfFrobenius}
 
 /-! ### Numbered data attached to an index
 
@@ -158,15 +176,39 @@ not determine the Steinberg map, since `suzuki` and `reeF4` share a characterist
 and knowing that a family is graph-twisted of order two does not say which order-two diagram
 automorphism is meant. -/
 
-/-- The rank of the underlying untwisted Dynkin diagram. -/
-def ValidLieTypeIndex.rank (d : ValidLieTypeIndex) : ℕ :=
+/-- **The underlying untwisted Dynkin diagram**, as the root-systems roadmap's `DynkinType`, not as a
+second copy of one. Every construction below is indexed against this type and its pinned Bourbaki
+numbering, so `Fin d.rank` is `Fin d.dynkinType.rank` by definition and no reindexing is possible.
+
+The twisted and Suzuki--Ree families name the diagram they are built from: `²A_n` names `A n`, `³D₄`
+names `D 4`, `²B₂` names `B 2`, `²G₂` names `G2`, and `²F₄` and Tits name `F4`. -/
+def ValidLieTypeIndex.dynkinType (d : ValidLieTypeIndex) : DynkinType :=
   match d.1 with
-  | .A n _ | .twistedA n _ | .B n _ | .C n _ | .D n _ | .twistedD n _ => n
-  | .E6 _ | .twistedE6 _ => 6
-  | .E7 _ => 7
-  | .E8 _ => 8
-  | .F4 _ | .reeF4 _ | .tits | .trialityD4 _ => 4
-  | .G2 _ | .reeG2 _ | .suzuki _ => 2
+  | .A n _ | .twistedA n _ => .A n
+  | .B n _ => .B n
+  | .C n _ => .C n
+  | .D n _ | .twistedD n _ => .D n
+  | .trialityD4 _ => .D 4
+  | .E6 _ | .twistedE6 _ => .E6
+  | .E7 _ => .E7
+  | .E8 _ => .E8
+  | .F4 _ | .reeF4 _ | .tits => .F4
+  | .G2 _ | .reeG2 _ => .G2
+  | .suzuki _ => .B 2
+
+/-- Every valid index names a **valid** Dynkin type, so `DynkinType.simplyConnectedRootDatum` applies
+to it and L0 never needs a root datum of its own. This is the statement that makes the rank ranges of
+`InStandardRange` and of `DynkinType.Valid` agree. -/
+theorem ValidLieTypeIndex.dynkinType_valid (d : ValidLieTypeIndex) : d.dynkinType.Valid := by
+  obtain ⟨d, ⟨hrange, -⟩⟩ := d
+  cases d <;> simp only [ValidLieTypeIndex.dynkinType, DynkinType.Valid] <;>
+    first
+      | trivial
+      | (simp only [LieTypeIndex.InStandardRange] at hrange; omega)
+
+/-- The rank of the underlying untwisted Dynkin diagram. Derived, not tabulated: a second table would
+be free to disagree with the diagram. -/
+abbrev ValidLieTypeIndex.rank (d : ValidLieTypeIndex) : ℕ := d.dynkinType.rank
 
 /-- The characteristic of the field the ambient group is taken over. -/
 def ValidLieTypeIndex.characteristic (d : ValidLieTypeIndex) : ℕ :=
@@ -175,6 +217,17 @@ def ValidLieTypeIndex.characteristic (d : ValidLieTypeIndex) : ℕ :=
   | .E6 q | .E7 q | .E8 q | .F4 q | .G2 q | .twistedE6 q | .trialityD4 q => q.p
   | .reeG2 _ => 3
   | .suzuki _ | .reeF4 _ | .tits => 2
+
+/-- The characteristic is prime. Needed to give `ZMod d.characteristic` its `Field` instance, and so
+to pin `ValidLieTypeIndex.Closure` below to a concrete Mathlib algebraic closure. -/
+theorem ValidLieTypeIndex.characteristic_prime (d : ValidLieTypeIndex) :
+    d.characteristic.Prime := by
+  obtain ⟨d, -⟩ := d
+  cases d <;> simp only [ValidLieTypeIndex.characteristic] <;> first
+    | exact ‹PrimePower›.prime_p
+    | norm_num
+
+instance (d : ValidLieTypeIndex) : Fact d.characteristic.Prime := ⟨d.characteristic_prime⟩
 
 /-- The order `q` of the field of definition, in the small-field GLS/ATLAS convention: the parameter
 of `Frob_q` for the ordinary and graph-twisted lanes, and `p ^ (2 * m + 1)` for the exceptional
@@ -213,35 +266,43 @@ def lengthPermRankTwo : Equiv.Perm (Fin 2) := Equiv.swap 0 1
 /-- The `F₄` length-exchanging map: the diagram reversal. -/
 def lengthPermF4 : Equiv.Perm (Fin 4) := graphPermA 4
 
-/-- The exponent the pinned exceptional isogeny attaches to each numbered simple root subgroup: `1`
-on the long simple roots and `p` on the short ones. `B₂` has `α₁` long. -/
-def exceptionalExponentB2 : Fin 2 → ℕ
-  | 0 => 1
-  | 1 => 2
-
-/-- `G₂` has `α₂` long, so the assignment is the other way round from `B₂`. -/
-def exceptionalExponentG2 : Fin 2 → ℕ
-  | 0 => 3
-  | 1 => 1
-
-/-- `F₄` has `α₁` and `α₂` long, `α₃` and `α₄` short. -/
-def exceptionalExponentF4 : Fin 4 → ℕ
-  | 0 | 1 => 1
-  | 2 | 3 => 2
-
 /-- The diagram permutation realized by the graph automorphism of `d`. Every branch must unfold to
-one of the permutations above, or to `1` for an untwisted family. -/
-def ValidLieTypeIndex.diagramPerm (d : ValidLieTypeIndex) : Equiv.Perm (Fin d.rank) := sorry
+one of the permutations above, or to `1` for an untwisted family. Defined only where a graph
+automorphism is used: the Suzuki--Ree and Tits branches take the half-Frobenius route instead and so
+need no value here. -/
+def GraphTwistedIndex.diagramPerm (d : GraphTwistedIndex) : Equiv.Perm (Fin d.1.rank) := sorry
 
-/-- The length-exchanging permutation realized by the exceptional isogeny of `e`, and the exponent
-it attaches to each numbered simple root subgroup. Every branch must unfold to `lengthPermRankTwo`
-or `lengthPermF4`, and to `exceptionalExponentB2`, `exceptionalExponentG2`, or
-`exceptionalExponentF4`. -/
-def ExceptionalLieTypeIndex.lengthPerm (e : ExceptionalLieTypeIndex) :
-    Equiv.Perm (Fin e.1.rank) := sorry
+/-- The length-exchanging permutation realized by the exceptional isogeny of `e`. Every branch must
+unfold to `lengthPermRankTwo` or `lengthPermF4`. -/
+def SuzukiReeIndex.lengthPerm (e : SuzukiReeIndex) : Equiv.Perm (Fin e.1.rank) := sorry
 
-/-- See `ExceptionalLieTypeIndex.lengthPerm`. -/
-def ExceptionalLieTypeIndex.exponent (e : ExceptionalLieTypeIndex) : Fin e.1.rank → ℕ := sorry
+/-- The length permutation exchanges long and short simple roots, against the root lengths pinned by
+the root-systems roadmap. This is the acceptance check for `lengthPerm`. -/
+theorem SuzukiReeIndex.isLongSimpleRoot_lengthPerm (e : SuzukiReeIndex) (i : Fin e.1.rank) :
+    e.1.dynkinType.IsLongSimpleRoot (e.lengthPerm i) ↔ ¬ e.1.dynkinType.IsLongSimpleRoot i := sorry
+
+/-- The exponent the pinned exceptional isogeny attaches to each numbered simple root subgroup. -/
+def SuzukiReeIndex.exponent (e : SuzukiReeIndex) : Fin e.1.rank → ℕ := sorry
+
+/-- **The exponent convention**, stated once against `DynkinType.IsLongSimpleRoot` rather than as a
+table per family: `1` on the long simple roots. Attaching `1` to long and `p` to short is a genuine
+choice, since the opposite assignment also squares to `Frob_p`. -/
+theorem SuzukiReeIndex.exponent_of_isLongSimpleRoot (e : SuzukiReeIndex) (i : Fin e.1.rank)
+    (h : e.1.dynkinType.IsLongSimpleRoot i) : e.exponent i = 1 := sorry
+
+/-- `p` on the short simple roots. See `SuzukiReeIndex.exponent_of_isLongSimpleRoot`. -/
+theorem SuzukiReeIndex.exponent_of_not_isLongSimpleRoot (e : SuzukiReeIndex) (i : Fin e.1.rank)
+    (h : ¬ e.1.dynkinType.IsLongSimpleRoot i) : e.exponent i = e.1.characteristic := sorry
+
+/-! The concrete consequences, which is how the convention reads on each family. These are worked
+values, not a second definition: `DynkinType.IsLongSimpleRoot` upstream is what pins them, and it
+gives `B₂` index `0` long, `G₂` index `1` long, and `F₄` indices `0, 1` long. -/
+example : ¬ (DynkinType.B 2).IsLongSimpleRoot ⟨1, by decide⟩ := by
+  simp [DynkinType.IsLongSimpleRoot]
+example : (DynkinType.G2).IsLongSimpleRoot ⟨1, by decide⟩ := by
+  simp [DynkinType.IsLongSimpleRoot]
+example : ∀ i : Fin (DynkinType.F4).rank, (DynkinType.F4).IsLongSimpleRoot i ↔ (i : ℕ) < 2 :=
+  fun _ => Iff.rfl
 
 /-- The fixed points `{g | F g = g}` of a group endomorphism: Mathlib's `MonoidHom.eqLocus`
 against the identity. -/
@@ -257,10 +318,16 @@ def ValidLieTypeIndex.AmbientGroup (_d : ValidLieTypeIndex) : Type := sorry
 /-- The group structure on the algebraic group's points. -/
 instance (d : ValidLieTypeIndex) : Group d.AmbientGroup := sorry
 
-/-- The algebraic closure of the prime field the ambient group is taken over. -/
-def ValidLieTypeIndex.Closure (_d : ValidLieTypeIndex) : Type := sorry
+/-- The algebraic closure of the prime field the ambient group is taken over, pinned to Mathlib's
+`AlgebraicClosure` of `ZMod p` rather than left as "an algebraic closure of `𝔽_p`". Its `Field`,
+`IsAlgClosed` and `CharP` instances then come from Mathlib rather than from this roadmap, and the
+`Fact` instance above is what makes `ZMod d.characteristic` a field in the first place. -/
+noncomputable abbrev ValidLieTypeIndex.Closure (d : ValidLieTypeIndex) : Type :=
+  AlgebraicClosure (ZMod d.characteristic)
 
-instance (d : ValidLieTypeIndex) : Field d.Closure := sorry
+noncomputable example (d : ValidLieTypeIndex) : Field d.Closure := inferInstance
+example (d : ValidLieTypeIndex) : IsAlgClosed d.Closure := inferInstance
+example (d : ValidLieTypeIndex) : CharP d.Closure d.characteristic := inferInstance
 
 /-- The numbered simple root subgroup `x_{α_i}` of the pinning, as a map from the additive group of
 the algebraic closure. The full root-subgroup family is part of L0's contract; this is the piece the
@@ -276,43 +343,45 @@ theorem ValidLieTypeIndex.simpleRootSubgroup_add (d : ValidLieTypeIndex) (i : Fi
 /-- The `q`-power Frobenius induced on points, for `q = d.fieldOrder`. -/
 def ValidLieTypeIndex.frobenius (d : ValidLieTypeIndex) : d.AmbientGroup →* d.AmbientGroup := sorry
 
-/-- `Frob_q (x_α(t)) = x_α(t ^ q)`. Unlike the graph equation below, this one holds for every root,
-not only the simple ones. -/
+/-- `Frob_q (x_α(t)) = x_α(t ^ q)` on the numbered simple root subgroups. The corresponding statement
+for the full root-subgroup family is part of L0's contract; this file displays the simple-root case
+because it is what the maps below are pinned against. -/
 theorem ValidLieTypeIndex.frobenius_simpleRootSubgroup (d : ValidLieTypeIndex) (i : Fin d.rank)
     (t : d.Closure) :
     d.frobenius (d.simpleRootSubgroup i t) = d.simpleRootSubgroup i (t ^ d.fieldOrder) := sorry
 
 /-- The pinned graph automorphism realizing `d.diagramPerm`. It is the identity on an untwisted
 family, so no branch needs a dummy construction. -/
-def ValidLieTypeIndex.graphAut (d : ValidLieTypeIndex) : d.AmbientGroup →* d.AmbientGroup := sorry
+def GraphTwistedIndex.graphAut (d : GraphTwistedIndex) : d.1.AmbientGroup →* d.1.AmbientGroup := sorry
 
-/-- `γ (x_α(t)) = x_{γ α}(t)` for `α` simple. This is the pinning condition, and it determines `γ`
-uniquely by Chevalley's isomorphism theorem. It must not be strengthened to arbitrary roots: there
-the equation carries signs `ε_α = ±1` forced by the structure constants, and the type-`A` graph
-automorphism `X ↦ -J Xᵀ J` of `sl_n` already exhibits them. -/
-theorem ValidLieTypeIndex.graphAut_simpleRootSubgroup (d : ValidLieTypeIndex) (i : Fin d.rank)
-    (t : d.Closure) :
-    d.graphAut (d.simpleRootSubgroup i t) = d.simpleRootSubgroup (d.diagramPerm i) t := sorry
+/-- `γ (x_α(t)) = x_{γ α}(t)` for `α` simple. This is the pinning condition, and `γ` is then the
+unique automorphism with that action, by the isomorphism theorem for pinned groups targeted in the
+reductive-groups roadmap. It must not be strengthened to arbitrary roots: there the equation carries
+signs `ε_α = ±1` forced by the structure constants, and the type-`A` graph automorphism
+`X ↦ -J Xᵀ J` of `sl_n` already exhibits them. -/
+theorem GraphTwistedIndex.graphAut_simpleRootSubgroup (d : GraphTwistedIndex) (i : Fin d.1.rank)
+    (t : d.1.Closure) :
+    d.graphAut (d.1.simpleRootSubgroup i t) = d.1.simpleRootSubgroup (d.diagramPerm i) t := sorry
 
 /-- The `p`-power Frobenius, the square of the exceptional isogeny. -/
 def ValidLieTypeIndex.primeFrobenius (d : ValidLieTypeIndex) :
     d.AmbientGroup →* d.AmbientGroup := sorry
 
-/-- The pinned exceptional isogeny `τ_X`, defined by its action on the numbered simple root
-subgroups below. -/
-def ExceptionalLieTypeIndex.halfFrobenius (e : ExceptionalLieTypeIndex) :
+/-- The exceptional isogeny `τ_X` on the points of `e`, obtained from the special isogeny of pinned
+group schemes targeted by the reductive-groups roadmap rather than constructed here. What this
+roadmap owns is selecting it for the index and taking the odd power below. -/
+def SuzukiReeIndex.halfFrobenius (e : SuzukiReeIndex) :
     e.1.AmbientGroup →* e.1.AmbientGroup := sorry
 
-/-- `τ_X (x_{α_i}(t)) = x_{ᾱ_i}(t ^ e_i)`, with `e_i = 1` on the long simple roots and `p` on the
-short ones. This pins `τ_X`; the square relation below follows from it. -/
-theorem ExceptionalLieTypeIndex.halfFrobenius_simpleRootSubgroup (e : ExceptionalLieTypeIndex)
+/-- `τ_X (x_{α_i}(t)) = x_{ᾱ_i}(t ^ e_i)`, the equation identifying the upstream special isogeny with
+the one this roadmap's exponent and length conventions describe. -/
+theorem SuzukiReeIndex.halfFrobenius_simpleRootSubgroup (e : SuzukiReeIndex)
     (i : Fin e.1.rank) (t : e.1.Closure) :
     e.halfFrobenius (e.1.simpleRootSubgroup i t)
       = e.1.simpleRootSubgroup (e.lengthPerm i) (t ^ e.exponent i) := sorry
 
-/-- `τ_X ^ 2 = Frob_p`. A consequence of the pinning equation, not a substitute for it: the opposite
-assignment of the exponents `1` and `p` to long and short roots also squares to `Frob_p`. -/
-theorem ExceptionalLieTypeIndex.halfFrobenius_sq (e : ExceptionalLieTypeIndex) :
+/-- `τ_X ^ 2 = Frob_p`, inherited from the upstream special isogeny rather than proved here. -/
+theorem SuzukiReeIndex.halfFrobenius_sq (e : SuzukiReeIndex) :
     e.halfFrobenius.comp e.halfFrobenius = e.1.primeFrobenius := sorry
 
 /-- The Steinberg endomorphism defining the finite group attached to `d`. The ordinary and graph
@@ -387,6 +456,32 @@ def Relator.toWord {n : ℕ} : Relator n → PresentationWord n
   | .pow r k => (List.replicate k r.toWord).flatten
   | .comm r s => r.toWord ++ s.toWord ++ r.toWord.inv ++ s.toWord.inv
 
+/-- The direct reading of a relator expression in the free group, by structural recursion into the
+group operations. -/
+def Relator.toFreeGroup {n : ℕ} : Relator n → FreeGroup (Fin n)
+  | .gen i => FreeGroup.of i
+  | .inv r => r.toFreeGroup⁻¹
+  | .mul r s => r.toFreeGroup * s.toFreeGroup
+  | .pow r k => r.toFreeGroup ^ k
+  | .comm r s =>
+    r.toFreeGroup * s.toFreeGroup * r.toFreeGroup⁻¹ * s.toFreeGroup⁻¹
+
+/-! A reviewer checks a `Relator` against the published source, but the group is built from
+`Relator.toWord`. So `toWord` sits between the thing that was checked and the thing that was defined,
+and nothing so far says the two agree. `Relator.toWord_toFreeGroup` says it; the other two lemmas are
+what its proof needs. -/
+
+theorem PresentationWord.toFreeGroup_append {n : ℕ} (v w : PresentationWord n) :
+    (v ++ w).toFreeGroup = v.toFreeGroup * w.toFreeGroup := sorry
+
+theorem PresentationWord.toFreeGroup_inv {n : ℕ} (w : PresentationWord n) :
+    w.inv.toFreeGroup = w.toFreeGroup⁻¹ := sorry
+
+/-- **The compiled word means what the expression means.** Without this, `toWord` is an unaudited
+step between the source a reviewer reads and the group the roadmap defines. -/
+theorem Relator.toWord_toFreeGroup {n : ℕ} (r : Relator n) :
+    r.toWord.toFreeGroup = r.toFreeGroup := sorry
+
 /-- Finite presentation data with its auditable source and transcription metadata. The source must
 be a full presentation of the abstract group, proved in that source to define it, not a
 semi-presentation for recognizing generators in an already constructed group.
@@ -394,9 +489,12 @@ semi-presentation for recognizing generators in an already constructed group.
 There is deliberately no checksum field. A checksum with no pinned normal form, no algorithm, and no
 function to recompute it against cannot be checked by a reviewer or by the kernel, and an
 unfalsifiable metadata string reads like a check without being one. The count check below is
-decidable, and everything else rests on the independent read-through required by `README.md`. -/
+decidable, and everything else rests on the independent read-through required by `README.md`.
+
+The arity comes from `generatorNames` alone. An earlier form carried a separate `generatorCount`
+field, which let a record's legal relator indices and its index-to-name mapping disagree until a
+theorem reconciled them; there is no reason to admit that record at all. -/
 structure GroupPresentation where
-  generatorCount : ℕ
   generatorNames : List String
   source : String
   sourceLocator : String
@@ -404,7 +502,10 @@ structure GroupPresentation where
   transcriptionNotes : String
   expectedGeneratorCount : ℕ
   expectedRelatorCount : ℕ
-  transcribed : List (Relator generatorCount)
+  transcribed : List (Relator generatorNames.length)
+
+/-- The number of generators, which is the number of generator names. -/
+abbrev GroupPresentation.generatorCount (P : GroupPresentation) : ℕ := P.generatorNames.length
 
 /-- The compiled relator words. -/
 def GroupPresentation.relators (P : GroupPresentation) : List (PresentationWord P.generatorCount) :=
@@ -427,8 +528,7 @@ def SporadicName.presentation (_s : SporadicName) : GroupPresentation := sorry
 /-- The recorded generator and relator counts agree with the transcribed data. This is transcription
 metadata, not a claim about the presented group. -/
 def GroupPresentation.matchesMetadata (P : GroupPresentation) : Prop :=
-  P.generatorCount = P.expectedGeneratorCount ∧
-    P.generatorNames.length = P.expectedGeneratorCount ∧
+  P.generatorNames.length = P.expectedGeneratorCount ∧
     P.transcribed.length = P.expectedRelatorCount
 
 /-- Count check for every transcribed presentation. Named, not anonymous: closing an S1 row means
@@ -477,5 +577,11 @@ every larger universe follows from it, with `Finite G` supplying the transport. 
 def ClassificationStatement : Prop :=
   ∀ (G : Type u) [Group G] [Finite G] [IsSimpleGroup G],
     ∃ i : CFSGIndex, Nonempty (G ≃* i.Group)
+
+/-- **The universe transport.** A finite `G : Type u` is equivalent to `Fin (Nat.card G)`, so its
+group and simplicity structure transport down to `Type 0`. Without this as a target, the claim that
+`.{0}` is the substantive instance is one a downstream development cannot use. -/
+theorem classificationStatement_of_zero (h : ClassificationStatement.{0}) :
+    ClassificationStatement.{u} := sorry
 
 end TauCetiRoadmap.CFSGStatement
