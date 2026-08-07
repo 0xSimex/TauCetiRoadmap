@@ -179,7 +179,8 @@ unformalized elsewhere. Build L0–L3 here now; nothing on this roadmap waits on
    import, not a rewrite. The L0–L2 prerequisites are the exception `#33505` creates for itself:
    it proves the argument principle, Hurwitz, Montel-equicontinuity and branch-log-root as
    *private* lemmas, which nothing downstream can import. So our named versions stay until Mathlib
-   exposes them, and until then only their proofs are re-backed onto Mathlib's. (The reflection /
+   exposes them; what changes is their proofs, which then cite Mathlib's lemmas instead of arguing
+   from scratch. (The reflection /
    Carathéodory / Schwarz–Christoffel layers **L4–L6 are genuinely new** and unaffected.)
 
 ## Other downstream

@@ -112,9 +112,9 @@ be `π`
   Jordan-domain case only.
 - **Duplication with Mathlib's RMT work.** L0–L3 duplicate mathematics Mathlib is also formalizing.
   Once the Mathlib lemmas land, `TauCeti.rouche`, the Hurwitz family, `TauCeti.montel`,
-  `TauCeti.riemannMapping` and the `BranchLogRoot` upgrades are re-backed onto them and the L4/L5
-  consumers refactored accordingly. They had not landed as of this snapshot, so nothing here was
-  re-backed; no work on this roadmap is held up by that.
+  `TauCeti.riemannMapping` and the `BranchLogRoot` upgrades are reproved from them, and the L4/L5
+  consumers refactored accordingly. They had not landed as of this snapshot, so none of that has
+  happened; no work on this roadmap is held up by it.
 - **Monodromy against étale spaces.** `TauCeti.TopCat.Presheaf.EtaleSpace` landed with its
   germ-section API, but `TauCeti.monodromy_theorem` is still stated in the ad hoc germ-family
   language of `TauCeti.IsAnalyticContinuationAlong`. Restating monodromy as a lifting property of

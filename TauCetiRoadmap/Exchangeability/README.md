@@ -790,8 +790,9 @@ Build:
   the sequence theorem, with its own prerequisites).
 
 The general-purpose infrastructure built along the way — reverse martingales, Koopman operators,
-product kernels — mentions exchangeability nowhere, so it belongs in general homes rather than under
-this roadmap's namespace. Separating it out is a parallel ongoing goal.
+product kernels — is ordinary martingale and ergodic theory, with no exchangeability in its
+statements, so it belongs in general homes rather than under this roadmap's namespace. Separating
+it out is a parallel ongoing goal.
 
 ## Worked examples
 
