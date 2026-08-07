@@ -14,8 +14,8 @@ relations and reaches the bracket polynomial; that is the Layer 2 picture, witho
 cellular or fusion theory above it. On the Lean side the material has been attempted and
 abandoned more than once — see
 [Zulip, *new members > knot theory*](https://leanprover.zulipchat.com/#narrow/channel/113489-new-members/topic/knot.20theory)
-(2022-05) on the Temperley–Lieb algebra, the Jones polynomial and planar algebras — and nothing
-was upstreamed.
+(2022-05) on the Temperley–Lieb algebra, the Jones polynomial and planar algebras — and none of
+it survives as usable material.
 
 The end goals:
 
@@ -124,8 +124,11 @@ as a declared dependency on a roadmap, not as material already available.
   counting engine and a candidate computational encoding of matchings.
 - **Chebyshev polynomials:** `Polynomial.Chebyshev.S`
   (`Mathlib/RingTheory/Polynomial/Chebyshev.lean`), with the recurrences already proved;
-  `qInt` is a one-definition evaluation layer over it (see the conventions), and the
-  underlying polynomial identities are natural candidates for upstreaming into that file.
+  `qInt` is a one-definition evaluation layer over it (see the conventions). The identities
+  underneath the Layer 0 milestones are statements about the Chebyshev polynomials themselves,
+  with no diagram algebra in sight, so state and prove them at that generality — in `ℤ[X]`,
+  about `S` — and evaluate afterwards, rather than in a Temperley-Lieb-shaped form that would
+  have to be re-proved by the next caller.
 - **Monoidal category theory:** `MonoidalCategory`, `BraidedCategory`
   (`Mathlib/CategoryTheory/Monoidal/Braided/Basic.lean`), rigidity via `ExactPairing` and
   `RigidCategory` (`…/Monoidal/Rigid/Basic.lean`), `MonoidalPreadditive`
@@ -185,8 +188,9 @@ previous layers land.
 - `qInt R δ n`, the quantum integer `[n]`, the roadmap's one wrapper (see the
   conventions): `[0] = 0`, `[1] = 1`, `[2] = δ`, `[n+2] = δ·[n+1] − [n]`. Basic
   identities: the recurrence in both directions, `[m+n+1] = [m+1][n+1] − [m][n]`, and
-  divisibility `[d] ∣ [n]` when `d ∣ n` (proved as polynomial statements where possible,
-  evaluated afterwards).
+  divisibility `[d] ∣ [n]` when `d ∣ n`. None of these is about Temperley-Lieb: prove them in
+  `ℤ[X]` as identities between Chebyshev polynomials, at that generality and under those names,
+  and evaluate at `δ` afterwards.
 - **The `q`-side interface:** for a unit `q` with `δ = q + q⁻¹`,
   `[n] = q^{n−1} + q^{n−3} + ⋯ + q^{1−n}` and `(q − q⁻¹)·[n] = qⁿ − q⁻ⁿ`. Over a field of
   **characteristic zero**: `[n](δ) = 0` for some `n ≥ 1` iff `δ = ζ + ζ⁻¹` for a root of unity
