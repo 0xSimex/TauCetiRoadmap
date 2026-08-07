@@ -724,7 +724,7 @@ it constrains only `(n, N) = 1`. Per the conventions, it therefore ports as
 ### Layer 8: modular symbols, the integral Hecke algebra, and coefficient fields
 
 ⚠ **This layer contains the roadmap's one genuinely non-elementary machine, and it is named
-here rather than hidden in a file path** (review): the coefficient field is a number field
+here rather than hidden in a file path**: the coefficient field is a number field
 *because* of an integral structure, and the only route to that structure which stays inside
 this roadmap's analytic scope is **Eichler–Shimura via modular symbols**. (The alternative —
 `S_k(Γ) ≅ H⁰(X(Γ), ω^k)` over `ℚ` by GAGA and algebraic geometry — is a far bigger project
@@ -1343,7 +1343,7 @@ be reached this way.
   example, computed by Buzzard in 1992 in answer to a question of Ramakrishnan
   ([*J. Number Theory* **57** (1996)](https://www.sciencedirect.com/science/article/pii/S0022314X96900396)),
   and suggested for this roadmap by its author on the predecessor PR.
-  ⚠ **Scope split (review).** The explicit numerical verification is *not* a target of this
+  ⚠ **Scope split.** The explicit numerical verification is *not* a target of this
   roadmap: it is an exact power-series-and-linear-algebra calculation of a different character
   from everything above, and it belongs in a **separate repository depending on Tau Ceti**
   (`CBirkbeck/LeanBridge` is the existing instance of exactly that — see §Provenance). What
@@ -1430,8 +1430,7 @@ roadmap owes (Layer 9 and the weight-60 worked example list them), and the evide
 remaining work there is calculation rather than theory.
 
 Secondary to the mathematics above: the migration map. The reference is the AINTLIB monorepo's
-`projects/LeanModularForms/` on branch **`dev/leanmodularforms`** (resynced **2026-07-17**, re-verified **2026-07-23**, at
-`112d12d95`); paths are relative to its `LeanModularForms/`. The tree is **actively
+`projects/LeanModularForms/` on branch **`dev/leanmodularforms`**, at `112d12d95`; paths are relative to its `LeanModularForms/`. The tree is **actively
 restructured**, so verify names against the live tree before porting. Headline theorems are
 `sorry`-free unless flagged; the flagged **literal source `sorry`s** are exactly three —
 `exists_HeckeStableLattice_one` (L8), `interior_edges_cancel_sum` (L8), and
@@ -1448,8 +1447,8 @@ table; "three" counts literal source `sorry`s, not every unfinished target of th
   on top of `ForMathlib/ValenceFormula*.lean` and `ForMathlib/ValenceFormula/WindingWeights/*`,
   with the FD-boundary bridge (`ForMathlib/*FDBoundary*`, `*CornerFTC*`, `*CrossingAt*`) over
   the Contour Integration roadmap's results.
-- **Hecke theory (L2):** `HeckeRIngs/AbstractHeckeRing/*` (the abstract ring — **being
-  upstreamed** as Mathlib #41251 merged + #41253–#41256, #41277, #41279, #41328 in review; commutativity via
+- **Hecke theory (L2):** `HeckeRIngs/AbstractHeckeRing/*` (the abstract ring, whose Mathlib
+  counterparts are #41251 and #41253–#41256, #41277, #41279, #41328; commutativity via
   `mul_comm_of_antiInvolution` with `GLn/TransposeAntiInvolution.lean`);
   `HeckeRIngs/GL2/{Basic,HeckeT_p,HeckeT_p_Gamma0,HeckeT_p_Gamma1,HeckeT_p_GLpair,HeckeT_n,FourierHecke,MultiplicationTable,CongruenceIndex,Degree,LevelEmbed,LevelRaise}.lean`;
   the ring-action layer
@@ -1535,8 +1534,8 @@ catalogue the redundancy to collapse during migration.
 - K. Buzzard, *On the eigenvalues of the Hecke operator T₂*, J. Number Theory **57** (1996) — the
   weight-60 non-solvable coefficient-field example (worked examples).
 - J. Sturm, *On the congruence of modular forms*, in *Number Theory* (New York 1984–85), Springer
-  LNM **1240** — the Sturm bound (Layer 10), heading into Mathlib via the modular norm map
-  (#38993 merged, #39000 in review).
+  LNM **1240** — the Sturm bound (Layer 10), by the modular norm map route (Mathlib's #38993 and
+  #39000).
 - N. Hungerbühler, M. Wasem, *Non-integer valued winding numbers and a generalized Residue
   Theorem*, arXiv:1808.00997 — the contour-integration result behind the valence formula's
   elliptic-point weights (see the [Contour Integration roadmap](../ContourIntegration/README.md)).
