@@ -789,8 +789,9 @@ Build:
 * exchangeable arrays and the Aldous–Hoover representation (a substantially larger tower than
   the sequence theorem, with its own prerequisites).
 
-Mathlib extraction of the general-purpose infrastructure built along the way — reverse
-martingales, Koopman operators, product kernels — is a parallel ongoing goal.
+The general-purpose infrastructure built along the way — reverse martingales, Koopman operators,
+product kernels — mentions exchangeability nowhere, so it belongs in general homes rather than under
+this roadmap's namespace. Separating it out is a parallel ongoing goal.
 
 ## Worked examples
 
