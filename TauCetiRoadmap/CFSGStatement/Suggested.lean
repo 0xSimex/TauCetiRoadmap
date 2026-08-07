@@ -14,9 +14,9 @@ The scope ends at the final named proposition: this roadmap defines the groups o
 enough to state that every finite simple group is isomorphic to one of them. It does not ask for
 proofs that the listed groups are finite or simple, or for a proof of the classification.
 
-This file imports the root-systems roadmap's targets rather than restating them. `DynkinType` and its
-pinned Bourbaki numbering are that roadmap's, and every Lie-type index here is required to name one,
-so that nothing downstream has to reconcile two numberings of the same diagram.
+This file imports the root-systems roadmap's targets rather than restating them. `DynkinType` and
+its pinned Bourbaki numbering are that roadmap's, and every Lie-type index here is required to name
+one, so that nothing downstream has to reconcile two numberings of the same diagram.
 -/
 
 namespace TauCetiRoadmap.CFSGStatement
@@ -40,9 +40,9 @@ def PrimePower.card (q : PrimePower) : ℕ := q.p ^ q.exponent
 `q` follows the Gorenstein--Lyons--Solomon/ATLAS convention in the ordinary and graph-twisted
 constructors: the latter compose the pinned graph automorphism with the `q.card`-power field
 Frobenius. So `twistedA 2 q` with `q.card = 3` is `²A₂(3) = PSU₃(3)`, whose matrix realization has
-entries in the field of `q.card ^ 2` elements. Carter indexes the twisted groups by the larger field,
-as `²A_n(q²)`; do not follow that convention here, since the small-field indexing is what makes the
-exclusions in `InStandardRange` correct.
+entries in the field of `q.card ^ 2` elements. Carter indexes the twisted groups by the larger
+field, as `²A_n(q²)`; do not follow that convention here, since the small-field indexing is what
+makes the exclusions in `InStandardRange` correct.
 
 The Suzuki and Ree constructors record `m`, with field sizes `2 ^ (2 * m + 1)`,
 `3 ^ (2 * m + 1)`, and `2 ^ (2 * m + 1)` respectively. The Tits group is represented separately
@@ -128,7 +128,9 @@ characteristic. -/
 example : (LieTypeIndex.B 2 q4).Valid := by
   norm_num [LieTypeIndex.Valid, LieTypeIndex.InStandardRange,
     LieTypeIndex.IsDuplicateRepresentative, PrimePower.card, q4]
-/-- `B₂(3) = Sp₄(3) ≅ PSU₄(2) = ²A₃(2)`, and we keep the unitary name. -/
+/-- The `B₂(3)` branch is `PSp₄(3) ≅ PSU₄(2) = ²A₃(2)`, and we keep the unitary name. It is the
+projective quotient that the recipe produces and that coincides with `PSU₄(2)`; the simply connected
+`Sp₄(3)`, of order `51840`, is its double cover. -/
 example : ¬(LieTypeIndex.B 2 q3).Valid := by
   norm_num [LieTypeIndex.Valid, LieTypeIndex.InStandardRange,
     LieTypeIndex.IsDuplicateRepresentative, PrimePower.card, q3]
@@ -159,8 +161,8 @@ def LieTypeIndex.UsesHalfFrobenius : LieTypeIndex → Prop
   | _ => False
 
 /-- A valid index whose Steinberg map is an odd power of a half-Frobenius: the three Suzuki--Ree
-families together with Tits. The half-Frobenius below takes this subtype, so no implementation branch
-is required for a family that does not use one. -/
+families together with Tits. The half-Frobenius below takes this subtype, so no implementation
+branch is required for a family that does not use one. -/
 abbrev SuzukiReeIndex := {d : ValidLieTypeIndex // d.1.UsesHalfFrobenius}
 
 /-- A valid index whose Steinberg map is a Frobenius composed with a diagram automorphism, that
@@ -171,13 +173,13 @@ abbrev GraphTwistedIndex := {d : ValidLieTypeIndex // ¬ d.1.UsesHalfFrobenius}
 /-! ### Numbered data attached to an index
 
 `rank`, `characteristic`, and `fieldOrder` read off the underlying untwisted Dynkin diagram and its
-field. Do not replace them by a summary of which construction lane a family uses: such a summary does
-not determine the Steinberg map, since `suzuki` and `reeF4` share a characteristic and a parameter,
-and knowing that a family is graph-twisted of order two does not say which order-two diagram
-automorphism is meant. -/
+field. Do not replace them by a summary of which construction lane a family uses: such a summary
+does not determine the Steinberg map, since `suzuki` and `reeF4` share a characteristic and a
+parameter, and knowing that a family is graph-twisted of order two does not say which order-two
+diagram automorphism is meant. -/
 
-/-- **The underlying untwisted Dynkin diagram**, as the root-systems roadmap's `DynkinType`, not as a
-second copy of one. Every construction below is indexed against this type and its pinned Bourbaki
+/-- **The underlying untwisted Dynkin diagram**, as the root-systems roadmap's `DynkinType`, not as
+a second copy of one. Every construction below is indexed against this type and its pinned Bourbaki
 numbering, so `Fin d.rank` is `Fin d.dynkinType.rank` by definition and no reindexing is possible.
 
 The twisted and Suzuki--Ree families name the diagram they are built from: `²A_n` names `A n`, `³D₄`
@@ -196,9 +198,9 @@ def ValidLieTypeIndex.dynkinType (d : ValidLieTypeIndex) : DynkinType :=
   | .G2 _ | .reeG2 _ => .G2
   | .suzuki _ => .B 2
 
-/-- Every valid index names a **valid** Dynkin type, so `DynkinType.simplyConnectedRootDatum` applies
-to it and L0 never needs a root datum of its own. This is the statement that makes the rank ranges of
-`InStandardRange` and of `DynkinType.Valid` agree. -/
+/-- Every valid index names a **valid** Dynkin type, so `DynkinType.simplyConnectedRootDatum`
+applies to it and L0 never needs a root datum of its own. This is the statement that makes the rank
+ranges of `InStandardRange` and of `DynkinType.Valid` agree. -/
 theorem ValidLieTypeIndex.dynkinType_valid (d : ValidLieTypeIndex) : d.dynkinType.Valid := by
   obtain ⟨d, ⟨hrange, -⟩⟩ := d
   cases d <;> simp only [ValidLieTypeIndex.dynkinType, DynkinType.Valid] <;>
@@ -206,8 +208,8 @@ theorem ValidLieTypeIndex.dynkinType_valid (d : ValidLieTypeIndex) : d.dynkinTyp
       | trivial
       | (simp only [LieTypeIndex.InStandardRange] at hrange; omega)
 
-/-- The rank of the underlying untwisted Dynkin diagram. Derived, not tabulated: a second table would
-be free to disagree with the diagram. -/
+/-- The rank of the underlying untwisted Dynkin diagram. Derived, not tabulated: a second table
+would be free to disagree with the diagram. -/
 abbrev ValidLieTypeIndex.rank (d : ValidLieTypeIndex) : ℕ := d.dynkinType.rank
 
 /-- The characteristic of the field the ambient group is taken over. -/
@@ -343,16 +345,17 @@ theorem ValidLieTypeIndex.simpleRootSubgroup_add (d : ValidLieTypeIndex) (i : Fi
 /-- The `q`-power Frobenius induced on points, for `q = d.fieldOrder`. -/
 def ValidLieTypeIndex.frobenius (d : ValidLieTypeIndex) : d.AmbientGroup →* d.AmbientGroup := sorry
 
-/-- `Frob_q (x_α(t)) = x_α(t ^ q)` on the numbered simple root subgroups. The corresponding statement
-for the full root-subgroup family is part of L0's contract; this file displays the simple-root case
-because it is what the maps below are pinned against. -/
+/-- `Frob_q (x_α(t)) = x_α(t ^ q)` on the numbered simple root subgroups. The corresponding
+statement for the full root-subgroup family is part of L0's contract; this file displays the
+simple-root case because it is what the maps below are pinned against. -/
 theorem ValidLieTypeIndex.frobenius_simpleRootSubgroup (d : ValidLieTypeIndex) (i : Fin d.rank)
     (t : d.Closure) :
     d.frobenius (d.simpleRootSubgroup i t) = d.simpleRootSubgroup i (t ^ d.fieldOrder) := sorry
 
 /-- The pinned graph automorphism realizing `d.diagramPerm`. It is the identity on an untwisted
 family, so no branch needs a dummy construction. -/
-def GraphTwistedIndex.graphAut (d : GraphTwistedIndex) : d.1.AmbientGroup →* d.1.AmbientGroup := sorry
+def GraphTwistedIndex.graphAut (d : GraphTwistedIndex) :
+    d.1.AmbientGroup →* d.1.AmbientGroup := sorry
 
 /-- `γ (x_α(t)) = x_{γ α}(t)` for `α` simple. This is the pinning condition, and `γ` is then the
 unique automorphism with that action, by the isomorphism theorem for pinned groups targeted in the
@@ -373,8 +376,8 @@ roadmap owns is selecting it for the index and taking the odd power below. -/
 def SuzukiReeIndex.halfFrobenius (e : SuzukiReeIndex) :
     e.1.AmbientGroup →* e.1.AmbientGroup := sorry
 
-/-- `τ_X (x_{α_i}(t)) = x_{ᾱ_i}(t ^ e_i)`, the equation identifying the upstream special isogeny with
-the one this roadmap's exponent and length conventions describe. -/
+/-- `τ_X (x_{α_i}(t)) = x_{ᾱ_i}(t ^ e_i)`, the equation identifying the upstream special isogeny
+with the one this roadmap's exponent and length conventions describe. -/
 theorem SuzukiReeIndex.halfFrobenius_simpleRootSubgroup (e : SuzukiReeIndex)
     (i : Fin e.1.rank) (t : e.1.Closure) :
     e.halfFrobenius (e.1.simpleRootSubgroup i t)
@@ -467,9 +470,9 @@ def Relator.toFreeGroup {n : ℕ} : Relator n → FreeGroup (Fin n)
     r.toFreeGroup * s.toFreeGroup * r.toFreeGroup⁻¹ * s.toFreeGroup⁻¹
 
 /-! A reviewer checks a `Relator` against the published source, but the group is built from
-`Relator.toWord`. So `toWord` sits between the thing that was checked and the thing that was defined,
-and nothing so far says the two agree. `Relator.toWord_toFreeGroup` says it; the other two lemmas are
-what its proof needs. -/
+`Relator.toWord`. So `toWord` sits between the thing that was checked and the thing that was
+defined, and nothing so far says the two agree. `Relator.toWord_toFreeGroup` says it; the other two
+lemmas are what its proof needs. -/
 
 theorem PresentationWord.toFreeGroup_append {n : ℕ} (v w : PresentationWord n) :
     (v ++ w).toFreeGroup = v.toFreeGroup * w.toFreeGroup := sorry

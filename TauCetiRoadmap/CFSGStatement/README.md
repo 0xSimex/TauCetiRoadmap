@@ -116,10 +116,25 @@ starts `D` and `²D` at rank four; excludes `A₁(2)`, `A₁(3)`, `²A₂(2)`, a
 Suzuki--Ree parameter at `m = 1`. The separate Tits constructor supplies `²F₄(2)'`.
 
 Those last exclusions are of two kinds, and the distinction is worth keeping straight because the
-predicate is doing two jobs. `A₁(2)`, `A₁(3)`, and `²A₂(2)` are degenerate: the uniform recipe below
-sends them to the trivial group. `B₂(2)` and `G₂(2)` are duplicates: the recipe sends them to `A₆`
-and to `²A₂(3)`, both of which the list already carries under another name. The same holds for the
-Suzuki--Ree parameter bound, where `²B₂(2)` is degenerate while `²G₂(3)` duplicates `A₁(8)`.
+predicate is doing two jobs.
+
+`A₁(2)`, `A₁(3)`, `²A₂(2)`, and `²B₂(2)` are excluded because the recipe below does not produce a
+simple group. Two of them collapse to the trivial group: `A₁(2)` has `H = SL₂(2) ≅ S₃`, so
+`[H, H] = C₃` is its own centre, and `²B₂(2)` is the Frobenius group of order twenty, where
+`[H, H] = C₅` is likewise its own centre. The other two do not collapse. `A₁(3)` has `H = SL₂(3)` and
+`[H, H] = Q₈`, so the recipe returns `Q₈ / Z(Q₈) ≅ C₂ × C₂`; and `²A₂(2)` has `H = SU₃(2)` of order
+`216`, with `[H, H]` of order `54` and centre of order `3`, so the recipe returns a solvable group of
+order `18`. These are computed in the simply connected form, `SL₂` and `SU₃`, which is what the
+recipe takes fixed points of; the projective forms `PSL₂(3) ≅ A₄` and `PSU₃(2)` would give different
+and wrong answers here.
+
+`B₂(2)`, `G₂(2)`, and `²G₂(3)` are excluded for the other reason: the recipe does produce a simple
+group, but one the list already carries under another name, namely `A₆`, `²A₂(3)`, and `A₁(8)`.
+
+There is a third case, and it is the reason the Tits constructor exists rather than being an
+oversight. The parameters at which `H` fails to be quasisimple are these seven together with
+`²F₄(2)`, but `²F₄(2)` is neither dropped nor a duplicate: `[H, H]` is the Tits group, which is
+simple, has trivial centre, and is a new isomorphism type. So it is kept, under its own name.
 
 These are the ranges of the usual presentation of the list, and they are also the ranges carried by
 `DynkinType.Valid` in the [root-systems roadmap](../RepresentationTheory/RootSystems/README.md)
@@ -536,20 +551,37 @@ that comparison, for every name it covers, is part of closing an S1 row. It is a
 rather than a Lean target, since making it one would mean importing that development, which the
 provenance section conditions on coordination with its author.
 
-That gap is survivable, and it is worth saying why, because the reason is the whole argument for
-resting on review here. A transcription error can only make `ClassificationStatement` false, never
-easier to prove. If a branch is not the group it is named for, then the group it is named for is
-isomorphic to no branch, and the statement is false; a wrong branch never supplies an index for a
-group that would otherwise lack one. Review protects the truth of the final statement, not its
-provability.
+Be precise about what the endpoint does and does not police, because it is less than it looks.
+`ClassificationStatement` says that every finite simple group is isomorphic to `i.Group` for some
+`i`, so it depends only on the set of isomorphism types in the image of `i ↦ i.Group`. It never
+mentions which index carries which group. Three things follow.
 
-Do not reach for the sharper-sounding version of that argument, which is false. It is tempting to say
-that dropping a relator gives a proper cover and that adding or corrupting one gives a proper
-quotient, hence the trivial group, since each group on the list is simple. None of the three holds.
-Published presentations are often redundant, so a dropped relator may change nothing; an added
-relator that already holds also changes nothing; and a corrupted relator, `r` replaced by some `r'`,
-gives neither a cover nor a quotient, so the result can be any group at all, including an infinite
-one. The conclusion above survives all of that, which is why it is the one stated.
+It does not pin a single name. Interchanging the `M` and `B` presentations leaves the proposition
+unchanged and still true, with both branches misnamed; so does any permutation of the twenty-six.
+Nothing in the endpoint distinguishes `SporadicName.M` from any other sporadic name.
+
+It does detect a group falling out of that image. If one branch presents a different isomorphism
+type and everything else is right, the group it was named for is isomorphic to no branch, since the
+sporadic groups are pairwise nonisomorphic and are neither alternating nor of Lie type, and the
+proposition is false.
+
+It is not monotone in the number of errors, so "errors can only make it false" is wrong as an
+unqualified claim. Two errors can cancel, as the swap shows. A single edit can even turn a false
+statement true, by supplying the one missing isomorphism type in a list where the old value was
+redundant.
+
+So transcription correctness is an obligation on review, not something the endpoint enforces, and
+that is exactly why S1 asks for the count checks, the independent read-through, and the cross-check
+above. The proposition will not do that work.
+
+There is a sharper-sounding argument at the relator level, and it is false, so do not reach for it
+either. It is tempting to say that dropping a relator gives a proper cover of the intended group and
+that adding or corrupting one gives a proper quotient, hence the trivial group, since each group on
+the list is simple. None of the three holds. Published presentations are often redundant, so a
+dropped relator may change nothing; an added relator that already holds also changes nothing; and a
+corrupted relator, `r` replaced by some `r'`, gives neither a cover nor a quotient, so the result can
+be any group at all, including an infinite one. A transcription error is not constrained to produce
+something recognizably broken.
 
 ### A0: assemble and state CFSG
 
