@@ -46,7 +46,7 @@ contributors, not for us). See the `Relationship to the in-flight Mathlib series
 
 Accordingly the core definitions are stated over `RigidCategory`, following #42150, even though
 everything they use is right-handed and `RightRigidCategory` would be the minimal bar. `FDRep k G`
-carries only `RightRigidCategory` upstream; supplying the missing instance is a Layer-3 target rather
+carries only `RightRigidCategory` upstream; supplying the missing instance is a Layer-7 target rather
 than a reason to weaken the class.
 
 The pins below carry their **real axioms**, so an implementer cannot satisfy them with a
@@ -67,7 +67,7 @@ namespace TauCetiRoadmap.PivotalSpherical
 
 open CategoryTheory MonoidalCategory
 
-universe v u
+universe w v u
 
 /-! ## Layer 0: the dual and double-dual functors
 
@@ -252,58 +252,96 @@ noncomputable def trace {C : Type u} [Category.{v} C] [MonoidalCategory C] [Rigi
 noncomputable def quantumDim {C : Type u} [Category.{v} C] [MonoidalCategory C] [RigidCategory C]
     [PivotalCategory C] [SphericalCategory C] (X : C) : 𝟙_ C ⟶ 𝟙_ C := trace (𝟙 X)
 
-/-! ## Layer 2b: semisimple and fusion categories
+/-! ## Layers 3 to 6: finite semisimple categories, fusion categories, Perron–Frobenius
 
-⚠ None of this exists in Mathlib. `CategoryTheory/Simple.lean` has simple objects and
-`Preadditive/Schur.lean` has Schur's lemma, but there is no semisimplicity class, no decomposition
-API and no fusion category; `Preadditive/HomOrthogonal.lean` describes itself as "preliminary to
-defining semisimple categories". Every fusion-level statement below rests on this layer.
+⚠ None of this exists in Mathlib. There is no semisimplicity class, no decomposition API, no
+Grothendieck ring for a monoidal category and no Perron–Frobenius theorem, and no other Tau Ceti
+roadmap covers any of it. The fusion hypotheses are carried as ordinary instance arguments rather
+than bundled: that is what the generality bar in `README.md` asks for, and it fixes the coefficient
+field properly, which a `Prop`-valued hypothesis cannot do. -/
 
-The fusion hypotheses are carried as ordinary instance arguments rather than bundled into one
-predicate. That is what the generality bar in `README.md` asks for, and it also fixes the
-coefficient field properly: a `Prop`-valued `IsFusion k C` hypothesis carries no data, so a
-definition taking one either ignores it or cannot be written. -/
+/-- **Finite semisimple category**: every object is a finite biproduct of simple objects.
 
-/-- **Semisimple category**: every object is a finite direct sum of simple objects. -/
-class IsSemisimpleCategory (C : Type u) [Category.{v} C] [Abelian C] : Prop where
+Named *finite* because that is what it says. No separate Karoubian or artinian hypothesis is
+needed: abelian categories are idempotent complete, and finite decompositions give finite length.
+⚠ It does **not** imply that `Hom` spaces are finite-dimensional over `k`; that is a separate
+hypothesis, needed from `endUnitAlgEquiv` onwards. -/
+class IsFiniteSemisimpleCategory (C : Type u) [Category.{v} C] [Abelian C] : Prop where
   /-- Every object decomposes as a finite biproduct of simple objects. -/
   exists_biproduct_simples : ∀ X : C, ∃ (ι : Type) (_ : Fintype ι) (f : ι → C)
     (_ : ∀ i, Simple (f i)) (_ : Limits.HasBiproduct f), Nonempty (X ≅ ⨁ f)
 
-/-- **The isomorphism classes of simple objects**, with a chosen representative for each. Finiteness
-of this type is one of the fusion hypotheses. -/
-def SimpleClasses (C : Type u) [Category.{v} C] : Type _ := sorry
+/-- **The isomorphism classes of simple objects**, as a subtype of Mathlib's `Skeleton`.
+
+⚠ An opaque index type would state nothing, and `Fintype` of it would not be a finiteness
+hypothesis. Using `Skeleton` makes `SimpleClasses.repr` simple by construction and makes equality of
+classes mean isomorphism of representatives. The wanted API is the class of a given simple object,
+`repr` of that class isomorphic to it, equality of classes iff representatives are isomorphic,
+exhaustiveness, and invariance under an equivalence of categories. -/
+def SimpleClasses (C : Type u) [Category.{v} C] [Limits.HasZeroMorphisms C] : Type u :=
+  {X : Skeleton C // Simple (X.out : C)}
 
 /-- The chosen representative of a class of simple objects. -/
-noncomputable def SimpleClasses.repr {C : Type u} [Category.{v} C] (i : SimpleClasses C) : C := sorry
+noncomputable def SimpleClasses.repr {C : Type u} [Category.{v} C] [Limits.HasZeroMorphisms C]
+    (i : SimpleClasses C) : C := (i.1).out
 
-/-- **The endomorphisms of a simple unit are the scalars**, over an algebraically closed field. This
-is what lets traces and dimensions be read as elements of `k`. -/
-noncomputable def endUnitAlgEquiv (k : Type u) [Field k] [IsAlgClosed k] (C : Type u)
-    [Category.{v} C] [MonoidalCategory C] [Abelian C] [Linear k C] [Simple (𝟙_ C)] :
-    End (𝟙_ C) ≃ₐ[k] k := sorry
+instance {C : Type u} [Category.{v} C] [Limits.HasZeroMorphisms C] (i : SimpleClasses C) :
+    Simple i.repr := i.2
 
-/-- **The fusion coefficients** `N_{ij}^l = finrank k (X_i ⊗ X_j ⟶ X_l)`. -/
-noncomputable def fusionCoeff (k : Type u) [Field k] {C : Type u} [Category.{v} C]
-    [MonoidalCategory C] [Abelian C] [Linear k C] (i j l : SimpleClasses C) : ℕ := sorry
+/-- **The endomorphisms of a simple unit are the scalars.**
 
-/-- **Frobenius–Perron dimension**: the Perron root of the fusion matrix of `X`.
+⚠ `FiniteDimensional k (End (𝟙_ C))` is required and the statement is **false** without it: finite
+dimensional vector spaces over `k(t)`, as a `k`-linear category, are semisimple and rigid with a
+simple unit and `End (𝟙) = k(t)`. Mathlib's `finrank_endomorphism_simple_eq_one` carries the same
+hypothesis. Build this as the inverse of the canonical map `k → End (𝟙_ C)`. -/
+noncomputable def endUnitAlgEquiv (k : Type w) [Field k] [IsAlgClosed k] (C : Type u)
+    [Category.{v} C] [MonoidalCategory C] [Abelian C] [Linear k C] [Simple (𝟙_ C)]
+    [FiniteDimensional k (End (𝟙_ C))] : End (𝟙_ C) ≃ₐ[k] k := sorry
 
-Targets: `FPdim (X ⊗ Y) = FPdim X * FPdim Y` and `0 ≤ FPdim X`. ⚠ `0 < FPdim X` is **false** in
-general, since a fusion category is abelian and `FPdim 0 = 0`; the sharp statement is
-`FPdim X = 0 ↔ IsZero X`. Building the Perron root itself is part of this layer: Mathlib has
-`Matrix.IsIrreducible` and `Matrix.IsPrimitive` and no Perron–Frobenius theorem. -/
-noncomputable def frobeniusPerronDim (k : Type u) [Field k] [IsAlgClosed k] {C : Type u}
+/-- **The fusion coefficients** `N_{ij}^l`, with the convention pinned here.
+
+Targets: this equals the multiplicity of `X_l` in `X_i ⊗ X_j`, and agrees with the count computed
+from `X_l ⟶ X_i ⊗ X_j`. ⚠ `Module.finrank` elaborates without a finite-dimensionality instance and
+returns junk when the space is infinite-dimensional, so the `Hom`-finiteness hypothesis is doing
+real work here. -/
+noncomputable def fusionCoeff (k : Type w) [Field k] {C : Type u} [Category.{v} C]
+    [MonoidalCategory C] [Abelian C] [Linear k C] [MonoidalPreadditive C] [MonoidalLinear k C]
+    [∀ X Y : C, FiniteDimensional k (X ⟶ Y)] (i j l : SimpleClasses C) : ℕ :=
+  Module.finrank k (i.repr ⊗ j.repr ⟶ l.repr)
+
+/-- **The Grothendieck based ring** of a fusion category: free of finite rank on `SimpleClasses C`,
+with multiplication given by `fusionCoeff`, unit `[𝟙_ C]` and involution `[X] ↦ [Xᘁ]`. Its
+**transitivity** in the sense of Etingof–Gelaki–Nikshych–Ostrik is what Layer 5 consumes. -/
+def grothendieckRing (k : Type w) [Field k] (C : Type u) [Category.{v} C] [MonoidalCategory C]
+    [RigidCategory C] [Abelian C] [Linear k C] [MonoidalPreadditive C] [MonoidalLinear k C]
+    [Simple (𝟙_ C)] [∀ X Y : C, FiniteDimensional k (X ⟶ Y)] [IsFiniteSemisimpleCategory C]
+    [Fintype (SimpleClasses C)] : Type u := sorry
+
+/-- **Frobenius–Perron dimension**: the value at `[X]` of the unique character of the Grothendieck
+ring taking nonnegative values on the basis.
+
+⚠ Do **not** define this as the Perron root of the fusion matrix of `X` taken one matrix at a time:
+an individual fusion matrix need not be irreducible, and the matrix of the unit is the identity,
+which is reducible whenever there is more than one simple class. The construction goes through
+multiplication by the sum of all basis elements, whose matrix is strictly positive, and the common
+positive eigenvector it produces; identification with the spectral radius of `N_X` is a theorem
+afterwards.
+
+Targets: `FPdim (X ⊗ Y) = FPdim X * FPdim Y`, `0 ≤ FPdim X`, and `FPdim X = 0 ↔ IsZero X`. No
+characteristic hypothesis is needed. -/
+noncomputable def frobeniusPerronDim (k : Type w) [Field k] [IsAlgClosed k] {C : Type u}
     [Category.{v} C] [MonoidalCategory C] [RigidCategory C] [Abelian C] [Linear k C]
-    [IsSemisimpleCategory C] [Fintype (SimpleClasses C)] (X : C) : ℝ := sorry
+    [MonoidalPreadditive C] [MonoidalLinear k C] [Simple (𝟙_ C)]
+    [∀ X Y : C, FiniteDimensional k (X ⟶ Y)] [IsFiniteSemisimpleCategory C]
+    [Fintype (SimpleClasses C)] (X : C) : ℝ := sorry
 
-/-! ## Layer 3: `FDRep G` is pivotal and spherical (the standard structure)
+/-! ## Layer 7: `FDRep G` is pivotal and spherical (the standard structure)
 
 ⚠ #42192 proves that **any** rigid symmetric monoidal category is canonically pivotal (via
 `drinfeldIso`) and spherical, and `FDRep k G` is already `SymmetricCategory` in Mathlib. So do **not**
 build a bespoke `FDRep` double-duality isomorphism: the only thing standing between us and the
 standard structure is that Mathlib registers `FGModuleCat K` as merely `RightRigidCategory`, so
-`RigidCategory (FDRep k G)` does not synthesize. Supply that here, and Layer 3 reduces to identifying
+`RigidCategory (FDRep k G)` does not synthesize. Supply that here, and Layer 7 reduces to identifying
 the trace with the linear trace. -/
 
 section FDRep
@@ -327,7 +365,7 @@ noncomputable instance : PivotalCategory (FDRep k G) := sorry
 /-- **`FDRep k G` is spherical**, by the same route as #42192's `symmetricSphericalCategory`. -/
 instance : SphericalCategory (FDRep k G) := sorry
 
-/-- **The quantum dimension is the vector-space dimension.** The real content of Layer 3, and the
+/-- **The quantum dimension is the vector-space dimension.** The real content of Layer 7, and the
 acceptance criterion for Layer 2's API: it says the categorical trace machinery computes the thing it
 is supposed to compute. Ours.
 
@@ -340,7 +378,7 @@ theorem quantumDim_fdRep (V : FDRep k G) :
 
 end FDRep
 
-/-! ## Layer 4: the pointed categories `Vec^ω_G` and their pivotal structures
+/-! ## Layer 8: the pointed categories `Vec^ω_G` and their pivotal structures
 
 `Vec^ω_G` is the category of `G`-graded finite-dimensional `k`-vector spaces with associator on the
 simple objects `δ_g` twisted by a normalized 3-cocycle `ω`. It is a pointed tensor category (fusion
@@ -405,43 +443,52 @@ noncomputable def frobeniusSchurIndicator (c : ThreeCocycle k G) [PivotalCategor
 
 end Pointed
 
-/-! ## Layer 5: gradings, the universal grading group, and the DGNO classification
+/-! ## Layer 9: gradings, the universal grading group, and the DGNO classification
 
 For a fusion category `C` over an algebraically closed field of characteristic 0, the monoidal
 natural automorphisms of the identity are the characters of the **universal grading group** `U(C)`;
 combined with Layer 1's torsor, the pivotal structures are a torsor over `Hom(U(C), kˣ)`. -/
 
 /-- **The universal grading group** `U(C)` of a fusion category: the group carrying the finest
-faithful grading, with trivial component the adjoint subcategory `C_ad` (Gelaki–Nikshych; DGNO10). -/
-def universalGradingGroup (k : Type u) [Field k] [IsAlgClosed k] (C : Type u) [Category.{v} C]
-    [MonoidalCategory C] [RigidCategory C] [Abelian C] [Linear k C] [IsSemisimpleCategory C]
-    [Fintype (SimpleClasses C)] : Type _ := sorry
+faithful grading, with trivial component the adjoint subcategory `C_ad` (Gelaki–Nikshych; DGNO10).
+Consumes the Grothendieck based ring of Layer 4. -/
+def universalGradingGroup (k : Type w) [Field k] [IsAlgClosed k] (C : Type u) [Category.{v} C]
+    [MonoidalCategory C] [RigidCategory C] [Abelian C] [Linear k C] [MonoidalPreadditive C]
+    [MonoidalLinear k C] [Simple (𝟙_ C)] [∀ X Y : C, FiniteDimensional k (X ⟶ Y)]
+    [IsFiniteSemisimpleCategory C] [Fintype (SimpleClasses C)] : Type u := sorry
 
-noncomputable instance (k : Type u) [Field k] [IsAlgClosed k] (C : Type u) [Category.{v} C]
-    [MonoidalCategory C] [RigidCategory C] [Abelian C] [Linear k C] [IsSemisimpleCategory C]
-    [Fintype (SimpleClasses C)] : Group (universalGradingGroup k C) := sorry
+noncomputable instance (k : Type w) [Field k] [IsAlgClosed k] (C : Type u) [Category.{v} C]
+    [MonoidalCategory C] [RigidCategory C] [Abelian C] [Linear k C] [MonoidalPreadditive C]
+    [MonoidalLinear k C] [Simple (𝟙_ C)] [∀ X Y : C, FiniteDimensional k (X ⟶ Y)]
+    [IsFiniteSemisimpleCategory C] [Fintype (SimpleClasses C)] :
+    Group (universalGradingGroup k C) := sorry
 
 /-- **The DGNO10 classification**: for a fusion category over an algebraically closed field of
-characteristic 0, `Aut_⊗(𝟭 C) ≃* Hom(U(C), kˣ)`, as groups and not merely as types. -/
-noncomputable def monoidalAut_mulEquiv_characters (k : Type u) [Field k] [IsAlgClosed k]
-    (C : Type u) [Category.{v} C] [MonoidalCategory C] [RigidCategory C] [Abelian C] [Linear k C]
-    [IsSemisimpleCategory C] [Fintype (SimpleClasses C)] [CharZero k] :
+characteristic 0, `Aut_⊗(𝟭 C) ≃* Hom(U(C), kˣ)`, as groups and not merely as types. `CharZero` is
+carried here, where it is genuinely used, rather than as a blanket restriction. -/
+noncomputable def monoidalAut_mulEquiv_characters (k : Type w) [Field k] [IsAlgClosed k]
+    [CharZero k] (C : Type u) [Category.{v} C] [MonoidalCategory C] [RigidCategory C] [Abelian C]
+    [Linear k C] [MonoidalPreadditive C] [MonoidalLinear k C] [Simple (𝟙_ C)]
+    [∀ X Y : C, FiniteDimensional k (X ⟶ Y)] [IsFiniteSemisimpleCategory C]
+    [Fintype (SimpleClasses C)] :
     MonoidalAut C ≃* (universalGradingGroup k C →* kˣ) := sorry
 
-/-- **The pivotal structures of a fusion category form a torsor over `Hom(U(C), kˣ)`**, *when there
-is one to start from*.
+/-- **The pivotal structures of a fusion category form a torsor over `Hom(U(C), kˣ)`**, when there
+is one to start from.
 
 ⚠ The nonemptiness hypothesis is not decoration. Whether every fusion category admits a pivotal
 structure is open, which is why Etingof–Nikshych–Ostrik's pivotalization exists; dropping `hP` would
 assert that conjecture. -/
-theorem pivotal_torsor_characters (k : Type u) [Field k] [IsAlgClosed k] (C : Type u)
+theorem pivotal_torsor_characters (k : Type w) [Field k] [IsAlgClosed k] [CharZero k] (C : Type u)
     [Category.{v} C] [MonoidalCategory C] [RigidCategory C] [Abelian C] [Linear k C]
-    [IsSemisimpleCategory C] [Fintype (SimpleClasses C)] [CharZero k]
+    [MonoidalPreadditive C] [MonoidalLinear k C] [Simple (𝟙_ C)]
+    [∀ X Y : C, FiniteDimensional k (X ⟶ Y)] [IsFiniteSemisimpleCategory C]
+    [Fintype (SimpleClasses C)]
     (hP : Nonempty (PivotalCategory C)) (P Q : PivotalCategory C) :
     ∃! χ : universalGradingGroup k C →* kˣ,
       P.pivotalIso = ((monoidalAut_mulEquiv_characters k C).symm χ).iso ≪≫ Q.pivotalIso := sorry
 
-/-! ## Layer 6: the synoptic chart of tensor categories (HPT Figure 2)
+/-! ## Layer 10: the synoptic chart of tensor categories (HPT Figure 2)
 
 The remaining nodes (braided is Mathlib's `BraidedCategory`) and the arrows: forgetful/axiom-imposing
 maps, the Drinfel'd-centre arrows, and the central equivalence `balanced+rigid ≃ braided+pivotal`. -/
