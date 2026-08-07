@@ -56,10 +56,10 @@ built on the double dual's pinned `.Monoidal` instance), not a bare natural iso;
 `BalancedCategory` carries the **balancing axiom** as a genuine field. Monoidality is not left to a
 docstring: without it the Freyd–Yetter and torsor milestones are false, and without the balancing
 axiom `RibbonCategory` and the braided↔pivotal equivalence are vacuous. The fusion-level milestones
-(`frobeniusPerronDim`,
-`universalGradingGroup`, the DGNO classification) carry an explicit `IsFusion k C` hypothesis tying
-the coefficient field `k` to `C`, and `VecTwisted` is built over a **bundled** normalized 3-cocycle so
-its monoidal structure is not asserted for an arbitrary `ω`. `README.md` remains the definitive
+(`frobeniusPerronDim`, `universalGradingGroup`, the DGNO classification) carry their hypotheses as
+ordinary instance arguments, which is what fixes the coefficient field `k`, and `VecTwisted` is built
+over a **bundled** normalized 3-cocycle so its monoidal structure is not asserted for an arbitrary
+`ω`. `README.md` remains the definitive
 document.
 -/
 
@@ -252,19 +252,50 @@ noncomputable def trace {C : Type u} [Category.{v} C] [MonoidalCategory C] [Rigi
 noncomputable def quantumDim {C : Type u} [Category.{v} C] [MonoidalCategory C] [RigidCategory C]
     [PivotalCategory C] [SphericalCategory C] (X : C) : 𝟙_ C ⟶ 𝟙_ C := trace (𝟙 X)
 
-/-- **The fusion hypotheses** on `C` over `k`, bundled as a predicate tying the coefficient field `k`
-to `C`: `C` is `k`-linear, rigid, semisimple, with finitely many simple objects and `End 𝟙_C ≅ k`
-(over an algebraically closed field of characteristic 0). To be defined; a `FusionCategory` class may
-replace it after a later refactor. It is the hypothesis under which the fusion-level milestones below
-hold. -/
-def IsFusion (k : Type) [Field k] (C : Type u) [Category.{v} C] [MonoidalCategory C]
-    [RigidCategory C] : Prop := sorry
+/-! ## Layer 2b: semisimple and fusion categories
 
-/-- **Frobenius–Perron dimension** (fusion bar): the Perron–Frobenius eigenvalue of the fusion
-matrices, independent of the pivotal structure and always `> 0`. Stated under `IsFusion k C`; the
-target facts are `FPdim X > 0` and `FPdim (X ⊗ Y) = FPdim X * FPdim Y`. -/
-noncomputable def frobeniusPerronDim {k : Type} [Field k] {C : Type u} [Category.{v} C]
-    [MonoidalCategory C] [RigidCategory C] (_hC : IsFusion k C) (X : C) : ℝ := sorry
+⚠ None of this exists in Mathlib. `CategoryTheory/Simple.lean` has simple objects and
+`Preadditive/Schur.lean` has Schur's lemma, but there is no semisimplicity class, no decomposition
+API and no fusion category; `Preadditive/HomOrthogonal.lean` describes itself as "preliminary to
+defining semisimple categories". Every fusion-level statement below rests on this layer.
+
+The fusion hypotheses are carried as ordinary instance arguments rather than bundled into one
+predicate. That is what the generality bar in `README.md` asks for, and it also fixes the
+coefficient field properly: a `Prop`-valued `IsFusion k C` hypothesis carries no data, so a
+definition taking one either ignores it or cannot be written. -/
+
+/-- **Semisimple category**: every object is a finite direct sum of simple objects. -/
+class IsSemisimpleCategory (C : Type u) [Category.{v} C] [Abelian C] : Prop where
+  /-- Every object decomposes as a finite biproduct of simple objects. -/
+  exists_biproduct_simples : ∀ X : C, ∃ (ι : Type) (_ : Fintype ι) (f : ι → C)
+    (_ : ∀ i, Simple (f i)) (_ : Limits.HasBiproduct f), Nonempty (X ≅ ⨁ f)
+
+/-- **The isomorphism classes of simple objects**, with a chosen representative for each. Finiteness
+of this type is one of the fusion hypotheses. -/
+def SimpleClasses (C : Type u) [Category.{v} C] : Type _ := sorry
+
+/-- The chosen representative of a class of simple objects. -/
+noncomputable def SimpleClasses.repr {C : Type u} [Category.{v} C] (i : SimpleClasses C) : C := sorry
+
+/-- **The endomorphisms of a simple unit are the scalars**, over an algebraically closed field. This
+is what lets traces and dimensions be read as elements of `k`. -/
+noncomputable def endUnitAlgEquiv (k : Type u) [Field k] [IsAlgClosed k] (C : Type u)
+    [Category.{v} C] [MonoidalCategory C] [Abelian C] [Linear k C] [Simple (𝟙_ C)] :
+    End (𝟙_ C) ≃ₐ[k] k := sorry
+
+/-- **The fusion coefficients** `N_{ij}^l = finrank k (X_i ⊗ X_j ⟶ X_l)`. -/
+noncomputable def fusionCoeff (k : Type u) [Field k] {C : Type u} [Category.{v} C]
+    [MonoidalCategory C] [Abelian C] [Linear k C] (i j l : SimpleClasses C) : ℕ := sorry
+
+/-- **Frobenius–Perron dimension**: the Perron root of the fusion matrix of `X`.
+
+Targets: `FPdim (X ⊗ Y) = FPdim X * FPdim Y` and `0 ≤ FPdim X`. ⚠ `0 < FPdim X` is **false** in
+general, since a fusion category is abelian and `FPdim 0 = 0`; the sharp statement is
+`FPdim X = 0 ↔ IsZero X`. Building the Perron root itself is part of this layer: Mathlib has
+`Matrix.IsIrreducible` and `Matrix.IsPrimitive` and no Perron–Frobenius theorem. -/
+noncomputable def frobeniusPerronDim (k : Type u) [Field k] [IsAlgClosed k] {C : Type u}
+    [Category.{v} C] [MonoidalCategory C] [RigidCategory C] [Abelian C] [Linear k C]
+    [IsSemisimpleCategory C] [Fintype (SimpleClasses C)] (X : C) : ℝ := sorry
 
 /-! ## Layer 3: `FDRep G` is pivotal and spherical (the standard structure)
 
@@ -318,11 +349,18 @@ predicate is built from the general `groupCohomology`/`inhomogeneousCochains` di
 bespoke API stops at `cocycles₂`). -/
 
 section Pointed
-variable (k : Type) [Field k] (G : Type) [Group G]
+variable (k : Type u) [Field k] (G : Type) [Group G]
 
 /-- **Normalized 3-cocycle predicate** on `ω : G → G → G → kˣ` (trivial `G`-action on `kˣ`): the
-pentagon/normalization conditions, to be defined from the general group-cohomology differential. -/
-def IsThreeCocycle (ω : G → G → G → kˣ) : Prop := sorry
+cocycle identity, which is the pentagon for `Vec^ω_G`, together with normalization.
+
+Written out rather than derived, because it needs no API that does not already exist. Mathlib's
+`groupCohomology A n` takes `A : Rep k G` with additive coefficients, so relating this to
+`inhomogeneousCochains` means passing through `Additive kˣ` as a trivial `Rep ℤ G`; that comparison
+is a theorem to prove, and this equation is the definition. -/
+def IsThreeCocycle (ω : G → G → G → kˣ) : Prop :=
+  (∀ g h k l : G, ω h k l * ω g (h * k) l * ω g h k = ω (g * h) k l * ω g h (k * l)) ∧
+    (∀ h k : G, ω 1 h k = 1) ∧ (∀ g k : G, ω g 1 k = 1) ∧ (∀ g h : G, ω g h 1 = 1)
 
 /-- **A normalized 3-cocycle**, bundled: the associator datum of `Vec^ω_G`. Bundling ensures the
 monoidal structure below is built only for genuine cocycles, never an arbitrary `ω`. Cohomologous
@@ -333,10 +371,15 @@ structure ThreeCocycle where
   /-- It is a normalized 3-cocycle. -/
   isCocycle : IsThreeCocycle k G ω
 
-/-- **The pointed category `Vec^ω_G`**: `G`-graded finite-dimensional `k`-vector spaces (the
-underlying objects are `GradedObject G (FGModuleCat k)`) with the associator twisted by the bundled
-cocycle. Simple objects `δ_g`, `δ_g ⊗ δ_h = δ_{gh}`, unit `δ_e`, and `δ_gᘁ = δ_{g⁻¹}`. -/
-def VecTwisted (c : ThreeCocycle k G) : Type := sorry
+/-- **The pointed category `Vec^ω_G`**: `G`-graded finite-dimensional `k`-vector spaces with the
+associator twisted by the bundled cocycle. Simple objects `δ_g`, `δ_g ⊗ δ_h = δ_{gh}`, unit `δ_e`,
+and `δ_gᘁ = δ_{g⁻¹}`.
+
+⚠ The objects must be **finitely supported** families, not all of `GradedObject G (FGModuleCat k)`.
+That type is the full function type `G → FGModuleCat k`, and for infinite `G` the convolution tensor
+product is a coproduct over a fibre equivalent to `G`, which `FGModuleCat` does not have. The
+universe is `Type (u+1)` for `k : Type u`, not `Type u`. -/
+def VecTwisted (c : ThreeCocycle k G) : Type (u + 1) := sorry
 
 noncomputable instance (c : ThreeCocycle k G) : Category (VecTwisted k G c) := sorry
 noncomputable instance (c : ThreeCocycle k G) : MonoidalCategory (VecTwisted k G c) := sorry
@@ -352,9 +395,13 @@ noncomputable def VecTwisted.pivotal_equiv_characters (c : ThreeCocycle k G) :
     PivotalCategory (VecTwisted k G c) ≃ (G →* kˣ) := sorry
 
 /-- **Frobenius–Schur indicators** (Ng–Schauenburg) of the simple object `δ_g`, computed from the
-pivotal structure — the concrete invariant distinguishing the pivotal structures. -/
+pivotal structure. Indexed by a **positive** natural.
+
+⚠ These are invariants of the pivotal structure and do not determine it. For `G = ℤ` every
+nontrivial `δ_g` has `Hom(𝟙, δ_g^{⊗n}) = 0` for all `n > 0`, so no collection of indicators recovers
+a character `ℤ → kˣ`. The completeness statement needs hypotheses on `G`. -/
 noncomputable def frobeniusSchurIndicator (c : ThreeCocycle k G) [PivotalCategory (VecTwisted k G c)]
-    (n : ℕ) (g : G) : End (𝟙_ (VecTwisted k G c)) := sorry
+    (n : ℕ+) (g : G) : 𝟙_ (VecTwisted k G c) ⟶ 𝟙_ (VecTwisted k G c) := sorry
 
 end Pointed
 
@@ -365,19 +412,34 @@ natural automorphisms of the identity are the characters of the **universal grad
 combined with Layer 1's torsor, the pivotal structures are a torsor over `Hom(U(C), kˣ)`. -/
 
 /-- **The universal grading group** `U(C)` of a fusion category: the group carrying the finest
-faithful grading, with trivial component the adjoint subcategory `C_ad` (Gelaki–Nikshych; DGNO10).
-Stated under `IsFusion k C`. -/
-def universalGradingGroup {k : Type} [Field k] (C : Type u) [Category.{v} C] [MonoidalCategory C]
-    [RigidCategory C] (_hC : IsFusion k C) : Type _ := sorry
-noncomputable instance {k : Type} [Field k] (C : Type u) [Category.{v} C] [MonoidalCategory C]
-    [RigidCategory C] (hC : IsFusion k C) : Group (universalGradingGroup C hC) := sorry
+faithful grading, with trivial component the adjoint subcategory `C_ad` (Gelaki–Nikshych; DGNO10). -/
+def universalGradingGroup (k : Type u) [Field k] [IsAlgClosed k] (C : Type u) [Category.{v} C]
+    [MonoidalCategory C] [RigidCategory C] [Abelian C] [Linear k C] [IsSemisimpleCategory C]
+    [Fintype (SimpleClasses C)] : Type _ := sorry
+
+noncomputable instance (k : Type u) [Field k] [IsAlgClosed k] (C : Type u) [Category.{v} C]
+    [MonoidalCategory C] [RigidCategory C] [Abelian C] [Linear k C] [IsSemisimpleCategory C]
+    [Fintype (SimpleClasses C)] : Group (universalGradingGroup k C) := sorry
 
 /-- **The DGNO10 classification**: for a fusion category over an algebraically closed field of
-characteristic 0, `Aut_⊗(𝟭 C) ≅ Hom(U(C), kˣ)` — as groups. The coefficient field `k` is the same
-one witnessing `IsFusion k C`; here the equivalence of underlying types is pinned. -/
-noncomputable def monoidalAut_equiv_characters {k : Type} [Field k] (C : Type u) [Category.{v} C]
-    [MonoidalCategory C] [RigidCategory C] (hC : IsFusion k C) :
-    MonoidalAut C ≃ (universalGradingGroup C hC →* kˣ) := sorry
+characteristic 0, `Aut_⊗(𝟭 C) ≃* Hom(U(C), kˣ)`, as groups and not merely as types. -/
+noncomputable def monoidalAut_mulEquiv_characters (k : Type u) [Field k] [IsAlgClosed k]
+    (C : Type u) [Category.{v} C] [MonoidalCategory C] [RigidCategory C] [Abelian C] [Linear k C]
+    [IsSemisimpleCategory C] [Fintype (SimpleClasses C)] [CharZero k] :
+    MonoidalAut C ≃* (universalGradingGroup k C →* kˣ) := sorry
+
+/-- **The pivotal structures of a fusion category form a torsor over `Hom(U(C), kˣ)`**, *when there
+is one to start from*.
+
+⚠ The nonemptiness hypothesis is not decoration. Whether every fusion category admits a pivotal
+structure is open, which is why Etingof–Nikshych–Ostrik's pivotalization exists; dropping `hP` would
+assert that conjecture. -/
+theorem pivotal_torsor_characters (k : Type u) [Field k] [IsAlgClosed k] (C : Type u)
+    [Category.{v} C] [MonoidalCategory C] [RigidCategory C] [Abelian C] [Linear k C]
+    [IsSemisimpleCategory C] [Fintype (SimpleClasses C)] [CharZero k]
+    (hP : Nonempty (PivotalCategory C)) (P Q : PivotalCategory C) :
+    ∃! χ : universalGradingGroup k C →* kˣ,
+      P.pivotalIso = ((monoidalAut_mulEquiv_characters k C).symm χ).iso ≪≫ Q.pivotalIso := sorry
 
 /-! ## Layer 6: the synoptic chart of tensor categories (HPT Figure 2)
 
@@ -421,10 +483,25 @@ theorem nonempty_center_pivotal_of_pivotal (C : Type u) [Category.{v} C] [Monoid
     [RigidCategory C] [PivotalCategory C] [RigidCategory (Center C)] :
     Nonempty (PivotalCategory (Center C)) := sorry
 
-/-- **Drinfel'd-centre arrow `Z(spherical) = ribbon`** (Müger): the centre of a spherical category is
-ribbon (with its induced rigid, pivotal and balanced structures). -/
-theorem nonempty_center_ribbon_of_spherical (C : Type u) [Category.{v} C] [MonoidalCategory C]
+/-- **The twist induced on the centre by a spherical structure.** The pivotal structure of
+`nonempty_center_pivotal_of_pivotal` makes `Z C` braided pivotal, and eq (3) turns that into a
+twist; this pins *that* twist, which is the one the next statement is about. -/
+@[implicit_reducible]
+noncomputable def centerBalancedOfSpherical (C : Type u) [Category.{v} C] [MonoidalCategory C]
     [RigidCategory C] [PivotalCategory C] [SphericalCategory C] [RigidCategory (Center C)]
-    [PivotalCategory (Center C)] [BalancedCategory (Center C)] : Nonempty (RibbonCategory (Center C)) := sorry
+    [PivotalCategory (Center C)] : BalancedCategory (Center C) := sorry
+
+/-- **Drinfel'd-centre arrow `Z(spherical) = ribbon`** (Müger): the centre of a spherical category is
+ribbon, for the twist induced by its spherical structure.
+
+⚠ Quantifying over an arbitrary `[BalancedCategory (Center C)]` instead would be **false**. Given a
+ribbon twist `θ` and a monoidal natural automorphism `u` of the identity, `θ · u` is again a twist,
+and it is ribbon only when `u_{Xᘁ} = (u_X)ᘁ`. The theorem has to name the twist it means, which is
+why it is stated against `centerBalancedOfSpherical`. -/
+theorem ribbon_center_of_spherical (C : Type u) [Category.{v} C] [MonoidalCategory C]
+    [RigidCategory C] [PivotalCategory C] [SphericalCategory C] [RigidCategory (Center C)]
+    [PivotalCategory (Center C)] :
+    letI := centerBalancedOfSpherical C
+    RibbonCategory (Center C) := sorry
 
 end TauCetiRoadmap.PivotalSpherical

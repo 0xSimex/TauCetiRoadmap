@@ -76,10 +76,8 @@ If any wording below still reads as though an open PR supplies something, read i
 here now, shaped the way that PR shapes it, and delete it in favour of Mathlib's if and when that PR
 merges"*. It never means "leave it out", "come back later", or "go do it in Mathlib instead".
 
-`#42145` is the most settled of the four (its CI is green and it is the base of the other three), so
-Layer 0 is shaped against **`#42145` as it is expected to land**, including the
-`ExactPairing.rightMate` API and the `rightDualTensorIso_hom_naturality` lemma requested in review.
-Adopting a shape is free; waiting for one is not, so nothing in Layer 0 is deferred on that account.
+Layer 0 is shaped against `#42145` as that branch currently stands, since it is the base of the
+other three. Adopting a shape costs nothing, so no target is held back on its account.
 
 **We do not push work to Mathlib.** Everything on this roadmap is built in Tau Ceti and stays in Tau
 Ceti. Some of it (the `LeftRigidCategory (FGModuleCat K)` instance of Layer 3, the trace API of Layer
@@ -95,11 +93,12 @@ requests as part of discharging it.
   carry no finiteness or semisimplicity hypotheses. The *classification* results — the universal
   grading group `U(C)`, `Aut_⊗(𝟭_C) ≅ Hom(U(C), kˣ)`, the pivotal-structure torsor, the `Vec^ω_G`
   count, Frobenius–Perron dimension — are stated for a **fusion category over an algebraically closed
-  field `k` of characteristic 0**. Spell each hypothesis on the result that needs it; do **not**
-  bundle a monolithic `PivotalFusionCategory` class. Mathlib has no `FusionCategory` yet, so state the
-  hypotheses that make up "fusion" (rigid, `k`-linear, semisimple, finitely many simple objects,
-  `End 𝟙_C ≅ k`) explicitly on the results, and factor out a `FusionCategory` predicate only if a
-  later refactor shows it earns its keep.
+  field `k` of characteristic 0**. Spell each hypothesis on the result that needs it, as ordinary
+  instance arguments (`[Linear k C]`, `[Abelian C]`, semisimplicity, finiteness of the simples,
+  `End (𝟙_ C) ≃ₐ[k] k`), and do **not** bundle them into a monolithic `PivotalFusionCategory` class.
+  Instance arguments also fix `k` properly, which a `Prop`-valued `IsFusion k C` hypothesis cannot
+  do: a proof argument carries no data, so any definition taking one either ignores it or is
+  impossible to write. Layer 2b builds the pieces that do not exist yet.
 - **Which dual.** Fix the **right dual** `Xᘁ` as primary throughout (matching `rightDualFunctor`,
   `doubleRightDualFunctor`, and `FDRep`'s `rightDual`). In a rigid category left and right duals both
   exist; state the left-handed mirror of each definition and relate the two, but pin right duals so
@@ -229,10 +228,10 @@ you what to *name* things, not whether to *do* them.
   nothing about them).
 - **Spherical categories** *(also in flight as #42191)*, and the canonical spherical structure on a
   symmetric rigid category *(also in flight as #42192)*.
-- **Left and right dimension**, **quantum and global dimension**, **Frobenius–Perron dimension**
-  (FP dimension additionally needs a Perron–Frobenius theorem, which Mathlib also lacks and which is
-  therefore ours to build too, though https://github.com/leanprover-community/mathlib4/pull/39922 is
-  building one).
+- **Semisimple categories, finiteness of the simples, the fusion ring, and Perron–Frobenius**
+  (Layer 2b). None of this exists in Mathlib or in any other Tau Ceti roadmap, and every fusion-level
+  statement below rests on it.
+- **Left and right dimension**, **quantum and global dimension**, **Frobenius–Perron dimension**.
 - `RigidCategory (FDRep k G)` and the identification of its trace with the linear trace.
 - **`Vec^ω_G`** and the classification of its pivotal structures; a degree-3 cocycle API;
   **Frobenius–Schur indicators**; **gradings of a fusion category**, the **adjoint subcategory**, the
@@ -287,12 +286,11 @@ ExactPairing Xᘁ X`, `leftDualIsoRightDual`, `dualFunctorIso` and
 `rightAdjointMate_rightAdjointMate`. Use those names and that shape, and delete ours if and when that
 PR merges.
 
-> **Recorded divergence.** Everything the class needs is right-handed, and `pivotalExactPairing`
-> shows that a pivotal structure on a merely right rigid category *produces* left duals, so
-> `[RightRigidCategory C]` is the honest bar and would apply to `FDRep k G` directly. #42150 uses
-> `[RigidCategory C]`. **We follow #42150.** The cost is one instance, discharged in Layer 3. If
-> #42150 relaxes its hypothesis before landing, we relax with it, and nobody should build against the
-> weaker bar in the meantime.
+> **On the base class.** Everything the class needs is right-handed, and `pivotalExactPairing` shows
+> that a pivotal structure on a merely right rigid category produces left duals, so
+> `RightRigidCategory` is the honest bar and applies to `FDRep k G` directly. `#42150` uses
+> `RigidCategory`, and we follow it. The cost is one instance, supplied in Layer 3. Build against
+> `RigidCategory` until Mathlib says otherwise.
 
 What remains for us:
 
@@ -349,9 +347,44 @@ is the most valuable part of this layer.
 - **Quantum/global dimension.** For a fusion category, the **global dimension**
   `dim C = Σ_i dim(X_i) · dim(X_iᘁ)` over representatives `X_i` of the simple objects (independent of
   the pivotal structure), and, at the fusion bar, the **Frobenius–Perron dimension** `FPdim` (the
-  Perron–Frobenius eigenvalue of the fusion matrices) with `FPdim X > 0`, `FPdim(X⊗Y)=FPdim X · FPdim Y`.
-  State the comparison `|dim_L X| ≤ FPdim X` and **pseudo-unitarity** (`dim = FPdim` for a suitable
-  spherical structure) as targets.
+  Perron–Frobenius eigenvalue of the fusion matrices), with `FPdim (X ⊗ Y) = FPdim X * FPdim Y` and
+  `0 ≤ FPdim X`. ⚠ `FPdim X > 0` is **false**: a fusion category is abelian and `FPdim 0 = 0`. State
+  positivity for nonzero objects, or better `FPdim X = 0 ↔ IsZero X`.
+  The comparison with the categorical dimension needs an absolute value, which an abstract
+  algebraically closed field of characteristic 0 does not carry, so state `|dim_L X| ≤ FPdim X` for
+  `k = ℂ` and say so. **Pseudo-unitarity** is a *property* (`dim C = FPdim C`), not something every
+  fusion category has: define it, then construct the canonical spherical structure with
+  `dim X = FPdim X` under that hypothesis.
+
+### Layer 2b: semisimple and fusion categories
+
+⚠ **This layer is the foundation of every fusion-level statement in the roadmap, and none of it
+exists.** Mathlib has `CategoryTheory/Simple.lean` and Schur's lemma
+(`Preadditive/Schur.lean`), and `Preadditive/HomOrthogonal.lean` says of itself "this is preliminary
+to defining semisimple categories". There is no semisimplicity class, no decomposition API, and no
+fusion category. No other Tau Ceti roadmap covers it either, so this roadmap owns it. Layer 2's
+global and Frobenius–Perron dimensions and the whole of Layer 5 rest on what is built here.
+
+- **Semisimple categories.** A predicate `IsSemisimpleCategory C` on a `k`-linear abelian category:
+  every object is a finite direct sum of simple objects. With it, the decomposition of an object into
+  simples, and well-definedness of the multiplicities.
+- **Finitely many simples.** A `Fintype` on the isomorphism classes of simple objects, together with
+  a chosen family of representatives, and the lemmas letting one sum over that family.
+- **A simple unit and its endomorphisms.** `End (𝟙_ C) ≃ₐ[k] k` when `𝟙_ C` is simple and `k` is
+  algebraically closed, which is what lets traces and dimensions be read as scalars.
+- **The fusion ring.** The fusion coefficients `N_{ij}^l = finrank k (X_i ⊗ X_j ⟶ X_l)`, the fusion
+  matrices `N_i`, associativity and the unit, and nonnegativity of the entries.
+- **Perron–Frobenius.** The Perron root of a nonnegative irreducible matrix, its simplicity, and its
+  eigenvector. Mathlib has `Matrix.IsIrreducible` and `Matrix.IsPrimitive`
+  (`LinearAlgebra/Matrix/Irreducible/Defs.lean`) as graph-theoretic infrastructure and nothing more.
+  This is what `FPdim` needs, and there is an open Mathlib series building it, e.g.
+  https://github.com/leanprover-community/mathlib4/pull/39922 feat(PerronFrobenius):
+  Perron–Frobenius for irreducible matrices. Build it here anyway; the policy above applies.
+- **Fusion categories.** With all of the above, "fusion" is the conjunction of instance arguments
+  named in the generality bar. State results with those arguments rather than a bundled predicate.
+
+This is the largest single body of work on the roadmap and the most reusable thing in it: nothing
+about it is specific to pivotal structures, and every later fusion-level statement consumes it.
 
 ### Layer 3: `FDRep G` is pivotal and spherical (the standard structure)
 
@@ -388,9 +421,13 @@ isomorphism.
   category of `G`-graded finite-dimensional `k`-vector spaces with associator on the simple objects
   `δ_g` given by multiplication by `ω(g,h,k)`. It is a **pointed tensor category** — a **fusion**
   category exactly when `G` is finite: simple objects `{δ_g}_{g∈G}`, `δ_g ⊗ δ_h = δ_{gh}`, unit `δ_e`,
-  and rigidity with `δ_gᘁ = δ_{g⁻¹}` (structure maps built from `ω`), so `δ_gᘁᘁ = δ_g`. The pivotal
-  classification below holds for any `G`; the fusion-level invariants (Frobenius–Perron and global
-  dimension) need `G` finite.
+  and rigidity with `δ_gᘁ = δ_{g⁻¹}` (structure maps built from `ω`), so `δ_gᘁᘁ = δ_g`. ⚠ The
+  underlying objects must be **finitely supported** graded objects, not all of
+  `GradedObject G (FGModuleCat k)`: that type is the full function type `G → FGModuleCat k`, and for
+  infinite `G` the convolution tensor product is a coproduct over a fibre equivalent to `G`, which
+  `FGModuleCat` does not have. Pin the support condition in the definition. The pivotal
+  classification below then holds for any `G`; the fusion-level invariants (Frobenius–Perron and
+  global dimension) need `G` finite.
   - Build a **degree-3 cocycle** predicate `IsThreeCocycle ω` and the normalization
     conditions from the general `groupCohomology`/`inhomogeneousCochains` differential (Mathlib's
     bespoke API stops at degree 2); cohomologous cocycles give monoidally equivalent categories.
@@ -399,9 +436,15 @@ isomorphism.
   structure is that canonical one twisted by a **character**, so pivotal structures on `Vec^ω_G` form
   a **torsor over `Hom(G, kˣ)`** (in particular a pivotal structure always exists). Identify the
   **spherical** ones among them.
-- **Frobenius–Schur indicators.** Define the Frobenius–Schur indicators (Ng–Schauenburg) from the
-  pivotal structure and compute them on the `δ_g`, giving a concrete invariant that distinguishes the
-  pivotal structures.
+- **Frobenius–Schur indicators.** Define the Ng–Schauenburg indicators `ν_n` from the pivotal
+  structure, for `n` a **positive** natural (use `ℕ+`, or carry `0 < n`), and compute them on the
+  `δ_g`. They are invariants of the pivotal structure; they do **not** determine it in general. For
+  `G = ℤ`, `Hom(𝟙, δ_g^{⊗n}) = 0` for every nontrivial `δ_g` and every `n > 0`, so no collection of
+  indicators recovers a character `ℤ → kˣ`. State the hypotheses under which they are complete.
+  ⚠ This roadmap owns only the categorical `ν_n`. The finite-group `ν₂` belongs to
+  [`RepresentationTheory/CharacterTheory`](../RepresentationTheory/CharacterTheory/README.md), which
+  already asks that its `FDRep` indicator agree with the categorical one; that agreement theorem is
+  the contribution here, not a second definition.
 
 ### Layer 5: gradings, the universal grading group, and the DGNO classification
 
@@ -412,9 +455,13 @@ isomorphism.
   which every grading of `C` factors, with trivial component `C_ad` (Gelaki–Nikshych;
   Drinfeld–Gelaki–Nikshych–Ostrik, *On braided fusion categories I*, §2–3).
 - **The classification theorem.** For a fusion category over an algebraically closed field of
-  characteristic 0, `Aut_⊗(𝟭_C) ≅ Hom(U(C), kˣ)` — the monoidal natural automorphisms of the identity
-  are exactly the characters of the universal grading group. Combined with Layer 1's torsor: **the
-  set of pivotal structures is a torsor over `Hom(U(C), kˣ)`.**
+  characteristic 0, `Aut_⊗(𝟭_C) ≃* Hom(U(C), kˣ)` — the monoidal natural automorphisms of the
+  identity are exactly the characters of the universal grading group, as groups and not merely as
+  types. Combined with Layer 1's torsor: **if `C` admits a pivotal structure at all**, its pivotal
+  structures form a torsor over `Hom(U(C), kˣ)`. ⚠ Carry that hypothesis explicitly. Whether every
+  fusion category admits a pivotal structure is open (it is why Etingof–Nikshych–Ostrik's
+  pivotalization construction exists), so an unconditional torsor statement would assert a
+  conjecture.
 - **Recovering the examples.** `U(Vec^ω_G) = G`, recovering Layer 4's `Hom(G, kˣ)` count; and the
   standard pivotal structure of Layer 3 as a distinguished point of the corresponding torsor.
 
@@ -439,7 +486,11 @@ State the whole chart — the definitions of the remaining nodes and every arrow
   those instances rather than against an arbitrary structure.
 - **The Drinfel'd-centre arrows.** `Z(-)` sends each row to its braided enrichment:
   `Z(tensor)` is braided, `Z(rigid)` is braided+rigid, `Z(pivotal)` is braided+pivotal, and
-  `Z(spherical)` is **ribbon** (Müger). Consume `Center C` and `braidedCategoryCenter`; the key
+  `Z(spherical)` is **ribbon** (Müger). ⚠ State this by *constructing* the induced twist on `Z(C)`
+  from the spherical structure and proving that twist ribbon. A statement quantifying over an
+  arbitrary balanced structure on `Z(C)` is false: given a ribbon twist `θ` and a monoidal natural
+  automorphism `u` of the identity, `θ · u` is again a twist, and it is ribbon only when
+  `u_{Xᘁ} = (u_X)ᘁ`. Consume `Center C` and `braidedCategoryCenter`; the key
   content is **HPT Proposition 2.3**, that a pivotal structure on `C` induces one on `Z(C)` (dual of
   `(a, eₐ)` is `(aᘁ, …)`, and `φ` lifts), and the sphericity/ribbon upgrade.
 - **The central equivalence** `balanced+rigid ≃ braided+pivotal`. A braided rigid category is pivotal
@@ -468,7 +519,7 @@ State the whole chart — the definitions of the remaining nodes and every arrow
 Layer 0 (the double-dual functor) is the foundation; Layer 1 (pivotal) and Layer 2 (traces,
 dimensions, spherical) are the core and come next. Layers 3 and 4 are the two examples that keep the
 core honest and can proceed in parallel once Layers 1–2 land. Layer 5 (universal grading) generalizes
-and unifies both examples and depends on the fusion-category API being in place. Layer 6 (the synoptic
+and unifies both examples, and consumes Layer 2b. Layer 6 (the synoptic
 chart) depends on the braided/balanced/ribbon definitions and the Drinfel'd centre, and on Layers 1–2
 for the pivotal/spherical nodes; the central equivalence and the centre arrows are its most technical
 part.
