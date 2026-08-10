@@ -411,6 +411,20 @@ theorem isSupersingular_iff_dvd_frobeniusTrace {F : Type*} [Field F] [Finite F] 
     IsSupersingular p E ↔ (p : ℤ) ∣ frobeniusTrace E :=
   sorry
 
+/-- **Base-change invariance of supersingularity** — a theorem, ⚠ **not** a definitional
+reduction, which is why it is pinned as a target. The two sides are statements about *different
+types*, `E[p](Kˢᵉᵖ)` and `E_L[p](Lˢᵉᵖ)`, so the proof needs a comparison of separable closures,
+compatibility of point torsion with scalar extension, and independence of the choice; purely
+inseparable `L/K` is the case that makes this vivid. The implementation will likely want the
+algebraic, separable and purely inseparable cases as separate steps. What the geometric
+definition buys is that this is a natural geometric statement rather than a transport along the
+Frobenius-trace recurrence. -/
+theorem isSupersingular_baseChange_iff {K : Type*} [Field K] (p : ℕ) [Fact p.Prime] [CharP K p]
+    (W : WeierstrassCurve K) [W.IsElliptic] (L : Type*) [Field L] [Algebra K L]
+    [(W.baseChange L).IsElliptic] :
+    IsSupersingular p (W.baseChange L) ↔ IsSupersingular p W :=
+  sorry
+
 /-- **The Hasse bound** (AEC V.1.1) — the headline. With `a_q := q + 1 − #E(𝔽_q)` the trace of
 Frobenius, the natural formalisation goal is the integer inequality `a_q² ≤ 4q` (the real form
 `|#E − (q+1)| ≤ 2√q` follows), from `deg(1 − φ_q) = #E(𝔽_q)`, positivity of the degree form, and
@@ -432,7 +446,7 @@ new objects specified in `README.md` §Layer 4 and built there on Layers 0–1 a
 reduction theory; they are not pinned here as `sorry`-typed types. Néron models are **out of
 scope**: they are schemes, and belong to the future scheme-facing roadmap (`README.md`). -/
 
-/-! ## Layer 4.5: global models, the Weierstrass class, and semistability (AEC VIII.8)
+/-! ## Layer 4.5a: global models and the Weierstrass class over a Dedekind domain (AEC VIII.8)
 
 The global counterpart of Layer 4, over the fraction field `K` of a Dedekind domain `O`. Every
 definition says "minimal at `v`" by applying Layer 4's DVR theory to
@@ -477,17 +491,20 @@ def IsGlobalMinimal (W : WeierstrassCurve K) [W.IsElliptic] : Prop :=
 
 /-- **A semi-globally minimal model**: minimal at every height-one prime but one, and integral
 at the exceptional prime `v₀`. ⚠ The integrality clause cannot be dropped — minimality away from
-`v₀` says nothing about the denominators at `v₀`. ⚠ This is the **weak** predicate: it is
-satisfied by every globally minimal model and permits any defect at `v₀`. The existence theorem —
-stated over `𝒪_K` for a number field `K`, **not** over an abstract Dedekind domain, since the
-one-prime construction needs every ideal class to contain a height-one prime — and its sharp
-form, that the constructed model has defect exactly `12` at `v₀`, are separate statements
-(`README.md` §Layer 4.5). -/
+`v₀` says nothing about the denominators at `v₀`. ⚠ The **disjunct is load-bearing, not tidiness**:
+a field is a Dedekind domain in Mathlib and its height-one spectrum is empty, so over a field the
+bare existential is `False` while `IsGlobalMinimal` is vacuously `True` — the intended "every
+global minimal model is semi-global" would fail at the degenerate base. ⚠ This is the **weak**
+predicate: it permits any defect at `v₀`. The sharp one is `IsSharpSemiGlobalMinimalAt` below,
+and the existence theorem — over `𝒪_K` for a number field, **not** an abstract Dedekind domain,
+since the one-prime construction needs every ideal class to contain a height-one prime — is
+`README.md` §Layer 4.5b. -/
 def IsSemiGlobalMinimal (W : WeierstrassCurve K) [W.IsElliptic] : Prop :=
-  ∃ v₀ : HeightOneSpectrum O,
-    WeierstrassCurve.IsIntegral (Localization.AtPrime v₀.asIdeal) W ∧
-      ∀ v : HeightOneSpectrum O, v ≠ v₀ →
-        WeierstrassCurve.IsMinimal (Localization.AtPrime v.asIdeal) W
+  IsGlobalMinimal O W ∨
+    ∃ v₀ : HeightOneSpectrum O,
+      WeierstrassCurve.IsIntegral (Localization.AtPrime v₀.asIdeal) W ∧
+        ∀ v : HeightOneSpectrum O, v ≠ v₀ →
+          WeierstrassCurve.IsMinimal (Localization.AtPrime v.asIdeal) W
 
 /-- **The minimal discriminant ideal** `𝔇_{E/K} = ∏ᵥ 𝔭ᵥ ^ v(Δ_min,ᵥ)`. Pinned as a `sorry`
 rather than defined, because the valuation bookkeeping it needs — the local minimal
@@ -513,7 +530,7 @@ noncomputable def weierstrassClass (W : WeierstrassCurve O) [(W.baseChange K).Is
 
 /-- **Semistability**: no height-one prime carries additive reduction, the reduction at `v`
 being that of a local minimal model at `v`. ⚠ This is not potential good reduction, and neither
-implies the other (`README.md` §Layer 4.5). -/
+implies the other (`README.md` §Layer 4.5a). -/
 def IsSemistable (W : WeierstrassCurve K) [W.IsElliptic] : Prop :=
   ∀ v : HeightOneSpectrum O,
     ¬ WeierstrassCurve.HasAdditiveReduction (Localization.AtPrime v.asIdeal)
@@ -688,17 +705,56 @@ elliptic-curve theory — everything that is has a home in Layers 3, 4 and 4.5. 
 here is the **convention**; the API is specified in `README.md` §Layer 8. The entries that are
 not unconditionally meaningful carry their hypotheses rather than a junk value. -/
 
-/-- **The height of a primitive integral short equation**, the quantity a table is ordered by.
-⚠ Stated over `ℤ`, and the carrier is the whole content: on a short model over `ℚ` this is not
-an invariant at all, since `x = u²x'`, `y = u³y'` sends `(a₄, a₆)` to `(a₄/u⁴, a₆/u⁶)` and the
-height to `H/|u|¹²`, so one curve has short rational models of arbitrarily small height and
-bounded-height finiteness is false. The curve-level `naiveCurveHeight` is this applied to the
-**canonical primitive** integral short model — no prime `p` with `p⁴ ∣ a₄` and `p⁶ ∣ a₆` — whose
-existence and uniqueness is the milestone of `README.md` §Layer 8; it is not pinned here because
-that model is the new object. ⚠ Neither takes the name `naiveHeight`: that is the naïve
-`x`-height on *points* of §Layer 6, which Mathlib reserves. -/
+/-- **The height of an integral short equation** over `ℤ`. ⚠ This is the equation-level
+function and asks only for `IsShortNF`; primitivity is the separate predicate below, and it is
+what upgrades this to an invariant of the curve. The carrier is the whole content: on a short
+model over `ℚ` the expression is not an invariant at all, since `x = u²x'`, `y = u³y'` sends
+`(a₄, a₆)` to `(a₄/u⁴, a₆/u⁶)` and the height to `H/|u|¹²`, so one curve has short rational
+models of arbitrarily small height and bounded-height finiteness is false. ⚠ It does not take
+the name `naiveHeight`: that is the naïve `x`-height on *points* of §Layer 6, which Mathlib
+reserves. -/
 def shortEquationHeight (W : WeierstrassCurve ℤ) [W.IsShortNF] : ℕ :=
   max (4 * W.a₄.natAbs ^ 3) (27 * W.a₆.natAbs ^ 2)
+
+/-- **Primitivity of an integral short equation**: no prime `ℓ` has both `ℓ⁴ ∣ a₄` and
+`ℓ⁶ ∣ a₆` — the condition that kills the `(a₄, a₆) ↦ (u⁴a₄, u⁶a₆)` scaling freedom and so makes
+the height above well defined on curves. This is the BHKSSW/LMFDB convention (references). -/
+def IsPrimitiveShortModel (W : WeierstrassCurve ℤ) : Prop :=
+  W.IsShortNF ∧ ∀ ℓ : ℕ, ℓ.Prime → ¬ ((ℓ : ℤ) ^ 4 ∣ W.a₄ ∧ (ℓ : ℤ) ^ 6 ∣ W.a₆)
+
+/-- **The canonical primitive integral short model** of an elliptic curve over `ℚ`, bundled: the
+integral equation, its primitivity, and the change of variables carrying its base change to `E`.
+⚠ Distinct from §Layer 4.5a's `IsReducedMinimal`, which is a *long* equation; a database record
+stores both. -/
+structure PrimitiveShortModel (E : WeierstrassCurve ℚ) [E.IsElliptic] where
+  /-- The integral short equation. -/
+  model : WeierstrassCurve ℤ
+  /-- It is short and primitive. -/
+  isPrimitive : IsPrimitiveShortModel model
+  /-- The change of variables realising the isomorphism over `ℚ`. -/
+  variableChange : WeierstrassCurve.VariableChange ℚ
+  /-- It carries the base-changed model to `E`. -/
+  isomorphic : variableChange • (model.baseChange ℚ) = E
+
+/-- **The height of a curve over `ℚ`**, read off its canonical model. Defined outright: the
+primitivity field supplies the `IsShortNF` instance `shortEquationHeight` needs. -/
+noncomputable def PrimitiveShortModel.height {E : WeierstrassCurve ℚ} [E.IsElliptic]
+    (M : PrimitiveShortModel E) : ℕ :=
+  letI : M.model.IsShortNF := M.isPrimitive.1
+  shortEquationHeight M.model
+
+/-- **Existence** of the canonical primitive short model. -/
+theorem exists_primitiveShortModel (E : WeierstrassCurve ℚ) [E.IsElliptic] :
+    Nonempty (PrimitiveShortModel E) :=
+  sorry
+
+/-- **Uniqueness**: the equation itself, not merely up to isomorphism. The residual freedom is
+`(a₄, a₆) ↦ (u⁴a₄, u⁶a₆)` with `u = ±1`, and `u⁴ = u⁶ = 1`. Together with existence this is what
+makes `PrimitiveShortModel.height` an invariant of the curve — and hence what makes ordering a
+table of curves by height well founded. -/
+theorem primitiveShortModel_unique (E : WeierstrassCurve ℚ) [E.IsElliptic]
+    (M N : PrimitiveShortModel E) : M.model = N.model :=
+  sorry
 
 /-- **The abc quality** of a curve over `ℚ`: with `j/1728 = a/c` in lowest terms and `b = c − a`,
 the ratio `log max(|a|,|b|,|c|) / log rad(a·b·c)`. ⚠ The hypothesis `j ∉ {0, 1728}` is carried as
@@ -738,11 +794,15 @@ outright, since the content is the theory: `Δ = 16·A²B²(A + B)²` and `c₄ 
 ring identities, and ellipticity over a field of characteristic `≠ 2` exactly when `A`, `B` and
 `A + B` are nonzero. The application — `p ≥ 5` prime, `a, b, c` nonzero pairwise coprime with
 `aᵖ + bᵖ + cᵖ = 0`, `b` even and `aᵖ ≡ −1 (mod 4)`, `A = aᵖ` and `B = bᵖ` — is **semistability**
-in the sense of §Layer 4.5, with minimal discriminant `(a·b·c)^{2p}/2⁸` and conductor
-`rad (a·b·c)`, that conductor being Layer 4's algorithmic exponent (which is `1` at every bad
-prime of a semistable curve) and so needing none of the ramification-theoretic conductor Layer 4
-names as a separate project. ⚠ Modularity is not this roadmap's, and nothing here presupposes
-it. -/
+in the sense of §Layer 4.5a, with minimal discriminant `(a·b·c)^{2p}/2⁸` and **algorithmic
+conductor ideal** `rad (a·b·c)`. ⚠ The normalisation is reached by permuting the triple and
+negating **all three** entries, never by negating one: put the unique even entry in the `b`
+position, then the two odd entries satisfy `a + c ≡ 0 (mod 4)`, so swapping them achieves the
+congruence. ⚠ "Conductor" here is Layer 4's **algorithmic (Ogg) exponent**, which is `1` at each
+bad prime of a semistable curve. The **arithmetic (Artin) conductor** is the same ideal but a
+different theorem, needing the identification Layer 4 names as a separate project; that bridge
+is what FLT and modularity arguments consume, and the roadmap does not blur the two. ⚠ Modularity
+is not this roadmap's, and nothing here presupposes it. -/
 def freyCurve {R : Type*} [CommRing R] (A B : R) : WeierstrassCurve R where
   a₁ := 0
   a₂ := B - A
