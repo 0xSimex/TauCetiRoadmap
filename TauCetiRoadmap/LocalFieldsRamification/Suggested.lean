@@ -107,6 +107,19 @@ example (M : Type v) [Field M] [ValuativeRel M] [TopologicalSpace M]
     IsNonarchimedeanLocalField M :=
   sorry
 
+/-- **Layer 0.III, integer rings in an extension.** The compatible valuation makes the map
+`K → L` restrict to `𝒪[K] → 𝒪[L]`. This named instance is part of the local package consumed by
+the monogenicity and different milestones below. -/
+noncomputable instance integerRingAlgebra [Algebra K L] [ValuativeExtension K L] :
+    Algebra 𝒪[K] 𝒪[L] :=
+  sorry
+
+/-- **Layer 0.III, torsion-freeness of the integer-ring extension.** This is the ring-level
+hypothesis used by Mathlib's `differentIdeal`. -/
+noncomputable instance integerRingTorsionFree [Algebra K L] [ValuativeExtension K L] :
+    Module.IsTorsionFree 𝒪[K] 𝒪[L] :=
+  sorry
+
 /-- **Layer 0, the ramification index**, defined without choosing a uniformizer: the positive
 integer by which the map of normalized value groups multiplies. Its characteristic property
 is `normalizedValuation_algebraMap` below. -/
@@ -390,7 +403,89 @@ group). -/
 example : ¬ ∃ x y : ℚ_[2], (2 : ℚ_[2]) = x ^ 2 - 5 * y ^ 2 :=
   sorry
 
-/-! ## Layer 3: ramification (worked examples; the filtration itself is README-only) -/
+/-! ## Layer 3: ramification, the lower filtration, and the local different -/
+
+/-- **Layer 3, the canonical lower-numbering filtration.** The integer-indexed family is total;
+the theorem below fixes the convention at negative indices. Number-Field Arithmetic #191 imports
+this definition for its global/local comparison rather than defining a second filtration. -/
+noncomputable def lowerRamificationGroup [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] (i : ℤ) : Subgroup (L ≃ₐ[K] L) :=
+  sorry
+
+/-- **Layer 3, the negative-index convention.** `G_i = G` for every `i ≤ -1`. -/
+theorem lowerRamificationGroup_eq_top_of_le_neg_one [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] (i : ℤ) (hi : i ≤ -1) :
+    lowerRamificationGroup K L i = ⊤ :=
+  sorry
+
+/-- **Layer 3, the lower filtration is decreasing.** -/
+theorem lowerRamificationGroup_antitone [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] :
+    Antitone (lowerRamificationGroup K L) :=
+  sorry
+
+/-- **Layer 3, real indexing for Herbrand theory.** The ceiling convention makes the real
+filtration right-continuous and agrees definitionally with integer indexing through the theorem
+below. -/
+noncomputable def lowerRamificationGroupReal [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] (u : ℝ) : Subgroup (L ≃ₐ[K] L) :=
+  lowerRamificationGroup K L ⌈u⌉
+
+/-- **Layer 3, agreement of integer and real indexing.** -/
+theorem lowerRamificationGroupReal_intCast [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] (i : ℤ) :
+    lowerRamificationGroupReal K L (i : ℝ) = lowerRamificationGroup K L i :=
+  sorry
+
+/-- **Layer 3, local monogenicity at the integer-ring level.** A finite separable extension of
+local fields has `𝒪[L] = 𝒪[K][x]` for one integral element `x`. This is the exported form needed
+by the different calculation and by the completed integer-ring comparison in #191. -/
+theorem exists_integerRing_adjoin_eq_top [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [Algebra.IsSeparable K L] :
+    ∃ x : 𝒪[L], Algebra.adjoin 𝒪[K] {x} = ⊤ :=
+  sorry
+
+/-- **Layer 3, the local different exponent.** This is the multiplicity of the maximal ideal in
+Mathlib's relative different ideal; it is a local invariant, not the global relative
+discriminant owned by Number-Field Arithmetic #191. -/
+noncomputable def differentExponent [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] : ℕ :=
+  multiplicity 𝓂[L] (differentIdeal 𝒪[K] 𝒪[L])
+
+/-- **Layer 3, tame ramification.** The residue characteristic does not divide `e(L/K)`. -/
+def IsTamelyRamified [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] : Prop :=
+  ¬ ringChar 𝓀[K] ∣ ramificationIndex K L
+
+/-- **Layer 3, wild ramification.** The residue characteristic divides `e(L/K)`. -/
+def IsWildlyRamified [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] : Prop :=
+  ringChar 𝓀[K] ∣ ramificationIndex K L
+
+/-- **Layer 3, Hilbert's local different formula.** The sum is finite because the lower
+ramification groups are trivial at sufficiently large indices. -/
+theorem differentExponent_eq_finsum_lowerRamificationGroup [Algebra K L]
+    [ValuativeExtension K L] [Module.Finite K L] [IsGalois K L] :
+    differentExponent K L =
+      ∑ᶠ i : ℕ, (Nat.card (lowerRamificationGroup K L (i : ℤ)) - 1) :=
+  sorry
+
+/-- **Layer 3, the sharp lower bound and its equality criterion.** For a finite separable local
+extension, `d(L/K) = e(L/K) - 1` exactly in the tame case; hence wild ramification forces
+`e(L/K) ≤ d(L/K)`. -/
+theorem differentExponent_eq_ramificationIndex_sub_one_iff [Algebra K L]
+    [ValuativeExtension K L] [Module.Finite K L] [Algebra.IsSeparable K L] :
+    differentExponent K L = ramificationIndex K L - 1 ↔ IsTamelyRamified K L :=
+  sorry
+
+/-- **Layer 3, wild different bounds.** The lower bound holds for every finite separable wild
+extension. The upper bound uses the nonvanishing of `e` in `L`, excluding the equal-characteristic
+case where its valuation is not finite. -/
+theorem differentExponent_bounds_of_wild [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [Algebra.IsSeparable K L] (hwild : IsWildlyRamified K L)
+    (he : (ramificationIndex K L : L) ≠ 0) :
+    ramificationIndex K L ≤ differentExponent K L ∧
+      differentExponent K L ≤ ramificationIndex K L - 1 +
+        absoluteRamificationIndex L (ramificationIndex K L) :=
+  sorry
 
 /-- **Layer 3, worked example: a totally ramified quadratic extension.** `ℚ_2(√2)/ℚ_2` has
 degree `2` (Eisenstein `X² − 2`); the general milestone is the totally-ramified ↔ Eisenstein
