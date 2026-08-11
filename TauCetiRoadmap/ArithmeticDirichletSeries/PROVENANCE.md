@@ -15,8 +15,8 @@ Audit date: 2026-08-10.
 | `roed-math/TauCetiRoadmap` PR #11 | `21e58a4bcba71584e143aa37f8abdb4ac46a4262` | generic truncated Perron machinery and endpoint conventions | Separated generic kernel and summatory bridge from zero-specific contour shifts; retained the exact finite-height value at the endpoint. |
 | `TauCetiProject/TauCetiRoadmap` PR #181 | description and review record as of 2026-08-10 | independent identification of Dirichlet density, ideal Euler products, and Wiener–Ikehara as reusable inputs | Used as architectural corroboration only. No source file from PR #181 was copied. |
 
-The normative migration ledger is maintained separately by the portfolio restructuring pass. This
-file records only the rows that land in this roadmap.
+The detailed portfolio migration ledger is maintained privately as an internal coordination
+artifact. This file records only the rows that land in this roadmap.
 
 ## Corrections preserved
 
