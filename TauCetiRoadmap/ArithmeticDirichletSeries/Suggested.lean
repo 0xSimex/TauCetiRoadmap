@@ -157,6 +157,31 @@ theorem hasDirichletDensity_of_symmDiff_finite
     (h : ((S \ T) ∪ (T \ S)).Finite) (hS : HasDirichletDensity K S δ) :
     HasDirichletDensity K T δ := sorry
 
+/-- Layer 7: lower-density bounds for a finite partition squeeze to exact densities when the
+bounds exhaust the density of the union. -/
+theorem hasDirichletDensity_of_squeeze {i : Type*} [Fintype i]
+    (S : i → Set (HeightOneSpectrum (𝓞 K))) (c : i → ℝ)
+    (hdisj : Pairwise (Function.onFun Disjoint S))
+    (hunion : HasDirichletDensity K (⋃ j, S j) 1)
+    (hlow : ∀ j, LowerDirichletDensity K (S j) (c j))
+    (hsum : ∑ j, c j = 1) :
+    ∀ j, HasDirichletDensity K (S j) (c j) := sorry
+
+/-- Layer 7: transfer Dirichlet density through a constant finite fibre of residue-degree-one
+primes. The coverage and residue-degree hypotheses are explicit because they are what identify
+the two norm sums. -/
+theorem hasDirichletDensity_contraction
+    (E : Type u) [Field E] [NumberField E] [Algebra K E]
+    (S : Set (HeightOneSpectrum (𝓞 E)))
+    (T : Set (HeightOneSpectrum (𝓞 K))) (k : ℕ) (hk : 0 < k) (δ : ℝ)
+    (hfibre : ∀ 𝔭 ∈ T, Nat.card {𝔓 : HeightOneSpectrum (𝓞 E) //
+      𝔓 ∈ S ∧ 𝔓.asIdeal.under (𝓞 K) = 𝔭.asIdeal} = k)
+    (hdeg : ∀ 𝔓 ∈ S,
+      Ideal.inertiaDeg (𝔓.asIdeal.under (𝓞 K)) 𝔓.asIdeal = 1)
+    (hover : ∀ 𝔓 ∈ S, ∃ 𝔭 ∈ T, 𝔓.asIdeal.under (𝓞 K) = 𝔭.asIdeal) :
+    HasDirichletDensity E S δ ↔
+      HasDirichletDensity K T (δ / (k : ℝ)) := sorry
+
 /-- Layer 6: exact Abel summation for finite sequences. The interval is inclusive at the upper
 endpoint; the displayed difference counts each boundary exactly once. -/
 theorem abelSummation (a : ℕ → ℂ) (f : ℕ → ℂ) (N : ℕ) :
