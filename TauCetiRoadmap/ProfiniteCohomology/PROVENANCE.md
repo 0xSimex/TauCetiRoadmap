@@ -78,7 +78,7 @@ declaration name that exists only in an open pull request.
   over Buzzard's colimit-over-finite-quotients suggestion (Hill: the right answer only for
   profinite `G` with discrete `M`, which is this roadmap's Layer 4). **The acceptance condition
   Joël Riou set there is Layer 3**: he is "very much ok" with the design provided the
-  formalization includes a comparison map to Amelia Livingston's complex that is a
+  formalization includes a comparison map to the explicit inhomogeneous complex that is a
   quasi-isomorphism in the discrete case. A follow-up
   thread,
   [#mathlib4 > Understanding ContCohomology and TopRep](https://leanprover.zulipchat.com/#narrow/channel/287929-mathlib4/topic/Understanding.20ContCohomology.20and.20TopRep/with/611890095),
@@ -119,8 +119,7 @@ explicit calculational model, the comparison theorems, and the material of Layer
 **Authors to coordinate with** before integrating existing material, per the root README's
 coordination rule: Richard Hill (`rmhi`; Mathlib `ContCohomology`, PRs #41539 and #41545,
 `ctsToDiscrete`), Edison (Yunzhou) Xie (`Whysoserioushah`; Mathlib `ContCohomology`, FLT cup
-products, ClassFieldTheory), Andrew Yang (Mathlib `ContCohomology`), Amelia Livingston (the
-discrete `groupCohomology` API whose conventions this roadmap follows), Kevin Buzzard and Aaron Liu
+products, ClassFieldTheory), Andrew Yang (Mathlib `ContCohomology`), Kevin Buzzard and Aaron Liu
 (ClassFieldTheory corestriction), and Joël Riou (whose quasi-isomorphism acceptance condition Layer
 3 discharges). One person, Xie, currently spans three of the four upstream sites: he is easy to
 coordinate with, but the coordination stops if he becomes unavailable. Register a Tau Ceti

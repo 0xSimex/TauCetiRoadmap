@@ -273,8 +273,8 @@ cited in Layer 7.
   continuous elements of `G → M` and `C²(G,M)` of `G × G → M`, matching the shape of the pin's
   `groupCohomology.cocycles₁ : Submodule k (G → A)` rather than bundled `C(G, M)`. The canonical
   object uses bundled iterated `C(G, -)`, and Layer 3 crosses between the two descriptions once.
-- **The differentials and cocycle identities are Mathlib's** (`GroupCohomology/LowDegree.lean`,
-  Amelia Livingston's conventions), with continuity added:
+- **The differentials and cocycle identities follow Mathlib's
+  `GroupCohomology/LowDegree.lean` conventions**, with continuity added:
   - `(d⁰ m) g = g • m - m`;
   - `(d¹ f) (g, h) = g • f h - f (g * h) + f g`;
   - `(d² f) (g, h, j) = g • f (h, j) - f (g * h, j) + f (g, h * j) - f (g, h)`;
