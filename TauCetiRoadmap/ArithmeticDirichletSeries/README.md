@@ -79,6 +79,7 @@ that otherwise survive every coprimality-guarded or off-endpoint theorem.
 |---|---:|---|---|
 | multiplicative ideal weight | 0 | `IdealWeight` | includes `eq_zero_bot` and finite bad-prime support |
 | coefficient by norm | 1 | `normCoeff` | finite sum over ideals of absolute norm `n` |
+| trivial-weight abscissa | 1 | `abscissaOfAbsConv_normCoeff_one` | exact abscissa `1`, the renamed Dedekind-zeta coefficient contract |
 | regrouping | 1 | `regroupByNorm` | ideal-indexed series equals Mathlib `LSeries normCoeff` on the common convergence region |
 | Euler-product package | 3 | `EulerProductData` | canonical local factors, convergence, finite bad set, and product equality |
 | nonzero prime Dirichlet sum | 5 | `primeDirichletSum` | indexed by `HeightOneSpectrum`, with a set or weight parameter |

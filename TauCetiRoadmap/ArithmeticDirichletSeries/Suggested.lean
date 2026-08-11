@@ -74,6 +74,11 @@ theorem normCoeff_zero (χ : IdealWeight K) : normCoeff K χ 0 = 0 := sorry
 
 theorem normCoeff_one (χ : IdealWeight K) : normCoeff K χ 1 = 1 := sorry
 
+/-- The exact abscissa contract for the trivial ideal weight, formerly stated for the named
+Dedekind-zeta coefficient. -/
+theorem abscissaOfAbsConv_normCoeff_one :
+    LSeries.abscissaOfAbsConv (normCoeff K (IdealWeight.one K)) = 1 := sorry
+
 /-- The partial-sum estimate that supplies continuation into a strip. It is analytic input, not a
 consequence of the coefficient values lying in a finite group. -/
 def HasCancellation (χ : IdealWeight K) : Prop :=
