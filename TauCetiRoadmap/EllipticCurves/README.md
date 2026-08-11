@@ -163,8 +163,8 @@ theorem**, that the integral points of a model are finite, which needs Diophanti
 at Thue–Siegel–Roth or Baker strength that nothing here builds; and the **abc conjecture**, an
 inequality bounding `max(|a|,|b|,|c|)` against `rad(abc)` for coprime `a + b = c`, of which the
 quality of §Layer 8 is a measure and no bound on which is claimed. Everything else — through
-Mordell–Weil, Selmer/Sha, the global minimal model, and the invariants a table of curves records
-— is in.
+Mordell–Weil, Selmer/Sha, the global minimal model, and the **selected `ℚ`-specific database
+adapters required by the current downstream consumers** — is in.
 
 Suggested home: `TauCeti/AlgebraicGeometry/EllipticCurve/` (mirroring Mathlib's layout).
 
@@ -310,12 +310,14 @@ so the point group *is* the ideal class group (`toClass_surjective`) — `[n]`-s
 invertible in `K` (Layer 1), the `N`-torsion `E[N] ≅ (ℤ/N)²` — stated as an additive
 equivalence (§Conventions) — and the bilinear **Weil pairing** (Layer 2), the finiteness of `E(𝔽_q)` and the
 **Hasse bound** as the integer inequality `a_q² ≤ 4q` together with the **trace of Frobenius**
-and the ordinary/supersingular predicates (Layer 3), the **global and semi-global minimal
-models**, the **minimal discriminant ideal**, the **Weierstrass class** and **semistability**,
-with the localisation instances they need (Layer 4.5a), the **quadratic twist** and the
+and the ordinary/supersingular predicates (Layer 3), the **global and semi-global minimality
+predicates**, the **minimal discriminant ideal**, the **positive defect class** and
+**semistability**, with the localisation instances they need (Layer 4.5a) and the global equation
+constructions they feed (Layer 4.5b), the **quadratic twist** and the
 split-multiplicative-reduction theorem (Layer 5), the **Mordell–Weil theorem**
-`AddGroup.FG (E K)` (Layer 6), and the **canonical primitive short model** with its existence,
-uniqueness and height, together with the rest of the `ℚ`-specific database adapter (Layer 8).
+`AddGroup.FG (E K)` (Layer 6), and the **canonical primitive short equation** with its existence,
+uniqueness and height, together with the selected `ℚ`-specific adapters required by current
+downstream consumers (Layer 8).
 The layers whose central objects are new *types* — the places of
 the function field (Layer 0), the hom-group, dual isogeny, and formal group (Layer 1), the
 Kodaira type (Layer 4), and the Selmer/Sha groups (Layer 7) — are specified in the narrative
@@ -817,16 +819,21 @@ future scheme-facing roadmap.
   rank-1 field (references). This strand consumes the rank-1 generalisation of Mathlib's
   reduction predicates flagged in the consume-section above.
 
-### Layer 4.5a: global models and the Weierstrass class over a Dedekind domain (AEC VIII.8)
+### Layer 4.5a: invariant theory over a Dedekind domain (AEC VIII.8)
 
 Layer 4 minimises over one discrete valuation ring at a time, which does not by itself produce a
-single equation minimal at every prime. This layer is the global counterpart, over the fraction
-field `K` of a Dedekind domain `O` — the case of record being `O` the ring of integers of a
-number field. It is what *the* discriminant, *the* minimal equation and *the* real period of a
-curve mean, and it is consumed by §Layer 7's period and by §Layer 8's adapters. It rests only
-on Layer 4's local minimality and on Mathlib's `IsDedekindDomain.HeightOneSpectrum` and
-`ClassGroup`; Layers 1–3 are not inputs. The *existence* of a one-prime semi-global model is
-**not** here — it needs arithmetic input this layer does not have, and is §Layer 4.5b.
+single equation minimal at every prime. This layer packages the model-independent invariants
+read from those local minima, over the fraction field `K` of a Dedekind domain `O`. Its
+definitions, ideal identities, model-independence theorems and the easy implication from a global
+minimal equation to a trivial obstruction class rest only on Layer 4's local minimality and on
+Mathlib's `IsDedekindDomain.HeightOneSpectrum` and `ClassGroup`; Layers 1–3 are not inputs.
+
+⚠ **This layer does not construct one global equation from the local data.** In particular, it
+does not claim over an arbitrary Dedekind domain that a trivial obstruction class implies a global
+minimal equation. That direction requires Kraus's global coefficient patching and is §Layer 4.5b,
+over the ring of integers of a number field. The `ℚ`-specific reduced minimal equation remains
+here as its own explicit `ℤ`-normalisation milestone; it is not evidence for an unrestricted
+Dedekind-base theorem.
 
 ⚠ **A field is a Dedekind domain, and its height-one spectrum is empty.** Every `∀ v` in this
 layer is then vacuous and every `∃ v` is false, so a definition written with a bare existential
@@ -860,9 +867,11 @@ The layer is about elliptic curves and says so in its hypotheses.
   `v₀` says nothing about the denominators at `v₀`.
 - **The sharp predicate is a different one.** `IsSemiGlobalMinimal` deliberately permits any
   defect at `v₀`, so the exact-defect notion gets its own name:
-  **`IsSharpSemiGlobalMinimalAt O v₀ W`**, meaning minimal at every `v ≠ v₀` and with
-  `v₀(Δ W) − v₀(Δ_min,v₀) = 12` exactly. The two must not share a name; the weak one is the
-  predicate consumers test, the sharp one is what §Layer 4.5b's construction produces.
+  **`IsSharpSemiGlobalMinimalAt O v₀ W`**, meaning **integral at `v₀`**, minimal at every
+  `v ≠ v₀`, and with `v₀(Δ W) − v₀(Δ_min,v₀) = 12` exactly, equivalently
+  `obstructionExponentAt O v₀ W = 1`. Integrality is independent data: a nonintegral translation
+  can preserve the discriminant. The weak predicate is what consumers test; the sharp one is what
+  §Layer 4.5b's construction produces, and both declarations are seeded in `Suggested.lean`.
 - **The minimal discriminant ideal.** `minimalDiscriminantIdeal O W = ∏ᵥ 𝔭ᵥ ^ v(Δ_min,ᵥ)`, the
   finite product over the height-one primes of the local minimal discriminants of §Layer 4. It
   depends only on the `K`-isomorphism class and not on the model — that invariance is the
@@ -871,19 +880,30 @@ The layer is about elliptic curves and says so in its hypotheses.
   and cheaply — translating a global minimal equation by `r = 1/2` leaves `Δ` alone and destroys
   integrality, so `(Δ W) = 𝔇_{E/K}` holds for a model that is not even integral, let alone
   minimal.
-- **The Weierstrass class.** The obstruction exponents `fᵥ = (v(Δ W) − v(Δ_min,ᵥ))/12` of an
-  integral model — nonnegative integers, the divisibility by `12` being a theorem about
-  admissible changes of variable rather than a convention — the ideal `𝔞_W = ∏ᵥ 𝔭ᵥ ^ fᵥ`, and
-  its class `[𝔞_W] ∈ ClassGroup O`. Milestones: the ideal identity
-  **`(Δ W) = 𝔇_{E/K} · 𝔞_W^{12}`** — the defect is what an integral model carries *above* the
+- **The positive defect class.** The obstruction exponents
+  `fᵥ = (v(Δ W) − v(Δ_min,ᵥ))/12` of an integral model — nonnegative integers, the
+  divisibility by `12` being a theorem about admissible changes of variable rather than a
+  convention — the integral defect ideal `𝔍_W = ∏ᵥ 𝔭ᵥ ^ fᵥ`, and its class
+  `[𝔍_W] ∈ ClassGroup O`. Milestones: the ideal identity
+  **`(Δ W) = 𝔇_{E/K} · 𝔍_W^{12}`** — the defect is what an integral model carries *above* the
   minimal discriminant, so it multiplies the minimal ideal up to the principal one, and the
   identity is *not* to be written the other way round; independence of the class from the chosen
-  integral model; `[𝔞_W] = 1 ↔ W` admits a global minimal model (AEC VIII.8.2); and `h(K) = 1 ⇒`
-  one always exists (VIII.8.3). ⚠ **Principality of `𝔇_{E/K}` is not the obstruction**: there
-  are curves whose minimal discriminant ideal is principal while `[𝔞_W] ≠ 1`, so no global
-  minimal model exists. The two conditions must not be conflated, and a worked instance of the
-  gap is an acceptance criterion. ⚠ The name is **Silverman's Weierstrass class**, not any
-  database spelling of the same object.
+  integral model; and the easy direction that a global minimal equation has trivial class. The
+  public interface is the choice-independent curve-level wrapper
+  **`globalMinimalityClass O E : ClassGroup O`**, with comparison to
+  `weierstrassDefectClass O W` for
+  every integral model `W` of `E` and invariance under admissible change of variables. Consumers
+  do not choose an equation merely to state the invariant. The converse and the class-number-one
+  corollary are §Layer 4.5b number-field theorems, not assertions at this generality.
+  ⚠ **Principality of `𝔇_{E/K}` is not the obstruction**: there are number-field curves whose
+  minimal discriminant ideal is principal while `globalMinimalityClass O E ≠ 1`, so no global
+  minimal model exists by §Layer 4.5b. The two conditions must not be conflated, and a worked
+  instance of the gap is an acceptance criterion. ⚠ **Convention:** AEC VIII.8 prints the
+  fractional ideal `𝔞_Δ = 𝔍_W⁻¹`, so that `𝔇_{E/K} = (Δ W) · 𝔞_Δ^{12}`. This
+  roadmap and Sage's `global_minimality_class` use the positive integral defect class
+  `[𝔍_W]`, named `weierstrassDefectClass`; the separately seeded
+  `silvermanWeierstrassClass` is its inverse. Triviality is unchanged, but the orientation of a
+  representative-prime theorem is not.
 - **Uniqueness over `ℚ`: the reduced minimal model.** Two global minimal models over `ℤ` differ
   by `u = ±1` and `r, s, t ∈ ℤ`, so `ω_min` is well-defined up to sign. Pinning the remaining
   freedom makes the model itself unique: `IsReducedMinimal W` for `W/ℚ` is global minimality over
@@ -902,30 +922,114 @@ The layer is about elliptic curves and says so in its hypotheses.
   multiplicative reduction survives every extension (semistable at `v`, never potentially good
   there).
 
-### Layer 4.5b: one-prime semi-global models over a number field
+### Layer 4.5b: global equation construction over a number field
 
-Layer 4.5a defines the predicates and proves everything that is local-to-global bookkeeping. The
-*existence* theorem is separated out because it is not bookkeeping: it needs genuine arithmetic
-that neither Layer 4.5a nor Mathlib supplies, and hiding that inside "and then choose a prime"
-would be exactly the kind of gap the roadmap-writing guide forbids. Base: `O = 𝒪_K` for a number
-field `K`, not an abstract Dedekind domain.
+Layer 4.5a supplies the local invariants. This layer performs the hard step: construct a single
+integral equation whose coefficients satisfy all local conditions simultaneously. Base:
+`O = 𝓞 K` for a number field `K`, not an abstract Dedekind domain. The local criterion, the global
+criterion and the passage from compatible local auxiliary data to one global
+`(a₁, b₂, a₃)`-triple (equivalently one admissible `(r, s, t)`-transformation) are separate
+milestones; none is hidden under the word "bookkeeping".
 
-- **A prime in every ideal class** — the missing prerequisite, and a target of this roadmap
-  because no other roadmap here supplies it. For `K` a number field, every class of
-  `ClassGroup 𝒪_K` contains a height-one prime — indeed infinitely many. Mathlib has
-  `ClassGroup.mk0_surjective`, which gives a nonzero *ideal* in each class and is not enough; the
-  step from an ideal to a prime is the content. Routes: Chebotarev through the Hilbert class
-  field, or the analytic density of primes in ideal classes. ⚠ This is **not** part of the
-  `ClassGroup` API and must not be assumed to be.
-- **Approximation for the local `(c₄, c₆)` conditions** — the second prerequisite: enough
-  simultaneous approximation over `𝒪_K` to glue Kraus's local criteria at the finitely many bad
-  primes into one global equation (references).
-- **The existence theorem.** Given both, every elliptic curve over `K` **either** admits a global
-  minimal model — exactly when its Weierstrass class is trivial (AEC VIII.8.2), automatic when
-  `h(K) = 1` (VIII.8.3) — **or**, for any prime `v₀` representing the obstruction class, admits a
-  model that is `IsSharpSemiGlobalMinimalAt 𝒪_K v₀`: minimal away from `v₀`, with discriminant
-  defect exactly `12` there. Both branches give `IsSemiGlobalMinimal`, which is what consumers
-  use.
+- **Prime representatives — exact owner, contract and route.** This reusable number-field theorem
+  is owned by the Layer-4.5b prerequisite ticket but lands outside the elliptic-curve namespace,
+  in `TauCeti/NumberTheory/NumberField/ClassGroup/PrimeRepresentative.lean`. The contract includes
+  avoidance of a prescribed finite set, which is what the application actually needs:
+
+  ```lean
+  open scoped NumberField
+
+  theorem exists_primeIdeal_mk_eq_avoiding
+      (K : Type*) [Field K] [NumberField K]
+      (c : ClassGroup (𝓞 K))
+      (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 K))) :
+      ∃ v, v ∉ S ∧
+        ClassGroup.mk0 ⟨v.asIdeal,
+          mem_nonZeroDivisors_iff_ne_zero.mpr v.ne_bot⟩ = c
+  ```
+
+  The chosen proof route is the **density of primes in an ideal class**, not an unresolved choice
+  between unrelated methods. Regard the ordinary class group as the ray class group for modulus
+  `1`; prove that the prime ideals in each ray class have Dirichlet density
+  `1 / #ClassGroup (𝓞 K)`; positive density gives infinitely many such primes, hence one outside
+  `S`. The prerequisite ticket therefore owns the Dirichlet-density API for prime ideals and the
+  modulus-`1` specialization of the ray-class density theorem (MIT 18.785, Proposition 28.10),
+  including the Hecke-character orthogonality and the pole/nonvanishing input at `s = 1` used by
+  that theorem. Mathlib's `ClassGroup.mk0_surjective` supplies only an ideal and does not
+  discharge the prime or finite-avoidance statements.
+- **Kraus local and global criteria — owned here with named contracts.** These live in
+  `TauCeti/AlgebraicGeometry/EllipticCurve/GlobalModels/Kraus.lean` and are implemented in this
+  order:
+
+  1. for `c₄, c₆ ∈ K`, put `Δ = (c₄³ − c₆²)/1728`; the input at `v` is that
+     `c₄, c₆, Δ ∈ 𝒪_{K,v}` and `Δ ≠ 0`;
+  2. put `W₀ = [0, 0, 0, −c₄/48, −c₆/864]`. Define `HasKrausThreeWitness c₄ c₆ v`
+     to mean that some `b₂ ∈ 𝒪_{K,v}` makes the `(b₂/12, 0, 0)`-transform of `W₀`
+     integral, and define `HasKrausTwoWitness c₄ c₆ v` to mean that some
+     `a₁, a₃ ∈ 𝒪_{K,v}` make the `(a₁²/12, a₁/2, a₃/2)`-transform integral.
+     `KrausLocalCondition c₄ c₆ v` is the step-1 input together with the two-witness predicate
+     when `v ∣ 2`, the three-witness predicate when `v ∣ 3`, and no extra predicate otherwise.
+     Prove the nontrivial `krausLocalCondition_iff_exists_integralModel`, equating this explicit
+     auxiliary criterion with existence of a Weierstrass equation over `𝒪_{K,v}` whose base
+     change has **exactly** those two invariants;
+  3. prove `krausLocalCondition_of_not_dvd_six` **from the input in step 1**. Thus the auxiliary
+     analysis, not the integrality/nonsingularity hypotheses, is automatic away from `v ∣ 6`;
+  4. for every `v ∣ 3`, choose a `HasKrausThreeWitness` value `b₂` modulo
+     `v ^ v(3)`; for every `v ∣ 2`, choose a `HasKrausTwoWitness` pair and retain its `a₁`
+     component modulo `v ^ v(2)`. Combine the `a₁` residues while also imposing
+     `a₁ ≡ 0 (mod 3)`, then **recompute** each local `a₃` for
+     that fixed global `a₁` so that `(a₁, a₃)` is a `HasKrausTwoWitness`, before combining the
+     `a₃` residues modulo `v ^ v(2)`. The order is load-bearing: `a₃` is not independent of the
+     chosen lift of `a₁`;
+  5. own the exact finite-approximation lemma in
+     `TauCeti/NumberTheory/DedekindDomain/FiniteApproximation.lean`: for a finite family of
+     pairwise-comaximal prime powers, the map
+     `𝓞 K → ∏ v ∈ T, (𝓞 K) / v ^ nᵥ` is surjective, together with the comparison of
+     these quotients with the corresponding localization quotients. Apply it with the powers in
+     step 4;
+  6. with the resulting integral `a₁, b₂, a₃`, set
+     `s = a₁/2`, `r = b₂/3 − s²`, and
+     `t = s(b₂ − a₁²)/3 + a₃/2`. Prove that this single `(r, s, t)` transforms
+     `[0, 0, 0, −c₄/48, −c₆/864]` to an integral global equation;
+  7. define `KrausGlobalCondition c₄ c₆ := ∀ v, KrausLocalCondition c₄ c₆ v` and prove
+     `krausGlobalCondition_iff_exists_integralModel` by the construction above; and
+  8. in each application, separately verify local minimality and compute every
+     `obstructionExponentAt`, rather than inferring either property from the discriminant alone.
+
+- **Patching local minimal changes of variables — a separate AEC contract.** For each prime in
+  the finite support of the defect, Layer 4 supplies a local minimal change
+  `(uᵥ, rᵥ, sᵥ, tᵥ)`. If the positive defect ideal is principal, choose the corresponding
+  global scale `u`; finite approximation then chooses one global `(r, s, t)` satisfying the
+  finitely many required localization congruences, and the transformed equation is integral and
+  minimal everywhere. This is the direct AEC VIII.8.2 route. It shares finite-approximation
+  infrastructure with Kraus's exact-invariant construction, but the two patching theorems are not
+  silently identified.
+
+- **Global-minimality equivalence — number fields only.** For `O = 𝓞 K`, the global construction
+  proves
+  `globalMinimalityClass O E = 1 ↔ E` admits an integral equation that is globally minimal
+  (AEC VIII.8.2), and hence class number one implies existence (VIII.8.3). The forward implication
+  uses the local-change patching contract above (or, as a second proof, the exact-invariant Kraus
+  theorem); it is not retroactively attributed to Layer 4.5a or to an arbitrary Dedekind domain.
+- **One-prime construction — existence, not every representative.** Let `S` contain the primes
+  above `2` and `3`, together with any additional finite set the caller asks to avoid. For an
+  integral model `W` of `E`, let `𝔍_W` be its positive defect ideal. When
+  `globalMinimalityClass (𝓞 K) E ≠ 1`, the density theorem chooses **some** `v₀ ∉ S` with
+  `[v₀] = [𝔍_W]`; choose `u ∈ K×` with `𝔍_W = (u) v₀` as fractional ideals, and put
+  `c₄' = c₄(W)/u⁴`, `c₆' = c₆(W)/u⁶`, and `Δ' = Δ(W)/u¹²`. The exact conditional
+  contract is:
+
+  > if `𝔍_W = (u) v₀` as fractional ideals and `KrausGlobalCondition c₄' c₆'`, then there is a change of
+  > variables `C` for which `IsSharpSemiGlobalMinimalAt (𝓞 K) v₀ (C • E)`.
+
+  At primes above `2` and `3`, local minimal equations supply the witnesses for that global
+  condition; at `v₀` it is automatic because `v₀ ∤ 6`; elsewhere the scaled invariants are
+  already minimal. Thus the final seeded theorem takes `S` and says **there exist** `v₀ ∉ S`
+  in the positive defect class and `C`, not that every representative prime works. Its conclusion
+  includes integrality at `v₀`, minimality away from it and
+  `obstructionExponentAt (𝓞 K) v₀ (C • E) = 1`, and therefore implies
+  `IsSemiGlobalMinimal`. The nontrivial-class hypothesis is explicit; the trivial case is handled
+  by the global-minimality equivalence instead.
 
 ### Layer 5: twists (AEC X.2, X.5)
 
@@ -1076,11 +1180,11 @@ scheme-facing roadmap. This layer deliberately does not conflate the two.
   part is not isogeny-invariant, so it would gut Cassels' theorem — with
   the real period of the **global minimal** Weierstrass equation. Two prerequisites, each an
   explicit milestone:
-  **(i) the global minimal model, from §Layer 4.5a** — which builds it as its own lane rather
-  than as a stretch-goal prerequisite: the Weierstrass class `[𝔞_W]` with
-  `(Δ W) = 𝔇_{E/K}·𝔞_W^{12}`, a global minimal equation existing iff `[𝔞_W] = 1` (AEC VIII.8.2),
-  which holds over `ℚ` because `h(ℚ) = 1` (VIII.8.3). What this milestone adds is the
-  consequence the period needs: two global minimal equations over `ℤ` differ by `u = ±1` and
+  **(i) the global minimal model over `ℚ`** — §Layer 4.5a supplies the positive-defect identity
+  `(Δ W) = 𝔇_{E/K}·𝔍_W^{12}` and the explicit reduced-minimal-equation milestone over `ℤ`;
+  §Layer 4.5b owns the general number-field implication from trivial class to a patched global
+  equation. Over `ℚ`, the reduced-model construction gives the equation this period needs. Two
+  global minimal equations over `ℤ` differ by `u = ±1` and
   `r, s, t ∈ ℤ`, so `ω_min` is **well-defined up to sign** — and §Layer 4.5a's reduced minimal
   model removes even that ambiguity, making `ω_min` a genuine invariant of the curve.
   **(ii) the period is defined by an explicit integral**, not by an unexplained
@@ -1143,16 +1247,16 @@ scheme-facing roadmap. This layer deliberately does not conflate the two.
   `L(E, s)`, is out of scope — it needs the analytic continuation of `L(E, s)` that Mathlib does
   not have; the statement-only milestone above, with its analytic hypothesis, is what is in.)
 
-### Layer 8: the `ℚ`-specific database adapter
+### Layer 8: selected `ℚ`-specific database adapters
 
-A thin layer, and deliberately so: the quantities a table of curves over `ℚ` records that are
-not themselves structural elliptic-curve theory. Everything genuinely structural has a home
-above — the Frobenius trace and the ordinary/supersingular dichotomy in §Layer 3, potential good
-reduction and good ordinary/supersingular reduction in §Layer 4, minimal models and semistability
-in §Layers 4.5a–b — and this layer is what remains once those are taken out. It exists so a
-database's vocabulary has one spelling in Tau Ceti, and so that quantities which are *not*
-unconditionally meaningful carry their hypotheses rather than a junk value. Its base is `ℚ`
-throughout; nothing here is claimed over a general number field.
+A thin layer, and deliberately so: the **selected adapters required by the current downstream
+consumers**, not every quantity a table of curves over `ℚ` might record. Everything genuinely
+structural has a home above — the Frobenius trace and the ordinary/supersingular dichotomy in
+§Layer 3, potential good reduction and good ordinary/supersingular reduction in §Layer 4, and
+minimal-model invariants and equation construction in §Layers 4.5a–b. It exists so the selected
+vocabulary has one spelling in Tau Ceti, and so quantities which are not unconditionally
+meaningful carry their hypotheses rather than a junk value. Its base is `ℚ` throughout; nothing
+here is claimed over a general number field.
 
 ⚠ **It supplies selected adapters, not every field of a database record.** A record also carries
 a Faltings height, a Szpiro ratio, a modular degree, a Manin constant, analytic `Ш` data and
@@ -1164,30 +1268,47 @@ ratio to whatever follows the arithmetic conductor of §Layer 4, since it is a r
 conductor and not against Layer 4's algorithmic exponent. Naming the boundary is the point: this
 layer is useful without pretending to be exhaustive.
 
-- **The canonical primitive integral short model.** The prerequisite for the height below, and a
+- **The primitive integral short equation.** The prerequisite for the height below, and a
   milestone in its own right — **seeded**, since the height's whole content is which model it is
   computed from, and leaving the model's type open would leave the height undefined. The
   predicate `IsPrimitiveShortModel W` on `W : WeierstrassCurve ℤ` is `W.IsShortNF` together with:
   no prime `ℓ` has both `ℓ⁴ ∣ a₄` and `ℓ⁶ ∣ a₆`. Bundled as `PrimitiveShortModel E` for elliptic
   `E/ℚ` — the integral model, its primitivity, and a `VariableChange ℚ` carrying its base change
   to `E`. The milestones are `exists_primitiveShortModel` and `primitiveShortModel_unique`:
-  existence, and uniqueness outright, since the only remaining freedom is
+  existence of the bundle and uniqueness of its **equation** outright, since the only remaining
+  coefficient freedom is
   `(a₄, a₆) ↦ (u⁴a₄, u⁶a₆)` with `u = ±1` and `u⁴ = u⁶ = 1`. ⚠ This is **not** §Layer 4.5a's
   reduced minimal model, which is a *long* equation: they are different canonical models serving
   different purposes, both stored separately in a database record, and neither substitutes for
-  the other.
+  the other. The bundled change-of-variables witness need not be unique; only the equation and
+  its derived height are canonical.
 - **The height of a curve over `ℚ`.** Two declarations, and the split is the point:
   `shortEquationHeight W = max (4·|a₄|³) (27·a₆²) : ℕ` for an integral short equation over `ℤ`
-  (seeded), and `naiveCurveHeight E`, that function applied to the canonical primitive model
-  above — the quantity a table is ordered by. ⚠ **The carrier matters and is
+  (seeded), and the now-seeded `primitiveShortModel E` and `naiveCurveHeight E`, that function
+  applied to the unique primitive equation above — the quantity a table is ordered by.
+  `naiveCurveHeight_eq` compares with every bundled primitive model, and
+  `naiveCurveHeight_variableChange` gives invariance under a `ℚ`-isomorphism. ⚠ **The carrier
+  matters and is
   the whole content.** On a bare short model over `ℚ` this expression is not an invariant at all:
   `x = u²x'`, `y = u³y'` sends `(A, B)` to `(A/u⁴, B/u⁶)` and the height to `H/|u|¹²`, so
   ranging over `u = 2, 3, …` gives infinitely many short rational models of one curve with height
   tending to `0`, and bounded-height finiteness is false. Primitivity over `ℤ` is what makes it
-  well defined. API: the relation to `Δ = −16(4A³ + 27B²)`, monotonicity in `|A|` and `|B|`, and
-  **finiteness of the set of curves below a given height** — the statement that makes ordering a
-  table well-founded, and which is false without the canonical model. ⚠ It does not take the
-  name `naiveHeight`: that is the naïve `x`-height on points of §Layer 6, which Mathlib reserves.
+  well defined. The bounded-height theorem uses the primitive-equation carrier explicitly:
+
+  ```lean
+  Set.Finite
+    {W : WeierstrassCurve ℤ |
+      IsPrimitiveShortModel W ∧
+      (W.baseChange ℚ).IsElliptic ∧
+      max (4 * W.a₄.natAbs ^ 3) (27 * W.a₆.natAbs ^ 2) ≤ H}
+  ```
+
+  It is immediate from bounds on the two integers `(A, B)` and yields finiteness of
+  `ℚ`-isomorphism classes of bounded `naiveCurveHeight`. It does **not** assert finiteness of the
+  literal terms `E : WeierstrassCurve ℚ`, which is false because every isomorphism class has
+  infinitely many rational equations. Further API: the relation to
+  `Δ = −16(4A³ + 27B²)` and monotonicity in `|A|` and `|B|`. ⚠ The height does not take the name
+  `naiveHeight`: that is the naïve `x`-height on points of §Layer 6, which Mathlib reserves.
 - **The abc quality of a curve.** With `j/1728 = a/c` in lowest terms and `b = c − a`,
   `abcQuality E = log max(|a|, |b|, |c|) / log rad(a·b·c)`, defined **under the hypothesis
   `j ∉ {0, 1728}`** — exactly the condition making `a·b·c ≠ 0`. ⚠ Do not define it totally: at
@@ -1274,17 +1395,17 @@ layer is useful without pretending to be exhaustive.
   `y² + y = x³ − x² − 10x − 20` for 11.a1 and `y² + y = x³ − x` for 37.a1 are `IsReducedMinimal`,
   and are the only such models in their `ℚ`-isomorphism classes — the statement that turns the
   minimal discriminant and the real period into invariants of the curve rather than of a chosen
-  equation. ⚠ It is a *long* equation, and is not the canonical primitive short model that
-  §Layer 8's height is computed from; the two canonical models are certified separately.
+  equation. ⚠ It is a *long* equation, and is not the canonical primitive short equation that
+  §Layer 8's height is computed from; the two canonical equations are certified separately.
 - **Semistability agrees with the Kodaira symbol:** 11.a1 is semistable — its only bad prime is
   `11`, of type `I₁` in the list above — while 27.a4 is not, type `II` at `3` being additive.
   Checking `IsSemistable` against the symbols Tate's algorithm computes is the acceptance test
   for §Layer 4.5a against §Layer 4, in both directions.
-- **The Weierstrass class is not the principality of `𝔇_{E/K}`**, on a named curve. Over
+- **The positive defect class is not the principality of `𝔇_{E/K}`**, on a named curve. Over
   `K = ℚ(α)` with `α² − α − 16 = 0` — that is `ℚ(√65)`, of class number `2` — the curve
   `[0, 0, 0, −15221331α − 53748576, −79617688290α − 281140318368]` has **everywhere good
-  reduction**, so `𝔇_{E/K} = (1)`, as principal as an ideal gets; and yet its Weierstrass class
-  is nontrivial, so it has no global minimal model — no equation over `𝒪_K` has unit
+  reduction**, so `𝔇_{E/K} = (1)`, as principal as an ideal gets; and yet its positive defect
+  class is nontrivial, so it has no global minimal model — no equation over `𝓞 K` has unit
   discriminant — and only a semi-global one. It is the sharpest possible separation of the two
   conditions, and certifying it is what stops them being conflated. The coefficients are large
   because such curves are; any curve with those two properties serves equally, and this one is
@@ -1327,15 +1448,16 @@ cross-cutting Layer 0.5 starts early because Layers 1, 2, 4, and 5 all use it. T
    consumes the formal group, the Tate module (Layer 2), and Mathlib's reduction theory;
    Layer 5's split-reduction statement feeds back into Layer 4's analytic strand, so those
    two land together, not in numeric order.
-4. **Global models over a Dedekind domain** — Layer 4.5a: the localisation instances, global
-   and semi-global minimality, the minimal discriminant ideal, the Weierstrass class,
-   semistability, and the reduced minimal model over `ℚ`. It needs Layer 4's local minimality
-   and nothing else, so it runs beside lanes 1–3 rather than after them, and it unblocks both
-   the BSD period of lane 9 and the adapter lane below.
-5. **One-prime semi-global existence over a number field** — Layer 4.5b, after lane 4. ⚠ It is
-   split off precisely because it does **not** rest on local minimality alone: it needs a
-   height-one prime in each ideal class of `𝒪_K` and simultaneous approximation for Kraus's
-   local conditions, both of them targets of that layer rather than API it can assume.
+4. **Invariant theory over a Dedekind domain** — Layer 4.5a: the localisation instances, global
+   and semi-global predicates, the minimal discriminant ideal, obstruction exponents, the
+   curve-level global-minimality class, semistability, and the reduced minimal model over `ℚ`.
+   The Dedekind-general invariant package and easy implication need Layer 4's local minimality;
+   they do not include the converse construction of a global equation.
+5. **Global equation construction over a number field** — Layer 4.5b, after lane 4. It proves
+   Kraus's local and global criteria, patches the local auxiliary coefficients, obtains the
+   global-minimality equivalence over `𝓞 K`, and constructs a sharp one-prime model. Its separate
+   number-field prerequisite supplies a prime in a prescribed ideal class outside a finite set,
+  by the fixed ray-class density route.
 6. **Torsion and pairings** — Layer 2, on the dual isogeny and the divisor calculus.
 7. **Heights, Mordell–Weil, and explicit `2`-descent** — Layer 6: naïve-height Mordell–Weil
    and the explicit étale-algebra `2`-descent, independent of Layer 7; the canonical height
@@ -1344,9 +1466,9 @@ cross-cutting Layer 0.5 starts early because Layers 1, 2, 4, and 5 all use it. T
    nonabelian-`H¹` prerequisite (used by Layer 5's classification and Layer 7), then
    Layer 7's Selmer/Sha, refining Layer 6's descent.
 9. **Cassels and the conditional BSD statement** — stretch, after lanes 3, 4, 7, 8.
-10. **The `ℚ`-specific database adapter** — Layer 8, on lane 4 (the canonical models). Thin by
-   construction, since everything structural has a home in lanes 2–4; what is left is the
-   vocabulary a table of curves over `ℚ` is written in.
+10. **Selected `ℚ`-specific database adapters** — Layer 8, on lane 4 (the canonical models).
+   Thin by construction: it owns only the vocabulary required by current downstream consumers,
+   not an exhaustive database schema.
 
 ## References
 
@@ -1379,16 +1501,24 @@ cross-cutting Layer 0.5 starts early because Layers 1, 2, 4, and 5 all use it. T
 - A. Kraus, *Quelques remarques à propos des invariants `c₄`, `c₆` et `Δ` d'une courbe
   elliptique*, Acta Arith. **54** (1989), 75–80
   ([doi](https://doi.org/10.4064/aa-54-1-75-80)) — the local criterion on `(c₄, c₆)` deciding
-  when a pair comes from an integral model at a prime, and so the computational route to global
-  and semi-global minimal models (Layers 4.5a–b).
+  when a pair comes from an integral model at a prime, and the input to the global coefficient
+  patching of Layer 4.5b.
+- A. V. Sutherland, *18.785 Number Theory I, Lecture 28: Global Class Field Theory and the
+  Chebotarev Density Theorem* (MIT OpenCourseWare, 2021), Proposition 28.10
+  ([notes](https://ocw.mit.edu/courses/18-785-number-theory-i-fall-2021/resources/mit18_785f21_lec28/))
+  — every ray class has prime ideals of Dirichlet density the reciprocal of the ray-class number;
+  modulus `1` gives the prime representative with finite avoidance used in Layer 4.5b.
 - J. E. Cremona, *Algorithms for Modular Elliptic Curves*, 2nd ed. (Cambridge, 1997) — minimal
   and **reduced minimal** Weierstrass equations over `ℚ`, the long-equation normalisation tables
   of curves are written in (Layer 4.5a).
 - J. E. Cremona's number-field elliptic-curve implementation (the `kraus` and
-  `ell_number_field` modules of SageMath, following Kraus above) — global and semi-global
-  minimal models over `𝒪_K`, and the source of the `ℚ(√65)` curve with everywhere good
-  reduction, principal minimal discriminant ideal and nontrivial Weierstrass class that
-  §Worked examples names (Layer 4.5a–b).
+  `ell_number_field` modules of SageMath, following Kraus above;
+  [documentation](https://doc.sagemath.org/html/en/reference/arithmetic_curves/sage/schemes/elliptic_curves/kraus.html),
+  [pinned source](https://github.com/sagemath/sage/blob/c9c8381962adf66efdcf11ee7966a81e8d7b1267/src/sage/schemes/elliptic_curves/kraus.py)) — separate local and global Kraus conditions,
+  construction of one global equation from compatible local data, global and semi-global
+  minimal models over `𝓞 K`, and the source of the `ℚ(√65)` curve with everywhere
+  good reduction, principal minimal discriminant ideal and nontrivial positive defect class that
+  §Worked examples names (Layers 4.5a–b).
 - J. S. Balakrishnan, W. Ho, N. Kaplan, S. Spicer, W. Stein, J. Weigandt, *Databases of elliptic
   curves ordered by height and distributions of Selmer groups and ranks*, LMS J. Comput. Math.
   **19** (2016), 351–370 ([arXiv:1602.01894](https://arxiv.org/abs/1602.01894)) — the

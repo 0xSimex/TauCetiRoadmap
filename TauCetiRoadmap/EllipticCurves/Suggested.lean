@@ -387,10 +387,11 @@ variable {K : Type*} [Field K] (p : ℕ) [Fact p.Prime] [CharP K p]
 /-- **Supersingularity**, defined **geometrically**: the `p`-torsion over a separable closure is
 trivial (AEC V.3.1(i)). ⚠ This is deliberately *not* a congruence on the Frobenius trace. The
 geometric condition is the one that makes sense over an arbitrary field of characteristic `p`,
-where there is no `a_q` at all, and it makes invariance under base change **definitional** rather
-than a theorem every consumer has to transport. The price is a dependency on Layer 0.5's base
-change and Layer 2's torsion vocabulary, which is mild. The finite-field criterion is
-`isSupersingular_iff_dvd_frobeniusTrace` below. -/
+where there is no `a_q` at all. It makes base-change invariance the natural theorem to prove, but
+⚠ does **not** make that theorem definitional: the two sides use different separable closures and
+different point types, as `isSupersingular_baseChange_iff` below records. The price is a dependency
+on Layer 0.5's base change and Layer 2's torsion vocabulary, which is mild. The finite-field
+criterion is `isSupersingular_iff_dvd_frobeniusTrace` below. -/
 def IsSupersingular (W : WeierstrassCurve K) [W.IsElliptic] : Prop :=
   Submodule.torsionBy ℤ (W.baseChange (SeparableClosure K)).toAffine.Point (p : ℤ) = ⊥
 
@@ -446,15 +447,18 @@ new objects specified in `README.md` §Layer 4 and built there on Layers 0–1 a
 reduction theory; they are not pinned here as `sorry`-typed types. Néron models are **out of
 scope**: they are schemes, and belong to the future scheme-facing roadmap (`README.md`). -/
 
-/-! ## Layer 4.5a: global models and the Weierstrass class over a Dedekind domain (AEC VIII.8)
+/-! ## Layer 4.5a: invariant theory over a Dedekind domain (AEC VIII.8)
 
-The global counterpart of Layer 4, over the fraction field `K` of a Dedekind domain `O`. Every
-definition says "minimal at `v`" by applying Layer 4's DVR theory to
+The invariant-theory counterpart of Layer 4, over the fraction field `K` of a Dedekind domain
+`O`. Every definition says "minimal at `v`" by applying Layer 4's DVR theory to
 `Localization.AtPrime v.asIdeal` inside `K`, so the four localisation instances below are the
 layer's first obligation: Mathlib has the discrete-valuation-ring instance, but relates that
 localisation to an **abstract** fraction field only for `K = FractionRing O`. They are stated
 `local` here because they are suggested forms for a milestone, not a global instance decision
-this file is entitled to make. -/
+this file is entitled to make. This section defines the invariants and proves the easy implication
+from a global equation to a trivial obstruction class. The converse constructs one equation from
+compatible local data; it belongs to Layer 4.5b and is asserted only for rings of integers of
+number fields. -/
 
 section GlobalModels
 
@@ -496,7 +500,7 @@ a field is a Dedekind domain in Mathlib and its height-one spectrum is empty, so
 bare existential is `False` while `IsGlobalMinimal` is vacuously `True` — the intended "every
 global minimal model is semi-global" would fail at the degenerate base. ⚠ This is the **weak**
 predicate: it permits any defect at `v₀`. The sharp one is `IsSharpSemiGlobalMinimalAt` below,
-and the existence theorem — over `𝒪_K` for a number field, **not** an abstract Dedekind domain,
+and the existence theorem — over `𝓞 K` for a number field, **not** an abstract Dedekind domain,
 since the one-prime construction needs every ideal class to contain a height-one prime — is
 `README.md` §Layer 4.5b. -/
 def IsSemiGlobalMinimal (W : WeierstrassCurve K) [W.IsElliptic] : Prop :=
@@ -505,6 +509,38 @@ def IsSemiGlobalMinimal (W : WeierstrassCurve K) [W.IsElliptic] : Prop :=
       WeierstrassCurve.IsIntegral (Localization.AtPrime v₀.asIdeal) W ∧
         ∀ v : HeightOneSpectrum O, v ≠ v₀ →
           WeierstrassCurve.IsMinimal (Localization.AtPrime v.asIdeal) W
+
+/-- **The local obstruction exponent**
+`f_v = (v(Δ W) - v(Δ_min,v))/12`. It is integer-valued for an arbitrary rational equation;
+local integrality is the hypothesis that makes it nonnegative. Keeping codomain `ℤ` avoids
+silently truncating the defect of a nonintegral equation. -/
+noncomputable def obstructionExponentAt (v : HeightOneSpectrum O)
+    (W : WeierstrassCurve K) [W.IsElliptic] : ℤ :=
+  sorry
+
+/-- **A sharply semi-global model at `v₀`**: integral at the exceptional prime, minimal at every
+other height-one prime, and of discriminant defect exactly `12` at `v₀`. ⚠ Integrality at `v₀`
+is a separate conjunct; the discriminant valuation alone does not imply it, since a nonintegral
+translation preserves the discriminant. -/
+def IsSharpSemiGlobalMinimalAt (v₀ : HeightOneSpectrum O)
+    (W : WeierstrassCurve K) [W.IsElliptic] : Prop :=
+  WeierstrassCurve.IsIntegral (Localization.AtPrime v₀.asIdeal) W ∧
+    (∀ v : HeightOneSpectrum O, v ≠ v₀ →
+      WeierstrassCurve.IsMinimal (Localization.AtPrime v.asIdeal) W) ∧
+    obstructionExponentAt O v₀ W = 1
+
+/-- Local integrality is what makes the integer-valued obstruction exponent nonnegative. -/
+theorem obstructionExponentAt_nonneg_of_isIntegral (v : HeightOneSpectrum O)
+    (W : WeierstrassCurve K) [W.IsElliptic]
+    (hW : WeierstrassCurve.IsIntegral (Localization.AtPrime v.asIdeal) W) :
+    0 ≤ obstructionExponentAt O v W :=
+  sorry
+
+/-- Every sharply semi-global model is semi-global in the weak, consumer-facing sense. -/
+theorem IsSharpSemiGlobalMinimalAt.isSemiGlobalMinimal (v₀ : HeightOneSpectrum O)
+    (W : WeierstrassCurve K) [W.IsElliptic]
+    (hW : IsSharpSemiGlobalMinimalAt O v₀ W) : IsSemiGlobalMinimal O W := by
+  exact Or.inr ⟨v₀, hW.1, hW.2.1⟩
 
 /-- **The minimal discriminant ideal** `𝔇_{E/K} = ∏ᵥ 𝔭ᵥ ^ v(Δ_min,ᵥ)`. Pinned as a `sorry`
 rather than defined, because the valuation bookkeeping it needs — the local minimal
@@ -516,16 +552,56 @@ by `r = 1/2` leaves `Δ` alone and destroys integrality. -/
 noncomputable def minimalDiscriminantIdeal (W : WeierstrassCurve K) [W.IsElliptic] : Ideal O :=
   sorry
 
-/-- **Silverman's Weierstrass class** `[𝔞_W] ∈ ClassGroup O` of an integral model, where
-`𝔞_W = ∏ᵥ 𝔭ᵥ ^ fᵥ` and `fᵥ = (v(Δ W) − v(Δ_min,ᵥ))/12`. Milestones: the ideal identity
-**`(Δ W) = 𝔇_{E/K} · 𝔞_W^{12}`** — ⚠ in that orientation, since the defect is what an integral
+/-- **The positive Weierstrass defect class** `[𝔍_W] ∈ ClassGroup O` of an integral model, where
+`𝔍_W = ∏ᵥ 𝔭ᵥ ^ fᵥ` and `fᵥ = (v(Δ W) − v(Δ_min,ᵥ))/12`. Milestones: the ideal identity
+**`(Δ W) = 𝔇_{E/K} · 𝔍_W^{12}`** — ⚠ in that orientation, since the defect is what an integral
 model carries *above* the minimal discriminant, so it multiplies `𝔇` up to the principal ideal
-and not the other way round — independence of the chosen integral model, and
-`[𝔞_W] = 1 ↔` a global minimal model exists (AEC VIII.8.2). ⚠ Principality of `𝔇_{E/K}` is a
-**different** condition and is not the obstruction: it can hold while `[𝔞_W] ≠ 1`. ⚠ Named for
-Silverman, not for any database spelling of the same class. -/
-noncomputable def weierstrassClass (W : WeierstrassCurve O) [(W.baseChange K).IsElliptic] :
+and not the other way round — and independence of the chosen integral model. A globally minimal
+equation has trivial class. The difficult converse is the number-field construction in Layer
+4.5b, not a general Dedekind-domain theorem supplied by this declaration. ⚠ Principality of
+`𝔇_{E/K}` is a **different** condition and is not the obstruction: it can hold while
+`[𝔍_W] ≠ 1`. This positive-defect convention is the inverse of the fractional ideal
+`a_Δ` printed in AEC VIII.8; triviality is unchanged, but representative-prime statements use
+this positive class. -/
+noncomputable def weierstrassDefectClass (W : WeierstrassCurve O) [(W.baseChange K).IsElliptic] :
     ClassGroup O :=
+  sorry
+
+/-- Silverman's fractional-ideal convention, the inverse of the positive defect class used by
+`globalMinimalityClass`. Its triviality is equivalent, but its representative-prime orientation
+is reversed. -/
+noncomputable def silvermanWeierstrassClass (W : WeierstrassCurve O)
+    [(W.baseChange K).IsElliptic] : ClassGroup O :=
+  (weierstrassDefectClass (K := K) O W)⁻¹
+
+/-- **The curve-level global-minimality obstruction.** This choice-independent wrapper is the
+public interface: consumers state the invariant directly on `E/K`, without first choosing an
+integral equation. `globalMinimalityClass_eq_weierstrassDefectClass` compares it with every integral
+model, and `globalMinimalityClass_variableChange` gives invariance under a `K`-isomorphism. -/
+noncomputable def globalMinimalityClass (E : WeierstrassCurve K) [E.IsElliptic] : ClassGroup O :=
+  sorry
+
+/-- The curve-level obstruction agrees with the positive defect class of every integral model. -/
+theorem globalMinimalityClass_eq_weierstrassDefectClass (W : WeierstrassCurve O)
+    [(W.baseChange K).IsElliptic] :
+    globalMinimalityClass (K := K) O (W.baseChange K) =
+      weierstrassDefectClass (K := K) O W :=
+  sorry
+
+/-- Comparison with an integral model presented together with an isomorphism to the target
+curve. This is the form downstream consumers use when their curve is not definitionally the
+base change of the chosen integral equation. -/
+theorem globalMinimalityClass_eq_weierstrassDefectClass_of_variableChange
+    (W : WeierstrassCurve O) [(W.baseChange K).IsElliptic]
+    (E : WeierstrassCurve K) [E.IsElliptic]
+    (C : WeierstrassCurve.VariableChange K) (hC : C • (W.baseChange K) = E) :
+    globalMinimalityClass O E = weierstrassDefectClass (K := K) O W :=
+  sorry
+
+/-- The global-minimality obstruction is invariant under an admissible change of variables. -/
+theorem globalMinimalityClass_variableChange (E : WeierstrassCurve K) [E.IsElliptic]
+    (C : WeierstrassCurve.VariableChange K) :
+    globalMinimalityClass O (C • E) = globalMinimalityClass O E :=
   sorry
 
 /-- **Semistability**: no height-one prime carries additive reduction, the reduction at `v`
@@ -543,11 +619,172 @@ residual `r, s, t` freedom pinned by `a₁, a₃ ∈ {0, 1}` and `a₂ ∈ {−1
 existence **and uniqueness** — every elliptic curve over `ℚ` is `ℚ`-isomorphic to exactly one
 reduced minimal model — which is what makes the equation an invariant of the curve, and hence
 what lets a label name an equation (Cremona, `README.md` §References). ⚠ It is a **long**
-equation, and is not §Layer 8's canonical primitive short model; the two canonical models are
+equation, and is not §Layer 8's canonical primitive short equation; the two canonical equations are
 different objects with different uses. -/
 def IsReducedMinimal (W : WeierstrassCurve ℚ) [W.IsElliptic] : Prop :=
   IsGlobalMinimal ℤ W ∧
     (W.a₁ = 0 ∨ W.a₁ = 1) ∧ (W.a₂ = -1 ∨ W.a₂ = 0 ∨ W.a₂ = 1) ∧ (W.a₃ = 0 ∨ W.a₃ = 1)
+
+/-! ## Layer 4.5b: global equation construction over number fields
+
+This is the hard converse deliberately omitted from Layer 4.5a: Kraus's local and global
+criteria, compatible auxiliary coefficients at primes above `2` and `3`, weak approximation for
+one global `(r, s, t)`-transformation, and the verification that the resulting equation has the
+prescribed local defects. The equivalence between trivial `globalMinimalityClass` and existence of
+a global minimal equation is stated here only for `O = NumberField.RingOfIntegers K`. The
+one-prime theorem chooses a representative prime outside a finite exceptional set; it does not
+quantify over every prime in the class. Exact prerequisite contracts are in `README.md`
+§Layer 4.5b. -/
+
+section GlobalEquationConstruction
+
+open IsDedekindDomain
+
+variable {K : Type*} [Field K] [NumberField K]
+
+local instance (v : HeightOneSpectrum (NumberField.RingOfIntegers K)) :
+    IsDiscreteValuationRing (Localization.AtPrime v.asIdeal) :=
+  IsLocalization.AtPrime.isDiscreteValuationRing_of_dedekind_domain
+    (NumberField.RingOfIntegers K) v.ne_bot _
+
+noncomputable local instance (v : HeightOneSpectrum (NumberField.RingOfIntegers K)) :
+    Algebra (Localization.AtPrime v.asIdeal) K :=
+  IsLocalization.localizationAlgebraOfSubmonoidLe _ _ _ _
+    v.asIdeal.primeCompl_le_nonZeroDivisors
+
+local instance (v : HeightOneSpectrum (NumberField.RingOfIntegers K)) :
+    IsScalarTower (NumberField.RingOfIntegers K) (Localization.AtPrime v.asIdeal) K :=
+  IsLocalization.localization_isScalarTower_of_submonoid_le _ _ _ _
+    v.asIdeal.primeCompl_le_nonZeroDivisors
+
+local instance (v : HeightOneSpectrum (NumberField.RingOfIntegers K)) :
+    IsFractionRing (Localization.AtPrime v.asIdeal) K :=
+  IsFractionRing.isFractionRing_of_isDomain_of_isLocalization v.asIdeal.primeCompl _ K
+
+/-- The integrality and nonsingularity hypotheses for Kraus's local criterion. It records local
+lifts of `c₄`, `c₆`, and `Δ = (c₄³ − c₆²) / 1728`, rather than hiding divisibility by `1728`
+inside field division. -/
+def IsKrausAdmissibleAt (c₄ c₆ : K)
+    (v : HeightOneSpectrum (NumberField.RingOfIntegers K)) : Prop :=
+  ∃ c₄' c₆' Δ' : Localization.AtPrime v.asIdeal,
+    algebraMap _ K c₄' = c₄ ∧
+      algebraMap _ K c₆' = c₆ ∧
+      c₄' ^ 3 - c₆' ^ 2 = 1728 * Δ' ∧ Δ' ≠ 0
+
+/-- The standard equation with prescribed invariants from which Kraus's local transforms start:
+`[0, 0, 0, -c₄/48, -c₆/864]`. It need not itself be integral at primes above `2` or `3`. -/
+def krausStandardModel (c₄ c₆ : K) : WeierstrassCurve K where
+  a₁ := 0
+  a₂ := 0
+  a₃ := 0
+  a₄ := -c₄ / 48
+  a₆ := -c₆ / 864
+
+/-- A valid Kraus witness at a prime above `3`: an integral `b₂` for which the
+`(b₂/12, 0, 0)`-transform of the standard equation is locally integral. -/
+def HasKrausThreeWitness (c₄ c₆ : K)
+    (v : HeightOneSpectrum (NumberField.RingOfIntegers K)) : Prop :=
+  ∃ b₂ : Localization.AtPrime v.asIdeal,
+    WeierstrassCurve.IsIntegral (Localization.AtPrime v.asIdeal)
+      (WeierstrassCurve.VariableChange.mk 1 (algebraMap _ K b₂ / 12) 0 0 •
+        krausStandardModel c₄ c₆)
+
+/-- A valid Kraus witness at a prime above `2`: integral `a₁` and `a₃` for which the
+`(a₁²/12, a₁/2, a₃/2)`-transform of the standard equation is locally integral. The global
+construction must choose `a₁` first and recompute `a₃` from that fixed lift. -/
+def HasKrausTwoWitness (c₄ c₆ : K)
+    (v : HeightOneSpectrum (NumberField.RingOfIntegers K)) : Prop :=
+  ∃ a₁ a₃ : Localization.AtPrime v.asIdeal,
+    WeierstrassCurve.IsIntegral (Localization.AtPrime v.asIdeal)
+      (WeierstrassCurve.VariableChange.mk 1
+          (algebraMap _ K a₁ ^ 2 / 12) (algebraMap _ K a₁ / 2)
+          (algebraMap _ K a₃ / 2) • krausStandardModel c₄ c₆)
+
+/-- **Kraus's local auxiliary criterion.** The pair must be locally integral and nonsingular;
+at primes above `2` it must admit an `(a₁, a₃)` witness, at primes above `3` a `b₂` witness,
+and away from `6` no further witness is required. -/
+def KrausLocalCondition (c₄ c₆ : K)
+    (v : HeightOneSpectrum (NumberField.RingOfIntegers K)) : Prop :=
+  IsKrausAdmissibleAt c₄ c₆ v ∧
+    if (2 : NumberField.RingOfIntegers K) ∈ v.asIdeal then
+      HasKrausTwoWitness c₄ c₆ v
+    else if (3 : NumberField.RingOfIntegers K) ∈ v.asIdeal then
+      HasKrausThreeWitness c₄ c₆ v
+    else True
+
+/-- Kraus's nontrivial local theorem: the explicit auxiliary criterion is equivalent to
+existence of a locally integral equation with the exact prescribed invariants. -/
+theorem krausLocalCondition_iff_exists_integralModel (c₄ c₆ : K)
+    (v : HeightOneSpectrum (NumberField.RingOfIntegers K)) :
+    KrausLocalCondition c₄ c₆ v ↔
+      ∃ W : WeierstrassCurve (Localization.AtPrime v.asIdeal),
+        algebraMap _ K W.c₄ = c₄ ∧ algebraMap _ K W.c₆ = c₆ ∧
+          WeierstrassCurve.IsElliptic (W.baseChange K) :=
+  sorry
+
+/-- Away from primes over `2` and `3`, local admissibility is sufficient for Kraus's condition.
+The admissibility hypothesis is load-bearing: this theorem is false for an arbitrary pair. -/
+theorem krausLocalCondition_of_not_dvd_six (c₄ c₆ : K)
+    (v : HeightOneSpectrum (NumberField.RingOfIntegers K))
+    (hInput : IsKrausAdmissibleAt c₄ c₆ v)
+    (hSix : (6 : NumberField.RingOfIntegers K) ∉ v.asIdeal) :
+    KrausLocalCondition c₄ c₆ v :=
+  sorry
+
+/-- Kraus's global condition is genuinely all the local conditions, before any coefficients are
+patched. -/
+def KrausGlobalCondition (c₄ c₆ : K) : Prop :=
+  ∀ v : HeightOneSpectrum (NumberField.RingOfIntegers K),
+    KrausLocalCondition c₄ c₆ v
+
+/-- The global Kraus patch: compatible local conditions are equivalent to one integral equation
+with the same exact invariants. The hard direction first CRT-patches `b₂`, then `a₁`, recomputes
+the local `a₃` from that global `a₁`, and finally patches `a₃` (`README.md` §Layer 4.5b). -/
+theorem krausGlobalCondition_iff_exists_integralModel (c₄ c₆ : K) :
+    KrausGlobalCondition c₄ c₆ ↔
+      ∃ W : WeierstrassCurve (NumberField.RingOfIntegers K),
+        algebraMap _ K W.c₄ = c₄ ∧ algebraMap _ K W.c₆ = c₆ ∧
+          WeierstrassCurve.IsElliptic (W.baseChange K) :=
+  sorry
+
+/-- Every ideal class of a number field contains a height-one prime outside a prescribed finite
+set. The proof route is density of primes in a modulus-`1` ray class, not mere surjectivity of
+`ClassGroup.mk0`. -/
+theorem exists_primeIdeal_mk_eq_avoiding
+    (c : ClassGroup (NumberField.RingOfIntegers K))
+    (S : Finset (HeightOneSpectrum (NumberField.RingOfIntegers K))) :
+    ∃ v, v ∉ S ∧
+      ClassGroup.mk0 ⟨v.asIdeal,
+        mem_nonZeroDivisors_iff_ne_zero.mpr v.ne_bot⟩ = c :=
+  sorry
+
+/-- Over a number field, triviality of the curve-level positive defect class is equivalent to
+existence of one globally minimal equation in the curve's variable-change orbit. The difficult
+direction is the global local-change patch of AEC VIII.8.2, not Layer 4.5a bookkeeping. -/
+theorem globalMinimalityClass_eq_one_iff_exists_globalMinimalModel
+    (E : WeierstrassCurve K) [E.IsElliptic] :
+    globalMinimalityClass (NumberField.RingOfIntegers K) E = 1 ↔
+      ∃ C : WeierstrassCurve.VariableChange K,
+        IsGlobalMinimal (NumberField.RingOfIntegers K) (C • E) :=
+  sorry
+
+/-- **Existential one-prime theorem.** For a nontrivial positive defect class, some prime
+representing it and some equation in the curve's orbit give exact defect one there and minimality
+everywhere else. No claim is made for every representative prime. -/
+theorem exists_isSharpSemiGlobalMinimalAt_avoiding_of_globalMinimalityClass_ne_one
+    (E : WeierstrassCurve K) [E.IsElliptic]
+    (S : Finset (HeightOneSpectrum (NumberField.RingOfIntegers K)))
+    (hE : globalMinimalityClass (NumberField.RingOfIntegers K) E ≠ 1) :
+    ∃ v₀ : HeightOneSpectrum (NumberField.RingOfIntegers K),
+      v₀ ∉ S ∧
+        ClassGroup.mk0 ⟨v₀.asIdeal,
+          mem_nonZeroDivisors_iff_ne_zero.mpr v₀.ne_bot⟩ =
+            globalMinimalityClass (NumberField.RingOfIntegers K) E ∧
+          ∃ C : WeierstrassCurve.VariableChange K,
+            IsSharpSemiGlobalMinimalAt (NumberField.RingOfIntegers K) v₀ (C • E) :=
+  sorry
+
+end GlobalEquationConstruction
 
 /-! ## Layer 5: twists (AEC X.2, X.5)
 
@@ -698,12 +935,12 @@ on top: profinite Galois modules with the finite-level comparison, the Kummer co
 precisely in `README.md` §Layer 7. Nothing is pinned here; the layer states its objects against
 that API once it exists. -/
 
-/-! ## Layer 8: the `ℚ`-specific database adapter
+/-! ## Layer 8: selected `ℚ`-specific database adapters
 
-The quantities a table of curves over `ℚ` records that are not themselves structural
-elliptic-curve theory — everything that is has a home in Layers 3, 4 and 4.5. What is pinned
-here is the **convention**; the API is specified in `README.md` §Layer 8. The entries that are
-not unconditionally meaningful carry their hypotheses rather than a junk value. -/
+The selected adapters required by the roadmap's current downstream consumers; this is not an
+exhaustive schema for a table of curves. Everything structural has a home in Layers 3, 4 and 4.5.
+What is pinned here is the **convention**; the API is specified in `README.md` §Layer 8. The
+entries that are not unconditionally meaningful carry their hypotheses rather than a junk value. -/
 
 /-- **The height of an integral short equation** over `ℤ`. ⚠ This is the equation-level
 function and asks only for `IsShortNF`; primitivity is the separate predicate below, and it is
@@ -722,8 +959,10 @@ the height above well defined on curves. This is the BHKSSW/LMFDB convention (re
 def IsPrimitiveShortModel (W : WeierstrassCurve ℤ) : Prop :=
   W.IsShortNF ∧ ∀ ℓ : ℕ, ℓ.Prime → ¬ ((ℓ : ℤ) ^ 4 ∣ W.a₄ ∧ (ℓ : ℤ) ^ 6 ∣ W.a₆)
 
-/-- **The canonical primitive integral short model** of an elliptic curve over `ℚ`, bundled: the
+/-- **A bundled primitive integral short model** of an elliptic curve over `ℚ`: the
 integral equation, its primitivity, and the change of variables carrying its base change to `E`.
+⚠ The bundle is not canonical because its change-of-variables witness need not be unique; the
+model equation, and hence its height, is unique by `primitiveShortModel_unique`.
 ⚠ Distinct from §Layer 4.5a's `IsReducedMinimal`, which is a *long* equation; a database record
 stores both. -/
 structure PrimitiveShortModel (E : WeierstrassCurve ℚ) [E.IsElliptic] where
@@ -736,17 +975,24 @@ structure PrimitiveShortModel (E : WeierstrassCurve ℚ) [E.IsElliptic] where
   /-- It carries the base-changed model to `E`. -/
   isomorphic : variableChange • (model.baseChange ℚ) = E
 
-/-- **The height of a curve over `ℚ`**, read off its canonical model. Defined outright: the
+/-- **The height of a bundled primitive equation.** Defined outright: the
 primitivity field supplies the `IsShortNF` instance `shortEquationHeight` needs. -/
 noncomputable def PrimitiveShortModel.height {E : WeierstrassCurve ℚ} [E.IsElliptic]
     (M : PrimitiveShortModel E) : ℕ :=
   letI : M.model.IsShortNF := M.isPrimitive.1
   shortEquationHeight M.model
 
-/-- **Existence** of the canonical primitive short model. -/
+/-- **Existence** of a bundled primitive short equation for the curve. -/
 theorem exists_primitiveShortModel (E : WeierstrassCurve ℚ) [E.IsElliptic] :
     Nonempty (PrimitiveShortModel E) :=
   sorry
+
+/-- A fixed bundled primitive integral short model, obtained from existence. Its observable
+equation and height — not its change-of-variables witness — are independent of the classical
+choice by `primitiveShortModel_unique`. -/
+noncomputable def primitiveShortModel (E : WeierstrassCurve ℚ) [E.IsElliptic] :
+    PrimitiveShortModel E :=
+  Classical.choice (exists_primitiveShortModel E)
 
 /-- **Uniqueness**: the equation itself, not merely up to isomorphism. The residual freedom is
 `(a₄, a₆) ↦ (u⁴a₄, u⁶a₆)` with `u = ±1`, and `u⁴ = u⁶ = 1`. Together with existence this is what
@@ -754,6 +1000,33 @@ makes `PrimitiveShortModel.height` an invariant of the curve — and hence what 
 table of curves by height well founded. -/
 theorem primitiveShortModel_unique (E : WeierstrassCurve ℚ) [E.IsElliptic]
     (M N : PrimitiveShortModel E) : M.model = N.model :=
+  sorry
+
+/-- **The naïve height of a curve over `ℚ`**, computed from its unique primitive integral short
+equation. This is curve-level API, unlike `PrimitiveShortModel.height`, which still takes a chosen
+bundled model. -/
+noncomputable def naiveCurveHeight (E : WeierstrassCurve ℚ) [E.IsElliptic] : ℕ :=
+  (primitiveShortModel E).height
+
+/-- Every primitive short model computes the same curve height. -/
+theorem naiveCurveHeight_eq {E : WeierstrassCurve ℚ} [E.IsElliptic]
+    (M : PrimitiveShortModel E) : naiveCurveHeight E = M.height :=
+  sorry
+
+/-- The curve height is invariant under an admissible change of variables over `ℚ`. -/
+theorem naiveCurveHeight_variableChange (E : WeierstrassCurve ℚ) [E.IsElliptic]
+    (C : WeierstrassCurve.VariableChange ℚ) :
+    naiveCurveHeight (C • E) = naiveCurveHeight E :=
+  sorry
+
+/-- There are only finitely many **primitive integral short equations** of bounded height. ⚠ The
+carrier is intentional: the analogous set of literal terms `E : WeierstrassCurve ℚ` is infinite,
+since one isomorphism class has infinitely many rational equations. Finiteness of bounded-height
+`ℚ`-isomorphism classes is a corollary of this primitive-model statement. -/
+theorem finite_primitiveShortEquations_bounded_height (H : ℕ) :
+    Set.Finite {W : WeierstrassCurve ℤ |
+      IsPrimitiveShortModel W ∧ WeierstrassCurve.IsElliptic (W.baseChange ℚ) ∧
+        max (4 * W.a₄.natAbs ^ 3) (27 * W.a₆.natAbs ^ 2) ≤ H} :=
   sorry
 
 /-- **The abc quality** of a curve over `ℚ`: with `j/1728 = a/c` in lowest terms and `b = c − a`,
