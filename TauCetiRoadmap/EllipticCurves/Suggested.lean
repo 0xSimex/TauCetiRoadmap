@@ -210,6 +210,24 @@ noncomputable def fieldPullback (φ : Isogeny W₁ W₂) :
     W₂.FunctionField →ₐ[F] W₁.FunctionField :=
   IsFractionRing.liftAlgHom φ.pullback_injective
 
+/-- Pure inseparability of an isogeny, read from its induced function-field extension. -/
+def IsPurelyInseparable (φ : Isogeny W₁ W₂) : Prop :=
+  _root_.IsPurelyInseparable φ.fieldPullback.fieldRange W₁.FunctionField
+
+/-- Scalar extension of an isogeny. Layer 0.5 proves compatibility with pullbacks, composition,
+duals, Frobenius twists and relative Frobenius. -/
+noncomputable def baseChange (φ : Isogeny W₁ W₂)
+    (L : Type*) [Field L] [Algebra F L] :
+    Isogeny (W₁.baseChange L) (W₂.baseChange L) :=
+  sorry
+
+/-- Pure inseparability of an isogeny is preserved and reflected by arbitrary scalar extension;
+no algebraicity hypothesis on `L/F` is required. -/
+theorem isPurelyInseparable_baseChange_iff (φ : Isogeny W₁ W₂)
+    (L : Type*) [Field L] [Algebra F L] :
+    (φ.baseChange L).IsPurelyInseparable ↔ φ.IsPurelyInseparable :=
+  sorry
+
 /-- **The identity isogeny**, on `CoordinatePullback.mapsInfinity_id`. -/
 noncomputable def id (W : WeierstrassCurve.Affine F) : Isogeny W W where
   pullback := CoordinatePullback.id W
@@ -413,13 +431,12 @@ theorem isSupersingular_iff_dvd_frobeniusTrace {F : Type*} [Field F] [Finite F] 
   sorry
 
 /-- **Base-change invariance of supersingularity** — a theorem, ⚠ **not** a definitional
-reduction, which is why it is pinned as a target. The two sides are statements about *different
-types*, `E[p](Kˢᵉᵖ)` and `E_L[p](Lˢᵉᵖ)`, so the proof needs a comparison of separable closures,
-compatibility of point torsion with scalar extension, and independence of the choice; purely
-inseparable `L/K` is the case that makes this vivid. The implementation will likely want the
-algebraic, separable and purely inseparable cases as separate steps. What the geometric
-definition buys is that this is a natural geometric statement rather than a transport along the
-Frobenius-trace recurrence. -/
+reduction. Its field extension is arbitrary, including transcendental extensions. The proof is
+the five-step chain from `README.md` §Layer 3: characterize supersingularity by pure inseparability
+of Verschiebung; identify Verschiebung after base change with the base change of Verschiebung;
+use preservation and reflection of pure inseparability under arbitrary scalar extension; and
+apply the characterization over `K` again. In particular, do not split into
+algebraic/separable/purely-inseparable cases: those cases do not exhaust this signature. -/
 theorem isSupersingular_baseChange_iff {K : Type*} [Field K] (p : ℕ) [Fact p.Prime] [CharP K p]
     (W : WeierstrassCurve K) [W.IsElliptic] (L : Type*) [Field L] [Algebra K L]
     [(W.baseChange L).IsElliptic] :
@@ -615,12 +632,11 @@ def IsSemistable (W : WeierstrassCurve K) [W.IsElliptic] : Prop :=
 end GlobalModels
 
 /-- **The reduced minimal model** of a curve over `ℚ`: globally minimal over `ℤ`, with the
-residual `r, s, t` freedom pinned by `a₁, a₃ ∈ {0, 1}` and `a₂ ∈ {−1, 0, 1}`. The milestone is
-existence **and uniqueness** — every elliptic curve over `ℚ` is `ℚ`-isomorphic to exactly one
-reduced minimal model — which is what makes the equation an invariant of the curve, and hence
-what lets a label name an equation (Cremona, `README.md` §References). ⚠ It is a **long**
-equation, and is not §Layer 8's canonical primitive short equation; the two canonical equations are
-different objects with different uses. -/
+residual `r, s, t` freedom pinned by `a₁, a₃ ∈ {0, 1}` and `a₂ ∈ {−1, 0, 1}`. This
+Layer-4.5a declaration is only the normal-form predicate; the existence-and-uniqueness theorem is
+`existsUnique_reducedMinimal` in Layer 4.5b, after global equation construction. ⚠ It is a
+**long** equation, and is not §Layer 8's canonical primitive short equation; the two canonical
+equations are different objects with different uses. -/
 def IsReducedMinimal (W : WeierstrassCurve ℚ) [W.IsElliptic] : Prop :=
   IsGlobalMinimal ℤ W ∧
     (W.a₁ = 0 ∨ W.a₁ = 1) ∧ (W.a₂ = -1 ∨ W.a₂ = 0 ∨ W.a₂ = 1) ∧ (W.a₃ = 0 ∨ W.a₃ = 1)
@@ -747,16 +763,25 @@ theorem krausGlobalCondition_iff_exists_integralModel (c₄ c₆ : K) :
           WeierstrassCurve.IsElliptic (W.baseChange K) :=
   sorry
 
-/-- Every ideal class of a number field contains a height-one prime outside a prescribed finite
-set. The proof route is density of primes in a modulus-`1` ray class, not mere surjectivity of
-`ClassGroup.mk0`. -/
-theorem exists_primeIdeal_mk_eq_avoiding
-    (c : ClassGroup (NumberField.RingOfIntegers K))
-    (S : Finset (HeightOneSpectrum (NumberField.RingOfIntegers K))) :
+/-! The prime-representative theorem required by the one-prime target below is **not** an
+elliptic-curve declaration. Its
+intended external owner is the Class Field Theory/Chebotarev supplier chain recorded in `README.md`
+§Layer 4.5b, with public name `NumberField.exists_primeIdeal_mk_eq_avoiding`. Once that supplier
+module lands, this file imports it. Until then, the intended consumer snippet (not compiled) is:
+
+```lean
+example
+    (K : Type*) [Field K] [NumberField K]
+    (c : ClassGroup (𝓞 K))
+    (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 K))) :
     ∃ v, v ∉ S ∧
       ClassGroup.mk0 ⟨v.asIdeal,
         mem_nonZeroDivisors_iff_ne_zero.mpr v.ne_bot⟩ = c :=
-  sorry
+  NumberField.exists_primeIdeal_mk_eq_avoiding K c S
+```
+
+Keeping the snippet documentary until the supplier is importable is deliberate: introducing a
+local axiom or redeclaring the name here would merely disguise the missing dependency. -/
 
 /-- Over a number field, triviality of the curve-level positive defect class is equivalent to
 existence of one globally minimal equation in the curve's variable-change orbit. The difficult
@@ -766,6 +791,15 @@ theorem globalMinimalityClass_eq_one_iff_exists_globalMinimalModel
     globalMinimalityClass (NumberField.RingOfIntegers K) E = 1 ↔
       ∃ C : WeierstrassCurve.VariableChange K,
         IsGlobalMinimal (NumberField.RingOfIntegers K) (C • E) :=
+  sorry
+
+/-- Every elliptic Weierstrass equation over `ℚ` has a unique reduced minimal equation in its
+variable-change orbit. The equation is unique; the change-of-variables witness need not be. -/
+theorem existsUnique_reducedMinimal
+    (E : WeierstrassCurve ℚ) [E.IsElliptic] :
+    ∃! W : { W : WeierstrassCurve ℚ // W.IsElliptic },
+      @IsReducedMinimal W.1 W.2 ∧
+        ∃ C : WeierstrassCurve.VariableChange ℚ, C • E = W.1 :=
   sorry
 
 /-- **Existential one-prime theorem.** For a nontrivial positive defect class, some prime

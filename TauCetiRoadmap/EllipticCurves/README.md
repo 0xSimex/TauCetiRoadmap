@@ -650,12 +650,22 @@ being distributed as bookkeeping. Its milestones:
   Frobenius-trace recurrence. The cost is a dependency on the base change of Layer 0.5 and the
   torsion vocabulary of Layer 2, which is mild and worth paying.
   ⚠ **Base-change invariance is a theorem here, not a definitional reduction**, and is a named
-  milestone: `IsSupersingular p (W.baseChange L) ↔ IsSupersingular p W` for `L/K`. The two sides
-  are statements about *different types* — `E[p](Kˢᵉᵖ)` and `E_L[p](Lˢᵉᵖ)` — so the proof needs
-  comparison maps between the separable closures, compatibility of point torsion with scalar
-  extension, and independence of the choice of comparison; purely inseparable `L/K` is the case
-  that makes this vivid. The implementation will likely want the algebraic, separable and purely
-  inseparable cases as separate steps. **Over a finite field** the operational
+  milestone: `IsSupersingular p (W.baseChange L) ↔ IsSupersingular p W` for an **arbitrary**
+  field extension `L/K`; no algebraicity hypothesis is intended. The proof does not split field
+  extensions into algebraic, separable and purely inseparable cases, since that would omit
+  transcendental extensions. Instead, Layer 1 defines pure inseparability of an isogeny through
+  its induced function-field extension, proves that it is preserved and reflected by arbitrary
+  scalar extension, and proves that Frobenius twists, relative Frobenius, duals and hence
+  Verschiebung commute with scalar extension under the canonical Frobenius-twist base-change
+  identification. This layer proves
+  `IsSupersingular p W ↔ (verschiebung p W).IsPurelyInseparable`: the defining equality
+  `E[p](Kˢᵉᵖ) = {O}` is equivalent to `sepdeg([p]) = 1`; from `[p] = V ∘ F`,
+  `sepdeg(F) = 1`, and multiplicativity of separable degrees, one gets
+  `sepdeg([p]) = sepdeg(V)`; and because `V` has degree `p`, this is equivalent to `V` being
+  purely inseparable. The result is then the uniform chain
+  `E_L supersingular ↔ V_{E_L} purely inseparable ↔ (V_E)_L purely inseparable ↔
+  V_E purely inseparable ↔ E supersingular`, including for transcendental `L/K` and without
+  choosing or comparing separable closures. **Over a finite field** the operational
   criterion is the theorem `IsSupersingular E ↔ ringChar F ∣ frobeniusTrace E` (AEC V.4.1), and
   it is what the Hasse-era strands use. ⚠ Do not write `a_q = 0` for it: the two agree only for
   `q = p ≥ 5`, since over `𝔽₂` and `𝔽₃` the Hasse interval is wide enough to hold supersingular
@@ -830,10 +840,10 @@ Mathlib's `IsDedekindDomain.HeightOneSpectrum` and `ClassGroup`; Layers 1–3 ar
 
 ⚠ **This layer does not construct one global equation from the local data.** In particular, it
 does not claim over an arbitrary Dedekind domain that a trivial obstruction class implies a global
-minimal equation. That direction requires Kraus's global coefficient patching and is §Layer 4.5b,
-over the ring of integers of a number field. The `ℚ`-specific reduced minimal equation remains
-here as its own explicit `ℤ`-normalisation milestone; it is not evidence for an unrestricted
-Dedekind-base theorem.
+minimal equation. That direction requires the global coefficient patching of §Layer 4.5b over the
+ring of integers of a number field. The `ℚ`-specific predicate `IsReducedMinimal` is defined here
+because it packages global minimality together with an integral normal form; existence and
+uniqueness of a reduced equation are §Layer 4.5b theorems, after the global construction.
 
 ⚠ **A field is a Dedekind domain, and its height-one spectrum is empty.** Every `∀ v` in this
 layer is then vacuous and every `∃ v` is false, so a definition written with a bare existential
@@ -904,13 +914,11 @@ The layer is about elliptic curves and says so in its hypotheses.
   `[𝔍_W]`, named `weierstrassDefectClass`; the separately seeded
   `silvermanWeierstrassClass` is its inverse. Triviality is unchanged, but the orientation of a
   representative-prime theorem is not.
-- **Uniqueness over `ℚ`: the reduced minimal model.** Two global minimal models over `ℤ` differ
-  by `u = ±1` and `r, s, t ∈ ℤ`, so `ω_min` is well-defined up to sign. Pinning the remaining
-  freedom makes the model itself unique: `IsReducedMinimal W` for `W/ℚ` is global minimality over
-  `ℤ` together with `a₁, a₃ ∈ {0, 1}` and `a₂ ∈ {−1, 0, 1}`. The content is
-  existence-and-uniqueness — every elliptic curve over `ℚ` is `ℚ`-isomorphic to exactly one
-  reduced minimal model — which is what turns an equation into an invariant of the curve, and is
-  the normalisation every table of curves is written in (Cremona, references).
+- **The reduced-minimal predicate over `ℚ`.** `IsReducedMinimal W` packages global minimality
+  over `ℤ` together with the coefficient ranges `a₁, a₃ ∈ {0, 1}` and
+  `a₂ ∈ {−1, 0, 1}`. This layer defines that normal-form predicate but does not construct a
+  representative. Existence and uniqueness are the §Layer 4.5b theorem, after global minimality
+  has supplied an integral equation.
 - **Semistability.** `IsSemistable O W`: no height-one prime carries additive reduction, the
   reduction at `v` being that of a local minimal model at `v`. Milestones: invariance under
   `K`-isomorphism; the local criterion — on a minimal model, no additive reduction at `v` is
@@ -931,13 +939,36 @@ criterion and the passage from compatible local auxiliary data to one global
 `(a₁, b₂, a₃)`-triple (equivalently one admissible `(r, s, t)`-transformation) are separate
 milestones; none is hidden under the word "bookkeeping".
 
-- **Prime representatives — exact owner, contract and route.** This reusable number-field theorem
-  is owned by the Layer-4.5b prerequisite ticket but lands outside the elliptic-curve namespace,
-  in `TauCeti/NumberTheory/NumberField/ClassGroup/PrimeRepresentative.lean`. The contract includes
-  avoidance of a prescribed finite set, which is what the application actually needs:
+- **Prime representatives — planned external dependency and current blocker.** Layer 4.5b must
+  consume, and must not own, the reusable number-field theorem below. The intended owner is a
+  final class-group application module
+  `TauCeti/NumberTheory/NumberField/ClassGroup/PrimeRepresentative.lean` to be added to the
+  portfolio's
+  [Chebotarev roadmap](https://github.com/roed-math/TauCetiRoadmap/pull/18), consuming the Hilbert
+  class field and Artin isomorphism from the
+  [Class Field Theory roadmap](https://github.com/roed-math/TauCetiRoadmap/pull/6). The complete
+  supplier dependency to freeze there is
+
+  ```text
+  Profinite Cohomology + Local Fields and Ramification
+    + Global Number Fields + Number-Field Arithmetic
+      → Class Field Theory (Hilbert class field and arithmetic Artin isomorphism)
+
+  Arithmetic Dirichlet Series + Global Number Fields + Number-Field Arithmetic
+      → Chebotarev (infinite Frobenius fibres)
+
+  Class Field Theory + Chebotarev
+      → NumberField.exists_primeIdeal_mk_eq_avoiding
+      → Elliptic Curves Layer 4.5b
+  ```
+
+  Layer 4.5b is blocked until that supplier endpoint and its imports land. Its contract includes
+  avoidance of a prescribed finite set, which is exactly what this application needs:
 
   ```lean
   open scoped NumberField
+
+  namespace NumberField
 
   theorem exists_primeIdeal_mk_eq_avoiding
       (K : Type*) [Field K] [NumberField K]
@@ -946,17 +977,33 @@ milestones; none is hidden under the word "bookkeeping".
       ∃ v, v ∉ S ∧
         ClassGroup.mk0 ⟨v.asIdeal,
           mem_nonZeroDivisors_iff_ne_zero.mpr v.ne_bot⟩ = c
+
+  end NumberField
   ```
 
-  The chosen proof route is the **density of primes in an ideal class**, not an unresolved choice
-  between unrelated methods. Regard the ordinary class group as the ray class group for modulus
-  `1`; prove that the prime ideals in each ray class have Dirichlet density
-  `1 / #ClassGroup (𝓞 K)`; positive density gives infinitely many such primes, hence one outside
-  `S`. The prerequisite ticket therefore owns the Dirichlet-density API for prime ideals and the
-  modulus-`1` specialization of the ray-class density theorem (MIT 18.785, Proposition 28.10),
-  including the Hecke-character orthogonality and the pole/nonvanishing input at `s = 1` used by
-  that theorem. Mathlib's `ClassGroup.mk0_surjective` supplies only an ideal and does not
-  discharge the prime or finite-avoidance statements.
+  The provider-side acceptance criteria are explicit: Class Field Theory exports the Hilbert
+  class field `H/K`, its arithmetic Artin isomorphism
+  `ClassGroup (𝓞 K) ≃* Gal(H/K)`, and the comparison of a prime-ideal class with its
+  Frobenius; Chebotarev exports infinitude of the primes with a prescribed arithmetic Frobenius;
+  and the final application module combines them into the contract above. For the proof, send
+  `c` through the Artin isomorphism, choose a prime in the resulting infinite Frobenius fibre,
+  and discard the finite set `S`. The convention is frozen as
+  `Art_H/K([𝔭]) = Frob_𝔭` for **arithmetic** Frobenius, so the endpoint returns `c` rather
+  than `c⁻¹`. Mathlib's `ClassGroup.mk0_surjective` supplies only an ideal and does not prove
+  primality or finite avoidance. `Suggested.lean` records the following intended consumer
+  snippet, explicitly **not compiled** until the supplier module is importable; it does not
+  redeclare the theorem in the elliptic-curve namespace:
+
+  ```lean
+  example
+      (K : Type*) [Field K] [NumberField K]
+      (c : ClassGroup (𝓞 K))
+      (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 K))) :
+      ∃ v, v ∉ S ∧
+        ClassGroup.mk0 ⟨v.asIdeal,
+          mem_nonZeroDivisors_iff_ne_zero.mpr v.ne_bot⟩ = c :=
+    NumberField.exists_primeIdeal_mk_eq_avoiding K c S
+  ```
 - **Kraus local and global criteria — owned here with named contracts.** These live in
   `TauCeti/AlgebraicGeometry/EllipticCurve/GlobalModels/Kraus.lean` and are implemented in this
   order:
@@ -1011,10 +1058,18 @@ milestones; none is hidden under the word "bookkeeping".
   (AEC VIII.8.2), and hence class number one implies existence (VIII.8.3). The forward implication
   uses the local-change patching contract above (or, as a second proof, the exact-invariant Kraus
   theorem); it is not retroactively attributed to Layer 4.5a or to an arbitrary Dedekind domain.
+- **Existence and uniqueness of the reduced minimal equation over `ℚ`.** Specialize the preceding
+  theorem to `K = ℚ`, using `Rat.classNumber_eq` and `Rat.ringOfIntegersEquiv` to obtain an
+  equation globally minimal over `ℤ`. Normalize its residual integral change-of-variables freedom
+  in the order dictated by the coefficient formulas: choose `s` to reduce `a₁` modulo `2`, then
+  `r` to reduce `a₂` modulo `3`, then `t` to reduce `a₃` modulo `2`. Prove that two normalized
+  equations related by an integral variable change with `u = ±1` have equal coefficients. The
+  seeded `existsUnique_reducedMinimal` therefore asserts uniqueness of the **equation** in the
+  `ℚ`-variable-change orbit; its change-of-variables witness need not be unique.
 - **One-prime construction — existence, not every representative.** Let `S` contain the primes
   above `2` and `3`, together with any additional finite set the caller asks to avoid. For an
   integral model `W` of `E`, let `𝔍_W` be its positive defect ideal. When
-  `globalMinimalityClass (𝓞 K) E ≠ 1`, the density theorem chooses **some** `v₀ ∉ S` with
+  `globalMinimalityClass (𝓞 K) E ≠ 1`, the supplier theorem chooses **some** `v₀ ∉ S` with
   `[v₀] = [𝔍_W]`; choose `u ∈ K×` with `𝔍_W = (u) v₀` as fractional ideals, and put
   `c₄' = c₄(W)/u⁴`, `c₆' = c₆(W)/u⁶`, and `Δ' = Δ(W)/u¹²`. The exact conditional
   contract is:
@@ -1181,12 +1236,13 @@ scheme-facing roadmap. This layer deliberately does not conflate the two.
   the real period of the **global minimal** Weierstrass equation. Two prerequisites, each an
   explicit milestone:
   **(i) the global minimal model over `ℚ`** — §Layer 4.5a supplies the positive-defect identity
-  `(Δ W) = 𝔇_{E/K}·𝔍_W^{12}` and the explicit reduced-minimal-equation milestone over `ℤ`;
-  §Layer 4.5b owns the general number-field implication from trivial class to a patched global
-  equation. Over `ℚ`, the reduced-model construction gives the equation this period needs. Two
-  global minimal equations over `ℤ` differ by `u = ±1` and
-  `r, s, t ∈ ℤ`, so `ω_min` is **well-defined up to sign** — and §Layer 4.5a's reduced minimal
-  model removes even that ambiguity, making `ω_min` a genuine invariant of the curve.
+  `(Δ W) = 𝔇_{E/K}·𝔍_W^{12}` and the reduced-minimal predicate; §Layer 4.5b supplies
+  the patched global equation and the unique reduced minimal equation over `ℚ`, globally
+  minimal over `ℤ`. That reduced equation carries the distinguished equation-level differential
+  `ω = dx / (2y + a₁x + a₃)`, hence a canonical differential on the canonical reduced model.
+  Transporting it to an arbitrary presentation is still canonical only up to automorphisms:
+  in particular `[−1]^* ω = −ω`. The absolute real period is nevertheless unambiguous, because
+  it integrates `|ω|` and is therefore independent of that sign.
   **(ii) the period is defined by an explicit integral**, not by an unexplained
   `∫_{E(ℝ)}|ω_min|`: with `D_W(x) = 4x³ + b₂x² + 2b₄x + b₆ = (2y + a₁x + a₃)²`, the target is
   `Ω(E) = 2·∫_{{x ∈ ℝ : D_W(x) > 0}} dx / √(D_W(x))` (the factor `2` for the two `y`-branches;
@@ -1212,7 +1268,8 @@ scheme-facing roadmap. This layer deliberately does not conflate the two.
   half-plane of convergence, agreeing with the series there — merely assuming "a function
   analytic near `s = 1`" admits an unrelated germ and states nothing. With that: the order
   of vanishing `r`, the leading coefficient `L^{(r)}(1)/r!`, the finite support of
-  `∏_p c_p`, the real-period convention (the global minimal differential, as fixed above),
+  `∏_p c_p`, the real-period convention (the distinguished differential on the reduced
+  equation, with sign erased by absolute value, as fixed above),
   and `Ш(E/ℚ)` finiteness as hypothesis — the rank equality and the leading-coefficient
   identity against the quotient above. **Proving** anything about it stays out of scope.
 - ⚠ **Dependency — what is actually missing.** Pinned Mathlib has the *abelian* group-
@@ -1277,7 +1334,7 @@ layer is useful without pretending to be exhaustive.
   to `E`. The milestones are `exists_primitiveShortModel` and `primitiveShortModel_unique`:
   existence of the bundle and uniqueness of its **equation** outright, since the only remaining
   coefficient freedom is
-  `(a₄, a₆) ↦ (u⁴a₄, u⁶a₆)` with `u = ±1` and `u⁴ = u⁶ = 1`. ⚠ This is **not** §Layer 4.5a's
+  `(a₄, a₆) ↦ (u⁴a₄, u⁶a₆)` with `u = ±1` and `u⁴ = u⁶ = 1`. ⚠ This is **not** §Layer 4.5b's
   reduced minimal model, which is a *long* equation: they are different canonical models serving
   different purposes, both stored separately in a database record, and neither substitutes for
   the other. The bundled change-of-variables witness need not be unique; only the equation and
@@ -1393,9 +1450,10 @@ layer is useful without pretending to be exhaustive.
   the instances the endomorphism theory already depends on rather than on fresh ones.
 - **The reduced minimal model is unique, so a label names an equation:**
   `y² + y = x³ − x² − 10x − 20` for 11.a1 and `y² + y = x³ − x` for 37.a1 are `IsReducedMinimal`,
-  and are the only such models in their `ℚ`-isomorphism classes — the statement that turns the
-  minimal discriminant and the real period into invariants of the curve rather than of a chosen
-  equation. ⚠ It is a *long* equation, and is not the canonical primitive short equation that
+  and are the only such equations in their `ℚ`-isomorphism classes. That uniqueness lets a label
+  name a particular equation; the minimal discriminant and the absolute real period are already
+  presentation-independent by their own invariance and sign-independence theorems. ⚠ It is a
+  *long* equation, and is not the canonical primitive short equation that
   §Layer 8's height is computed from; the two canonical equations are certified separately.
 - **Semistability agrees with the Kodaira symbol:** 11.a1 is semistable — its only bad prime is
   `11`, of type `I₁` in the list above — while 27.a4 is not, type `II` at `3` being additive.
@@ -1450,14 +1508,16 @@ cross-cutting Layer 0.5 starts early because Layers 1, 2, 4, and 5 all use it. T
    two land together, not in numeric order.
 4. **Invariant theory over a Dedekind domain** — Layer 4.5a: the localisation instances, global
    and semi-global predicates, the minimal discriminant ideal, obstruction exponents, the
-   curve-level global-minimality class, semistability, and the reduced minimal model over `ℚ`.
+   curve-level global-minimality class, semistability, and the reduced-minimal predicate over `ℚ`.
    The Dedekind-general invariant package and easy implication need Layer 4's local minimality;
    they do not include the converse construction of a global equation.
 5. **Global equation construction over a number field** — Layer 4.5b, after lane 4. It proves
    Kraus's local and global criteria, patches the local auxiliary coefficients, obtains the
-   global-minimality equivalence over `𝓞 K`, and constructs a sharp one-prime model. Its separate
-   number-field prerequisite supplies a prime in a prescribed ideal class outside a finite set,
-  by the fixed ray-class density route.
+   global-minimality equivalence over `𝓞 K`, proves existence and uniqueness of the reduced
+   minimal equation over `ℚ`, and constructs a sharp one-prime model. It also depends on the
+   external `NumberField.exists_primeIdeal_mk_eq_avoiding` endpoint planned for the Class Field
+   Theory/Chebotarev integration described above; the one-prime milestone is blocked until it
+   lands.
 6. **Torsion and pairings** — Layer 2, on the dual isogeny and the divisor calculus.
 7. **Heights, Mordell–Weil, and explicit `2`-descent** — Layer 6: naïve-height Mordell–Weil
    and the explicit étale-algebra `2`-descent, independent of Layer 7; the canonical height
@@ -1465,8 +1525,9 @@ cross-cutting Layer 0.5 starts early because Layers 1, 2, 4, and 5 all use it. T
 8. **Continuous Galois cohomology, twists, and abstract Selmer groups** — the
    nonabelian-`H¹` prerequisite (used by Layer 5's classification and Layer 7), then
    Layer 7's Selmer/Sha, refining Layer 6's descent.
-9. **Cassels and the conditional BSD statement** — stretch, after lanes 3, 4, 7, 8.
-10. **Selected `ℚ`-specific database adapters** — Layer 8, on lane 4 (the canonical models).
+9. **Cassels and the conditional BSD statement** — stretch, after lanes 3, 4, 5, 7, 8.
+10. **Selected `ℚ`-specific database adapters** — Layer 8, on lane 5 for the canonical long
+    model and on its own primitive-short-model construction for the height.
    Thin by construction: it owns only the vocabulary required by current downstream consumers,
    not an exhaustive database schema.
 
@@ -1507,10 +1568,11 @@ cross-cutting Layer 0.5 starts early because Layers 1, 2, 4, and 5 all use it. T
   Chebotarev Density Theorem* (MIT OpenCourseWare, 2021), Proposition 28.10
   ([notes](https://ocw.mit.edu/courses/18-785-number-theory-i-fall-2021/resources/mit18_785f21_lec28/))
   — every ray class has prime ideals of Dirichlet density the reciprocal of the ray-class number;
-  modulus `1` gives the prime representative with finite avoidance used in Layer 4.5b.
+  modulus `1` independently verifies the prime-representative statement consumed in Layer 4.5b;
+  its roadmap supplier uses the Hilbert class field and Chebotarev route specified there.
 - J. E. Cremona, *Algorithms for Modular Elliptic Curves*, 2nd ed. (Cambridge, 1997) — minimal
   and **reduced minimal** Weierstrass equations over `ℚ`, the long-equation normalisation tables
-  of curves are written in (Layer 4.5a).
+  of curves are written in (Layer 4.5b).
 - J. E. Cremona's number-field elliptic-curve implementation (the `kraus` and
   `ell_number_field` modules of SageMath, following Kraus above;
   [documentation](https://doc.sagemath.org/html/en/reference/arithmetic_curves/sage/schemes/elliptic_curves/kraus.html),
