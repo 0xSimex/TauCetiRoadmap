@@ -85,6 +85,7 @@ that otherwise survive every coprimality-guarded or off-endpoint theorem.
 | nonzero prime Dirichlet sum | 5 | `primeDirichletSum` | indexed by `HeightOneSpectrum`, with a set or weight parameter |
 | weighted prime counts | 5 | `primeTheta`, `primeCount` | inclusive real cutoff and conversion to natural cutoffs |
 | density predicates | 7 | `HasDirichletDensity`, `HasNaturalDensity`, `LowerDirichletDensity`, `UpperDirichletDensity` | ratio normalization by the corresponding all-prime sum or count |
+| density conversions | 7 | `hasDirichletDensity_of_upper_of_lower`, `hasDirichletDensity_of_hasNaturalDensity` | agreement of one-sided limits and the one-way natural-to-Dirichlet implication |
 | Abel summation | 6 | `abelSummation` | exact finite identity plus an asymptotic corollary |
 | Perron summation | 6 | `perronFormula` | truncated kernel, endpoint value, and an arithmetic summatory form |
 | cancellation and continuation | 6 | `HasCancellation`, `continuedLFunctionOfWeight` | a named continuation into the strip supplied by the ideal partial-sum estimate |

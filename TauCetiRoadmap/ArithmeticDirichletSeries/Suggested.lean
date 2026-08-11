@@ -162,6 +162,11 @@ theorem hasDirichletDensity_of_symmDiff_finite
     (h : ((S \ T) ∪ (T \ S)).Finite) (hS : HasDirichletDensity K S δ) :
     HasDirichletDensity K T δ := sorry
 
+theorem hasDirichletDensity_of_upper_of_lower
+    (S : Set (HeightOneSpectrum (𝓞 K))) (δ : ℝ)
+    (hu : UpperDirichletDensity K S δ) (hl : LowerDirichletDensity K S δ) :
+    HasDirichletDensity K S δ := sorry
+
 /-- Layer 7: lower-density bounds for a finite partition squeeze to exact densities when the
 bounds exhaust the density of the union. -/
 theorem hasDirichletDensity_of_squeeze {i : Type*} [Fintype i]
@@ -186,6 +191,11 @@ theorem hasDirichletDensity_contraction
     (hover : ∀ 𝔓 ∈ S, ∃ 𝔭 ∈ T, 𝔓.asIdeal.under (𝓞 K) = 𝔭.asIdeal) :
     HasDirichletDensity E S δ ↔
       HasDirichletDensity K T (δ / (k : ℝ)) := sorry
+
+theorem hasDirichletDensity_of_hasNaturalDensity
+    (S : Set (HeightOneSpectrum (𝓞 K))) (δ : ℝ)
+    (h : HasNaturalDensity K S δ) :
+    HasDirichletDensity K S δ := sorry
 
 /-- Layer 6: exact Abel summation for finite sequences. The interval is inclusive at the upper
 endpoint; the displayed difference counts each boundary exactly once. -/
