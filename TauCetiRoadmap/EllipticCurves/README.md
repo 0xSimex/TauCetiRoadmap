@@ -939,71 +939,6 @@ criterion and the passage from compatible local auxiliary data to one global
 `(a₁, b₂, a₃)`-triple (equivalently one admissible `(r, s, t)`-transformation) are separate
 milestones; none is hidden under the word "bookkeeping".
 
-- **Prime representatives — planned external dependency and current blocker.** Layer 4.5b must
-  consume, and must not own, the reusable number-field theorem below. The intended owner is a
-  final class-group application module
-  `TauCeti/NumberTheory/NumberField/ClassGroup/PrimeRepresentative.lean` to be added to the
-  portfolio's
-  [Chebotarev roadmap](https://github.com/roed-math/TauCetiRoadmap/pull/18), consuming the Hilbert
-  class field and Artin isomorphism from the
-  [Class Field Theory roadmap](https://github.com/roed-math/TauCetiRoadmap/pull/6). The complete
-  supplier dependency to freeze there is
-
-  ```text
-  Profinite Cohomology + Local Fields and Ramification
-    + Global Number Fields + Number-Field Arithmetic
-      → Class Field Theory (Hilbert class field and arithmetic Artin isomorphism)
-
-  Arithmetic Dirichlet Series + Global Number Fields + Number-Field Arithmetic
-      → Chebotarev (infinite Frobenius fibres)
-
-  Class Field Theory + Chebotarev
-      → NumberField.exists_primeIdeal_mk_eq_avoiding
-      → Elliptic Curves Layer 4.5b
-  ```
-
-  Layer 4.5b is blocked until that supplier endpoint and its imports land. Its contract includes
-  avoidance of a prescribed finite set, which is exactly what this application needs:
-
-  ```lean
-  open scoped NumberField
-
-  namespace NumberField
-
-  theorem exists_primeIdeal_mk_eq_avoiding
-      (K : Type*) [Field K] [NumberField K]
-      (c : ClassGroup (𝓞 K))
-      (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 K))) :
-      ∃ v, v ∉ S ∧
-        ClassGroup.mk0 ⟨v.asIdeal,
-          mem_nonZeroDivisors_iff_ne_zero.mpr v.ne_bot⟩ = c
-
-  end NumberField
-  ```
-
-  The provider-side acceptance criteria are explicit: Class Field Theory exports the Hilbert
-  class field `H/K`, its arithmetic Artin isomorphism
-  `ClassGroup (𝓞 K) ≃* Gal(H/K)`, and the comparison of a prime-ideal class with its
-  Frobenius; Chebotarev exports infinitude of the primes with a prescribed arithmetic Frobenius;
-  and the final application module combines them into the contract above. For the proof, send
-  `c` through the Artin isomorphism, choose a prime in the resulting infinite Frobenius fibre,
-  and discard the finite set `S`. The convention is frozen as
-  `Art_H/K([𝔭]) = Frob_𝔭` for **arithmetic** Frobenius, so the endpoint returns `c` rather
-  than `c⁻¹`. Mathlib's `ClassGroup.mk0_surjective` supplies only an ideal and does not prove
-  primality or finite avoidance. `Suggested.lean` records the following intended consumer
-  snippet, explicitly **not compiled** until the supplier module is importable; it does not
-  redeclare the theorem in the elliptic-curve namespace:
-
-  ```lean
-  example
-      (K : Type*) [Field K] [NumberField K]
-      (c : ClassGroup (𝓞 K))
-      (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 K))) :
-      ∃ v, v ∉ S ∧
-        ClassGroup.mk0 ⟨v.asIdeal,
-          mem_nonZeroDivisors_iff_ne_zero.mpr v.ne_bot⟩ = c :=
-    NumberField.exists_primeIdeal_mk_eq_avoiding K c S
-  ```
 - **Kraus local and global criteria — owned here with named contracts.** These live in
   `TauCeti/AlgebraicGeometry/EllipticCurve/GlobalModels/Kraus.lean` and are implemented in this
   order:
@@ -1066,10 +1001,32 @@ milestones; none is hidden under the word "bookkeeping".
   equations related by an integral variable change with `u = ±1` have equal coefficients. The
   seeded `existsUnique_reducedMinimal` therefore asserts uniqueness of the **equation** in the
   `ℚ`-variable-change orbit; its change-of-variables witness need not be unique.
-- **One-prime construction — existence, not every representative.** Let `S` contain the primes
-  above `2` and `3`, together with any additional finite set the caller asks to avoid. For an
-  integral model `W` of `E`, let `𝔍_W` be its positive defect ideal. When
-  `globalMinimalityClass (𝓞 K) E ≠ 1`, the supplier theorem chooses **some** `v₀ ∉ S` with
+- **External input.** Every ideal class of a number field has a prime-ideal representative outside
+  any prescribed finite set. The L-functions roadmap owns the general number-field declaration
+  `NumberField.exists_primeIdeal_mk_eq_avoiding`; Elliptic Curves consumes only this interface:
+
+  ```lean
+  open scoped NumberField
+
+  namespace NumberField
+
+  theorem exists_primeIdeal_mk_eq_avoiding
+      (K : Type*) [Field K] [NumberField K]
+      (c : ClassGroup (𝓞 K))
+      (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 K))) :
+      ∃ v, v ∉ S ∧
+        ClassGroup.mk0
+          ⟨v.asIdeal,
+            mem_nonZeroDivisors_iff_ne_zero.mpr v.ne_bot⟩ = c
+
+  end NumberField
+  ```
+- **One-prime construction — existence, not every representative.** Given the caller's finite set
+  `S`, enlarge it internally by the finite set of primes above `2` and `3`. For an integral model
+  `W` of `E`, let `𝔍_W` be its positive defect ideal. When
+  `globalMinimalityClass (𝓞 K) E ≠ 1`, apply
+  `NumberField.exists_primeIdeal_mk_eq_avoiding` to that enlarged set to choose **some** `v₀`
+  outside it; in particular, `v₀ ∉ S` and `v₀ ∤ 6`, with
   `[v₀] = [𝔍_W]`; choose `u ∈ K×` with `𝔍_W = (u) v₀` as fractional ideals, and put
   `c₄' = c₄(W)/u⁴`, `c₆' = c₆(W)/u⁶`, and `Δ' = Δ(W)/u¹²`. The exact conditional
   contract is:
@@ -1514,10 +1471,9 @@ cross-cutting Layer 0.5 starts early because Layers 1, 2, 4, and 5 all use it. T
 5. **Global equation construction over a number field** — Layer 4.5b, after lane 4. It proves
    Kraus's local and global criteria, patches the local auxiliary coefficients, obtains the
    global-minimality equivalence over `𝓞 K`, proves existence and uniqueness of the reduced
-   minimal equation over `ℚ`, and constructs a sharp one-prime model. It also depends on the
-   external `NumberField.exists_primeIdeal_mk_eq_avoiding` endpoint planned for the Class Field
-   Theory/Chebotarev integration described above; the one-prime milestone is blocked until it
-   lands.
+   minimal equation over `ℚ`, and constructs a sharp one-prime model. The last construction
+   consumes `NumberField.exists_primeIdeal_mk_eq_avoiding` from the L-functions roadmap and no
+   part of its proof.
 6. **Torsion and pairings** — Layer 2, on the dual isogeny and the divisor calculus.
 7. **Heights, Mordell–Weil, and explicit `2`-descent** — Layer 6: naïve-height Mordell–Weil
    and the explicit étale-algebra `2`-descent, independent of Layer 7; the canonical height
@@ -1564,12 +1520,6 @@ cross-cutting Layer 0.5 starts early because Layers 1, 2, 4, and 5 all use it. T
   ([doi](https://doi.org/10.4064/aa-54-1-75-80)) — the local criterion on `(c₄, c₆)` deciding
   when a pair comes from an integral model at a prime, and the input to the global coefficient
   patching of Layer 4.5b.
-- A. V. Sutherland, *18.785 Number Theory I, Lecture 28: Global Class Field Theory and the
-  Chebotarev Density Theorem* (MIT OpenCourseWare, 2021), Proposition 28.10
-  ([notes](https://ocw.mit.edu/courses/18-785-number-theory-i-fall-2021/resources/mit18_785f21_lec28/))
-  — every ray class has prime ideals of Dirichlet density the reciprocal of the ray-class number;
-  modulus `1` independently verifies the prime-representative statement consumed in Layer 4.5b;
-  its roadmap supplier uses the Hilbert class field and Chebotarev route specified there.
 - J. E. Cremona, *Algorithms for Modular Elliptic Curves*, 2nd ed. (Cambridge, 1997) — minimal
   and **reduced minimal** Weierstrass equations over `ℚ`, the long-equation normalisation tables
   of curves are written in (Layer 4.5b).

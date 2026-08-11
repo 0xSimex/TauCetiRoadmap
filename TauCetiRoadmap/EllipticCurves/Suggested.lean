@@ -763,13 +763,12 @@ theorem krausGlobalCondition_iff_exists_integralModel (c₄ c₆ : K) :
           WeierstrassCurve.IsElliptic (W.baseChange K) :=
   sorry
 
-/-! The prime-representative theorem required by the one-prime target below is **not** an
-elliptic-curve declaration. Its
-intended external owner is the Class Field Theory/Chebotarev supplier chain recorded in `README.md`
-§Layer 4.5b, with public name `NumberField.exists_primeIdeal_mk_eq_avoiding`. Once that supplier
-module lands, this file imports it. Until then, the intended consumer snippet (not compiled) is:
+/-! **External input.** `NumberField.exists_primeIdeal_mk_eq_avoiding` is a general number-field
+declaration owned by the L-functions roadmap. Layer 4.5b is only a consumer:
 
 ```lean
+open scoped NumberField
+
 example
     (K : Type*) [Field K] [NumberField K]
     (c : ClassGroup (𝓞 K))
@@ -779,9 +778,7 @@ example
         mem_nonZeroDivisors_iff_ne_zero.mpr v.ne_bot⟩ = c :=
   NumberField.exists_primeIdeal_mk_eq_avoiding K c S
 ```
-
-Keeping the snippet documentary until the supplier is importable is deliberate: introducing a
-local axiom or redeclaring the name here would merely disguise the missing dependency. -/
+-/
 
 /-- Over a number field, triviality of the curve-level positive defect class is equivalent to
 existence of one globally minimal equation in the curve's variable-change orbit. The difficult
@@ -804,7 +801,10 @@ theorem existsUnique_reducedMinimal
 
 /-- **Existential one-prime theorem.** For a nontrivial positive defect class, some prime
 representing it and some equation in the curve's orbit give exact defect one there and minimality
-everywhere else. No claim is made for every representative prime. -/
+everywhere else. Its proof first applies the external
+`NumberField.exists_primeIdeal_mk_eq_avoiding` contract to the defect class and `S` enlarged by
+the primes above `2` and `3`, then performs the elliptic-curve patching. No claim is made for every
+representative prime. -/
 theorem exists_isSharpSemiGlobalMinimalAt_avoiding_of_globalMinimalityClass_ne_one
     (E : WeierstrassCurve K) [E.IsElliptic]
     (S : Finset (HeightOneSpectrum (NumberField.RingOfIntegers K)))
