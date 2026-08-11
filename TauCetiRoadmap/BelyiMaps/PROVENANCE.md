@@ -311,11 +311,10 @@ order — trivial included — to the field of moduli, ⚠ **but on a conic, not
 `ℙ¹`**; §8.3 gives the Hilbert-symbol obstruction in the cyclic even-order case. README
 Layer 11.6 carries the conic caveat.
 
-**Girondo–González-Diez** and **Forster** were read directly on 2026-08-08 from the copies
-in `~/claude/references`; per-statement extracts are in `ggd-extract.md` and
-`forster-extract.md` beside them, and the numbers are folded into the README's `*Source:*`
-lines for Layers 4.1, 4.4, 4.5, 5, 6.1, 6.3, 6.5, 7.1, 7.4, 8.1–8.3, 8.5, 8.6, 9.2, 9.3,
-10.6, 12.12 and 13.5. Four findings changed the roadmap rather than annotating it:
+**Girondo–González-Diez** and **Forster** were read directly on 2026-08-08. Per-statement extracts
+are retained in the private review archive, and the numbers are folded into the README's
+`*Source:*` lines for Layers 4.1, 4.4, 4.5, 5, 6.1, 6.3, 6.5, 7.1, 7.4, 8.1–8.3, 8.5, 8.6,
+9.2, 9.3, 10.6, 12.12 and 13.5. Four findings changed the roadmap rather than annotating it:
 
 - **Girondo–González-Diez Theorem 4.49** proves faithfulness on genus-zero dessins by
   **Lenstra's** argument — the polynomial `p_α = ∫ x(x−1)²(x−α)³` with its three *pairwise
