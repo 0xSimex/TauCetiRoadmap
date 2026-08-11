@@ -432,12 +432,11 @@ schemes, and any ribbon-graph or triangle-group object.
 
 ## What Tau Ceti supplies
 
-**Every consumed theorem gets a name or a signature, and no row cites a layer range.** A
-local agent cannot implement against "the Layer 10B chain" or "the milestone-8
-correspondence": it has to know what to `apply`. So each row below carries either the
-supplier's exact declaration name, or — only for accepted non-portfolio suppliers that have
-specified an object in prose and pinned no Lean name — an **exact local interface signature**.
-The three final portfolio suppliers have no stand-ins here.
+Every already-pinned consumed theorem gets an exact name or signature. A local agent cannot
+implement against an unnamed chain: it has to know what to `apply`. The table therefore
+distinguishes exact declarations from later supplier milestones whose carriers are intentionally
+still prose-only. Accepted non-portfolio suppliers may have an exact local interface signature;
+the three portfolio suppliers have no local stand-ins here.
 
 | Consumer | Supplier | Object | Exact name, or local interface signature |
 | --- | --- | --- | --- |
@@ -452,13 +451,18 @@ The three final portfolio suppliers have no stand-ins here.
 | 6.3 | UniversalCovers Stage 2 | basepoint change, and the pointed/unpointed correspondence | `basepointChangeSubgroup`; for milestone 8 that roadmap pins no name, local interface: `connectedPointedCoverEquivSubgroup (x₀ : X) : Quot (ConnectedPointedCoverIso x₀) ≃ Subgroup (FundamentalGroup X x₀)` under `[PathConnectedSpace X] [LocPathConnectedSpace X] [SemilocallySimplyConnectedSpace X]`, with `ConnectedPointedCover` (carrying `PathConnectedSpace E` as a **field**) and `ConnectedPointedCoverIso` in `Suggested.lean`; unpointed, `connectedCoverEquivSubgroupOrbit : Quot ConnectedCoverIso ≃ Quotient subgroupConjSetoid`. ⚠ **Connectedness is required**: a disconnected pointed cover recovers only the subgroup of the component containing the chosen point, so adjoining an unrelated component would leave the subgroup fixed and the map would not be injective. ⚠ The subgroup side is the conjugation-**orbit** quotient, `MulAction.orbitRel (ConjAct G) (Subgroup G)`, not `ConjClasses (Subgroup _)` — `ConjClasses` is a monoid's quotient by conjugation on *itself*, and `Subgroup G` is not `G` |
 | 8.2 | ConformalMapping L0 | the local degree of a holomorphic map | `TauCeti.exists_localDegree`, and the holomorphic branch-root extraction beside it |
 | 8.6, 9.3, 9.4 | ModularForms Layer 10B | Riemann–Roch and Riemann–Hurwitz for compact Riemann surfaces | that roadmap pins **no Riemann-surface carrier and no Lean names**; local interfaces, all carried in `Suggested.lean`: `MerField X`, `Divisor X := X →₀ ℤ` — an `abbrev`, so `Finsupp`'s subtraction is available — `Divisor.deg : Divisor X → ℤ`, `genusAn X : ℕ`, `riemannRochSpaceAn`, `ellAn`, `canonicalDivisor`, `riemannRochAn`; and for Riemann–Hurwitz the map-derived `degreeAn f hf hne`, `ramificationIndexAn f hf hne x`, `ramifiedPointsAn f hf hne`, with contracts `ramificationIndexAn_localNormalForm`, `ramificationIndexAn_pos`, `ramificationIndexAn_eq_one_iff`, `ramificationLocus_discrete`, `mem_ramifiedPointsAn_iff`, `degreeAn_eq_fiber_sum`. ⚠ **`hf` and `hne` are arguments, not context.** Layer 8.2 defines the index only for a nonconstant holomorphic map between connected surfaces; a version taking a bare `f : X → Y` would have to return an undocumented junk value, and `ramificationIndexAn_pos` would then commit the roadmap to that junk being positive. ⚠ **The local index carries no compactness** — Layer 8.2's `e` is local. Compactness enters only for `degreeAn`, for packaging the branch locus as a `Finset`, and for the two identities. ⚠ `MerField X` is a **field for connected** Riemann surfaces — `[ConnectedSpace X]`, not `[CompactSpace X]`: on a disjoint union the meromorphic functions are a *product* of fields and have zero divisors. Compactness enters at divisors, finite polar sets, and finite-dimensional `L(D)`, and is carried on those declarations. ⚠ Riemann–Hurwitz must **not** quantify over a free `deg`, `ram` and `e`: that is not a weaker theorem but a false one, since a caller may supply any numbers. Every quantity is derived from `f`. ⚠ `genusAn` is not imported from a classification of topological surfaces — the roadmap has none and needs none. ⚠ Both identities are stated in `ℤ`, since `ℕ` subtraction truncates `ℓ(D) − ℓ(K−D)` exactly when the second exceeds the first |
-| 9.1, 9.4, 9.6 | `AlgebraicCurves` Layers 0, 1, 6 | function fields, places, ramification and residue degrees | `AlgebraicCurves.IsFunctionField`, `AlgebraicCurves.IsIntegrallyClosedIn`, `AlgebraicCurves.Place`, `AlgebraicCurves.Divisor`, and the supplier's ramification index, residue degree, and fundamental identity |
-| 9.5, 10.7, 11.4 | `AlgebraicCurves` Layers 5, 8 | Riemann–Roch, genus, and constant-field extension | `AlgebraicCurves.riemannRochSpace`, `AlgebraicCurves.genus`, and the supplier's full-faithfulness theorem for constant-field extension in characteristic zero |
-| 9.1, 9.5 | `AlgebraicCurves` Layer 12 | the regular projective model and the anti-equivalence | the exact Layer-12 milestones `regularModel`, `functionFieldEquiv`, and `regularModel_functionField`; **this roadmap never analytifies a scheme** — Layer 9.6 works with places, so only the place set and its `(e,f)` data are consumed, never a scheme-theoretic fiber |
+| 9.1, 9.4, 9.6 | `AlgebraicCurves` Layers 0, 1 | function fields, places, and divisors | exact declarations: `AlgebraicCurves.IsFunctionField`, Mathlib's `IsIntegrallyClosedIn`, `AlgebraicCurves.Place`, `AlgebraicCurves.Divisor` |
+| 9.1, 9.4, 9.6 | `AlgebraicCurves` Layer 6 | ramification index, residue degree, and the fundamental identity | **prose-only supplier milestones; no Lean declarations are pinned yet** |
+| 9.5, 10.7, 11.4 | `AlgebraicCurves` Layer 5 | Riemann–Roch and genus | exact declarations: `AlgebraicCurves.riemannRochSpace`, `AlgebraicCurves.genus` |
+| 10.7, 11.4 | `AlgebraicCurves` Layer 8 | constant-field extension in characteristic zero | **prose-only supplier milestone; no full-faithfulness declaration is pinned yet** |
+| 9.1, 9.5 | `AlgebraicCurves` Layer 12 | the regular projective model and the anti-equivalence | **prose-only supplier milestones; no Lean declarations are pinned yet**. The reserved roadmap names are `regularModel`, `functionFieldEquiv`, and `regularModel_functionField`; **this roadmap never analytifies a scheme** — Layer 9.6 works with places, so only the place set and its `(e,f)` data are consumed, never a scheme-theoretic fiber |
 | 12.1, 12.3, 13.1 | `ProfiniteProPGroups` Layers 0, 3, 4 | free profinite group, maximal pro-`p` quotient, `zHat` **as a group** | `ProfiniteProPGroups.freeProfiniteGroup`, `ProfiniteProPGroups.freeProfiniteGroup.of`, `ProfiniteProPGroups.freeProfiniteGroup.lift`, `ProfiniteProPGroups.proPKernel`, `ProfiniteProPGroups.maximalProPQuotient`, `ProfiniteProPGroups.freeProP`, `ProfiniteProPGroups.freeProP.of`, `ProfiniteProPGroups.zHat`, `ProfiniteProPGroups.maximalProPQuotient_zHat_equiv_padicInt` |
 
-Every exact portfolio name above is imported by `Suggested.lean`; a spelling or carrier change
-therefore breaks this roadmap instead of silently selecting a local replacement.
+Every row labeled as an exact portfolio declaration is imported by `Suggested.lean`; a spelling
+or carrier change therefore breaks this roadmap instead of silently selecting a local replacement.
+The prose-only AlgebraicCurves rows are scheduling contracts, not claims that declarations already
+exist, and `Suggested.lean` intentionally does not prototype Belyi's Layers 9–11 until those
+supplier carriers can be formed.
 
 ## The build, in layers
 
