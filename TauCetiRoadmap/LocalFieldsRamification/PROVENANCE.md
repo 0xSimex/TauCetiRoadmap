@@ -16,9 +16,9 @@ The retained material comes from Tau Ceti PR
 | Layers 5–8: finite Tate cohomology, class formations, local reciprocity and duality | `ClassFieldTheory` |
 | Layer 9 and the arithmetic pro-`p` interfaces: `G_K(p)`, rank, roots of unity and local presentations | `LocalGaloisGroups` |
 
-The split is by mathematical ownership, not by deletion. The migration ledger at
-`handoffs/TAUCETI_ARITHMETIC_PORTFOLIO_MIGRATION_LEDGER.md` records every numbered and lettered
-source milestone.
+The split is by mathematical ownership, not by deletion. A detailed portfolio migration ledger
+recording every numbered and lettered source milestone is maintained privately as an internal
+coordination artifact.
 
 ## Primary references
 
