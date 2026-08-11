@@ -1001,9 +1001,10 @@ milestones; none is hidden under the word "bookkeeping".
   equations related by an integral variable change with `u = ±1` have equal coefficients. The
   seeded `existsUnique_reducedMinimal` therefore asserts uniqueness of the **equation** in the
   `ℚ`-variable-change orbit; its change-of-variables witness need not be unique.
-- **External input.** Every ideal class of a number field has a prime-ideal representative outside
-  any prescribed finite set. The L-functions roadmap owns the general number-field declaration
-  `NumberField.exists_primeIdeal_mk_eq_avoiding`; Elliptic Curves consumes only this interface:
+- **External integration contract.** An unconditional finite-avoidance corollary would use the
+  general number-field statement that every ideal class has a prime-ideal representative outside
+  any prescribed finite set. Its ownership, proof and analytic prerequisites are outside this
+  roadmap; the exact interface required by such an integration module is:
 
   ```lean
   open scoped NumberField
@@ -1021,12 +1022,9 @@ milestones; none is hidden under the word "bookkeeping".
 
   end NumberField
   ```
-- **One-prime construction — existence, not every representative.** Given the caller's finite set
-  `S`, enlarge it internally by the finite set of primes above `2` and `3`. For an integral model
-  `W` of `E`, let `𝔍_W` be its positive defect ideal. When
-  `globalMinimalityClass (𝓞 K) E ≠ 1`, apply
-  `NumberField.exists_primeIdeal_mk_eq_avoiding` to that enlarged set to choose **some** `v₀`
-  outside it; in particular, `v₀ ∉ S` and `v₀ ∤ 6`, with
+- **Sharp construction at a supplied representative prime.** Let `v₀` represent
+  `globalMinimalityClass (𝓞 K) E` and assume `v₀ ∤ 6`. For an integral model `W` of `E`, let
+  `𝔍_W` be its positive defect ideal. The comparison with the curve-level class gives
   `[v₀] = [𝔍_W]`; choose `u ∈ K×` with `𝔍_W = (u) v₀` as fractional ideals, and put
   `c₄' = c₄(W)/u⁴`, `c₆' = c₆(W)/u⁶`, and `Δ' = Δ(W)/u¹²`. The exact conditional
   contract is:
@@ -1036,12 +1034,12 @@ milestones; none is hidden under the word "bookkeeping".
 
   At primes above `2` and `3`, local minimal equations supply the witnesses for that global
   condition; at `v₀` it is automatic because `v₀ ∤ 6`; elsewhere the scaled invariants are
-  already minimal. Thus the final seeded theorem takes `S` and says **there exist** `v₀ ∉ S`
-  in the positive defect class and `C`, not that every representative prime works. Its conclusion
-  includes integrality at `v₀`, minimality away from it and
+  already minimal. Thus the final seeded theorem takes `v₀`, its class equality and `v₀ ∤ 6`,
+  and returns `C`. Its conclusion includes integrality at `v₀`, minimality away from it and
   `obstructionExponentAt (𝓞 K) v₀ (C • E) = 1`, and therefore implies
-  `IsSemiGlobalMinimal`. The nontrivial-class hypothesis is explicit; the trivial case is handled
-  by the global-minimality equivalence instead.
+  `IsSemiGlobalMinimal`. Applying the external contract above to a caller's finite set enlarged
+  by the primes above `2` and `3` would give the unconditional finite-avoidance corollary; that
+  corollary belongs to external integration, not to this roadmap.
 
 ### Layer 5: twists (AEC X.2, X.5)
 
@@ -1471,9 +1469,8 @@ cross-cutting Layer 0.5 starts early because Layers 1, 2, 4, and 5 all use it. T
 5. **Global equation construction over a number field** — Layer 4.5b, after lane 4. It proves
    Kraus's local and global criteria, patches the local auxiliary coefficients, obtains the
    global-minimality equivalence over `𝓞 K`, proves existence and uniqueness of the reduced
-   minimal equation over `ℚ`, and constructs a sharp one-prime model. The last construction
-   consumes `NumberField.exists_primeIdeal_mk_eq_avoiding` from the L-functions roadmap and no
-   part of its proof.
+   minimal equation over `ℚ`, and constructs a sharp model at a supplied representative prime.
+   The unconditional finite-avoidance corollary belongs to external integration.
 6. **Torsion and pairings** — Layer 2, on the dual isogeny and the divisor calculus.
 7. **Heights, Mordell–Weil, and explicit `2`-descent** — Layer 6: naïve-height Mordell–Weil
    and the explicit étale-algebra `2`-descent, independent of Layer 7; the canonical height

@@ -517,9 +517,8 @@ a field is a Dedekind domain in Mathlib and its height-one spectrum is empty, so
 bare existential is `False` while `IsGlobalMinimal` is vacuously `True` — the intended "every
 global minimal model is semi-global" would fail at the degenerate base. ⚠ This is the **weak**
 predicate: it permits any defect at `v₀`. The sharp one is `IsSharpSemiGlobalMinimalAt` below,
-and the existence theorem — over `𝓞 K` for a number field, **not** an abstract Dedekind domain,
-since the one-prime construction needs every ideal class to contain a height-one prime — is
-`README.md` §Layer 4.5b. -/
+and the construction theorem at a supplied representative prime — over `𝓞 K` for a number
+field, **not** an abstract Dedekind domain — is `README.md` §Layer 4.5b. -/
 def IsSemiGlobalMinimal (W : WeierstrassCurve K) [W.IsElliptic] : Prop :=
   IsGlobalMinimal O W ∨
     ∃ v₀ : HeightOneSpectrum O,
@@ -648,9 +647,9 @@ criteria, compatible auxiliary coefficients at primes above `2` and `3`, weak ap
 one global `(r, s, t)`-transformation, and the verification that the resulting equation has the
 prescribed local defects. The equivalence between trivial `globalMinimalityClass` and existence of
 a global minimal equation is stated here only for `O = NumberField.RingOfIntegers K`. The
-one-prime theorem chooses a representative prime outside a finite exceptional set; it does not
-quantify over every prime in the class. Exact prerequisite contracts are in `README.md`
-§Layer 4.5b. -/
+sharp construction takes a supplied prime representing the defect class and lying away from `6`.
+Producing such a prime outside an arbitrary finite set is a separate external integration
+corollary. Exact prerequisite contracts are in `README.md` §Layer 4.5b. -/
 
 section GlobalEquationConstruction
 
@@ -763,20 +762,25 @@ theorem krausGlobalCondition_iff_exists_integralModel (c₄ c₆ : K) :
           WeierstrassCurve.IsElliptic (W.baseChange K) :=
   sorry
 
-/-! **External input.** `NumberField.exists_primeIdeal_mk_eq_avoiding` is a general number-field
-declaration owned by the L-functions roadmap. Layer 4.5b is only a consumer:
+/-! **External integration contract.** An unconditional finite-avoidance corollary would require
+the following general number-field declaration. Its ownership, proof, and analytic prerequisites
+are outside this roadmap; the elliptic-curve theorem below instead starts from a supplied prime:
 
 ```lean
 open scoped NumberField
 
-example
+namespace NumberField
+
+theorem exists_primeIdeal_mk_eq_avoiding
     (K : Type*) [Field K] [NumberField K]
     (c : ClassGroup (𝓞 K))
     (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 K))) :
     ∃ v, v ∉ S ∧
-      ClassGroup.mk0 ⟨v.asIdeal,
-        mem_nonZeroDivisors_iff_ne_zero.mpr v.ne_bot⟩ = c :=
-  NumberField.exists_primeIdeal_mk_eq_avoiding K c S
+      ClassGroup.mk0
+        ⟨v.asIdeal,
+          mem_nonZeroDivisors_iff_ne_zero.mpr v.ne_bot⟩ = c
+
+end NumberField
 ```
 -/
 
@@ -799,23 +803,20 @@ theorem existsUnique_reducedMinimal
         ∃ C : WeierstrassCurve.VariableChange ℚ, C • E = W.1 :=
   sorry
 
-/-- **Existential one-prime theorem.** For a nontrivial positive defect class, some prime
-representing it and some equation in the curve's orbit give exact defect one there and minimality
-everywhere else. Its proof first applies the external
-`NumberField.exists_primeIdeal_mk_eq_avoiding` contract to the defect class and `S` enlarged by
-the primes above `2` and `3`, then performs the elliptic-curve patching. No claim is made for every
-representative prime. -/
-theorem exists_isSharpSemiGlobalMinimalAt_avoiding_of_globalMinimalityClass_ne_one
+/-- **Sharp construction at a supplied representative prime.** If `v₀` represents the positive
+defect class and lies away from `6`, some equation in the curve's orbit has exact defect one there
+and is minimal everywhere else. This is the elliptic-curve boundary: existence of a suitable
+`v₀` outside an arbitrary finite set is an external integration corollary. -/
+theorem exists_isSharpSemiGlobalMinimalAt_of_primeRepresentative
     (E : WeierstrassCurve K) [E.IsElliptic]
-    (S : Finset (HeightOneSpectrum (NumberField.RingOfIntegers K)))
-    (hE : globalMinimalityClass (NumberField.RingOfIntegers K) E ≠ 1) :
-    ∃ v₀ : HeightOneSpectrum (NumberField.RingOfIntegers K),
-      v₀ ∉ S ∧
-        ClassGroup.mk0 ⟨v₀.asIdeal,
+    (v₀ : HeightOneSpectrum (NumberField.RingOfIntegers K))
+    (hv₀ :
+      ClassGroup.mk0 ⟨v₀.asIdeal,
           mem_nonZeroDivisors_iff_ne_zero.mpr v₀.ne_bot⟩ =
-            globalMinimalityClass (NumberField.RingOfIntegers K) E ∧
-          ∃ C : WeierstrassCurve.VariableChange K,
-            IsSharpSemiGlobalMinimalAt (NumberField.RingOfIntegers K) v₀ (C • E) :=
+        globalMinimalityClass (NumberField.RingOfIntegers K) E)
+    (hSix : (6 : NumberField.RingOfIntegers K) ∉ v₀.asIdeal) :
+    ∃ C : WeierstrassCurve.VariableChange K,
+      IsSharpSemiGlobalMinimalAt (NumberField.RingOfIntegers K) v₀ (C • E) :=
   sorry
 
 end GlobalEquationConstruction
