@@ -24,7 +24,7 @@ dependencies. The following are all absent:
 - the cycle-type form of Dedekind's theorem;
 - the relative Dedekind–Kummer theorem;
 - the relative discriminant ideal;
-- the exact tame and wild different exponents;
+- the global consequences of the local tame and wild different exponents;
 - Stickelberger's congruence;
 - the double-coset splitting law for non-Galois extensions;
 - the local-global dictionary at finite places, although the infinite-place analogue is
@@ -72,21 +72,24 @@ No milestone here has a prerequisite of any other kind. In particular, no milest
 - an external repository;
 - a roadmap that does not yet exist.
 
-Where the mathematics needs an object that a neighbouring subject also touches, this roadmap
-defines that object and owns it. Layer 6.1 is the one such case, and §Boundaries records it.
+The [Local Fields and Ramification roadmap #189](https://github.com/TauCetiProject/TauCetiRoadmap/pull/189)
+is an explicit prerequisite of Layers 5.8 and 6.1–6.4. Those milestones consume its
+`LocalFieldsRamification.lowerRamificationGroup`, local monogenicity, Hilbert different formula,
+and tame/wild local different bounds. This is a declared inter-roadmap dependency, not an
+implicit reimplementation.
 
 ## Boundaries
 
 Two neighbouring roadmaps overlap this one. The boundaries are stated once here.
 
-**Local fields.** Upper numbering, Herbrand's theorem, Hasse–Arf, and the local different
-formulas belong to that subject. This roadmap proves none of them. It develops the canonical
-completion maps, the comparison of global ideal-theoretic invariants with local ones, and the
-global ideal and discriminant corollaries.
-
-The one local object this roadmap needs is the **finite** local lower ramification filtration of
-`L_w/K_v`, and **this roadmap owns it**. Layer 6.1 defines it and gives its API; Layer 6.2
-compares it with the global filtration. It is a mandatory deliverable, not a placeholder.
+**Local fields.** The Local Fields and Ramification roadmap #189 owns intrinsic local
+extensions, normalized valuations and `(e,f)`, local integer-ring and integral-closure theory,
+local monogenicity, the canonical `ℤ`-indexed lower filtration, Hilbert's local different
+formula, and the tame/wild local different bounds. This roadmap imports those declarations. It
+owns the global-to-local completion maps, the completed integer-ring map, the
+decomposition-group/local-Galois comparison, the global ideal-theoretic filtration and its
+comparison with `LocalFieldsRamification.lowerRamificationGroup`, localization of the global
+different, and the relative-discriminant consequences. It defines no second local filtration.
 
 **Global number fields and class field theory.** Moduli, ray and narrow class groups, adeles,
 ideles, Hecke-character carriers, orders, and Picard groups belong to `GlobalNumberFields`.
@@ -119,6 +122,9 @@ What this roadmap supplies to other subjects:
 - the local-field instance on `v.adicCompletion K`, and the localization of the different
   (Layer 5).
 
+Conversely, this roadmap consumes #189 by name in Layers 5.8 and 6.1–6.4. In particular,
+`LocalFieldsRamification.lowerRamificationGroup` is the sole local lower-filtration carrier.
+
 The stable consumers are `GlobalNumberFields`, `ClassFieldTheory`,
 `PolynomialGaloisGroups`, and `Chebotarev`. In particular, Chebotarev consumes
 `artinSymbol`; it never defines a second Frobenius-class carrier. The frozen contract is
@@ -132,7 +138,7 @@ The stable consumers are `GlobalNumberFields`, `ClassFieldTheory`,
 There are two regimes. Neither is bundled into a new class.
 
 **Dedekind-generic regime.** This regime covers Layers 1 to 4 wherever the mathematics is not
-about `ℚ`, and the different-exponent statements of Layer 6. It is Mathlib's AKLB setup:
+about `ℚ`. It is Mathlib's AKLB setup:
 
 - `A` is a Dedekind domain with fraction field `K`;
 - `L/K` is a finite extension;
@@ -157,7 +163,6 @@ discriminant theory, not only by the exact exponents. Everything below carries
 - the relative-discriminant tower formula (Layer 4.2);
 - ramified if and only if it divides the relative discriminant (Layer 4.2);
 - finiteness of the ramified support (Layer 4.3);
-- the exact tame and wild different exponents (Layer 6.4).
 
 Without it the trace form can vanish, `differentIdeal` is `⊥`, and every prime divides it. These
 are the same hypotheses Mathlib's own `differentIdeal_ne_bot`,
@@ -170,12 +175,11 @@ must display it.
 
 ⚠ Separability of the fraction-field extension does not give separability of a residue extension.
 Over an imperfect residue field a finite separable `L/K` can have an inseparable residue
-extension, and then `P` divides the different however small `e` is. That is Mathlib's
-`dvd_differentIdeal_of_not_isSeparable`. So Layer 6.4 carries
-`[Algebra.IsSeparable (A ⧸ p) (B ⧸ P)]`
-as well, and §Pinned conventions makes residue separability part of the definition of tame and of
-wild. Layer 6.4 gives the example that forces it. The number-field corollaries may omit the
-hypothesis, because a finite residue field is perfect.
+extension, and then `P` divides the different however small `e` is, by Mathlib's
+`dvd_differentIdeal_of_not_isSeparable`. This roadmap therefore does **not** claim a
+Dedekind-generic tame/wild exponent theorem. Layer 6.4 is restricted to number fields, whose
+finite residue fields are perfect, and transports the local theorem supplied by #189 through
+the completion and localization dictionary.
 
 **Number-field regime.** This regime covers the LMFDB-facing layers. Use `[Field K]` and
 `[NumberField K]` with `𝓞 K`. Write Galois groups as `K ≃ₐ[ℚ] K`, or `L ≃ₐ[K] L`. Present a
@@ -203,13 +207,13 @@ two places.
 | Frobenius | **Arithmetic**: `σ x ≡ x^q mod Q`, with `q = Nat.card (A ⧸ Q.under A)`. This is Mathlib's `AlgHom.IsArithFrobAt` and `IsArithFrobAt`. "Frobenius" unqualified always means arithmetic. The geometric Frobenius is its inverse and is always called geometric. |
 | Frobenius at a ramified prime | `IsArithFrobAt` is satisfiable at every prime with finite residue field. It is canonical only modulo inertia, by `IsArithFrobAt.mul_inv_mem_inertia`. "The Frobenius at `Q`" needs `Algebra.IsUnramifiedAt`. At a ramified prime only the coset `σ·I(Q)` is used. |
 | Frobenius is a finite-level notion | Every Frobenius statement here lives in a finite Galois extension, or in the quotient `D_v/I_v ≅ Gal(k̄_v/k_v)`. There is no canonical Frobenius element, and no canonical conjugacy class, in `Gal(K̄/K)`. §Explicit scope exclusions states why. |
-| Infinite places | The canonical element of the order-2 stabilizer at a real place that ramifies in `L` is complex conjugation, through `ComplexEmbedding.IsConj` and `IsCMField.complexConj`. It is never called a Frobenius. `IsRamified` and `IsUnramified` at infinite places are Mathlib's. |
+| Infinite places | For a selected place `w` of `L` above a real place of `K`, `complexConjugationAt w hw` is the unique nonidentity stabilizer element characterized by `ComplexEmbedding.IsConj w.embedding`. It depends on `w`, transforms covariantly under conjugation, and restricts in towers. `IsCMField.complexConj` is the CM specialization, not the generic definition. It is never called a Frobenius. |
 | Artin symbol | `artinSymbol 𝔭 : ConjClasses (L ≃ₐ[K] L)`, for `𝔭 : Ideal (𝓞 K)` a nonzero prime that is unramified in `L`. The rational-prime form for `K = ℚ` is a corollary of it, not the definition. |
 | Ideal-theoretic Artin map | `artinHomAway S hur : J^S →* (L ≃ₐ[K] L)`, for `L/K` finite abelian and `S` an arbitrary `Finset` of primes of `𝓞 K` that contains every prime that ramifies in `L`. `idealsAway S` is the subgroup of `(FractionalIdeal (𝓞 K)⁰ K)ˣ` of fractional ideals with valuation zero at every prime of `S`, and `J^S` is short for it in prose. `S` is a parameter of the construction. Taking `S = ramifiedSupport K L` is Layer 4.3. The integral-ideal monoid homomorphism is a corollary. |
 | Decomposition group | `MulAction.stabilizer G Q`, Mathlib's spelling. There is no second named definition. |
 | Inertia group | `Q.inertia G`, that is `Ideal.inertia`. |
 | Decomposition and inertia fields | Mathlib's `IsDecompositionField` and `IsInertiaField`. State Layer 1.3's degree and index formulas through `Ideal.under`, `ramificationIdx` and `inertiaDeg` of the ideals, not through the intermediate field. `PROVENANCE.md` records why. |
-| Higher ramification groups | A family `G i` indexed by `i : ℕ`, so `G 0` is inertia. The decomposition group keeps its own name and is never written `G (-1)`. Where a statement needs the `−1` slot it names the stabilizer. |
+| Higher ramification groups | The local family is #189's total `LocalFieldsRamification.lowerRamificationGroup`, indexed by `ℤ` with `G_i = ⊤` for `i ≤ -1`. This roadmap's global ideal-theoretic family is indexed by `ℕ`, so `G 0` is inertia; the decomposition group keeps its own name. Layer 6.2 compares the global group at `i` with the imported local group at `(i : ℤ)`. |
 | `e` and `f` | `Ideal.ramificationIdx p P` and `Ideal.inertiaDeg p P`, which take two ideals at the pin, and the Galois-constant versions `ramificationIdxIn` and `inertiaDegIn`. ⚠ Mathlib is replacing both by their localization and residue-field definitions, under the same unqualified names but with the prime of `B` first and the base **ring** `A` second; the current definitions survive as `ramificationIdx'` and `inertiaDeg'`. State a milestone through a characterization that holds for both definitions, so that only the spelling of the arguments changes. `PROVENANCE.md` records the Mathlib work. |
 | Splitting type | The multiset `{(e₁,f₁), …, (e_g,f_g)}`. "Splits completely" is the count equation `(Ideal.primesOver (span {(p:ℤ)}) (𝓞 K)).ncard = finrank ℚ K`, which is Tau Ceti's convention. There is no new predicate. Cycle types use `Equiv.Perm.cycleType`, ⚠ which omits fixed points, so a partition-valued statement adds the `1`s back. |
 | Discriminant, absolute | The signed `NumberField.discr K : ℤ`. Its sign is a theorem, `NumberField.sign_discr`, not a convention. The label uses `\|discr\|`, and the sign is recovered from the signature. |
@@ -423,8 +427,7 @@ The complete list, in one place.
   conjugacy-class-valued Artin symbol at a prime ideal of the base; the abelian collapse and the
   fractional-ideal Artin homomorphism; `orderOf Frob = f`; behaviour under restriction and in
   towers; the identification with the residue-field Frobenius; the cyclotomic and quadratic
-  element identifications; and complex conjugation as the canonical element at a ramified real
-  place.
+  element identifications; and place-dependent complex conjugation at a ramified real place.
 - The relative Dedekind–Kummer theorem with matching `e` and `f`, together with the converse of
   `irreducible_map_of_irreducible_minpoly`.
 - The power-basis index, with `disc(minpoly θ) = index² · discr K`, and the comparison of its
@@ -436,12 +439,13 @@ The complete list, in one place.
   description; the `Algebra.discr` tower formula; Stickelberger's congruence.
 - The canonical completion of an extension at a finite place, and the whole finite-place
   local-global dictionary: `Σ [L_w:K_v] = n`, `[L_w:K_v] = e·f`, `D_Q ≅ Gal(L_w/K_v)`, norm and
-  trace, the completed integer rings as an integral-closure pair with module finiteness, local
-  monogenicity, localization of the different, and the `IsNonarchimedeanLocalField` instance on a
-  completion.
-- The global ramification consequences carried through that dictionary: the lower filtration and
-  its comparison with the local one, the different-exponent formula, the exact tame and wild
-  exponents, and the permutation-action discriminant formula.
+  trace, the completed integer rings as an integral-closure pair with module finiteness, the
+  adapter to #189's local monogenicity, localization of the different, and the
+  `IsNonarchimedeanLocalField` instance on a completion.
+- The global ramification consequences carried through that dictionary: the global
+  ideal-theoretic lower filtration and its comparison with #189's local one, the global
+  different-exponent formula, the tame and wild global corollaries, and the permutation-action
+  discriminant formula.
 - The double-coset splitting law for non-Galois extensions, and totally-split in the Galois
   closure.
 - The subfield lattice, the monogenicity predicate with its quadratic, cyclotomic and Dedekind
@@ -497,6 +501,12 @@ Let `Z` be the decomposition ring and `T` the inertia ring of `P` over `p`. Prov
 - `P` is the only prime of `L` over `P ∩ Z`;
 - `e(P∩Z/p) = 1` and `f(P∩Z/p) = 1`;
 - `f(P∩T/P∩Z) = f` and `e(P∩T/P∩Z) = 1`.
+- `P` is the only prime of `L` over `P ∩ T`;
+- `L/T` is totally ramified at `P`, so `f(P/(P∩T)) = 1` and
+  `e(P/(P∩T)) = [L:T]`;
+- `[Z:K] = g`, `[T:Z] = f`, and `[L:T] = e`, hence `[L:K] = g·e·f`, with each formula
+  stated through the corresponding prime ideals and Mathlib's `ramificationIdx` and
+  `inertiaDeg`.
 
 State these on Mathlib's `IsDecompositionField` and `IsInertiaField`. State the degree and index
 formulas through `Ideal.under`, `ramificationIdx` and `inertiaDeg` of the ideals, not through the
@@ -767,9 +777,20 @@ whose exponent is prime to `p`.
 
 #### 2.7 The canonical element at a ramified real place
 
-Let `w` be a real place of `K` that ramifies in `L`. The stabilizer of a place of `L` above `w`
-has order 2. Name its generator: it is complex conjugation. Give the basic API: order 2,
-compatibility with restriction, and the fixed field.
+Let `w` be a **selected complex place of `L`** above a real place of `K`. Define
+`complexConjugationAt w hw : L ≃ₐ[K] L` as the unique element satisfying
+`ComplexEmbedding.IsConj w.embedding`. The place is part of the input: in a general Galois
+extension there is no place-independent conjugation element. Expose the full basic API:
+
+- the `IsConj` characterization at `w.embedding`;
+- membership in `MulAction.stabilizer (L ≃ₐ[K] L) w`;
+- nontriviality, order two, and uniqueness among nonidentity elements of that stabilizer;
+- conjugacy covariance
+  `complexConjugationAt (σ • w) = σ * complexConjugationAt w * σ⁻¹`;
+- restriction in a normal tower, with the restriction equal to `complexConjugationAt` at the
+  induced place whenever that place remains complex;
+- the CM specialization, where the place-dependent elements all agree with
+  `IsCMField.complexConj`.
 
 ⚠ This element is not called a Frobenius anywhere. At an infinite place the local Galois group is
 `Gal(ℂ/ℝ)`. There is no residue field and no congruence `σ x ≡ x^q`.
@@ -1102,8 +1123,13 @@ Everything here is under the AKLB setup, with
   statement below holds.
 - *Downstream interfaces.* Layer 4.3, Layer 5.10, Layer 6.5, Layer 8.2.
 
-Prove the ramification criterion: `p` ramifies in `B` if and only if `p ∣ relDiscr A B`. Mathlib
-has the `ℚ`-only form `not_dvd_discr_iff_forall_liesOver`. State the general form.
+Prove the ramification criterion: `p` ramifies in `B` if and only if `p ∣ relDiscr A B`. In the
+Dedekind-generic statement, “`p` ramifies” means exactly that there exists a prime `P` of `B`
+above `p` for which `Algebra.IsUnramifiedAt A P` fails. Do not define generic ramification by
+`e(P/p) > 1`: that equivalence needs the additional residue-separability hypotheses. State the
+`e > 1` formulation only as the number-field corollary, where residue fields are finite.
+Mathlib has the `ℚ`-only form `not_dvd_discr_iff_forall_liesOver`; this milestone states the
+general `IsUnramifiedAt` form.
 
 *Source:* Neukirch III (2.9), (2.10), and (2.12).
 
@@ -1134,13 +1160,26 @@ hypothesis is automatic.
   `v.asIdeal ∣ relDiscr (𝓞 K) (𝓞 L)`, if and only if some prime of `𝓞 L` over `v` is ramified.
 - *Edge cases.* An inseparable extension, where Layer 4.2 does not apply and no finite set
   exists.
-- *Downstream interfaces.* Layer 2.5, which takes a `Finset` as its parameter. Feeding
-  `ramifiedSupport K L` and the membership lemma to `artinHomAway` gives the Artin map on the
-  fractional ideals prime to the discriminant. The dependency runs in this direction only:
-  Layer 2.5 does not use `relDiscr`.
+- *Downstream interfaces.* The later named adapter `artinHomAway_ramifiedSupport` feeds
+  `ramifiedSupport K L` and the membership lemma to Layer 2.5's parameterized `artinHomAway`,
+  giving the Artin map on the fractional ideals prime to the discriminant. The core
+  `ramifiedSupport` definition and membership API do not depend on Layer 2.5.
 
-*Prerequisites:* Layers 2.5 and 4.2; Mathlib `UniqueFactorizationMonoid.factors`,
+*Prerequisites:* Layer 4.2; Mathlib `UniqueFactorizationMonoid.factors`,
 `Ideal.finite_factors`.
+
+After constructing that support, define
+
+```text
+artinHomAway_ramifiedSupport :
+  idealsAway (ramifiedSupport K L) →* (L ≃ₐ[K] L)
+```
+
+for finite abelian `L/K`, by applying `artinHomAway` to the unramified-away hypothesis derived
+from the membership criterion. This adapter, rather than `ramifiedSupport` itself, has Layer 2.5
+as a prerequisite.
+
+*Prerequisites for the adapter:* Layers 2.5 and 4.3.
 
 #### 4.4 Discriminants of bases
 
@@ -1431,19 +1470,18 @@ the bridge is checked and not asserted.
 `Valuation.Integers.mem_of_integral`, `IsIntegralClosure.finite`,
 `IsDiscreteValuationRing (v.adicCompletionIntegers K)`.
 
-#### 5.8 The completed local extension is monogenic
+#### 5.8 Importing local monogenicity at the completion
 
-Prove that `𝓞_{L_w}` is generated over `𝓞_{K_v}` by one element:
+Apply #189's `LocalFieldsRamification.exists_integerRing_adjoin_eq_top` to the canonical local
+extension constructed in Layers 5.1, 5.2, and 5.7. Record the completion-facing adapter:
 
 ```text
 ∃ x : w.adicCompletionIntegers L, Algebra.adjoin (v.adicCompletionIntegers K) {x} = ⊤.
 ```
 
-Proof outline: the residue extension is an extension of finite fields, hence simple; lift a
-residue generator and adjoin a uniformizer.
-
-Two companion statements about that generator belong to this milestone, because Layer 6.3 uses
-them and not the displayed one.
+This roadmap does not reprove local monogenicity. Its work is to discharge the supplier's local
+field, finite-extension, separability, and canonical-algebra hypotheses using the completion
+dictionary. Two companion adapter statements are recorded because Layer 6.3 uses them.
 
 - `x` is integral over `v.adicCompletionIntegers K`, so that its minimal polynomial over that
   ring is the minimal polynomial of an integral element. This is immediate from the integral-closure
@@ -1461,22 +1499,17 @@ them and not the displayed one.
   A milestone that stops at the ring level leaves Layer 6.3 with a hypothesis it cannot discharge
   from anything named.
 
-This milestone is what makes Layer 6 self-contained. With it, Mathlib's
-`conductor_mul_differentIdeal` computes the local different as `(g′(x))`, and Layer 6.3 follows
-by a valuation count.
+With these adapters, the imported Hilbert different formula of #189 and the localization theorem
+of Layer 5.9 can be applied to the global extension without reconstructing a local generator.
 
 *Source:* Serre, *Local Fields*, III §6 Proposition 12.
 
 *Hypotheses:* a complete discrete valuation ring with a **finite**, hence separable, residue
 extension. Number fields satisfy this everywhere.
 
-*False generalization:* the statement fails for a complete discrete valuation ring with an
-inseparable residue extension. Serre gives the standard counterexample in III §6, Remark.
-
-*Prerequisites:* Layers 5.1, 5.2 and 5.7, the last for the algebra structure, the integral
-closure and the integrality of the generator; Mathlib `IsDiscreteValuationRing`,
-`IsIntegralClosure.isIntegral`,
-`FiniteField.exists_forall_apply_eq_pow`, `Algebra.adjoin`.
+*Prerequisites:* Local Fields and Ramification #189, local monogenicity;
+Layers 5.1, 5.2 and 5.7, the last for the canonical algebra structure, integral closure, and
+local separability; Mathlib `IsIntegralClosure.isIntegral`, `Algebra.adjoin`.
 
 #### 5.9 The different localizes
 
@@ -1517,35 +1550,22 @@ of Layer 6 reduces to this formula.
 This layer computes the exponents of the different and of the discriminant. It uses the Layer 5
 dictionary and nothing beyond it.
 
-#### 6.1 The local lower filtration
+#### 6.1 The imported local lower filtration
 
-Define, for the local extension `L_w/K_v` and `i : ℕ`,
+For the canonical local extension `L_w/K_v`, use
 
 ```text
-localRamificationGroup i := {τ | ∀ x : 𝓞_{L_w}, τ x − x ∈ 𝔪_{L_w}^{i+1}},
+LocalFieldsRamification.lowerRamificationGroup K_v L_w :
+  ℤ → Subgroup (L_w ≃ₐ[K_v] L_w).
 ```
 
-a subgroup of `L_w ≃ₐ[K_v] L_w`. This roadmap owns this object.
+This is #189's total integer-indexed filtration, including its `i ≤ -1` convention and real
+comparison API. This roadmap defines no alias and no second local carrier. The milestone here is
+only the instance adapter showing that the canonical completions of Layer 5 satisfy the
+supplier's hypotheses, so Layer 6.2 can mention that fully qualified declaration.
 
-**New object: `localRamificationGroup`.** Basic API:
-
-- *Constructors and instances.* The subgroup structure; normality in `L_w ≃ₐ[K_v] L_w`.
-- *Examples.* An unramified `w`, where `localRamificationGroup 0` is trivial; `ℚ_2(i)/ℚ_2`,
-  where `G_0 = G_1 = ℤ/2` and `G_2 = 1`.
-- *Morphisms and functoriality.* Compatibility with a tower `K_v ⊆ M ⊆ L_w`, in the form
-  `localRamificationGroup i ⊓ Gal(L_w/M) = ` the `i`-th group of `L_w/M`.
-- *Comparison lemmas and naturality.* `localRamificationGroup 0` is the inertia subgroup;
-  `i ≤ j` implies `localRamificationGroup j ≤ localRamificationGroup i`; the chain is eventually
-  trivial. Membership through a generator: with `x` the generator of Layer 5.8, `τ` lies in the
-  `i`-th group if and only if `τ x − x` lies in `𝔪^{i+1}`.
-- *Edge cases.* `i` large, where the group is trivial; `L_w = K_v`, where every group is trivial.
-- *Downstream interfaces.* Layer 6.2, which compares it with the global filtration, and through
-  that Layers 6.3 to 6.5.
-
-*Source:* Serre, *Local Fields*, IV §1.
-
-*Prerequisites:* Layers 5.1, 5.2 and 5.8; Mathlib `IsLocalRing.maximalIdeal`, `AlgEquiv`,
-`Ideal.inertia`.
+*Prerequisites:* Local Fields and Ramification #189, lower-numbering filtration; Layers 5.1,
+5.2, 5.6, and 5.7.
 
 #### 6.2 The global filtration, and the comparison
 
@@ -1565,93 +1585,59 @@ ramificationGroup Q i := {σ ∈ MulAction.stabilizer (L ≃ₐ[K] L) Q | ∀ x 
   `ramificationGroup (σ • Q) i = σ (ramificationGroup Q i) σ⁻¹`.
 - *Comparison lemmas and naturality.* **The comparison theorem**: an element `σ` of the
   stabilizer lies in `ramificationGroup Q i` if and only if `decompositionHom v w σ` lies in
-  `localRamificationGroup i`. This is an equality of subgroups along a named map, not an abstract
-  isomorphism, because every computation below moves an element across it.
+  `LocalFieldsRamification.lowerRamificationGroup K_v L_w (i : ℤ)`. This is an equality of
+  subgroups along a named map, not an abstract isomorphism, because every computation below
+  moves an element across it.
 - *Edge cases.* `i` large, where the group is trivial; `Q` ramified but tame, where `G_1 = 1`.
 - *Downstream interfaces.* Layers 6.3, 6.4, and 6.5.
 
 ⚠ The decomposition group is not a member of this family. It keeps its own name,
 `MulAction.stabilizer`, and is never written `G (-1)`.
 
-*Prerequisites:* Layers 5.6 and 6.1; Mathlib `Ideal.inertia`, `galRestrict`,
+*Prerequisites:* Local Fields and Ramification #189, lower-numbering filtration;
+Layers 5.6 and 6.1; Mathlib `Ideal.inertia`, `galRestrict`,
 `MulAction.stabilizer`.
 
 #### 6.3 The different-exponent formula
 
 Prove `v_Q(differentIdeal (𝓞 K) (𝓞 L)) = Σ_{i ≥ 0} (#(G i) − 1)`.
 
-Proof outline: Layer 5.8 gives a generator `x` of the completed local ring, integral over
-`v.adicCompletionIntegers K` and generating `L_w` over `K_v`. Layer 5.7 supplies the instances
-that Mathlib's `conductor_mul_differentIdeal` takes, which then gives `𝔡 = (g′(x))` for `g` the
-minimal polynomial of `x` over `v.adicCompletionIntegers K`, the conductor being `⊤` by the ring
-generation. Expand `g′(x) = ∏_{τ ≠ 1} (x − τ x)`, and count: `v(x − τ x) ≥ i + 1` exactly when
-`τ` lies in the `i`-th local group. Layers 5.9 and 6.2 carry the result back to `𝓞 L`.
-
-⚠ This is the one place where a milestone of this roadmap is applied to a Mathlib theorem with a
-long instance list, so Layer 5.7 lists that list and `Suggested.lean` discharges it. Do not treat
-the instantiation as an implementation detail.
+Proof outline: apply #189's Hilbert local different formula to `L_w/K_v`, use Layer 6.2 to replace
+its canonical local lower groups by the global ideal-theoretic groups, and use Layer 5.9 to
+identify the completed different with the localization of the global different. Layer 5.8
+supplies the completion-facing adapter for the local monogenicity hypothesis already owned by
+#189; it does not reprove the local formula.
 
 *Source:* Serre, *Local Fields*, IV §1 Proposition 4.
 
 *Hypotheses:* `L/K` Galois. The formula is false without it, because the left side is defined
 while the right side is not.
 
-*Prerequisites:* Layers 5.7, 5.8, 5.9, 6.1, 6.2; Mathlib `conductor_mul_differentIdeal`,
-`aeval_derivative_mem_differentIdeal`, `conductor_eq_top_iff_adjoin_eq_top`.
+*Prerequisites:* Local Fields and Ramification #189, Hilbert local different formula;
+Layers 5.8, 5.9, 6.1, and 6.2.
 
 #### 6.4 Exact tame and wild exponents
 
-Both statements are under the two separability hypotheses of §Standing hypotheses, on the
-fraction fields **and** on the residue extension:
+Restrict this milestone to number fields. For `L/K` finite, `P` above `𝔭`, and
+`e = Ideal.ramificationIdx 𝔭 P`, use the canonical completion from Layer 5 and apply #189's local
+different theorems. Transport their exponent through Layer 5.9 to prove:
 
-```text
-[Algebra.IsSeparable K L]        [Algebra.IsSeparable (A ⧸ 𝔭) (B ⧸ P)]
-```
+- `v_P(𝔡) = e − 1` if and only if the completed local extension is tamely ramified;
+- `e ≤ v_P(𝔡) ≤ e − 1 + v_P(e)` when it is wildly ramified, with `v_P(e)` the multiplicity of
+  `P` in `span {(e : 𝓞 L)}`.
 
-With those in place, and with the meaning of tame and wild fixed by §Pinned conventions, prove:
-
-- `v_P(𝔡) = e − 1` when the extension is tame at `P`, that is, when `ringChar (A ⧸ 𝔭) ∤ e`;
-- `e ≤ v_P(𝔡) ≤ e − 1 + v_P(e)` in the wild case, that is when `ringChar (A ⧸ 𝔭) ∣ e`, where
-  `v_P(e)` is the multiplicity of `P` in `span {(e : B)}`, in the same normalization as `v_P(𝔡)`.
-
-Mathlib has only the divisibility `P^{e−1} ∣ 𝔡`.
-
-A formulation by divisibility alone, `P^{e−1+v_P(e)+1} ∤ 𝔡`, is acceptable if the additive
-valuation of an ideal is awkward. State whichever is used, and use the same one across the layer.
-
-The number-field statements are corollaries, where a residue field is finite and the residue
-hypothesis is automatic. `Suggested.lean` carries those, and says which hypothesis it is
-discharging.
+The residue extension is finite and hence separable, and the fraction fields have characteristic
+zero, so the local supplier's separability hypotheses are discharged by the number-field
+dictionary. No Dedekind-generic theorem is claimed here: the preceding layers do not provide a
+generic localization-to-completion transport for its different exponent.
 
 *Source:* Neukirch III (2.6); Serre, *Local Fields*, III §6 Proposition 13. Serre's §6 assumes a
 separable residue extension throughout, and Proposition 13 is stated under that assumption.
 
-*Hypotheses:* a finite **separable** extension of fraction fields, and a **separable residue
-extension** at `P`. Without the first the trace form vanishes, `differentIdeal` is the zero ideal,
-and `v_P(𝔡)` is a value with no meaning. State it as `[Algebra.IsSeparable K L]` in a signature
-where the fraction fields appear. The second is what makes the words tame and wild exhaustive.
-
-*False generalization:* `ringChar (A ⧸ 𝔭) ∤ e` alone does not give `v_P(𝔡) = e − 1`, and dropping
-residue separability is not a harmless weakening of hypotheses. Take `k = 𝔽_p(s)`, which is
-imperfect, `A = k[[x]]` and `K = k((x))`, and
-
-```text
-L = K[y]/(y^p − x y − s),   B = A[y]/(y^p − x y − s).
-```
-
-The polynomial is separable over `K`, because its derivative is the unit `−x`, so `L/K` is a
-finite separable extension. Modulo `x` it is `y^p − s`, which is irreducible over `k` because `s`
-is not a `p`-th power there. So `B` is local with maximal ideal `P = xB`, hence a discrete
-valuation ring and the integral closure of `A` in `L`, with
-
-```text
-e(P/xA) = 1,   f(P/xA) = p,   B ⧸ P = k(s^{1/p}),
-```
-
-an inseparable residue extension. Here `ringChar (A ⧸ xA) = p ∤ 1 = e`, so the condition on `e`
-holds, and `e − 1 = 0`. But `P ∣ 𝔡` by Mathlib's `dvd_differentIdeal_of_not_isSeparable`, so
-`v_P(𝔡) ≥ 1`. The stated equality fails. The same example shows that "wild" is not the complement
-of "tame" once residue separability is dropped: this prime is neither.
+*Hypotheses:* number fields `L/K`, with `P` a nonzero prime above `𝔭`. The number-field
+restriction is essential to this roadmap's dependency chain. A future generic theorem must
+supply either a direct DVR-algebraic proof or the missing generic transport of the local
+different exponent; it cannot cite this milestone.
 
 *False generalization:* in the wild case `v_P(𝔡) = e` is false, and so is
 `v_P(𝔡) = e − 1 + v_P(e)`. Both bounds are attained, at `2` in two different quadratic fields:
@@ -1665,6 +1651,9 @@ For `ℚ(√2)`, `g = X² − 2` is Eisenstein at `2`, so `𝔡 = (g′(√2)) =
 `v_P(𝔡) = v_P(2) + v_P(√2) = 2 + 1 = 3`, while `e − 1 + v_P(e) = 1 + 2 = 3`. The general
 Eisenstein family `X^p − p` over `ℚ_p` behaves the same way: `e = p` and
 `v_P(𝔡) = v_P(p π^{p−1}) = p + (p − 1) = 2p − 1 = e − 1 + v_P(e)`.
+
+*Prerequisites:* Local Fields and Ramification #189, tame equality criterion and wild bounds;
+Layers 5.5, 5.7, and 5.9.
 
 *Prerequisites:* Layer 6.3; Mathlib `pow_sub_one_dvd_differentIdeal`,
 `dvd_differentIdeal_of_not_isSeparable`, `ringChar`, `multiplicity`,
@@ -1769,7 +1758,8 @@ comes before every worked example that states one.
 The milestone has two scopes, and the difference between them is not cosmetic.
 
 **Rank one.** Statements 1, 2 and 4 below hold for every `K` with
-`NumberField.Units.rank K = 1` and every `u : (𝓞 K)ˣ`.
+`NumberField.Units.rank K = 1`; the criterion explicitly requires its proposed generator
+`u : (𝓞 K)ˣ` to be non-torsion.
 
 **Rank one and prime degree.** Statement 3, the polynomial certificate, carries the further
 hypothesis `Nat.Prime (Module.finrank ℚ K)`. Both hypotheses are used, and neither implies the
@@ -1792,8 +1782,10 @@ other:
   polynomial has degree 2. §Explicit scope exclusions records that this case is outside the
   polynomial certificate.
 
-1. *The criterion.* `Subgroup.closure {u} ⊔ NumberField.Units.torsion K = ⊤` if and only if no
-   unit `v` satisfies `0 < ‖logEmbedding v‖ < ‖logEmbedding u‖`.
+1. *The criterion.* For `u ∉ NumberField.Units.torsion K`,
+   `Subgroup.closure {u} ⊔ NumberField.Units.torsion K = ⊤` if and only if no unit `v` satisfies
+   `0 < ‖logEmbedding v‖ < ‖logEmbedding u‖`. The non-torsion hypothesis is normative: for a
+   torsion `u` the right side is vacuous while the left side is false.
 2. *The finiteness that makes the criterion checkable.* A unit with a bounded log embedding has
    bounded archimedean absolute values. Mathlib's `NumberField.Embeddings.finite_of_norm_le`
    then applies, and the candidate set is finite.
@@ -1802,17 +1794,24 @@ other:
    of candidates. The certificate is the finite list **together with an elimination of every
    candidate on it**, and this milestone is all three steps.
 
-   - **The candidate set.** For an infinite place `w` and a bound `B` there, build
+   - **Torsion-and-inversion normalization.** Choose a **real** infinite place `w`, with
+     `hw : w.IsReal`, and use its representing real embedding `w.embedding_of_isReal hw`.
+     For each non-torsion competitor `v`, prove that some
+     `ε ∈ NumberField.Units.torsion K` and `δ ∈ {v, v⁻¹}` make the normalized unit `ε·δ` satisfy
+     `1 < w.embedding_of_isReal hw (ε·δ) < B`. An infinite place records an absolute value and
+     forgets sign; this normalization is what justifies passing to a positive real root.
+
+   - **The candidate set.** For that real place and a bound `B`, build
 
      ```text
-     unitCandidates K w B : Finset ℤ[X]
+     unitCandidates K w hw B : Finset ℤ[X]
      ```
 
-     the monic integer polynomials that can be the minimal polynomial of a unit `v` with
-     `1 < w v < B`. The coefficients are bounded because every conjugate of `v` is bounded: the
-     conjugates satisfy `∏_w (w v)^{mult w} = 1`, and at rank one there is exactly one other
-     infinite place, so an upper bound at `w` bounds the other conjugates above and below. The two
-     prime-degree signatures are exactly the two cases below:
+     the monic integer polynomials that can be the minimal polynomial of a normalized unit `v`
+     with `1 < w.embedding_of_isReal hw v < B`. The coefficients are bounded because every
+     conjugate of `v` is bounded: the conjugates satisfy `∏_w (w v)^{mult w} = 1`, and at rank
+     one there is exactly one other infinite place, so an upper bound at `w` bounds the other
+     conjugates above and below. The two prime-degree signatures are exactly the two cases below:
 
      - degree 2 with two real places: `v` has minimal polynomial `X² − mX ± 1` with
        `m = v + v′`, and `1 < v < B` with `v v′ = ±1` bounds `m`;
@@ -1820,26 +1819,34 @@ other:
        `c = ±1`, `|v′| = (w v)^{−1/2}` at the complex place, and hence
        `|a| ≤ B + 2` and `|b| ≤ 2B + 1`.
 
-   - **Completeness.** Prove that the minimal polynomial of every competing unit is in the set:
-     if `v : (𝓞 K)ˣ` and `1 < w v < B` then `minpoly ℤ v ∈ unitCandidates K w B`. ⚠ Both scope
-     hypotheses appear here. Rank one bounds the conjugates, and prime degree makes `v` an
-     `IntegralPrimitiveElement K`, by Layer 7.1, so that the minimal polynomial has degree
-     `[K : ℚ]`. Without the first the statement is unprovable, because no finite set works;
-     without the second the degree is not `[K : ℚ]` and the field test does not apply.
+   - **Completeness.** Prove that the minimal polynomial of every **normalized** competing unit
+     is in the set: if `v : (𝓞 K)ˣ` and
+     `1 < w.embedding_of_isReal hw v < B`, then
+     `minpoly ℤ v ∈ unitCandidates K w hw B`. The normalization theorem is applied first to an
+     arbitrary competitor. ⚠ Both scope hypotheses appear here. Rank one bounds the conjugates,
+     and prime degree makes `v` an `IntegralPrimitiveElement K`, by Layer 7.1, so that the
+     minimal polynomial has degree `[K : ℚ]`. Without the first no finite set works; without the
+     second the field test does not apply.
 
    - **Elimination.** Prove that no candidate is the minimal polynomial of a unit of `K` that
      lies strictly between `1` and `u`. This has two halves, and only the first is about the
      interval:
 
-     - the **root test**: a candidate that is the minimal polynomial of such a `v` has a real
-       root in the open interval `(1, B)`, by exact root isolation, which is a decidable check
-       on integer polynomials;
+     - the **root test**: a candidate that is the minimal polynomial of such a normalized `v`
+       has a real root in `(1, B)` at the chosen embedding;
      - the **field test**: every candidate that survives the root test is eliminated as a
        minimal polynomial **in `K`**. Layer 3.3 is the general tool. If `g = minpoly ℤ v` for an
        integral generator `v` of `K`, then `Polynomial.discr g = index(v)² · discr K`, so a
        candidate whose discriminant is not `discr K` times a square is not a minimal polynomial
        in `K`. Reducibility eliminates a candidate outright, since a minimal polynomial is
        irreducible.
+
+     Make the elimination certificate proof-carrying. For every polynomial in
+     `unitCandidates K w hw B`, it contains either a proof that the polynomial has no real root
+     in `(1,B)`, or a proof that it is not the minimal polynomial of an
+     `IntegralPrimitiveElement K`. Exact Sturm/root-isolation computations may construct the
+     first proof, but no unproved exact-root oracle or mere Boolean result is a dependency.
+     Name this predicate `UnitCandidateEliminationCertificate` and prove its soundness.
 
    ⚠ The root test alone is not an elimination, and a milestone that stops there has a gap. The
    candidate set contains polynomials other than `minpoly ℤ u` that do have roots in `(1, w u)`.
@@ -1867,10 +1874,11 @@ of `𝓞 K`, so every exact regulator statement names an infinite place.
 *Hypotheses:* rank exactly one throughout, and prime degree in addition for statement 3. The
 criterion is false at higher rank, where minimality at one place does not give generation.
 
-*Prerequisites:* Layers 3.1 and 3.3, for the index formula that the field test uses, and Layer
-7.1, for the prime-degree argument that a competing unit generates `K`; Mathlib
+*Prerequisites:* Layers 3.1 and 3.3, for the index formula that the field test uses; Mathlib
+`NumberField.InfinitePlace.embedding_of_isReal`, `NumberField.Embeddings.finite_of_norm_le`;
+and Layer 7.1, for the prime-degree argument that a competing unit generates `K`; Mathlib
 `NumberField.Units.rank`, `logEmbedding`, `regOfFamily_div_regulator`, `regOfFamily_eq_det`,
-`NumberField.Embeddings.finite_of_norm_le`, `Polynomial.discr`, `Nat.Prime`.
+`Polynomial.discr`, `Nat.Prime`.
 
 ### Layer 8: the intrinsic label prefix and the invariant suite
 
@@ -1962,11 +1970,13 @@ Five fields, computed end to end: `2.2.5.1`, `2.0.4.1`, `4.0.125.1`, `3.1.23.1`,
   Frobenius class.
 - **No general Artin conductor**, no Artin integrality, and no general conductor–discriminant
   formula.
-- **No density statements.** Chebotarev and the distribution of Frobenius classes belong to an
-  L-functions subject.
-- **No local ramification theory.** Upper numbering, Herbrand's theorem, and Hasse–Arf belong to
-  a local fields subject. Layer 6.1 defines the local lower filtration only, and only as the
-  filtration that Layer 6.2 compares against, and it owns that object.
+- **No density statements.** The Chebotarev roadmap owns Frobenius density and distribution.
+  Analytic and L-function roadmaps supply prerequisites for its proof; they do not own the
+  Chebotarev statement.
+- **No local ramification theory.** The Local Fields and Ramification roadmap #189 owns the
+  canonical lower filtration, upper numbering, Herbrand's theorem, Hasse–Arf, local
+  monogenicity, and local different formulas. Layer 6.1 imports its API, and Layer 6.2 compares
+  this roadmap's global ideal-theoretic filtration with it.
 
 Related mathematics that no milestone here covers:
 
@@ -2137,8 +2147,8 @@ cycle types below; neither states the isomorphism type.
 
 *From Mathlib:* `classNumber K = 1`, by the principal-ideal-ring criteria.
 
-The density `1/6` for split primes is deliberately absent; density statements belong to an
-L-functions subject.
+The density `1/6` for split primes is deliberately absent; the Chebotarev roadmap owns that
+statement, with analytic/L-function work supplying its prerequisites.
 
 ### `3.1.503.1` = Dedekind's field
 
