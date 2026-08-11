@@ -86,8 +86,8 @@ This roadmap consumes the analytic carriers and generic theorems under their can
 | --- | --- |
 | `primeDirichletSum` | The sum over a set of `HeightOneSpectrum (𝓞 K)`, hence over a subtype of nonzero prime ideals rather than over arbitrary ideals. |
 | `HasDirichletDensity`, `LowerDirichletDensity`, `UpperDirichletDensity` | Density is normalized by the all-prime sum. The logarithmic denominator is a theorem, not a second predicate. |
-| `dirichletDensity_finite_symmetricDiff`, `dirichletDensity_squeeze` | Finite exceptional sets may be discarded, and lower bounds for a finite partition can be squeezed to exact densities. |
-| `dirichletDensity_contraction` | Transfer between prime sets in `E` and `K`, including the residue-degree-one and constant-fibre hypotheses that identify norms. |
+| `hasDirichletDensity_of_symmDiff_finite`, `hasDirichletDensity_of_squeeze` | Finite exceptional sets may be discarded, and lower bounds for a finite partition can be squeezed to exact densities. |
+| `hasDirichletDensity_contraction` | Transfer between prime sets in `E` and `K`, including the residue-degree-one and constant-fibre hypotheses that identify norms. |
 | `IdealWeight`, `normCoeff`, `regroupByNorm`, `EulerProductData` | The generic ideal weight, norm regrouping, and Euler-product/logarithmic-derivative infrastructure. |
 | `abelSummation`, `landau`, `wienerIkehara` | The generic summation, positivity, nonvanishing, and Tauberian theorems, including summability and a separately named continuous boundary function. |
 | `primeTheta`, `primeCount` | The canonical prime-weight and prime-count carriers. Chebotarev defines only their Frobenius-restricted specializations. |
