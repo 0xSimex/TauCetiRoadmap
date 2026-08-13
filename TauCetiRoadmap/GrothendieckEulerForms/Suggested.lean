@@ -435,7 +435,9 @@ abbrev QEulerForm (M : Type*) [AddCommGroup M] [Module Laurent M] :=
   M →ₛₗ[laurentBar] M →ₗ[Laurent] Laurent
 
 /-- Finite Laurent support and finite cohomological support are separate inputs to construction of
-the q-Euler form, just as finite-dimensionality and eventual Ext-vanishing are separate above. -/
+the q-Euler form, just as finite-dimensionality and eventual Ext-vanishing are separate above.
+Here `V X Y n j` denotes the target-shift piece `Ext^n(X,Y{j})`, whose coefficient in the pinned
+graded dimension is `q⁻ʲ`; source-shift indexing gives the equivalent positive-exponent formula. -/
 structure GradedEulerFinite (k : Type*) [Field k] (M : Type*)
     (V : M → M → ℕ → ℤ → Type*)
     [∀ X Y n j, AddCommGroup (V X Y n j)] [∀ X Y n j, Module k (V X Y n j)] : Prop where

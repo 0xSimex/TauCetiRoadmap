@@ -99,7 +99,8 @@ localization machinery is introduced to obtain them.
   annihilated by every first argument.  They and their quotients remain distinct unless an explicit
   duality proves otherwise.
 - **Grading.**  The internal shift is normalized by `[M{1}] = q[M]`.  With
-  `qdim Hom(M,N) = ∑_j q^j dim_k Hom(M,N{j})`, the q-Euler form is q-antilinear in its first
+  `qdim Hom(M,N) = ∑_j q⁻ʲ dim_k Hom(M,N{j})`, equivalently
+  `∑_j q^j dim_k Hom(M{j},N)`, the q-Euler form is q-antilinear in its first
   argument and q-linear in its second.  The coefficient involution is Mathlib's
   `LaurentPolynomial.invert`, sending `q` to `q⁻¹`; do not introduce a private bar operation.
   Evaluation at `q = 1` and `q = -1` always defines an algebraic specialization.  Agreement at
@@ -389,7 +390,9 @@ Let `R = ℤ[q,q⁻¹]`, represented by `LaurentPolynomial ℤ`, with bar involu
 - **Finite Laurent support.**  Define graded dimension only for graded vector spaces whose pieces
   are finite-dimensional and zero outside a finite set of internal degrees.  Define graded Ext
   admissibility with both cohomological finite support and finite Laurent support in every surviving
-  degree.  Prove closure properties needed for exact sequences.
+  degree.  For the target-shift pieces use
+  `qdim Ext^n(M,N)=∑_j q⁻ʲ dim_k Ext^n_gr(M,N{j})`; equivalently reindex source shifts as
+  `∑_j q^j dim_k Ext^n_gr(M{j},N)`.  Prove closure properties needed for exact sequences.
 - **q-Euler form.**  Define
   `χ_q(M,N)=∑_n (-1)^n qdim Ext^n(M,N)`.  Package it using Mathlib's sesquilinear-map
   infrastructure.  Prove
