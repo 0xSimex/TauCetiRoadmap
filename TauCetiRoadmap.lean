@@ -32,3 +32,4 @@ import TauCetiRoadmap.OptimalTransport.Suggested
 import TauCetiRoadmap.CFSGStatement.Suggested
 import TauCetiRoadmap.HodgeStructures.Suggested
 import TauCetiRoadmap.StablePeriodicCurved.Suggested
+import TauCetiRoadmap.ZigzagPreprojective.Suggested
