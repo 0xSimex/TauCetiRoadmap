@@ -14,6 +14,7 @@ import TauCetiRoadmap.RepresentationTheory.CompactGroups.Suggested
 import TauCetiRoadmap.RepresentationTheory.LieGroups.Suggested
 import TauCetiRoadmap.RepresentationTheory.SpinRepresentations.Suggested
 import TauCetiRoadmap.RepresentationTheory.QuiverRepresentations.Suggested
+import TauCetiRoadmap.GrothendieckEulerForms.Suggested
 import TauCetiRoadmap.Multiquadratic.Suggested
 import TauCetiRoadmap.UniversalCovers.Suggested
 import TauCetiRoadmap.JacobianChallenge.Suggested
