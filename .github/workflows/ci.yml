@@ -25,10 +25,11 @@ jobs:
           use-mathlib-cache: true
           use-github-cache: false
 
-      # Restore Tau Ceti's own compiled Lean modules from its public Lake artifact cache. This is
-      # distinct from Mathlib's cache above. A miss or transfer failure is harmless: discard the
-      # partial cache and let the build compile the affected Tau Ceti modules from source.
-      - name: Fetch Tau Ceti artifacts
+      # Fetch Tau Ceti's cache map from its public Lake service. Artifacts stay lazy: the build
+      # downloads only the Tau Ceti modules it actually imports. This is distinct from Mathlib's
+      # cache above, and avoids making every package in the workspace cache-writable.
+      - name: Fetch Tau Ceti cache map
+        id: tauceti_cache
         shell: bash
         env:
           PUBLIC_ARTIFACT_ENDPOINT: ${{ vars.LAKE_CACHE_ARTIFACT_ENDPOINT_PUBLIC }}
@@ -37,6 +38,7 @@ jobs:
           set -euo pipefail
           if [ -z "$PUBLIC_ARTIFACT_ENDPOINT" ] || [ -z "$PUBLIC_REVISION_ENDPOINT" ]; then
             echo "::warning::Tau Ceti artifact cache endpoints are not configured; building from source"
+            echo "enabled=0" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -51,34 +53,69 @@ jobs:
           revisionEndpoint = "$PUBLIC_REVISION_ENDPOINT"
           TOML
 
-          log="$RUNNER_TEMP/tauceti-cache-get.log"
-          rc=0
-          LAKE_CONFIG="$config" LAKE_CACHE_DIR="$cache_dir" \
-              lake cache get --package=TauCeti --service=tauceti-public \
-                --repo=TauCetiProject/TauCeti > "$log" 2>&1 || rc=$?
-          tail -n 40 "$log"
-
-          if [ "$rc" = 0 ]; then
-            {
-              echo "LAKE_CACHE_DIR=$cache_dir"
-              echo "LAKE_ARTIFACT_CACHE=true"
-              echo "LAKE_RESTORE_ARTIFACTS=true"
-            } >> "$GITHUB_ENV"
-          else
-            echo "::warning::Tau Ceti artifact restore failed; discarding partial cache and building from source"
+          discard_cache() {
+            [ -e "$cache_dir" ] || return 0
             stale="$cache_dir.discard.$$"
             if mv "$cache_dir" "$stale" 2>/dev/null; then
               rm -rf "$stale" 2>/dev/null || true
             else
               rm -rf "$cache_dir" 2>/dev/null || true
             fi
+          }
+
+          clean=0
+          attempts=3
+          for attempt in $(seq 1 "$attempts"); do
+            discard_cache
+            log="$RUNNER_TEMP/tauceti-cache-get-$attempt.log"
+            rc=0
+            LAKE_CONFIG="$config" LAKE_CACHE_DIR="$cache_dir" \
+                lake cache get --package=TauCeti --service=tauceti-public \
+                  --repo=TauCetiProject/TauCeti --mappings-only --max-revs=20 \
+                  > "$log" 2>&1 || rc=$?
+            cat "$log"
+
+            if [ "$rc" = 0 ]; then
+              clean=1
+              break
+            fi
+            if grep -q 'no outputs found' "$log"; then
+              break
+            fi
+            if [ "$attempt" != "$attempts" ]; then
+              echo "::notice::Tau Ceti cache-map fetch attempt $attempt failed; retrying from an empty cache"
+              sleep 2
+            fi
+          done
+
+          if [ "$clean" = 1 ]; then
+            echo "enabled=1" >> "$GITHUB_OUTPUT"
             {
-              echo "LAKE_ARTIFACT_CACHE=false"
-              echo "LAKE_RESTORE_ARTIFACTS=false"
+              echo "LAKE_CONFIG=$config"
+              echo "LAKE_CACHE_DIR=$cache_dir"
             } >> "$GITHUB_ENV"
+          else
+            echo "::warning::Tau Ceti cache map unavailable; building from source"
+            discard_cache
+            echo "enabled=0" >> "$GITHUB_OUTPUT"
           fi
 
       # Build only. The roadmap's Lean targets carry `sorry` on purpose (they are goals),
       # so there is no axiom audit or warning-as-error here.
       - name: Build
         run: lake build
+
+      # Keep degradation visible without turning a cache-service outage into a correctness failure.
+      - name: Report Tau Ceti cache use
+        if: ${{ always() && steps.tauceti_cache.outputs.enabled == '1' }}
+        shell: bash
+        run: |
+          count=0
+          if [ -d "$LAKE_CACHE_DIR/artifacts" ]; then
+            count=$(find "$LAKE_CACHE_DIR/artifacts" -type f | wc -l)
+          fi
+          if [ "$count" -eq 0 ]; then
+            echo "::warning::Tau Ceti cache map was found, but the build restored no artifacts"
+          else
+            echo "::notice::The build restored $count Tau Ceti artifact archive(s)"
+          fi
