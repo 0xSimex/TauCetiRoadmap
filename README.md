@@ -13,6 +13,7 @@ If you want to write or review a roadmap, start with [CONTRIBUTING.md](CONTRIBUT
 
 ## Roadmaps
 
+- [Algebraic codes and code-lattice constructions](TauCetiRoadmap/AlgebraicCodingTheory/README.md)
 - [A statement of the classification of finite simple groups](TauCetiRoadmap/CFSGStatement/README.md)
 - [Combinatorial Heegaard Floer and grid homology](TauCetiRoadmap/CombinatorialHeegaardFloer/README.md)
 - [Conformal mapping and the geometric theory of holomorphic functions](TauCetiRoadmap/ConformalMapping/README.md)
