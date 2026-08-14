@@ -258,14 +258,36 @@ desired parameters does not construct the named code.
 
   Prove it has parameters `[6,3,4]`, is **Hermitian** self-dual, has only weights `0`, `4`, and
   `6`, and
-  `W_H(X,Y)=X^6+45X^2Y^4+18Y^6`.  Verify explicitly that exchanging `ω` and `ω²` gives an equivalent
-  code: in the displayed one-based coordinate order, the permutation
-  `(1,2,4,6,3,5)` carries the coordinatewise Frobenius conjugate back to `H`.  This must be an
-  actual permutation-equivalence theorem, not just invariance of the parameters.  As a convention
-  check, compute that the displayed generator has zero Hermitian Gram matrix but a nonzero
-  Euclidean Gram matrix.
-- Define the extended binary Golay code `G₂₄` by the standard bordered reverse-circulant systematic
-  generator matrix in Huffman--Pless §1.9.1, transcribed as a concrete `Fin 12 × Fin 24` matrix.
+  `W_H(X,Y)=X^6+45X^2Y^4+18Y^6`.  The conjugate code is genuinely different -- it meets `H` in only
+  four words -- so verify explicitly that exchanging `ω` and `ω²` gives an equivalent code.  In the
+  displayed one-based coordinate order the reordering
+  `(c₁,c₂,c₃,c₄,c₅,c₆) ↦ (c₁,c₂,c₄,c₆,c₃,c₅)`
+  carries the coordinatewise Frobenius conjugate back to `H`.  This is one-line notation for a
+  coordinate ordering, **not** cycle notation: the cycle `(1 2 4 6 3 5)` does not work.  This must
+  be an actual permutation-equivalence theorem, not just invariance of the parameters.  As a
+  convention check, compute that the displayed generator has zero Hermitian Gram matrix but a
+  nonzero Euclidean Gram matrix.
+- Define the extended binary Golay code `G₂₄` from the systematic generator `[I₁₂ | B]` with the
+  bordered reverse-circulant block of Huffman--Pless §1.9.1.  Writing `Q={0,1,3,4,5,9}` for the
+  quadratic residues modulo eleven together with zero, `B` has first row and first column the
+  all-ones border except `B₀₀=0`, and `B_{ij}=1` exactly when `(i-1)+(j-1) mod 11 ∈ Q` for
+  `i,j ≥ 1`:
+
+  ```text
+  B = [ 0 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 0 1 1 1 0 0 0 1 0
+        1 1 0 1 1 1 0 0 0 1 0 1
+        1 0 1 1 1 0 0 0 1 0 1 1
+        1 1 1 1 0 0 0 1 0 1 1 0
+        1 1 1 0 0 0 1 0 1 1 0 1
+        1 1 0 0 0 1 0 1 1 0 1 1
+        1 0 0 0 1 0 1 1 0 1 1 1
+        1 0 0 1 0 1 1 0 1 1 1 0
+        1 0 1 0 1 1 0 1 1 1 0 0
+        1 1 0 1 1 0 1 1 1 0 0 0
+        1 0 1 1 0 1 1 1 0 0 0 1 ].
+  ```
+
   Prove rank `12`, minimum distance `8`, self-duality, doubly-evenness, and
 
   `W_G₂₄(X,Y)=X^24+759X^16Y^8+2576X^12Y^12+759X^8Y^16+Y^24`.
