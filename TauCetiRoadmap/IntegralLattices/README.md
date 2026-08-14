@@ -120,9 +120,9 @@ classification, Bourbaki numbering, and pinned integral root data; its highest-w
 general root and weight lattices.  This roadmap constructs the conversion of such data into its
 integral-lattice structure, proves that the Gram matrix is the named Cartan matrix, and computes the
 associated dual quotient and forms.  It does not duplicate roots, Weyl groups, Cartan matrices, or
-root-data classification.  Since this roadmap repository depends only on Mathlib, not on Tau Ceti,
-the accompanying `Suggested.lean` prototypes only the Mathlib-facing interfaces; the definitive
-Markdown targets the Tau Ceti bridge as part of the implementation.
+root-data classification.  This repository has Tau Ceti as a Lake dependency, so the accompanying
+`Suggested.lean` imports the individual `TauCeti.LinearAlgebra.RootSystem.*` modules it needs and
+prototypes the bridge against them rather than behind a Mathlib-only stand-in.
 
 ---
 
@@ -301,8 +301,9 @@ half of Nikulin's full-norm values `4/3` and `3/2`.
 
 The `A_n` calculation uses the inverse Cartan matrix to check
 `B(ω₁,ω₁)=n/(n+1)`, hence `q(ω₁)=n/(2(n+1))`.  For `D_n` use the standard coordinate model
-`D_n={x∈ℤ^n | ∑x_i even}`: `v=e₁`,
-`s=(1/2)(e₁+⋯+e_n)`, and the other spinor representative obtained by changing one sign.  Their
+`D_n={x∈ℤ^n | ∑x_i even}` with the Conway--Sloane representatives
+`v=e_n`, `s=(1/2)(e₁+⋯+e_n)`, and `c=s-e_n`, so that the rank-24 roadmap downstream can reuse these
+without a change of representative.  Their
 squared norms are `1`, `n/4`, and `n/4`, giving precisely the half-norm values in the table.
 Cross-check exceptional node labels and inverse-Cartan entries against Bourbaki's ADE plates and
 Tau Ceti's numbering.
