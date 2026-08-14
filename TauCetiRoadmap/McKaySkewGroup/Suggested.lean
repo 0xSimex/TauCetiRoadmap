@@ -27,7 +27,32 @@ structure UnitQuaternion where
   val : ℍ[ℝ]
   normSq_eq_one : Quaternion.normSq val = 1
 
-noncomputable instance : Group UnitQuaternion := sorry
+namespace UnitQuaternion
+
+@[ext] theorem ext {a b : UnitQuaternion} (h : a.val = b.val) : a = b := by
+  cases a; cases b; simp_all
+
+/-- The unit quaternions are a group under multiplication, with inverse the conjugate.  This is
+proved rather than assumed: a `sorry`-ed instance would be supplied silently to every subgroup
+and representation below. -/
+noncomputable instance : Group UnitQuaternion where
+  mul a b := ⟨a.val * b.val, by
+    simp only [map_mul, a.normSq_eq_one, b.normSq_eq_one, one_mul]⟩
+  one := ⟨1, by simp⟩
+  inv a := ⟨star a.val, by rw [Quaternion.normSq_star]; exact a.normSq_eq_one⟩
+  mul_assoc a b c := UnitQuaternion.ext (mul_assoc _ _ _)
+  one_mul a := UnitQuaternion.ext (one_mul _)
+  mul_one a := UnitQuaternion.ext (mul_one _)
+  inv_mul_cancel a := UnitQuaternion.ext (by
+    show star a.val * a.val = 1
+    rw [Quaternion.star_mul_self, a.normSq_eq_one]
+    simp)
+
+@[simp] theorem val_mul (a b : UnitQuaternion) : (a * b).val = a.val * b.val := rfl
+@[simp] theorem val_one : (1 : UnitQuaternion).val = 1 := rfl
+@[simp] theorem val_inv (a : UnitQuaternion) : a⁻¹.val = star a.val := rfl
+
+end UnitQuaternion
 
 /-- The standard quaternion/matrix identification, with all signs fixed by the displayed matrix in
 the roadmap. -/
@@ -1144,10 +1169,27 @@ noncomputable def CBHSkewDeformation
   AlgCat.of k (PolynomialRelativeTensorAlgebra k Γ V Vρ ⧸
     (cbhIdeal k Γ V Vρ x y z).asIdeal)
 
-/-- CBH's vertex parameter with no rescaling: `λ_i = Tr_{ρ_i}(z)`. -/
+/-- CBH's vertex parameter: the scalar by which the central element `z` acts on `ρ_i`.  Dividing
+the trace by `dim ρ_i` is not a rescaling, it is the definition -- cutting `[x,y]-z` down to a
+primitive matrix idempotent gives `e_i z e_i = λ_i e_i`, and `Tr_{ρ_i}(z) = λ_i · dim ρ_i`.  The
+trace and the scalar agree only when `ρ_i` is one-dimensional, so they agree throughout the cyclic
+families and differ for binary dihedral and for `Ẽ₆`, `Ẽ₇`, `Ẽ₈`. -/
 noncomputable def cbhVertexWeight {G : Type u} [Group G]
     (D : IrrepFamily ℂ G) (z : MonoidAlgebra ℂ G) : D.ι → ℂ :=
-  fun i ↦ LinearMap.trace ℂ (D.rep i) (Representation.asAlgebraHom (D.rep i).ρ z)
+  fun i ↦ LinearMap.trace ℂ (D.rep i) (Representation.asAlgebraHom (D.rep i).ρ z) /
+    (D.dimension i : ℂ)
+
+/-- The characterizing property: on a simple module a central element acts by its weight.  This is
+the equation the corner comparison uses, and it is what fails for the trace normalization. -/
+theorem cbhVertexWeight_asAlgebraHom {G : Type u} [Group G]
+    (D : IrrepFamily ℂ G) (z : MonoidAlgebra ℂ G)
+    (hz : z ∈ Subalgebra.center ℂ (MonoidAlgebra ℂ G)) (i : D.ι) :
+    Representation.asAlgebraHom (D.rep i).ρ z = cbhVertexWeight D z i • LinearMap.id := sorry
+
+/-- The block-scalar description of the center, of which the weight is the `i`th coordinate. -/
+noncomputable def centerEquivWeights {G : Type u} [Group G] [Finite G]
+    (D : IrrepFamily ℂ G) :
+    Subalgebra.center ℂ (MonoidAlgebra ℂ G) ≃ₐ[ℂ] (D.ι → ℂ) := sorry
 
 /-- A genuinely reversed orientation, kept on a distinct vertex type so the two quiver instances
 cannot be confused by typeclass inference. -/

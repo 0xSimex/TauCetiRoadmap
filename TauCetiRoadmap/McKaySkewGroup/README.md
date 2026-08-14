@@ -70,8 +70,11 @@ The following APIs are dependencies and must not be redeveloped here.
   `SL₂` representation infrastructure.  We supply only explicit finite subgroups and their
   restricted defining representation.
 - [`RootSystems`](../RepresentationTheory/RootSystems/README.md) owns finite ADE Cartan and Dynkin
-  data.  The affine Cartan matrix, its radical, and the algebraic quotient by `δ` are new here;
-  finite root systems are compared to that existing API.
+  data, and [`ZigzagPreprojective`](../ZigzagPreprojective/README.md) owns the affine
+  simply-laced diagrams and their generalized Cartan matrices, including the multiplicity-two
+  `Ã₁`.  Both are consumed here.  What is new here is the representation-theoretic side: the
+  McKay matrix of an actual finite subgroup, its identification with one of those affine Cartan
+  matrices, the radical statement `ker C = ℤδ`, and the algebraic quotient by `δ`.
 - [`QuiverRepresentations`](../RepresentationTheory/QuiverRepresentations/README.md) owns quiver
   representations, bound path algebras, primitive idempotents, projectives and Morita theory.
 - [`DGAInfinity`](../DGAInfinity/README.md) supplies internal grading, DG/`A∞` modules, bar/cobar
@@ -139,9 +142,10 @@ a_ji = dimℂ Hom_Γ(ρ_j, V ⊗ ρ_i),       C = 2 I - A,
 Prove tensor decompositions, not merely equality of dimensions.  The defining representation is
 two-dimensional, faithful, and equivariantly self-dual through its nondegenerate determinant
 pairing; these facts make `A` symmetric and its McKay graph connected.  Package each result as an
-identification with the **standard graph and Cartan matrix determined by the indicated ADE tag and
-parameter**, not as an arbitrary matrix carrying a name.  Prove the following named
-identifications, without deriving or claiming an exhaustive classification:
+identification with the **affine simply-laced diagram and Cartan matrix of the indicated tag and
+parameter, taken from the zigzag/preprojective roadmap's Layer 0 family**, not as an arbitrary
+matrix carrying a name.  Prove the following named identifications, without deriving or claiming
+an exhaustive classification:
 
 | subgroup | order | affine type | multiset of entries of `δ` |
 |---|---:|---|---|
@@ -230,7 +234,8 @@ Choose one primitive **matrix** idempotent `e_i` in every Wedderburn block of `�
 idempotents and call the result basic.  Embed `e=∑_i e_i` in both skew algebras and prove it is
 full.  Define `eBe` and `e_j B₁ e_i` as literal subtypes of `B` cut out by multiplication and the
 actual degree-one piece.  Derive the module-category equivalence from the full-idempotent theorem,
-and prove the resulting corner is `QuiverRepresentations.IsBasic` when finite dimensional; do not
+and prove the resulting corner is basic in the sense of landed `TauCeti.IsBasic` when finite
+dimensional; do not
 store an unrelated algebra and arbitrary equivalences in a presentation record.  Identify the
 vertex idempotents and prove the arrow-corner formula
 
@@ -261,11 +266,19 @@ For a finite oriented quiver `Q` and `λ : Q₀ → k`, define
 
 after translating each product to Tau Ceti's later-factor-first convention.  Pin the CBH source
 algebra as the quotient with relation `[x,y]-z=0` for a central `z∈Z(ℂ[Γ])`, with this sign, and
-pin the vertex weight with no hidden normalization:
+pin the vertex weight with no hidden normalization: a central `z` acts on the simple `ρ_i` by a
+scalar, and that scalar is the weight,
 
 ```text
-λ_i = Tr_{ρ_i}(z).
+λ_i = the scalar by which z acts on ρ_i = Tr_{ρ_i}(z) / dim_ℂ ρ_i.
 ```
+
+The trace is **not** the weight.  Cutting the relation down to a primitive matrix idempotent `e_i`
+gives `e_i z e_i = λ_i e_i` because `z` is central, so the corner relation carries the scalar; the
+trace differs from it by `dim ρ_i`.  The two agree only when every irreducible is
+one-dimensional, that is only in the cyclic families, and disagree for binary dihedral and for
+`Ẽ₆`, `Ẽ₇`, `Ẽ₈`.  Construct the weight as `Z(ℂ[Γ]) ≃ ℂ^(Irr Γ)` sending `z` to its block
+scalars, and prove that this map is an additive equivalence.
 
 Here `x,y` are the displayed defining representation's standard ordered coordinate basis, fixed
 so that its determinant pairing is exactly `1`.  A general change of basis is not silently
