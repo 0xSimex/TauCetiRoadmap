@@ -23,6 +23,7 @@ import TauCetiRoadmap.ReductiveGroups.Suggested
 import TauCetiRoadmap.PDE.Suggested
 import TauCetiRoadmap.CombinatorialHeegaardFloer.Suggested
 import TauCetiRoadmap.HeegaardFloer.Suggested
+import TauCetiRoadmap.IntegralLattices.Suggested
 import TauCetiRoadmap.GeometricTopology.Suggested
 import TauCetiRoadmap.Exchangeability.Suggested
 import TauCetiRoadmap.ContourIntegration.Suggested

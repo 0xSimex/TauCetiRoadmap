@@ -28,6 +28,7 @@ body:
         - GeometricTopology
         - HeegaardFloer
         - HodgeStructures
+        - IntegralLattices
         - JacobianChallenge
         - ModularForms
         - Multiquadratic
