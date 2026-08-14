@@ -22,7 +22,7 @@ and neither the **Mordell–Weil** theorem nor **Selmer/Sha**. We build these in
 places (Layer 0), with an isogeny defined by a coordinate-ring pullback, backwards, its
 pointedness `φ(O₁) = O₂` expressed as integrality over the coordinate rings (Layer 1) — the
 coordinate-ring form of D. Angdinata's definition, statable against today's Mathlib and
-**seeded verbatim below** (`Isogeny`). No schemes anywhere, and AEC/ATAEC cited for the
+**stated verbatim in `Suggested.lean` below** (`Isogeny`). No schemes anywhere, and AEC/ATAEC cited for the
 mathematics, not as the specification.
 
 `sorry` is allowed in this human-owned roadmap library — these are goals, not proofs. Following
@@ -48,7 +48,7 @@ is the conditional skeleton, not the capstone; revision pins and the axiom audit
 `README.md` §Provenance). The twist layer (`quadraticTwistOf` and its invariants,
 `quadraticTwist`, `quadraticTwistPointEquiv`, and `exists_quadraticTwist_hasSplitMultiplicativeReduction`)
 exists in FLT as several thousand lines of AI-generated Lean; the plan is to bring it **into Tau
-Ceti first** rather than to consume it from FLT, and the Layer 5 seeds use its names so the two line
+Ceti first** rather than to consume it from FLT, and the Layer 5 statements use its names so the two line
 up. `E[N] ≅ (ℤ/N)²` has a scheme-theoretic proof in the AINTLIB modular-curves development
 (`torsion_geometricFibre_rank_two`), restated here over `WeierstrassCurve`. Mordell–Weil follows
 Michael Stoll's AI-assisted formalisation (repository, revision, and licence pinned in `README.md`
@@ -78,7 +78,7 @@ disguise, so the principal-divisor characterisation (`Σ nᵢ Pᵢ` is principal
 `Σ [nᵢ] Pᵢ = O`) rides on the group law Mathlib already proved, with no Riemann–Roch anywhere.
 ⚠ *Mathlib-track*: proven in the shared upstream `CoordinateRing` split-out
 (`Point.toClass_surjective`/`toClassEquiv`) — and there with **no** `IsElliptic` hypothesis,
-so this seed is the weaker statement; dedupe on landing. -/
+so this is the weaker statement; dedupe on landing. -/
 theorem toClass_surjective {K : Type*} [Field K] (W : WeierstrassCurve K) [W.IsElliptic] :
     Function.Surjective <| WeierstrassCurve.Affine.Point.toClass (W := W.toAffine) :=
   sorry
@@ -88,9 +88,9 @@ theorem toClass_surjective {K : Type*} [Field K] (W : WeierstrassCurve K) [W.IsE
 An isogeny `φ : W₁ → W₂` is an `F`-algebra map out of the target's affine coordinate ring
 into the source's function field, backwards, with the pointedness `φ(O₁) = O₂` expressed as
 integrality over the coordinate rings — no places in the definition, so the structure is
-seeded verbatim below (the coordinate-ring form of D. Angdinata's definition), with its
+stated verbatim in `Suggested.lean` below (the coordinate-ring form of D. Angdinata's definition), with its
 injectivity, fraction-field extension, degree, finiteness, positivity, point map, normality
-input, and Frobenius seeded. ⚠ *Mathlib-track*: the seeded material of this section is proven
+input, and Frobenius. ⚠ *Mathlib-track*: the material of this section is proven
 in the shared upstream development (`README.md` §Provenance) — in its function-field form,
 which the extension `fieldPullback` identifies with this one — and is deduplicated when its
 PRs land.
@@ -583,10 +583,11 @@ noncomputable def weierstrassDefectClass (W : WeierstrassCurve O) [(W.baseChange
     ClassGroup O :=
   sorry
 
-/-- Silverman's fractional-ideal convention, the inverse of the positive defect class used by
-`globalMinimalityClass`. Its triviality is equivalent, but its representative-prime orientation
-is reversed. -/
-noncomputable def silvermanWeierstrassClass (W : WeierstrassCurve O)
+/-- **The Weierstrass class** of `E/K` in Silverman's orientation (AEC VIII.8), the class of the
+fractional ideal `𝔞_Δ = 𝔍_W⁻¹`, inverse to the defect class `weierstrassDefectClass` this
+roadmap and Sage compute in. Its triviality is equivalent, but its representative-prime
+orientation is reversed. -/
+noncomputable def weierstrassClass (W : WeierstrassCurve O)
     [(W.baseChange K).IsElliptic] : ClassGroup O :=
   (weierstrassDefectClass (K := K) O W)⁻¹
 
@@ -597,7 +598,7 @@ model, and `globalMinimalityClass_variableChange` gives invariance under a `K`-i
 noncomputable def globalMinimalityClass (E : WeierstrassCurve K) [E.IsElliptic] : ClassGroup O :=
   sorry
 
-/-- The curve-level obstruction agrees with the positive defect class of every integral model. -/
+/-- The curve-level obstruction agrees with the defect class of every integral model. -/
 theorem globalMinimalityClass_eq_weierstrassDefectClass (W : WeierstrassCurve O)
     [(W.baseChange K).IsElliptic] :
     globalMinimalityClass (K := K) O (W.baseChange K) =
@@ -634,7 +635,7 @@ end GlobalModels
 residual `r, s, t` freedom pinned by `a₁, a₃ ∈ {0, 1}` and `a₂ ∈ {−1, 0, 1}`. This
 Layer-4.5a declaration is only the normal-form predicate; the existence-and-uniqueness theorem is
 `existsUnique_reducedMinimal` in Layer 4.5b, after global equation construction. ⚠ It is a
-**long** equation, and is not §Layer 8's canonical primitive short equation; the two canonical
+**long** equation, and is not §Layer 8's canonical minimal-pair short equation; the two canonical
 equations are different objects with different uses. -/
 def IsReducedMinimal (W : WeierstrassCurve ℚ) [W.IsElliptic] : Prop :=
   IsGlobalMinimal ℤ W ∧
@@ -784,7 +785,7 @@ end NumberField
 ```
 -/
 
-/-- Over a number field, triviality of the curve-level positive defect class is equivalent to
+/-- Over a number field, triviality of the curve-level Weierstrass class is equivalent to
 existence of one globally minimal equation in the curve's variable-change orbit. The difficult
 direction is the global local-change patch of AEC VIII.8.2, not Layer 4.5a bookkeeping. -/
 theorem globalMinimalityClass_eq_one_iff_exists_globalMinimalModel
@@ -832,7 +833,7 @@ is a different theory from the **genus-one torsors** (no rational point, classif
 `H¹(Gal, E(Kˢᵉᵖ))`), which belong to the Weil–Châtelet/Sha circle of `README.md` §Layer 7. For
 `j ≠ 0, 1728`, `Aut (E, O) ≅ {±1}` and the twists are the quadratic twists: for `char K ≠ 2`
 classified by `K^×/(K^×)²`, in characteristic `2` by the Artin–Schreier group `K/℘(K)`
-(`README.md` §Layer 5). The seeds below are the concrete quadratic case: the exact shapes of the
+(`README.md` §Layer 5). The declarations below are the concrete quadratic case: the exact shapes of the
 `sorry`-free FLT quadratic-twist development (`ImperialCollegeLondon/FLT` #1088) — several
 thousand lines of AI Lean, to be brought into Tau Ceti first — so porting it is a transcription
 rather than a re-derivation, and the construction is characteristic-free. A quadratic twist is a
@@ -840,12 +841,12 @@ twist by a **quadratic** `x² − t x + n` (trace `t`, norm `n`), with discrimin
 equivalently, by a separable quadratic extension `L/K`, carried by the
 `Algebra.IsQuadraticExtension K L` typeclass (in pinned Mathlib, and used directly by FLT). The
 Galois character of the point isomorphism uses FLT's `quadraticCharacter`, so it is stated in
-`README.md` §Layer 5 rather than seeded here. -/
+`README.md` §Layer 5 rather than stated here. -/
 
 /-- **The quadratic twist** `E_{t,n}` by the quadratic `x² − t x + n` (FLT `quadraticTwistOf`),
 over any `CommRing`. Its discriminant is `D⁶ · Δ(E)` with `D = t² − 4n` (`Δ_quadraticTwistOf`), so
-it is elliptic exactly when `D` is **invertible** — seeded below over a field, where that is
-`D ≠ 0`, exactly as FLT states it — with the same `j`-invariant. This is the primitive the
+it is elliptic exactly when `D` is **invertible** — stated below over a field, where that is
+`D ≠ 0`, exactly as FLT states it — with the same `j`-invariant. This is the primitive notion the
 whole layer (and FLT's split-reduction theorem) is built from. The body is **copied verbatim
 from FLT's `quadraticTwistOf`** — pinned as a definition, not a `sorry`, so an
 implementation cannot drift to a different twist normalization. -/
@@ -978,7 +979,7 @@ What is pinned here is the **convention**; the API is specified in `README.md` �
 entries that are not unconditionally meaningful carry their hypotheses rather than a junk value. -/
 
 /-- **The height of an integral short equation** over `ℤ`. ⚠ This is the equation-level
-function and asks only for `IsShortNF`; primitivity is the separate predicate below, and it is
+function and asks only for `IsShortNF`; the minimal-pair condition is the separate predicate below, and it is
 what upgrades this to an invariant of the curve. The carrier is the whole content: on a short
 model over `ℚ` the expression is not an invariant at all, since `x = u²x'`, `y = u³y'` sends
 `(a₄, a₆)` to `(a₄/u⁴, a₆/u⁶)` and the height to `H/|u|¹²`, so one curve has short rational
@@ -988,79 +989,83 @@ reserves. -/
 def shortEquationHeight (W : WeierstrassCurve ℤ) [W.IsShortNF] : ℕ :=
   max (4 * W.a₄.natAbs ^ 3) (27 * W.a₆.natAbs ^ 2)
 
-/-- **Primitivity of an integral short equation**: no prime `ℓ` has both `ℓ⁴ ∣ a₄` and
-`ℓ⁶ ∣ a₆` — the condition that kills the `(a₄, a₆) ↦ (u⁴a₄, u⁶a₆)` scaling freedom and so makes
-the height above well defined on curves. This is the BHKSSW/LMFDB convention (references). -/
-def IsPrimitiveShortModel (W : WeierstrassCurve ℤ) : Prop :=
+/-- **The minimal-pair normal form for an integral short equation**: short, and no prime `ℓ` has
+both `ℓ⁴ ∣ a₄` and `ℓ⁶ ∣ a₆` — the condition that kills the `(a₄, a₆) ↦ (u⁴a₄, u⁶a₆)` scaling
+freedom and so makes the height above well defined on curves. This is the BHKSSW/LMFDB
+convention (references), where such an `(A, B)` is a *minimal pair*.
+⚠ Not DVR-minimality: at `2` and `3` a minimal-pair short equation need not be a minimal
+Weierstrass equation, which is why the global minimal model of §Layer 4.5b is a long one. -/
+def IsMinimalPairNF (W : WeierstrassCurve ℤ) : Prop :=
   W.IsShortNF ∧ ∀ ℓ : ℕ, ℓ.Prime → ¬ ((ℓ : ℤ) ^ 4 ∣ W.a₄ ∧ (ℓ : ℤ) ^ 6 ∣ W.a₆)
 
-/-- **A bundled primitive integral short model** of an elliptic curve over `ℚ`: the
-integral equation, its primitivity, and the change of variables carrying its base change to `E`.
+/-- **A bundled minimal-pair integral short model** of an elliptic curve over `ℚ`: the
+integral equation, the minimal-pair condition, and the change of variables carrying its base
+change to `E`.
 ⚠ The bundle is not canonical because its change-of-variables witness need not be unique; the
-model equation, and hence its height, is unique by `primitiveShortModel_unique`.
+model equation, and hence its height, is unique by `minimalPairModel_unique`.
 ⚠ Distinct from §Layer 4.5a's `IsReducedMinimal`, which is a *long* equation; a database record
 stores both. -/
-structure PrimitiveShortModel (E : WeierstrassCurve ℚ) [E.IsElliptic] where
+structure MinimalPairModel (E : WeierstrassCurve ℚ) [E.IsElliptic] where
   /-- The integral short equation. -/
   model : WeierstrassCurve ℤ
-  /-- It is short and primitive. -/
-  isPrimitive : IsPrimitiveShortModel model
+  /-- It is short and a minimal pair. -/
+  isMinimalPair : IsMinimalPairNF model
   /-- The change of variables realising the isomorphism over `ℚ`. -/
   variableChange : WeierstrassCurve.VariableChange ℚ
   /-- It carries the base-changed model to `E`. -/
   isomorphic : variableChange • (model.baseChange ℚ) = E
 
-/-- **The height of a bundled primitive equation.** Defined outright: the
-primitivity field supplies the `IsShortNF` instance `shortEquationHeight` needs. -/
-noncomputable def PrimitiveShortModel.height {E : WeierstrassCurve ℚ} [E.IsElliptic]
-    (M : PrimitiveShortModel E) : ℕ :=
-  letI : M.model.IsShortNF := M.isPrimitive.1
+/-- **The height of a bundled minimal-pair equation.** Defined outright: the
+minimal-pair field supplies the `IsShortNF` instance `shortEquationHeight` needs. -/
+noncomputable def MinimalPairModel.height {E : WeierstrassCurve ℚ} [E.IsElliptic]
+    (M : MinimalPairModel E) : ℕ :=
+  letI : M.model.IsShortNF := M.isMinimalPair.1
   shortEquationHeight M.model
 
-/-- **Existence** of a bundled primitive short equation for the curve. -/
-theorem exists_primitiveShortModel (E : WeierstrassCurve ℚ) [E.IsElliptic] :
-    Nonempty (PrimitiveShortModel E) :=
+/-- **Existence** of a bundled minimal-pair short equation for the curve. -/
+theorem exists_minimalPairModel (E : WeierstrassCurve ℚ) [E.IsElliptic] :
+    Nonempty (MinimalPairModel E) :=
   sorry
 
-/-- A fixed bundled primitive integral short model, obtained from existence. Its observable
+/-- A fixed bundled minimal-pair integral short model, obtained from existence. Its observable
 equation and height — not its change-of-variables witness — are independent of the classical
-choice by `primitiveShortModel_unique`. -/
-noncomputable def primitiveShortModel (E : WeierstrassCurve ℚ) [E.IsElliptic] :
-    PrimitiveShortModel E :=
-  Classical.choice (exists_primitiveShortModel E)
+choice by `minimalPairModel_unique`. -/
+noncomputable def minimalPairModel (E : WeierstrassCurve ℚ) [E.IsElliptic] :
+    MinimalPairModel E :=
+  Classical.choice (exists_minimalPairModel E)
 
 /-- **Uniqueness**: the equation itself, not merely up to isomorphism. The residual freedom is
 `(a₄, a₆) ↦ (u⁴a₄, u⁶a₆)` with `u = ±1`, and `u⁴ = u⁶ = 1`. Together with existence this is what
-makes `PrimitiveShortModel.height` an invariant of the curve — and hence what makes ordering a
+makes `MinimalPairModel.height` an invariant of the curve — and hence what makes ordering a
 table of curves by height well founded. -/
-theorem primitiveShortModel_unique (E : WeierstrassCurve ℚ) [E.IsElliptic]
-    (M N : PrimitiveShortModel E) : M.model = N.model :=
+theorem minimalPairModel_unique (E : WeierstrassCurve ℚ) [E.IsElliptic]
+    (M N : MinimalPairModel E) : M.model = N.model :=
   sorry
 
-/-- **The naïve height of a curve over `ℚ`**, computed from its unique primitive integral short
-equation. This is curve-level API, unlike `PrimitiveShortModel.height`, which still takes a chosen
+/-- **The naïve height of a curve over `ℚ`**, computed from its unique minimal-pair integral short
+equation. This is curve-level API, unlike `MinimalPairModel.height`, which still takes a chosen
 bundled model. -/
-noncomputable def naiveCurveHeight (E : WeierstrassCurve ℚ) [E.IsElliptic] : ℕ :=
-  (primitiveShortModel E).height
+noncomputable def naiveHeight (E : WeierstrassCurve ℚ) [E.IsElliptic] : ℕ :=
+  (minimalPairModel E).height
 
-/-- Every primitive short model computes the same curve height. -/
-theorem naiveCurveHeight_eq {E : WeierstrassCurve ℚ} [E.IsElliptic]
-    (M : PrimitiveShortModel E) : naiveCurveHeight E = M.height :=
+/-- Every minimal-pair short model computes the same curve height. -/
+theorem naiveHeight_eq {E : WeierstrassCurve ℚ} [E.IsElliptic]
+    (M : MinimalPairModel E) : naiveHeight E = M.height :=
   sorry
 
 /-- The curve height is invariant under an admissible change of variables over `ℚ`. -/
-theorem naiveCurveHeight_variableChange (E : WeierstrassCurve ℚ) [E.IsElliptic]
+theorem naiveHeight_variableChange (E : WeierstrassCurve ℚ) [E.IsElliptic]
     (C : WeierstrassCurve.VariableChange ℚ) :
-    naiveCurveHeight (C • E) = naiveCurveHeight E :=
+    naiveHeight (C • E) = naiveHeight E :=
   sorry
 
-/-- There are only finitely many **primitive integral short equations** of bounded height. ⚠ The
+/-- There are only finitely many **minimal-pair integral short equations** of bounded height. ⚠ The
 carrier is intentional: the analogous set of literal terms `E : WeierstrassCurve ℚ` is infinite,
 since one isomorphism class has infinitely many rational equations. Finiteness of bounded-height
-`ℚ`-isomorphism classes is a corollary of this primitive-model statement. -/
-theorem finite_primitiveShortEquations_bounded_height (H : ℕ) :
+`ℚ`-isomorphism classes is a corollary of this minimal-pair-model statement. -/
+theorem finite_minimalPairEquations_bounded_height (H : ℕ) :
     Set.Finite {W : WeierstrassCurve ℤ |
-      IsPrimitiveShortModel W ∧ WeierstrassCurve.IsElliptic (W.baseChange ℚ) ∧
+      IsMinimalPairNF W ∧ WeierstrassCurve.IsElliptic (W.baseChange ℚ) ∧
         max (4 * W.a₄.natAbs ^ 3) (27 * W.a₆.natAbs ^ 2) ≤ H} :=
   sorry
 
