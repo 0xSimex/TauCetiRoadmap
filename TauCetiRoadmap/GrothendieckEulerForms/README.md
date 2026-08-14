@@ -23,9 +23,10 @@ not.
 
 ## Scope boundary
 
-This roadmap ends with ordinary exact, abelian, and triangulated categories, finite resolutions,
-ordinary Ext, internal grading shifts, and algebraic specializations of Laurent-polynomial-valued
-forms.  It does not construct or use:
+This roadmap ends with exact, abelian, and triangulated categories, finite resolutions, Ext, and
+algebraic specializations of Laurent-polynomial-valued forms.  Everything is built in both the
+ungraded and the internally graded setting; see **Graded throughout** below.  It does not
+construct or use:
 
 - DG or A-infinity algebras, categories, or modules;
 - perfect derived categories, smoothness, properness, compact generation, Serre functors, or
@@ -98,7 +99,18 @@ localization machinery is introduced to obtain them.
   classes pairing to zero against every second argument; its right radical consists of classes
   annihilated by every first argument.  They and their quotients remain distinct unless an explicit
   duality proves otherwise.
-- **Grading.**  The internal shift is normalized by `[M{1}] = q[M]`.  With
+- **Graded throughout.**  The internal grading is not an afterthought added in Layer 6.  A graded
+  exact category is an exact category with a chosen grading-shift autoequivalence `{1}` preserving
+  conflations; every construction in Layers 1--5 has a graded counterpart over that datum, and the
+  graded counterpart is a target of this roadmap, built alongside the ungraded one rather than
+  after it.  Concretely: graded exact and abelian `K₀` with their shift action, graded finite and
+  linear resolutions, the graded Cartan map and matrix, graded Ext with its internal degree, and
+  the graded quiver comparison.  Layer 6 adds only the Laurent coefficient ring, the
+  sesquilinearity that goes with it, and the specializations; it does not introduce the grading.
+  Where a statement genuinely has no graded analogue, say so and say why.  The downstream
+  roadmaps -- zigzag, hopfological, and DG/`A∞` -- consume the graded versions almost exclusively,
+  so an ungraded-only layer is not a usable dependency.
+- **Grading conventions.**  The internal shift is normalized by `[M{1}] = q[M]`.  With
   `qdim Hom(M,N) = ∑_j q⁻ʲ dim_k Hom(M,N{j})`, equivalently
   `∑_j q^j dim_k Hom(M{j},N)`, the q-Euler form is q-antilinear in its first
   argument and q-linear in its second.  The coefficient involution is Mathlib's
@@ -254,6 +266,15 @@ Specialize Layer 1 while retaining a uniform public API.
   complex level.  A derived category of a general Quillen exact category would require
   exact-acyclic localization infrastructure and is outside this roadmap; do not smuggle that
   construction into this milestone.
+- **Graded exact categories and graded K₀.**  Define a graded exact category as an exact category
+  with a chosen conflation-exact autoequivalence `{1}`, together with graded conflation-exact
+  functors and graded exact equivalences.  Build graded split, exact, abelian and triangulated K₀
+  by the same Layer 1 engine, each carrying the induced `ℤ`-action `[M{n}]` of the shift, with the
+  universal property for invariants equipped with a compatible invertible shift action.  Prove
+  that forgetting the grading along a conflation-exact functor `U` with `{1} ⋙ U ≅ U` induces a
+  map from graded to ungraded K₀, and record that this map is not an isomorphism in general -- the
+  hypotheses that make it one are Layer 6's business.  The Laurent-module repackaging of the
+  `ℤ`-action is Layer 6; the action itself is here.
 
 Weibel, Chapter II, Sections 5--7 supplies split and exact K₀, Section 6.1.2 supplies the abelian
 universal property, and Exercise II.9.15 supplies the triangulated presentation and bounded
@@ -284,6 +305,21 @@ Develop finite resolutions as reusable categorical data before applying them to 
   maps to a fixed projective resolution, prove uniqueness up to chain homotopy, and prove the
   projective horseshoe lemma.  Use these stronger statements for the later projective-module
   application; do not attribute them to arbitrary resolving objects.
+- **Graded resolutions.**  Redo the whole layer for a graded exact category with its shift `{1}`:
+  graded finite `P`-resolutions with their internal degrees recorded, graded resolving
+  subcategories, the graded Euler class, the graded resolution theorem, and graded comparison and
+  horseshoe.  Prove that forgetting the grading sends a graded resolution to an ungraded one and
+  that the two Euler classes agree under the `q = 1` specialization of Layer 6.
+- **Linear resolutions and the Koszul boundary.**  For a graded algebra generated in degree zero
+  and one over its semisimple degree-zero part, define a **linear** graded projective resolution
+  of a graded module: the `i`th term is generated in internal degree `i`.  Prove the elementary
+  reformulations -- linearity of the resolution of the graded simples is equivalent to diagonal
+  vanishing of the bigraded `Ext^{i,j}(S,S)` for `i ≠ j`, and equivalently to the graded Cartan
+  and Poincaré series being inverse up to `q ↦ -q` -- and prove that a linear resolution is
+  minimal.  This is the vocabulary in which Koszulity is stated: **this layer supplies the
+  definition and its elementary equivalences, and the duality theorems which use them belong to
+  the DG/`A∞` roadmap's relative-Koszul layer and to the zigzag roadmap.**  Fixing it here keeps
+  one notion of linearity for both, rather than two.
 
 The generic reference is Weibel, *The K-book*, Theorem II.7.6 and Lemma II.7.6.1: finite
 `P`-dimension for every object, closure of the ambient exact subcategory under kernels of
@@ -321,6 +357,13 @@ structure, and finitely generated projectives with the induced split structure.
   If all finite-dimensional modules have such resolutions--in particular, for a finite-dimensional
   algebra of finite global dimension--this is the full `K₀(proj A) ≃ G₀(mod A)` comparison.  Its
   inverse is the alternating projective-resolution class.
+- **The graded Cartan map.**  For a graded finite-dimensional algebra with graded simples and
+  graded projective covers, construct `K₀^gr(proj A) ⟶ G₀^gr(mod A)` as a map of modules over the
+  shift action, and the graded Cartan matrix whose `(i,j)` entry is the graded multiplicity
+  `∑_d q^d [P_j : S_i{d}]`.  Prove that forgetting the grading recovers the ungraded Cartan map,
+  and that setting `q = 1` recovers the ungraded matrix.  When the simples have linear resolutions
+  in the sense of Layer 3, relate the graded Cartan matrix to the inverse of the graded Poincaré
+  matrix under `q ↦ -q`.
 - **Unimodularity and its boundary.**  Under the hypotheses of the previous bullet -- so that
   `c_A` is an isomorphism -- and with finite projective/simple bases, deduce that the Cartan
   matrix is invertible over `ℤ` and has determinant `±1`.  Record no target asserting its sign is
@@ -370,9 +413,19 @@ The reusable finite-support theorem comes before the Ext specialization.
   `dim_k D_i` diagonal over a general field and the separate integral multiplicity pairing.  Under
   finite projective resolutions, compute `χ(M,N)` from the alternating Hom complex and identify its
   matrix with the inverse/transposed Cartan matrix in the pinned bases.
+- **Graded Ext and graded descent.**  Redo the layer for a graded abelian category: bigraded
+  `Ext^{n,j}`, Euler-admissibility with both the cohomological and the internal support finite,
+  the graded long exact sequences in both variables, and descent to graded `K₀`.  Keep the two
+  finiteness conditions separate, exactly as in the ungraded case.  The Laurent-polynomial
+  packaging of the resulting bigraded numbers is Layer 6; the bigraded groups and their additivity
+  are here.
 - **Quiver comparison.**  For a finite acyclic quiver, prove that the categorical Ext-Euler form
   agrees with Tau Ceti's Ringel form on dimension vectors and with the landed projective evaluation.
-  Its symmetrization agrees with `titsPolarForm`; the raw form remains nonsymmetric.
+  Its symmetrization agrees with `titsPolarForm`; the raw form remains nonsymmetric.  Do the graded
+  version too: with the path-length grading on `kQ`, prove the corresponding statement for the
+  bigraded Ext-Euler form, and prove that it specializes at `q = 1` to the ungraded one through the
+  comparison hypotheses of Layer 6.  The graded statement, not the ungraded one, is what the
+  zigzag roadmap's graded Cartan matrix `(1+q²)I + qA` is compared against.
 
 Weibel, *An Introduction to Homological Algebra*, Sections 1.3 and 1.6 supplies long exact homology
 sequences in abelian categories, Sections 2.4--2.7 supplies derived-functor/Ext long exact
@@ -381,13 +434,15 @@ cycles and boundaries.  Weibel, *The K-book*, Proposition II.6.6 and Proposition
 corresponding K₀ Euler formulas and their closure hypotheses.  Assem--Simson--Skowroński,
 III.3.13 gives the finite-global-dimension module formula.
 
-### Layer 6: graded K-groups and q-Euler forms
+### Layer 6: Laurent coefficients, q-Euler forms, and specialization
 
-Let `R = ℤ[q,q⁻¹]`, represented by `LaurentPolynomial ℤ`, with bar involution
+The graded categories, graded `K₀`, graded resolutions, the graded Cartan matrix and bigraded Ext
+are already built in Layers 2--5.  This layer adds only the coefficient ring and what depends on
+it.  Let `R = ℤ[q,q⁻¹]`, represented by `LaurentPolynomial ℤ`, with bar involution
 `LaurentPolynomial.invert`.
 
-- **Shift-module structure.**  For an exact category with an internal grading-shift
-  autoequivalence `{1}` preserving conflations, construct the `R`-module structure on K₀ and prove
+- **Shift-module structure.**  For a graded exact category from Layer 2, construct the `R`-module
+  structure on its graded K₀ and prove
   `[M{n}]=q^n[M]` for every `n : ℤ`, in particular `[M{1}]=q[M]`.  State the universal
   property for additive invariants equipped with a compatible invertible shift action.
 - **Finite Laurent support.**  Define graded dimension only for graded vector spaces whose pieces
@@ -531,9 +586,14 @@ Layer 0 is foundational.  Layer 1 supplies the small quotient engine.  Layer 2 i
 the four categorical K-groups.  Layer 3 supplies resolution classes and the resolution theorem.
 Layer 4 consumes Layers 0--3 and the finite-dimensional-algebra objects from
 [quiver representations](../RepresentationTheory/QuiverRepresentations/README.md).  Layer 5 first
-builds finite-support Euler--Poincaré and then uses Layers 2--4 to descend Ext pairings.  Layer 6
-adds the internal grading and Laurent coefficient ring.  Layer 7 consumes the pairings from Layers
-5--6.
+builds finite-support Euler--Poincaré and then uses Layers 2--4 to descend Ext pairings.  Each of
+Layers 2--5 is built in the graded setting as well as the ungraded one, per **Graded throughout**;
+Layer 6 then adds only the Laurent coefficient ring, the sesquilinearity and the specializations.
+Layer 7 consumes the pairings from Layers 5--6.
+
+The graded work is not a second pass over a finished ungraded roadmap.  A graded layer is
+completed with its ungraded counterpart, because the downstream roadmaps consume the graded
+constructions and would otherwise have nothing to import.
 
 The bounded-complex portions of Layers 2 and 5 may be developed together after the exact and K₀
 interfaces exist.  The module-specific Layer 4 and the abstract triangulated part of Layer 2 can
