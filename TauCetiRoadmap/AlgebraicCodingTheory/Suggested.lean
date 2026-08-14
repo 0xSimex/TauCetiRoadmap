@@ -380,6 +380,12 @@ noncomputable def constructionAForm (m : ℕ) (_hm : 2 ≤ m) : LinearMap.BilinF
 noncomputable def constructionA (m : ℕ) (hm : 2 ≤ m) (C : AdditiveCode (ZMod m) ι)
     (hC : C ≤ zmodDual m hm C) : IntegralLattice (ι → ℚ) := sorry
 
+/-- The form `B_m` is a nonzero scaling of the dot product, so it is nondegenerate; since
+nondegeneracy is now a mixin rather than a structure field, every Construction-A lattice carries
+it as an instance. -/
+instance (m : ℕ) (hm : 2 ≤ m) (C : AdditiveCode (ZMod m) ι) (hC : C ≤ zmodDual m hm C) :
+    (constructionA m hm C hC).IsNondegenerate := sorry
+
 /-- Dual carriers are identified literally in the same rational ambient space. -/
 theorem constructionA_dual (m : ℕ) (hm : 2 ≤ m) (C : AdditiveCode (ZMod m) ι)
     (hC : C ≤ zmodDual m hm C) :
@@ -436,6 +442,8 @@ theorem constructionA_typeIIZModTwoPower_even_unimodular
 /-- The integral base has carrier `mℤ^ι`; its dual is `ℤ^ι`; it is even for even `m`. -/
 noncomputable def constructionABase (m : ℕ) (hm₂ : 2 ≤ m) :
     IntegralLattice (ι → ℚ) := sorry
+
+instance (m : ℕ) (hm₂ : 2 ≤ m) : (constructionABase (ι := ι) m hm₂).IsNondegenerate := sorry
 
 theorem constructionABase_isEven (m : ℕ) (hm₂ : 2 ≤ m) (hmeven : Even m) :
     (constructionABase (ι := ι) m hm₂).IsEven := sorry
@@ -522,7 +530,7 @@ noncomputable def constructionAAsGluing
     (m : ℕ) (hm₂ : 2 ≤ m) (hmeven : Even m)
     (C : AdditiveCode (ZMod m) ι) (hself : C ≤ zmodDual m hm₂ C)
     (hq : ∀ c ∈ C, constructionAQuadraticValue m hm₂ hmeven c = 0) :
-    IntegralLattice.Isometry (ι → ℚ)
+    IntegralLattice.Isometry
       (constructionA m hm₂ C hself)
       ((constructionABase (ι := ι) m hm₂).ofIsotropicSubgroup
         (constructionABase_isEven (ι := ι) m hm₂ hmeven)
