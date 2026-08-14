@@ -148,8 +148,10 @@ abbrev ObjectCode (C : Type u) [Category.{v} C] [EssentiallySmall.{w} C] :=
 
 noncomputable def objectCode (X : C) : ObjectCode C := sorry
 
-noncomputable def exactRelation (E : ExactStructure C) {X Y Z : C}
-    (i : X ⟶ Y) (p : Y ⟶ Z) : FreeAbelianGroup (ObjectCode C) :=
+/-- The relation imposed by a conflation.  The morphisms only fix the three objects, so they are
+underscored; the relation itself is a statement about `[X]`, `[Y]` and `[Z]`. -/
+noncomputable def exactRelation (_E : ExactStructure C) {X Y Z : C}
+    (_i : X ⟶ Y) (_p : Y ⟶ Z) : FreeAbelianGroup (ObjectCode C) :=
   FreeAbelianGroup.of (objectCode Y) - FreeAbelianGroup.of (objectCode X) -
     FreeAbelianGroup.of (objectCode Z)
 
@@ -305,13 +307,33 @@ variable {k C}
 noncomputable def extEulerValue {P Q : C → Prop} (h : ExtEulerFinite k C P Q)
     {X Y : C} (hX : P X) (hY : Q Y) : ℤ := sorry
 
-variable [EssentiallySmall.{w} C]
-
 /-- After long-exact-sequence additivity is proved in both variables, the Ext-Euler value descends
-to exact K-zero in each argument. -/
-noncomputable def extEulerPairing (E : ExactStructure C) {P Q : C → Prop}
-    (h : ExtEulerFinite k C P Q)
-    (hP : ∀ X, P X) (hQ : ∀ Y, Q Y) : ExactK0 E →+ ExactK0 E →+ ℤ := sorry
+to the Grothendieck groups of the two *selected* subcategories -- not to a `K₀` of all of `C`, and
+not under a hypothesis such as `∀ X, P X`, which would make the object properties vacuous. Each
+side supplies its own exact category together with a functor into `C` landing in the relevant
+property; additivity is proved from the long exact Ext sequences of the conflations there. -/
+noncomputable def extEulerPairing {P Q : C → Prop} (h : ExtEulerFinite k C P Q)
+    {CP CQ : Type u}
+    [Category.{v} CP] [Preadditive CP] [HasZeroObject CP] [HasBinaryBiproducts CP]
+    [EssentiallySmall.{w} CP]
+    [Category.{v} CQ] [Preadditive CQ] [HasZeroObject CQ] [HasBinaryBiproducts CQ]
+    [EssentiallySmall.{w} CQ]
+    (EP : ExactStructure CP) (EQ : ExactStructure CQ) (iP : CP ⥤ C) (iQ : CQ ⥤ C)
+    (hiP : ∀ X, P (iP.obj X)) (hiQ : ∀ Y, Q (iQ.obj Y)) :
+    ExactK0 EP →+ ExactK0 EQ →+ ℤ := sorry
+
+/-- The descent is characterized by its values on object classes; without this the definition
+above would say nothing. -/
+theorem extEulerPairing_class {P Q : C → Prop} (h : ExtEulerFinite k C P Q)
+    {CP CQ : Type u}
+    [Category.{v} CP] [Preadditive CP] [HasZeroObject CP] [HasBinaryBiproducts CP]
+    [EssentiallySmall.{w} CP]
+    [Category.{v} CQ] [Preadditive CQ] [HasZeroObject CQ] [HasBinaryBiproducts CQ]
+    [EssentiallySmall.{w} CQ]
+    (EP : ExactStructure CP) (EQ : ExactStructure CQ) (iP : CP ⥤ C) (iQ : CQ ⥤ C)
+    (hiP : ∀ X, P (iP.obj X)) (hiQ : ∀ Y, Q (iQ.obj Y)) (X : CP) (Y : CQ) :
+    extEulerPairing h EP EQ iP iQ hiP hiQ (exactK0Class EP X) (exactK0Class EQ Y) =
+      extEulerValue h (hiP X) (hiQ Y) := sorry
 
 end ExtEuler
 
@@ -458,7 +480,7 @@ noncomputable def qEulerFormOfValues {M : Type*} [AddCommGroup M] [Module Lauren
     (smul_right : ∀ r x y, χ x (r • y) = r * χ x y) : QEulerForm M := sorry
 
 theorem laurentBar_T (n : ℤ) : laurentBar (LaurentPolynomial.T n) = LaurentPolynomial.T (-n) := by
-  simpa [laurentBar] using LaurentPolynomial.invert_T (R := ℤ) n
+  simp [laurentBar]
 
 /-! ## The orientation-sensitive `A₂` acceptance check -/
 

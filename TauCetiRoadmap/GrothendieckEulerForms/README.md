@@ -321,9 +321,12 @@ structure, and finitely generated projectives with the induced split structure.
   If all finite-dimensional modules have such resolutions--in particular, for a finite-dimensional
   algebra of finite global dimension--this is the full `K₀(proj A) ≃ G₀(mod A)` comparison.  Its
   inverse is the alternating projective-resolution class.
-- **Unimodularity and its boundary.**  For finite projective/simple bases, deduce that the Cartan
+- **Unimodularity and its boundary.**  Under the hypotheses of the previous bullet -- so that
+  `c_A` is an isomorphism -- and with finite projective/simple bases, deduce that the Cartan
   matrix is invertible over `ℤ` and has determinant `±1`.  Record no target asserting its sign is
-  positive.
+  positive.  The finite-resolution hypothesis is exactly the boundary: `k[ε]/(ε²)` has Cartan
+  matrix `[2]`, so a statement of unimodularity for every finite-dimensional algebra is false and
+  must not be recorded.
 
 Assem--Simson--Skowroński, Volume I, Chapter I, Sections 4--5 covers indecomposable projectives and
 projective covers; Chapter III, Section 3, especially Definitions 3.4 and 3.7 and Propositions
