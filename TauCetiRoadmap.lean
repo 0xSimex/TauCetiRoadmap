@@ -26,6 +26,7 @@ import TauCetiRoadmap.IntegralLattices.Suggested
 import TauCetiRoadmap.GeometricTopology.Suggested
 import TauCetiRoadmap.Exchangeability.Suggested
 import TauCetiRoadmap.ContourIntegration.Suggested
+import TauCetiRoadmap.DGAInfinity.Suggested
 import TauCetiRoadmap.ConformalMapping.Suggested
 import TauCetiRoadmap.OrthogonalL2Bases.Suggested
 import TauCetiRoadmap.OptimalTransport.Suggested
