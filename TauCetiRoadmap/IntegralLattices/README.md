@@ -7,11 +7,14 @@ algebraic package and proves the discriminant-form gluing theorem.  It ends with
 discriminant forms and the basic glue calculation which enlarges `D₈` to `E₈`.
 
 The primary object is a full `ℤ`-submodule `L` of a finite-dimensional rational vector space `V`,
-expressed by Mathlib's `Submodule.IsLattice ℚ`, together with a symmetric nondegenerate rational
-bilinear form which is integer-valued on `L`.  This choice makes
+expressed by Mathlib's `Submodule.IsLattice ℚ`, together with a symmetric rational bilinear form
+which is integer-valued on `L`.  This choice makes
 `LinearMap.BilinForm.dualSubmodule` the literal dual lattice and keeps finite-index overlattices in
-one ambient space.  Positive-definiteness is a predicate, not part of the structure: duality,
-discriminant forms, and gluing also apply to indefinite lattices.
+one ambient space.  Nondegeneracy and every shade of definiteness are predicates rather than
+structure fields, and the invariant which records them is the signature: duality, discriminant
+forms, and gluing apply to indefinite lattices, and a degenerate lattice such as an affine Cartan
+matrix is an object of the same type, reached from the nondegenerate theory by quotienting out the
+radical.
 
 This roadmap is a foundation for later roadmaps on code-lattice constructions and explicit
 rank-24 lattice constructions.  It does **not** classify lattices in any rank; construct Niemeier or
@@ -30,9 +33,24 @@ duality, finite bilinear and quadratic modules, overlattices, and ADE examples.
   `[L.IsLattice ℚ]`: it is finitely generated over `ℤ` and its `ℚ`-span is all of `V`.  Use the
   freeness, bases, rank, and scalar-extension API that follows from this Mathlib class; do not
   replace it by a private finite-free module.  Finite-dimensionality of `V` is a consequence.
-- The form is `B : LinearMap.BilinForm ℚ V`, with `B.IsSymm` and `B.Nondegenerate`.  **Integral**
-  means `B(x,y) ∈ ℤ` for every `x,y ∈ L`.  **Even** means `B(x,x) ∈ 2ℤ` for every `x ∈ L`.
-  Positive-definite means `B(x,x)>0` for nonzero `x`; it is an additional predicate.
+- The form is `B : LinearMap.BilinForm ℚ V`, with `B.IsSymm`.  **Integral** means `B(x,y) ∈ ℤ` for
+  every `x,y ∈ L`.  **Even** means `B(x,x) ∈ 2ℤ` for every `x ∈ L`.
+- The **radical** is `LinearMap.ker B`, and `B.Nondegenerate` is exactly its triviality
+  (`LinearMap.BilinForm.nondegenerate_iff_ker_eq_bot`).  Nondegeneracy is a predicate, carried as a
+  mixin class on the lattice rather than as a structure field, so that a degenerate integral
+  symmetric form is a lattice of the same type, and so is the restriction of a nondegenerate form to
+  a subspace on which it degenerates.  Positive-semidefinite affine Cartan matrices are the
+  motivating degenerate case.  Layer 1 is stated without nondegeneracy wherever the statement does
+  not need it; Layers 2 to 4 assume it, and Layer 2 proves that the hypothesis is load-bearing
+  rather than decorative.
+- The **signature** is the triple `(n₊, n₀, n₋)`, where `n₊` and `n₋` are the largest dimensions of a
+  subspace on which the form is positive-definite and negative-definite, and `n₀` is the dimension
+  of the radical.  Mathlib supplies `n₊` and `n₋` as `sigPos` and `sigNeg` of `B.toQuadraticMap`,
+  over any linearly ordered field and so over `ℚ` itself, with no extension to `ℝ`.
+  **Positive-definite** means `n₀=n₋=0`,
+  **positive-semidefinite** means `n₋=0`, **negative-definite** and **negative-semidefinite** are
+  those conditions for `-B`, **degenerate** means `n₀>0`, and **indefinite** means `n₊>0` and
+  `n₋>0`.  Each is a predicate, and `n₊+n₀+n₋` is the rank.
 - The dual lattice is
   `L^∨ = {x : V | ∀ y ∈ L, B(x,y) ∈ ℤ}`, literally `B.dualSubmodule L`.  Integrality is equivalent
   to `L ≤ L^∨`.  **Unimodular** means the equality `L = L^∨`; determinant and discriminant-group
@@ -40,7 +58,9 @@ duality, finite bilinear and quadratic modules, overlattices, and ADE examples.
 - For a `ℤ`-basis `e`, the Gram matrix is `(B(eᵢ,eⱼ))`.  Its signed determinant is retained as an
   integer invariant.  The nonnegative discriminant is its absolute value.  Thus
   `disc(L)=|det Gram(L)|=#(L^∨/L)`; the sign of a Gram determinant is never called the order of the
-  discriminant group.
+  discriminant group.  The second equality is a nondegeneracy statement: `det Gram(L)=0` is exactly
+  `n₀>0`, and in that case `L^∨` contains the radical, so it is not finitely generated and `L^∨/L`
+  is infinite.
 - The discriminant group is `A_L=L^∨/L`.  Its bilinear form is
   `b_L(x+L,y+L)=B(x,y) mod ℤ`, valued in `ℚ/ℤ`, represented in Lean by
   `AddCircle (1 : ℚ)`.
@@ -86,6 +106,18 @@ duality, finite bilinear and quadratic modules, overlattices, and ADE examples.
   `LinearMap.BilinForm.dualSubmodule`, its membership criterion, `dualSubmoduleToDual`, injectivity
   under nondegeneracy and spanning, dual-basis descriptions, and double-dual lemmas.  Complete its
   advertised missing lattice/perfect-pairing consequences rather than reimplementing it.
+- `Mathlib/LinearAlgebra/QuadraticForm/Signature.lean` defines the indices of inertia `sigPos` and
+  `sigNeg` over a linearly ordered commutative ring, proves them invariant under equivalence
+  (`QuadraticMap.Equivalent.sigPos_eq` and its negative counterpart), and over a linearly ordered
+  field proves `QuadraticForm.sigPos_add_sigNeg_add_radical` and the uniqueness half of Sylvester's
+  law of inertia (`QuadraticForm.sigPos_of_equiv_weightedSumSquares` and its negative counterpart).
+  The existence half is `QuadraticForm.equivalent_weightedSumSquares`.  Take the signature of an
+  integral lattice from these applied to `B.toQuadraticMap` over `ℚ`; do not define a competing
+  index of inertia.
+- `Mathlib/LinearAlgebra/QuadraticForm/Radical.lean` defines `QuadraticMap.radical`, its
+  preservation by isometry equivalences, invariance of its rank, and `QuadraticMap.lift` for
+  quotienting by a submodule of the radical.  Use these for the degenerate case, and prove that over
+  `ℚ` the quadratic radical of `B.toQuadraticMap` coincides with `LinearMap.ker B`.
 - `Mathlib/LinearAlgebra/FreeModule/Finite/Quotient.lean` provides Smith-normal-form quotient
   equivalences and finiteness, notably `Submodule.quotientEquivPiZMod`,
   `finiteQuotientOfFreeOfRankEq`, and `finiteQuotient_iff`.
@@ -105,9 +137,10 @@ duality, finite bilinear and quadratic modules, overlattices, and ADE examples.
   groups, `ZMod`, quotient modules, and `AddCircle`.  Reuse each at the greatest generality which
   does not obscure the integral-lattice statements.
 
-Mathlib does not yet bundle a nondegenerate integral lattice with this algebraic carrier, or provide
-discriminant groups and forms, finite quadratic modules, and the overlattice/isotropic-subgroup
-correspondence.
+Mathlib does not yet bundle an integral lattice with this algebraic carrier, or provide discriminant
+groups and forms, finite quadratic modules, and the overlattice/isotropic-subgroup correspondence.
+It has the signature of a quadratic form but not the definiteness vocabulary of a lattice, which
+this roadmap defines on top of it.
 
 ### Tau Ceti and neighboring roadmaps
 
@@ -131,38 +164,73 @@ prototypes the bridge against them rather than behind a Mathlib-only stand-in.
 Build the primary bundled object and a usable API before introducing a quotient.
 
 - Define an integral symmetric lattice from a carrier `L : Submodule ℤ V` with
-  `[L.IsLattice ℚ]`, a symmetric nondegenerate `B : BilinForm ℚ V`, and a proof that `B(L,L)⊆ℤ`.
+  `[L.IsLattice ℚ]`, a symmetric `B : BilinForm ℚ V`, and a proof that `B(L,L)⊆ℤ`.
   Supply coercions to the carrier and form, an extensionality theorem, access to a carrier basis and
-  rank, and constructors from a basis plus an integral nonsingular symmetric Gram matrix and from an
+  rank, and constructors from a basis plus an integral symmetric Gram matrix and from an
   existing full submodule with form.  Prove that changing the chosen carrier basis does not change
   any basis-independent invariant.
+- Define the radical as `LinearMap.ker B` and the signature `(n₊, n₀, n₋)` from `sigPos`, `sigNeg`,
+  and the rank of the radical, and prove the quadratic radical of `B.toQuadraticMap` equal to
+  `LinearMap.ker B`.  Prove `n₊+n₀+n₋` is the rank by consuming
+  `QuadraticForm.sigPos_add_sigNeg_add_radical` rather than reproving inertia.  Define
+  positive-definite, positive-semidefinite, negative-definite, negative-semidefinite, degenerate,
+  and indefinite as predicates in the signature vocabulary, and prove each equivalent to its
+  elementwise formulation: `B(x,x)>0` for every nonzero `x` in the positive-definite case,
+  `B(x,x)≥0` for every `x` in the positive-semidefinite case, the same two for `-B` in the negative
+  cases, a nonzero radical vector in the degenerate case, and vectors of both signs in the
+  indefinite case.  Identify positive-definite with Mathlib's `QuadraticMap.PosDef`, prove
+  positive-definite equivalent to positive-semidefinite together with nondegenerate, and prove
+  indefinite equivalent to neither positive-semidefinite nor negative-semidefinite.
+- Define nondegeneracy of a lattice as the mixin predicate `B.Nondegenerate`.  Prove it equivalent to
+  triviality of `LinearMap.ker B`, to `n₀=0`, and, for any carrier basis, to nonvanishing of the
+  Gram determinant.  Prove that the Gram-matrix constructor produces a nondegenerate lattice exactly
+  from a nonsingular Gram matrix, and provide that instance so downstream layers acquire it without
+  a side condition.
 - Define linear isometries of integral lattices.  Provide identity, inverse, composition,
   extensionality, carrier restriction, rational extension from a carrier equivalence, transport of
   a lattice along a rational linear equivalence, and the induced equivalence on bases.  Prove
-  invariance of integrality, evenness, positive-definiteness, rank, signed determinant, and
-  discriminant.
+  invariance of integrality, evenness, nondegeneracy, the radical, the signature and each
+  definiteness predicate, rank, signed determinant, and discriminant.
 - Restrict the rational form to the carrier as an integer-valued bilinear form and prove that its
-  rational scalar extension recovers `B`.  Conversely, extend a nondegenerate integral form on a
+  rational scalar extension recovers `B`.  Conversely, extend an integral form on a
   finite free `ℤ`-module to its rationalization and relate the abstract rationalization to the
-  embedded carrier model.  This is the bridge for consumers whose input begins as an abstract Gram
-  matrix.
-- For every carrier basis, define the integral Gram matrix, prove symmetry and nonsingularity, and
+  embedded carrier model.  This is the entry point for consumers whose input begins as an abstract
+  Gram matrix.
+- For every carrier basis, define the integral Gram matrix, prove symmetry, and
   identify it with Mathlib's matrix of the restricted form.  Define the signed determinant and its
   nonnegative absolute value, prove change-of-basis invariance (`det` changes by the square of a
   unimodular determinant and hence in fact is unchanged), and make basis-free names available.
-- Define evenness, unimodularity, positive-definiteness, norm, and roots of a specified norm.  Prove
+- Define evenness, unimodularity, norm, and roots of a specified norm.  Prove
   their elementary implications and transport lemmas.  Do not infer evenness from integrality or
   attach a quadratic discriminant form to an odd carrier.
+- Construct the quotient of a lattice by its radical: the image of the carrier in `V ⧸ ker B`, with
+  the induced form obtained from `QuadraticMap.lift`.  Prove that it is again a full integral
+  lattice, that it is nondegenerate, that it inherits evenness, that its signature is `(n₊, 0, n₋)`,
+  and that the quotient map preserves the form.  This is what makes the nondegenerate theory of
+  Layers 2 to 4 available to a degenerate lattice, and it is how a consumer holding a
+  positive-semidefinite affine Cartan matrix reaches the finite root lattice underneath it.
 - Construct form scaling, form negation, and orthogonal direct sums.  State exactly how rank,
-  determinant, discriminant, integrality, evenness, duals, and positive-definiteness behave.  Include
-  canonical inclusions, projections, associativity/commutativity isometries, and compatibility of
-  isometries with direct sum.
+  determinant, discriminant, integrality, evenness, nondegeneracy, the radical, and the signature
+  behave: signature is additive over orthogonal direct sums, negation exchanges `n₊` and `n₋` and
+  fixes `n₀`, and scaling by a nonzero rational fixes or exchanges them according to its sign.
+  Include canonical inclusions, projections, associativity/commutativity isometries, and
+  compatibility of isometries with direct sum.
 
 Acceptance at this layer includes a Gram-matrix constructor whose resulting carrier is genuinely a
 `Submodule.IsLattice ℚ`, and an isometry-invariance theorem which cannot be applied to a bare
-additive equivalence.
+additive equivalence.  It also includes three lattices which exercise the predicates rather than
+only the definite case: the hyperbolic plane `!![0,1;1,0]`, which is even, unimodular and indefinite
+of signature `(1,0,1)`; the negative-definite rank-one lattice `⟨-2⟩` of signature `(0,0,1)`; and the
+affine `Ã₁` Gram matrix `!![2,-2;-2,2]`, which is even, positive-semidefinite and degenerate of
+signature `(1,1,0)`, and whose radical quotient is the `A₁` root lattice `⟨2⟩`.
 
 ## Layer 2: duality and the finite discriminant group
+
+Every lattice in this layer and the two after it is nondegenerate, through the Layer 1 mixin, so the
+hypothesis is an instance argument and not a repeated side condition.  Prove the two statements
+which show that the hypothesis is load-bearing rather than decorative: the dual is a full lattice
+exactly when the lattice is nondegenerate, and `A_L` is finite exactly then.  A degenerate lattice
+reaches this layer through its radical quotient.
 
 - Define `L^∨` using `B.dualSubmodule L`.  Prove `L ≤ L^∨ ↔ L` is integral (and record the flipped
   version before symmetry is used), and prove that the dual is again a full `ℤ`-lattice.  Show that
@@ -273,8 +341,11 @@ and, for `g=e/(2m)+L`,
 `b_L(g,g)=1/(2m) mod ℤ`, `q_L(g)=1/(4m) mod ℤ`.
 
 Prove `#A_L=|2m|` and check directly that the polar of the displayed `q_L` is the displayed `b_L`.
-This example must compile for negative `m` as a negative-definite rank-one lattice too;
-positive-definiteness is exactly `m>0`.
+This example must compile for negative `m` as a negative-definite rank-one lattice too: the
+signature is `(1,0,0)` for `m>0` and `(0,0,1)` for `m<0`, so positive-definiteness is exactly `m>0`.
+The excluded `m=0` form is the degenerate rank-one lattice, of signature `(0,1,0)`, whose radical
+quotient is the zero lattice and which has no discriminant group: Layer 1 covers it and Layers 2 to
+4 do not.
 
 ### ADE root lattices
 
@@ -326,7 +397,8 @@ Finally check that the general comparison gives
 ## Ordering and completion criterion
 
 Layer 1 precedes duality because the dual and all quotient types use the pinned embedded carrier and
-form.  Layer 2 constructs and proves finiteness of the discriminant group.  The abstract part of
+form, and because the radical quotient is what lets Layer 2 assume nondegeneracy throughout.
+Layer 2 constructs and proves finiteness of the discriminant group.  The abstract part of
 Layer 3 can proceed beside Layer 2, but its lattice specialization needs Layer 2.  Layer 4 consumes
 both and supplies the gluing theorem.  Rank one is developed alongside Layers 1--3 as a normalization
 test; the ADE and `D₈ ⊂ E₈` examples come after Layer 4 and consume the existing root-data bridge.
