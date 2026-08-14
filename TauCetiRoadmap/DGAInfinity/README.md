@@ -373,6 +373,17 @@ conventions.
 - Develop the basic perturbation lemma for complete filtered contractions.  State filtration
   lowering/raising so the geometric series is pointwise finite or convergent, prove the perturbed
   contraction, and identify the tree formulas with transferred higher products.
+- **Modules over a DG algebra and modules over its cohomology.**  State and prove the theorem the
+  minimal model exists for: over a field, the `A∞` quasi-isomorphism
+  `(H^*A, m₂, m₃, …) ⟶ A` of the previous item induces, through the derived invariance of Layer 6,
+  an equivalence of `A∞` categories of modules and hence a triangle equivalence
+  `D(A) ≃ D_∞(H^*A, m₂, m₃, …)` restricting to `Perf(A) ≃ Perf(H^*A, m₂, m₃, …)`.
+  The transferred structure is essential and the statement is false without it: the plain
+  cohomology algebra `(H^*A, m₂)` is a different object, and `A` is *formal* exactly when the two
+  agree up to `A∞` quasi-isomorphism.  `A = Λ_k(a,b,c)` with `d(c) = ab` in the examples below is
+  a DG algebra where they do not agree, so no equivalence with `(H^*A, m₂)` can be asserted.
+  Give the category and module versions with their splitting hypotheses.  This is the general
+  theorem the transfer machinery exists to supply, and the worked examples below instantiate it.
 
 Kadeishvili's 1982 paper supplies the minimal-model theorem.  Gugenheim--Lambe--Stasheff,
 *Perturbation theory in differential homological algebra II*, supplies the filtered perturbation
@@ -629,8 +640,11 @@ nonconnective localization caveat when perfect quotients are idempotent complete
   double-orthogonal and opposite/tensor comparison formulas only under the stated dualizability
   and perfect-pairing hypotheses.
 - Define Koszulity using graded **right** `A`-modules by a linear graded projective resolution of
-  the augmentation module `S`, equivalently by diagonal
-  vanishing of bigraded `Tor`/`Ext`.  Prove that a Koszul algebra is quadratic, its quadratic dual
+  the augmentation module `S`, equivalently by diagonal vanishing of bigraded `Tor`/`Ext`.  Take
+  "linear graded projective resolution" and the equivalence with diagonal `Ext` vanishing from the
+  Grothendieck/Euler roadmap's Layer 3 rather than redefining them, so that one notion of
+  linearity serves this layer, the zigzag roadmap's classical Koszulity, and the graded Cartan
+  matrices all three compare against.  Prove that a Koszul algebra is quadratic, its quadratic dual
   is Koszul, and, with Yoneda multiplication `[f][g]=[f∘g]`,
   `Ext^*_{Mod-A}(S,S)` identifies with `A!`; the parallel left-module theorem identifies with
   `(A!)ᵒᵖ` under the displayed opposite bridge.  Fix left/right, multiplication order, and
@@ -660,6 +674,21 @@ convention in Section 3.5 supplies the `S`-relative `A∞` presentation.
 
 ## Worked examples and acceptance criteria
 
+Each subsection below is an acceptance test for a **named general theorem stated in the layers
+above**, not an illustration standing on its own.  The general statements are the deliverables;
+these are the finite computations which pin their signs, hypotheses and handedness, and which fail
+if a convention has drifted.  The correspondence is:
+
+| Example | General theorem it tests |
+| --- | --- |
+| arity `1`--`4` sign audit | the `b²=0`/Stasheff equivalence of Layer 0 |
+| DG algebra as an `A∞` algebra, and back | the `m_n=0` subcase of Layer 2, and the enveloping DG algebra `U(A)=ΩB∞A` with `D(A) ≃ D(U(A))` of Layer 4 |
+| finite transfer with a nonzero `m₃` | Kadeishvili's minimal model and `D(A) ≃ D_∞(H^*A, m_i)` of Layer 3 |
+| two-object twisted-complex path | the pretriangulated envelope and its triangles, Layer 5 |
+| proper, smooth, Serre, numerical boundaries | smoothness/properness and the Euler theory of Layers 9--10 |
+| quotient and idempotent-completion boundary | the DG quotient and right-exact `K₀` sequence of Layer 7 |
+| Koszul checks | relative quadratic and derived Koszul duality, Layer 11 |
+
 ### The arity `1`--`4` sign audit
 
 On formal homogeneous symbols `a,b,c,d`, verify both as maps and after evaluation that the four
@@ -670,6 +699,12 @@ unsuspend the same operations and prove round trips.  A unit must satisfy
 `m₂(e,a)=a=m₂(a,e)` with no degree-dependent correction.
 
 ### A DG algebra as an `A∞` algebra, and back to a DG model
+
+This example tests the two directions of the comparison between the strict and the higher theory:
+that a DG algebra is exactly an `A∞` algebra with vanishing higher operations, and that an `A∞`
+algebra has a DG model with the same derived module category.  Together with the transfer example
+that follows, it is what makes the phrase "`A∞` structures lose nothing" a theorem rather than a
+slogan.
 
 For a unital DG algebra `A`, set `m₁=d`, `m₂=μ`, and `m_n=0` for `n≥3`.  Prove every
 Stasheff relation, strict unitality, and functoriality on DG algebra morphisms.  Under the
@@ -702,7 +737,9 @@ m₃^H([a],[a],[b]) = [ac] ≠ 0.
 The calculation must show the Koszul sign in `i⊗f₂`, not merely quote a Massey-product result.
 Relate the output to the defined triple Massey product and its indeterminacy.  This example rejects
 a transfer interface that can state only existence or that forces every cohomology algebra to be
-formal.
+formal.  Then instantiate the Layer 3 equivalence on it: `D(A) ≃ D_∞(H^*A, m₂, m₃)` with the
+transferred `m₃` above, and `A` is not formal, so the same statement with `(H^*A, m₂)` in place of
+the transferred structure is false.  That contrast is the point of the example.
 
 As a source-pinned second check, implement Keller's Section 3.3 example: the four-vertex linearly
 oriented quiver with the length-three relation `γβα=0`.  On the Ext algebra verify that the only
