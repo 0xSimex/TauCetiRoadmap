@@ -22,6 +22,8 @@ different.
 
 This roadmap constructs:
 
+- affine simply-laced Dynkin diagrams and their generalized Cartan matrices, which neither
+  Mathlib nor Tau Ceti supplies and which several milestones below need;
 - doubled quivers attached to finite simple graphs and symmetrifications of finite quivers;
 - ordinary and skew zigzag algebras, including the one-vertex, one-edge, and non-bipartite cases;
 - their gradings, bases, dimensions, centers, Frobenius traces, projectives, graded Cartan
@@ -168,7 +170,11 @@ The landed declarations include:
   representations, and finite-dimensional path-algebra results;
 - `TauCeti.eulerForm`, `titsForm`, projective evaluation, and path-count computations; and
 - `TauCeti.DynkinType`, its validity and simply-laced predicates, standard Cartan matrices, and
-  Bourbaki numbering.
+  Bourbaki numbering.  These are the **finite** types only: `DynkinType` has no affine
+  constructors, and `FiniteType/AffineD.lean`'s `doubleForkCartanMatrix` is a single obstruction
+  used inside the Cartan--Killing classification, not a general affine API.  Mathlib has none
+  either.  Layer 0 below therefore constructs the affine simply-laced diagrams this roadmap and
+  the downstream McKay roadmap both use.
 
 The [quiver-representation roadmap](../RepresentationTheory/QuiverRepresentations/README.md)
 owns general path algebras, projectives, bound quivers, and Ringel forms.  This roadmap adds the
@@ -183,7 +189,8 @@ cohomological and internal finite-support hypotheses are proved.
 
 The [DG and A-infinity roadmap](../DGAInfinity/README.md) supplies DG and `A∞` algebras and modules,
 bar/cobar duality, completion, perfect modules, Hochschild cochains, homological perturbation,
-minimal-model transfer, smoothness, Calabi--Yau structures, and derived Morita equivalence.  This
+minimal-model transfer, smoothness, Calabi--Yau structures, the derived tensor algebra and the
+(deformed) Calabi--Yau completions `Π_n(C)=T_C(C![n-1])`, and derived Morita equivalence.  This
 roadmap instantiates those interfaces for zigzag and preprojective data.  It owns no second sign
 convention or transfer theorem.  In particular, the sibling's DG and `A∞` module APIs are
 right-module primary; the strict left modules used above enter them as right modules over the
@@ -195,8 +202,19 @@ without a Seidel-style twist, and are strictly unital in the deformation stateme
 
 ## The build, in layers
 
-### Layer 0: doubled graphs, relation quotients, and grading descent
+### Layer 0: affine simply-laced diagrams, doubled graphs, relation quotients, and grading descent
 
+- Define the affine simply-laced diagrams as an inductive family `ÃₙD̃ₙẼ₆Ẽ₇Ẽ₈` with its node count,
+  underlying `SimpleGraph`, and generalized Cartan matrix `2I - A`.  Handle `Ã₁` as the
+  multiplicity-two matrix `!![2,-2;-2,2]`, which is not the Cartan matrix of a simple graph, and
+  exclude it from every simple-graph construction below rather than forcing it in.  Prove:
+  each diagram is connected; deleting the marked affine node gives the corresponding finite
+  `TauCeti.DynkinType` diagram, with an explicit relabelling matching the Bourbaki numbering; the
+  symmetrized form is positive semidefinite; and its radical is spanned by the marks, the
+  vector `δ` with `Cδ = 0` and `δ` equal to `1` at the affine node.  Give the star descriptions
+  `Ẽ₆=T_{3,3,3}`, `Ẽ₇=T_{2,4,4}` and `Ẽ₈=T_{2,3,6}` and prove them.
+  This is the data the downstream McKay roadmap identifies its McKay graphs with; it owns the
+  representation-theoretic side and consumes the diagrams from here.
 - Define `DoubledQuiver G` for a simple graph and prove the reverse-arrow involution, finiteness of
   arrows, and compatibility with graph isomorphisms, components, adjacency matrices, and
   `Quiver.Symmetrify` after an orientation is chosen.
@@ -342,8 +360,9 @@ have bidegree `(-1,2)`, and `d(t_i)=ρ_i`, with the signed local preprojective r
 
 - Prove `d²=0`, the Leibniz signs, the bidegree statement, and `H⁰(Π₂(Q)) ≅ Π_k(Q)`.
 - Identify this DG algebra with the derived 2-preprojective / `2`-Calabi--Yau completion
-  `Π₂(kQ)` under Keller's homological-smoothness hypotheses, and state the resulting bimodule
-  `2`-Calabi--Yau theorem.  Any finite-Dynkin stable-module-category consequence, together with
+  `Π₂(kQ)`, taking the completion itself from the sibling roadmap's Layer 9 rather than
+  constructing a local copy, under Keller's homological-smoothness hypotheses, and state the
+  resulting bimodule `2`-Calabi--Yau theorem.  Any finite-Dynkin stable-module-category consequence, together with
   its Frobenius and triangulated hypotheses, belongs to the downstream stable-category roadmap;
   it is not inferred here from the bimodule theorem.
 - Construct the length-adic completion and the comparison map from the ordinary tensor/path DG
@@ -351,8 +370,10 @@ have bidegree `(-1,2)`, and `d(t_i)=ρ_i`, with the signed local preprojective r
   bigraded object and when forgetting Adams degree produces the completion.
 - For a quiver with potential `(Q,W)`, construct the standard **3-dimensional** Ginzburg DG algebra:
   original arrows in degree `0`, reverse arrows in degree `-1`, loops in degree `-2`, and
-  differential given by cyclic derivatives and commutators.  Identify it with the deformed
-  `3`-Calabi--Yau completion under Keller's hypotheses.
+  differential given by cyclic derivatives and commutators.  Identify it with the sibling
+  roadmap's deformed `3`-Calabi--Yau completion `Π₃(kQ,ξ_W)` under Keller's hypotheses, exhibiting
+  the Hochschild class `ξ_W` the potential determines; the deformation input is a hypothesis
+  supplied here, not something the sibling produces.
 - Keep `Π₂(Q)` and `Γ₃(Q,W)` as distinct public definitions, with a comparison theorem only in
   genuinely matching examples.
 
@@ -447,9 +468,11 @@ declarations.
   labels.  Compute their zigzag dimensions and center dimensions:
   `dim Z(D₄)=14`, `dim Z(E₈)=30`, `dim center Z(D₄)=5`, and
   `dim center Z(E₈)=9`.
-- Define affine `E₈` as the nine-vertex tree `T_{2,3,6}`, with arms of edge lengths `1,2,5` from
-  the trivalent vertex.  Prove it agrees with the standard affine Cartan graph under an explicit
-  relabelling.  Compute `dim Z(Ẽ₈)=34` and center dimension `10`.
+- Take affine `E₈` from the Layer 0 family: the nine-vertex tree `T_{2,3,6}`, with arms of edge
+  lengths `1,2,5` from the trivalent vertex.  Prove that the concrete nine-vertex graph used in
+  the calculations agrees with the Layer 0 `Ẽ₈` under an explicit relabelling, and that deleting
+  its affine node gives Tau Ceti's `DynkinType.E8` diagram.  Compute `dim Z(Ẽ₈)=34` and center
+  dimension `10`.
 - Materialize all three graded Cartan matrices as
   `(1+q²)I+qA`.  Verify entrywise symmetry, diagonal and adjacency entries, and the exact
   Bourbaki/affine labels.  At `q=-1`, prove that affine `E₈` specializes to its singular affine
