@@ -10,8 +10,8 @@ higher products record information which an ordinary cohomology algebra forgets.
 This roadmap builds the reusable algebraic foundation from signed graded multilinear algebra
 through DG and `A∞` categories, their module and bimodule theories, minimal models, bar--cobar and
 controlled twisting, derived Morita theory, quotients, Hochschild deformation theory,
-smooth/proper and Calabi--Yau structures, Euler theory on perfect objects, and relative quadratic
-Koszul duality.  The [Grothendieck groups and Euler forms
+smooth/proper structures, Calabi--Yau structures and completions, Euler theory on perfect objects,
+and relative quadratic Koszul duality.  The [Grothendieck groups and Euler forms
 roadmap](../GrothendieckEulerForms/README.md) supplies ordinary exact and triangulated `K₀`,
 finite-support Euler sums, graded Euler forms, and left/right numerical quotients.  This roadmap
 uses those constructions for perfect DG and `A∞` categories; it does not rebuild them.
@@ -215,11 +215,17 @@ of the sign test, not new axioms:
 - `ComplexShape.TensorSigns`, in particular the `ComplexShape.up ℤ` sign character;
   `HomologicalComplex`, `CochainComplex`, Hom complexes, cochain shifts, tensor products, total
   complexes, mapping cones, homotopies, and `HomologicalComplex.QuasiIso`;
+- `HomologicalComplex.monoidalCategory` from `Mathlib/Algebra/Homology/Monoidal.lean`, which
+  already supplies the monoidal structure on `HomologicalComplex C c` for any `c` with
+  `c.TensorSigns`, hence on unbounded `CochainComplex (ModuleCat k) ℤ`.  Consume it; do not build
+  a second totalization;
 - `CategoryTheory.EnrichedCategory` and enriched functors.  A strict DG category over `k` will be
-  represented as enrichment in `CochainComplex (ModuleCat k) ℤ`, but Mathlib does not yet supply
-  either the needed symmetric monoidal structure on unbounded cochain complexes of `k`-modules or
-  a `k`-linear enriched Hom complex.  The existing `CochainComplex.HomComplex` is valued in
-  `AddCommGrpCat`, so it cannot simply be reused as the required enrichment;
+  represented as enrichment in `CochainComplex (ModuleCat k) ℤ`.  Two pieces of that enrichment
+  are genuinely missing from Mathlib: the braiding, and a `k`-linear enriched Hom complex.
+  `GradedObject.braidedCategory` and `GradedObject.symmetricCategory` exist, but nothing installs
+  a `BraidedCategory` on `HomologicalComplex`, and the Koszul sign is exactly the content of that
+  transport.  The existing `CochainComplex.HomComplex` is valued in `AddCommGrpCat`, so it cannot
+  simply be reused as the required enrichment;
 - `MorphismProperty.Localization`, homotopy categories, the localization of complexes at
   quasi-isomorphisms, `DerivedCategory`, shifts, distinguished triangles, and Mathlib's
   pretriangulated/triangulated API;
@@ -268,12 +274,14 @@ quiver form.
   filtration, coderivations, and the equivalence between degree-one coderivations and their Taylor
   components.  Construct completed tensor coalgebras as products by tensor length and distinguish
   them from direct-sum conilpotent coalgebras.
-- Supply the missing symmetric monoidal structure on unbounded
-  `CochainComplex (ModuleCat k) ℤ`: totalize the degree-`n` term as the coproduct over `p+q=n`,
-  use `ComplexShape.up ℤ` tensor signs, prove associator/unit/braiding coherence, and prove tensor
-  preserves the coproducts used in totalization.  Construct the `k`-linear Hom complex, its signed
-  differential `d(f)=d_Y f-(-1)^{|f|}f d_X`, closed composition map, and the enrichment.  Compare
-  its underlying additive-group complex with Mathlib's `CochainComplex.HomComplex`.
+- Complete the symmetric monoidal structure on unbounded `CochainComplex (ModuleCat k) ℤ`.  The
+  monoidal structure itself is Mathlib's `HomologicalComplex.monoidalCategory`, instantiated at
+  `ComplexShape.up ℤ` and its `TensorSigns`; import it rather than re-totalizing.  What has to be
+  added is the braiding: transport `GradedObject.braidedCategory` through the totalization,
+  supply the Koszul sign `x ⊗ y ↦ (-1)^{|x||y|} y ⊗ x` on the degreewise summands, and prove the
+  hexagon and symmetry axioms at complex level.  Then construct the `k`-linear Hom complex, its
+  signed differential `d(f)=d_Y f-(-1)^{|f|}f d_X`, closed composition map, and the enrichment,
+  and compare its underlying additive-group complex with Mathlib's `CochainComplex.HomComplex`.
 - Implement the suspension/unsuspension equivalence fixed above.  Prove the general Stasheff
   component formula and the arity `1`--`4` equations verbatim.  Reuse Mathlib's
   `ComplexShape.TensorSigns`; a second private parity calculus is not an accepted endpoint.
@@ -528,7 +536,7 @@ Kadeishvili's 1988 paper supplies the Hochschild obstruction method for higher o
 intrinsic formality.  May's *Matric Massey products* and Keller's minimal-model discussion supply
 the defining-system and transferred-product comparison.
 
-### Layer 9: smoothness, properness, Serre and Calabi--Yau structures
+### Layer 9: smoothness, properness, Serre, and Calabi--Yau structures and completions
 
 - A small DG/`A∞` category is **proper over `k`** when every Hom complex is perfect as a
   `k`-complex; over a field this is equivalent to finite-dimensional total cohomology.  It is
@@ -540,6 +548,18 @@ the defining-system and transferred-product comparison.
   a smooth/left `d`-Calabi--Yau bimodule identification is `C! ≅ C[-d]`, while a proper/right
   identification is `C[d] ≅ C*`.  Their negative-cyclic refinements are lifts of different
   Hochschild classes.  Do not call either one merely "the" Calabi--Yau structure.
+- Construct the derived tensor algebra `T_C(M)=⨁_{n≥0} M^{⊗_C n}` of a bimodule over a small DG
+  category, graded by tensor length, with its universal property and its cofibrancy hypotheses.
+  For homologically smooth `C` define the `n`-Calabi--Yau completion
+  `Π_n(C)=T_C(C![n-1])`, prove that it carries a smooth/left `n`-Calabi--Yau structure, and prove
+  that its tensor-length grading is the Adams grading the downstream applications use.  For a
+  class `ξ` construct the deformed completion `Π_n(C,ξ)` by twisting the differential, and prove
+  `Π_n(C,0)=Π_n(C)`.  State which input each theorem takes: the twist itself needs only a
+  Hochschild class in `HH_{n-2}(C)`, while Keller's canonical form lifts it to negative cyclic
+  homology, which this roadmap does not construct -- so any theorem needing the lift carries the
+  class as a hypothesis rather than producing it.
+  These completions are the objects the zigzag/Ginzburg roadmap identifies with its explicit
+  `Π₂(Q)` and `Γ₃(Q,W)`; without them that identification has no right-hand side.
 - For a proper category, prove that tensoring with `C*` gives the Serre functor on `Perf(C)` when it
   preserves perfect objects, and prove the bifunctorial duality
   `Hom(X,Y)^* ≅ Hom(Y,SX)` and uniqueness of `S`.  A right identification `C[d]≅C*` then yields
@@ -555,8 +575,10 @@ the defining-system and transferred-product comparison.
   theorem is not itself an unrestricted many-object statement.  This is not a claim that the Euler
   form on unquotiented `K₀` is nondegenerate.
 
-Keller's DG-category survey, Section 5, supplies smooth/proper Morita invariance.  Bondal--Kapranov
-supplies Serre functors.  Shklyarov, Theorems 3.4--3.5 and 6.2, supplies the DG-algebra HRR pairing
+Keller's DG-category survey, Section 5, supplies smooth/proper Morita invariance.  Keller,
+*Deformed Calabi--Yau completions*, Sections 4--5, supplies the tensor-algebra completion
+`Π_n(C)=T_C(C![n-1])`, its Calabi--Yau structure, and the deformation by a Hochschild class.
+Bondal--Kapranov supplies Serre functors.  Shklyarov, Theorems 3.4--3.5 and 6.2, supplies the DG-algebra HRR pairing
 and its nondegeneracy under smoothness; the category formulation here passes through Layer 6.
 Brav--Dyckerhoff, Sections 3--5, supplies the distinction
 between smooth/left, proper/right, and negative-cyclic Calabi--Yau structures.
@@ -823,6 +845,10 @@ the smooth/proper and Euler boundaries with Layers 9--10; and the Koszul checks 
 - Ezra Getzler, [“Lie theory for nilpotent
   L-infinity algebras,”](https://annals.math.princeton.edu/2009/170-1/p04) *Annals of Mathematics*
   170 (2009), 271--301: nilpotent Maurer--Cartan simplicial sets and gauge theory.
+- Bernhard Keller, [“Deformed Calabi--Yau completions,”](https://arxiv.org/abs/0908.3499)
+  *Journal für die reine und angewandte Mathematik* 654 (2011), 125--180, Sections 4--5: the
+  tensor-algebra completion `Π_n(A)=T_A(θ_A[n-1])`, its bimodule Calabi--Yau structure, and the
+  deformation by a Hochschild class.
 - Dmytro Shklyarov, [“Hirzebruch--Riemann--Roch theorem for DG
   algebras,”](https://arxiv.org/abs/0710.1937) *Proceedings of the London Mathematical Society*
   106 (2013), 1--32: proper DG algebras, perfect-module Chern characters, HRR, and
