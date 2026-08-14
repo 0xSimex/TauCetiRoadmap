@@ -22,6 +22,7 @@ body:
         - EllipticCurves
         - Exchangeability
         - GeometricTopology
+        - GrothendieckEulerForms
         - HeegaardFloer
         - HodgeStructures
         - IntegralLattices
