@@ -33,13 +33,13 @@ section Lattices
 
 variable (V : Type u) [AddCommGroup V] [Module ℚ V]
 
-/-- A nondegenerate integral symmetric lattice in a rational ambient vector space. -/
+/-- An integral symmetric lattice in a rational ambient vector space.  Nondegeneracy is not a
+field: see `IntegralLattice.IsNondegenerate` below. -/
 structure IntegralLattice where
   carrier : Submodule ℤ V
   [isLattice : carrier.IsLattice ℚ]
   form : LinearMap.BilinForm ℚ V
   isSymm : form.IsSymm
-  nondegenerate : form.Nondegenerate
   integral : ∀ x y : carrier, form x y ∈ (1 : Submodule ℤ ℚ)
 
 attribute [instance] IntegralLattice.isLattice
@@ -51,8 +51,76 @@ variable {V} (L : IntegralLattice V)
 /-- Evenness means that every norm lies in `2ℤ`. -/
 def IsEven : Prop := ∀ x : L.carrier, ∃ n : ℤ, L.form x x = ((2 * n : ℤ) : ℚ)
 
+/-- Nondegeneracy is a mixin rather than a structure field, so that a degenerate integral symmetric
+form, an affine Cartan matrix among them, is a lattice of the same type. -/
+class IsNondegenerate : Prop where
+  nondegenerate : L.form.Nondegenerate
+
+/-- The radical of the form. -/
+abbrev radical : Submodule ℚ V := LinearMap.ker L.form
+
+/-- Nondegeneracy is exactly triviality of the radical. -/
+theorem isNondegenerate_iff_radical_eq_bot : L.IsNondegenerate ↔ L.radical = ⊥ := sorry
+
+/-! Definiteness is expressed through Mathlib's indices of inertia, which are available over any
+linearly ordered field and so over `ℚ` itself. -/
+
+/-- The positive index of inertia `n₊`. -/
+noncomputable abbrev sigPos : ℕ := _root_.sigPos L.form.toQuadraticMap
+
+/-- The negative index of inertia `n₋`. -/
+noncomputable abbrev sigNeg : ℕ := _root_.sigNeg L.form.toQuadraticMap
+
+/-- The dimension `n₀` of the radical. -/
+noncomputable abbrev sigNull : ℕ := Module.finrank ℚ L.radical
+
+/-- The signature triple `(n₊, n₀, n₋)`. -/
+noncomputable abbrev signature : ℕ × ℕ × ℕ := (L.sigPos, L.sigNull, L.sigNeg)
+
+/-- The three indices exhaust the rank; this is `sigPos_add_sigNeg_add_radical`, not a new proof of
+Sylvester's law of inertia. -/
+theorem sigPos_add_sigNull_add_sigNeg [FiniteDimensional ℚ V] :
+    L.sigPos + L.sigNull + L.sigNeg = Module.finrank ℚ V := sorry
+
 /-- Positive-definiteness is a predicate, not part of the lattice structure. -/
 abbrev IsPositiveDefinite : Prop := L.form.toQuadraticMap.PosDef
+
+/-- Positive-semidefiniteness admits a radical; it is the affine Cartan matrix case. -/
+def IsPositiveSemidefinite : Prop := ∀ x : V, 0 ≤ L.form x x
+
+/-- Negative-definiteness. -/
+def IsNegativeDefinite : Prop := ∀ x : V, x ≠ 0 → L.form x x < 0
+
+/-- Negative-semidefiniteness. -/
+def IsNegativeSemidefinite : Prop := ∀ x : V, L.form x x ≤ 0
+
+/-- Indefiniteness: vectors of both signs, equivalently `n₊ > 0` and `n₋ > 0`. -/
+def IsIndefinite : Prop := (∃ x : V, 0 < L.form x x) ∧ (∃ x : V, L.form x x < 0)
+
+/-- The definite case is the semidefinite case with no radical. -/
+theorem isPositiveDefinite_iff [FiniteDimensional ℚ V] :
+    L.IsPositiveDefinite ↔ L.IsPositiveSemidefinite ∧ L.IsNondegenerate := sorry
+
+/-- Indefinite is exactly the failure of both semidefiniteness conditions. -/
+theorem isIndefinite_iff :
+    L.IsIndefinite ↔ ¬ L.IsPositiveSemidefinite ∧ ¬ L.IsNegativeSemidefinite := sorry
+
+/-- Each predicate is visible in the signature. -/
+theorem isPositiveSemidefinite_iff_sigNeg_eq_zero [FiniteDimensional ℚ V] :
+    L.IsPositiveSemidefinite ↔ L.sigNeg = 0 := sorry
+
+/-- The lattice obtained by quotienting out the radical: this is how a degenerate lattice, such as
+one presented by an affine Cartan matrix, reaches the nondegenerate theory below. -/
+noncomputable def radicalQuotient : IntegralLattice (V ⧸ L.radical) := sorry
+
+instance : L.radicalQuotient.IsNondegenerate := sorry
+
+/-- The radical quotient keeps the indices of inertia and loses only the radical. -/
+theorem signature_radicalQuotient [FiniteDimensional ℚ V] :
+    L.radicalQuotient.signature = (L.sigPos, 0, L.sigNeg) := sorry
+
+/-- Evenness descends to the radical quotient. -/
+theorem radicalQuotient_isEven (hL : L.IsEven) : L.radicalQuotient.IsEven := sorry
 
 /-- The dual is Mathlib's existing algebraic dual submodule. -/
 abbrev dual : Submodule ℤ V := L.form.dualSubmodule L.carrier
@@ -68,17 +136,25 @@ def carrierInDual : Submodule ℤ L.dual := L.carrier.comap L.dual.subtype
 /-- The actual discriminant-group quotient `L^∨ / L`. -/
 abbrev DiscriminantGroup : Type u := L.dual ⧸ L.carrierInDual
 
-/-- The dual of a full nondegenerate lattice is again a full lattice. -/
-theorem dual_isLattice : L.dual.IsLattice ℚ := sorry
+/-- The dual of a full lattice is again a full lattice exactly when the form is nondegenerate: this
+is where the mixin is load-bearing, since a radical vector spans a rational line inside the dual. -/
+theorem dual_isLattice_iff [FiniteDimensional ℚ V] :
+    L.dual.IsLattice ℚ ↔ L.IsNondegenerate := sorry
+
+theorem dual_isLattice [L.IsNondegenerate] [FiniteDimensional ℚ V] : L.dual.IsLattice ℚ := sorry
 
 /-- The form identifies the dual lattice with the integral module dual. -/
-noncomputable def dualEquivModuleDual : L.dual ≃ₗ[ℤ] Module.Dual ℤ L.carrier := sorry
+noncomputable def dualEquivModuleDual [L.IsNondegenerate] :
+    L.dual ≃ₗ[ℤ] Module.Dual ℤ L.carrier := sorry
 
 /-- Double duality inside the fixed rational ambient space. -/
-theorem dual_dual : L.form.dualSubmodule L.dual = L.carrier := sorry
+theorem dual_dual [L.IsNondegenerate] : L.form.dualSubmodule L.dual = L.carrier := sorry
 
-/-- The discriminant group is finite. -/
-theorem discriminantGroup_finite : Finite L.DiscriminantGroup := sorry
+/-- The discriminant group is finite, and again only in the nondegenerate case. -/
+theorem discriminantGroup_finite [L.IsNondegenerate] : Finite L.DiscriminantGroup := sorry
+
+theorem finite_discriminantGroup_iff [FiniteDimensional ℚ V] :
+    Finite L.DiscriminantGroup ↔ L.IsNondegenerate := sorry
 
 /-- An integral Gram matrix in a carrier basis. -/
 noncomputable def gramMatrix {ι : Type*} [Fintype ι] (e : Basis ι ℤ L.carrier) :
@@ -94,8 +170,13 @@ noncomputable def gramDet {ι : Type*} [Fintype ι] [DecidableEq ι]
     (e : Basis ι ℤ L.carrier) : ℤ :=
   Matrix.det (L.gramMatrix e)
 
+/-- The Gram determinant vanishes exactly in the degenerate case. -/
+theorem gramDet_ne_zero_iff {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (e : Basis ι ℤ L.carrier) : L.gramDet e ≠ 0 ↔ L.IsNondegenerate := sorry
+
 /-- The order of `L^∨/L` is the absolute, not signed, Gram determinant. -/
-theorem natCard_discriminantGroup_eq_natAbs_gramDet {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem natCard_discriminantGroup_eq_natAbs_gramDet [L.IsNondegenerate]
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
     (e : Basis ι ℤ L.carrier) :
     Nat.card L.DiscriminantGroup = (L.gramDet e).natAbs := sorry
 
@@ -103,14 +184,17 @@ theorem natCard_discriminantGroup_eq_natAbs_gramDet {ι : Type*} [Fintype ι] [D
 def IsUnimodular : Prop := L.carrier = L.dual
 
 /-- Triviality of the discriminant group characterizes unimodularity. -/
-theorem unimodular_iff_natCard_discriminantGroup_eq_one :
+theorem unimodular_iff_natCard_discriminantGroup_eq_one [L.IsNondegenerate] :
     L.IsUnimodular ↔ Nat.card L.DiscriminantGroup = 1 := sorry
 
 /-- A Gram determinant has absolute value one exactly for a unimodular lattice. -/
-theorem unimodular_iff_natAbs_gramDet_eq_one {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem unimodular_iff_natAbs_gramDet_eq_one [L.IsNondegenerate]
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
     (e : Basis ι ℤ L.carrier) : L.IsUnimodular ↔ (L.gramDet e).natAbs = 1 := sorry
 
 end IntegralLattice
+
+variable {V}
 
 /-- An isometry includes preservation of both the embedded carrier and the form. -/
 structure IntegralLattice.Isometry
@@ -207,11 +291,13 @@ section DiscriminantModules
 variable {V : Type u} [AddCommGroup V] [Module ℚ V]
 variable (L : IntegralLattice V)
 
+variable [L.IsNondegenerate]
+
 /-- The well-defined discriminant pairing as the adjoint into `CharacterModule`. -/
 noncomputable def IntegralLattice.discriminantPairing :
     L.DiscriminantGroup →+ CharacterModule L.DiscriminantGroup := sorry
 
-/-- Every integral lattice has a finite nondegenerate discriminant bilinear module. -/
+/-- Every nondegenerate integral lattice has a finite nondegenerate discriminant bilinear module. -/
 noncomputable def IntegralLattice.discriminantBilinearModule : FiniteBilinearModule where
   A := L.DiscriminantGroup
   addCommGroup := inferInstance
@@ -251,7 +337,7 @@ end DiscriminantModules
 section Overlattices
 
 variable {V : Type u} [AddCommGroup V] [Module ℚ V]
-variable (L : IntegralLattice V)
+variable (L : IntegralLattice V) [L.IsNondegenerate]
 
 /-- An intermediate lattice in the same rational ambient space. -/
 structure Overlattice where
@@ -307,8 +393,13 @@ noncomputable def IntegralLattice.ofIsotropicSubgroup (hL : L.IsEven)
   isLattice := sorry
   form := L.form
   isSymm := L.isSymm
-  nondegenerate := L.nondegenerate
   integral := sorry
+
+/-- Gluing along an isotropic subgroup keeps the form, hence keeps nondegeneracy. -/
+instance IntegralLattice.ofIsotropicSubgroup_isNondegenerate (hL : L.IsEven)
+    (H : AddSubgroup L.DiscriminantGroup)
+    (hH : (L.discriminantQuadraticModule hL).IsIsotropic H) :
+    (L.ofIsotropicSubgroup hL H hH).IsNondegenerate := sorry
 
 /-- The preimage construction is even. -/
 theorem IntegralLattice.ofIsotropicSubgroup_isEven (hL : L.IsEven)
@@ -362,7 +453,19 @@ section RankOne
 /-- The lattice `⟨2m⟩` on the standard copy of `ℤ` in `ℚ`. -/
 noncomputable def rankOne (m : ℤ) (hm : m ≠ 0) : IntegralLattice ℚ := sorry
 
+instance (m : ℤ) (hm : m ≠ 0) : (rankOne m hm).IsNondegenerate := sorry
+
 theorem rankOne_isEven (m : ℤ) (hm : m ≠ 0) : (rankOne m hm).IsEven := sorry
+
+/-- The signature records the sign of `m`, so the negative-definite case is not a special case. -/
+theorem rankOne_signature (m : ℤ) (hm : m ≠ 0) :
+    (rankOne m hm).signature = if 0 < m then (1, 0, 0) else (0, 0, 1) := sorry
+
+/-- The degenerate rank-one lattice, excluded from `rankOne`, is still an object of the type: its
+signature is `(0,1,0)` and its radical quotient is zero. -/
+noncomputable def rankOneZero : IntegralLattice ℚ := sorry
+
+theorem rankOneZero_signature : rankOneZero.signature = (0, 1, 0) := sorry
 
 /-- The class of `1/(2m)` in the dual quotient. -/
 noncomputable def rankOneGenerator (m : ℤ) (hm : m ≠ 0) :
@@ -404,6 +507,44 @@ theorem rankOne_polar_generator (m : ℤ) (hm : m ≠ 0) :
 
 end RankOne
 
+/-! ## Definiteness acceptance tests
+
+These exercise the predicates outside the positive-definite case: an indefinite lattice, and a
+degenerate one which is only positive-semidefinite. -/
+
+section Definiteness
+
+/-- The hyperbolic plane `!![0,1;1,0]`: even, unimodular, and indefinite. -/
+noncomputable def hyperbolicPlane : IntegralLattice (Fin 2 → ℚ) := sorry
+
+instance : hyperbolicPlane.IsNondegenerate := sorry
+
+theorem hyperbolicPlane_signature : hyperbolicPlane.signature = (1, 0, 1) := sorry
+
+theorem hyperbolicPlane_isEven : hyperbolicPlane.IsEven := sorry
+
+theorem hyperbolicPlane_isUnimodular : hyperbolicPlane.IsUnimodular := sorry
+
+theorem hyperbolicPlane_isIndefinite : hyperbolicPlane.IsIndefinite := sorry
+
+/-- The affine `Ã₁` Gram matrix `!![2,-2;-2,2]`: even, positive-semidefinite, and degenerate.  It is
+a lattice of the same type, which is the point of keeping nondegeneracy out of the structure. -/
+noncomputable def affineA1 : IntegralLattice (Fin 2 → ℚ) := sorry
+
+theorem affineA1_isEven : affineA1.IsEven := sorry
+
+theorem affineA1_signature : affineA1.signature = (1, 1, 0) := sorry
+
+theorem affineA1_isPositiveSemidefinite : affineA1.IsPositiveSemidefinite := sorry
+
+theorem affineA1_not_isNondegenerate : ¬ affineA1.IsNondegenerate := sorry
+
+/-- Quotienting out the radical of `Ã₁` gives the `A₁` root lattice `⟨2⟩`. -/
+noncomputable def affineA1RadicalQuotientIsometry :
+    affineA1.radicalQuotient.Isometry (rankOne 1 one_ne_zero) := sorry
+
+end Definiteness
+
 /-! ## The Tau Ceti ADE bridge and the `D₈ ⊂ E₈` acceptance test -/
 
 section ADE
@@ -418,6 +559,9 @@ variable (t : SimplyLacedType)
 
 /-- The positive root lattice of a valid simply-laced type, in simple-root coordinates. -/
 noncomputable def adeLattice : IntegralLattice (Fin t.1.rank → ℚ) := sorry
+
+/-- A finite-type Cartan matrix is nonsingular, so the root lattice is nondegenerate. -/
+instance : (adeLattice t).IsNondegenerate := sorry
 
 /-- The simple-root basis of the carrier, in Tau Ceti's Bourbaki node numbering. -/
 noncomputable def adeSimpleBasis : Basis (Fin t.1.rank) ℤ (adeLattice t).carrier := sorry
@@ -476,6 +620,8 @@ noncomputable def d8Plus : IntegralLattice (Fin (DynkinType.D 8).rank → ℚ) :
   (adeLattice d8).ofIsotropicSubgroup (adeLattice_isEven d8) d8SpinorSubgroup
     d8SpinorSubgroup_isIsotropic
 
+instance : d8Plus.IsNondegenerate := sorry
+
 /-- Unimodularity comes from the Lagrangian criterion `H = H^⊥`, which here holds because the
 subgroup has order two in a group of order four. -/
 theorem d8Plus_isUnimodular : d8Plus.IsUnimodular := sorry
@@ -483,7 +629,7 @@ theorem d8Plus_isUnimodular : d8Plus.IsUnimodular := sorry
 /-- The acceptance test is an actual isometry.  It is emphatically *not* the invalid inference
 that any two even unimodular lattices of the same rank are isometric. -/
 noncomputable def d8PlusIsometryE8 :
-    IntegralLattice.Isometry (Fin (DynkinType.D 8).rank → ℚ) d8Plus (adeLattice e8) := sorry
+    IntegralLattice.Isometry d8Plus (adeLattice e8) := sorry
 
 /-- The general `H^⊥/H` comparison agrees with the direct `E₈` computation: both are trivial. -/
 theorem d8Plus_discriminantGroup_subsingleton :
