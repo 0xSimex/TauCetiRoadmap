@@ -887,8 +887,18 @@ theorem xi_primitiveRoot (R : CyclotomicRootData k F) :
     IsPrimitiveRoot R.xi n := by
   sorry
 
+/-- `ξ_k` has order `p_k·(n/m)`, which is `p_k` only when `n` is squarefree.  At `n = 4` with
+`p₁ = 2` the value `ξ₁ = q²` has order `4`, so `IsPrimitiveRoot (R.xiAt i) (F.p i)` is false and
+must not be stated. -/
 theorem xiAt_primitiveRoot (R : CyclotomicRootData k F) (i : Fin t) :
-    IsPrimitiveRoot (R.xiAt i) (F.p i) := by
+    IsPrimitiveRoot (R.xiAt i) (F.p i * (n / F.radical)) := by
+  sorry
+
+/-- The self-braiding parameter of the generator `d_k`, of degree `n_k`, is `ξ_k^{n_k}=q^{n_k²}`.
+Its order is `p_k` for every `n`, and that is what truncates the one-generator Nichols algebra at
+`d_k^{p_k}`. -/
+theorem xiAt_pow_nDivPrime_primitiveRoot (R : CyclotomicRootData k F) (i : Fin t) :
+    IsPrimitiveRoot (R.xiAt i ^ F.nDivPrime i) (F.p i) := by
   sorry
 
 theorem xiAt_eq_q_pow_nDivPrime (R : CyclotomicRootData k F) (i : Fin t) :

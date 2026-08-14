@@ -62,11 +62,7 @@ Sweedler notation in prose always denotes a finite representation of Mathlib's
 `Coalgebra.comul`; Lean statements use `Coalgebra.Repr` or equality of tensor-product maps and
 do not assume a chosen basis.
 
-## Baseline audit
-
-The audited baseline is Tau Ceti
-`86cc55d9192fc3f094f293ead6f2e7a153c79d17` on Mathlib
-`de5ce8a9a66a4aa68a9bdbb35b63a06d34d9ca11`.
+## Existing API inventory
 
 - `TauCeti.Algebra.Bialgebra.Primitive` proves the binomial formula for
   `Δ(a^n)` when `a` is primitive.  This is the required input for the characteristic and sign
@@ -77,16 +73,13 @@ The audited baseline is Tau Ceti
 - `TauCeti.Algebra.Coalgebra.Comodule.Basic` provides right comodules and morphisms.  The
   finite-comodule development already supplies monoidal and rigid categories where its
   hypotheses apply.
-- Neither this Mathlib pin nor this Tau Ceti pin contains integrals of Hopf algebras, the
-  finite-Hopf-to-Frobenius theorem, Hopf module algebras, smash products, the stable category
-  of Hopf modules, or the relative hopfological category.  Those are real targets here.
+- Neither Mathlib nor Tau Ceti contains integrals of Hopf algebras, the finite-Hopf-to-Frobenius
+  theorem, Hopf module algebras, smash products, the stable category of Hopf modules, or the
+  relative hopfological category.  Those are real targets here.
 
-Read-only searches of the Lean community Zulip for Hopf-module monoidality, stable categories,
-smash products, and Frobenius algebras found no competing implementation or settled spelling.
-The relevant discussion confirms the mathematical requirement that a group/Hopf algebra's
-coproduct makes its module category monoidal; it does not provide the missing API.  New upstream
-Mathlib work is adopted if it lands, following Mathlib's naming and deleting the corresponding
-Tau Ceti duplicate.
+There is no competing implementation or settled spelling for Hopf-module monoidality, stable
+categories of Hopf modules, or smash products.  New upstream Mathlib work is adopted if it lands,
+following Mathlib's naming and deleting the corresponding Tau Ceti duplicate.
 
 ## Layer 1: finite Hopf algebras are Frobenius
 
@@ -508,8 +501,18 @@ list cannot omit a divisor.  The values `m`, `N`, `n_k`, and `m_k` are definitio
 that object, never unrelated parameters.
 
 Let `k` contain a primitive `N`th root `q`; this implies `char k ∤ N`.  Put
-`ξ=q^(n/m)`, a primitive `n`th root, and `ξ_k=ξ^{m_k}=q^{n_k}`, a primitive `p_k`th
-root.  In `q`-graded vector spaces define
+`ξ=q^(n/m)`, a primitive `n`th root, and `ξ_k=ξ^{m_k}=q^{n_k}`.  Record the order of `ξ_k`
+correctly: `gcd(N,n_k)=n_k`, so
+
+```text
+ord(ξ_k) = N/n_k = p_k·(n/m),
+```
+
+which is `p_k` exactly when `n` is squarefree.  For `n=4` and `p₁=2`, for instance, `ξ₁=q²` has
+order `4`, not `2`.  What is a primitive `p_k`th root is the **self-braiding** parameter of the
+generator, `ξ_k^{n_k}=q^{n_k²}`, whose order is `p_k` for every `n`; that is the number which
+makes the one-generator Nichols algebra truncate at `d_k^{p_k}`, and no theorem may assert
+primitivity of order `p_k` for `ξ_k` itself.  In `q`-graded vector spaces define
 
 `H_n=k[d₁,…,d_t]/(d₁^{p₁},…,d_t^{p_t}),   deg d_k=n_k`,
 
