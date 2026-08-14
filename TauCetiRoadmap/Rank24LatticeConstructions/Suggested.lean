@@ -336,6 +336,10 @@ abbrev RootCoordinate (ts : ADEComponentList) :=
 noncomputable def rootLattice (ts : ADEComponentList) :
     IntegralLattice (RootCoordinate ts → ℚ) := sorry
 
+/-- A positive-definite form is nondegenerate; the orthogonal sum of ADE root lattices carries
+the instance the dual, discriminant and gluing API now asks for. -/
+instance (ts : ADEComponentList) : (rootLattice ts).IsNondegenerate := sorry
+
 theorem rootLattice_isEven (ts : ADEComponentList) : (rootLattice ts).IsEven := sorry
 
 theorem rootLattice_isPositiveDefinite (ts : ADEComponentList) :
@@ -601,8 +605,7 @@ theorem a1_tableGlue_eq_extendedBinaryGolay :
       extendedBinaryGolay.toAddSubgroup := sorry
 
 noncomputable def a1RootfulIsometryGolayConstructionA :
-    IntegralLattice.Isometry (RootCoordinate RootfulNiemeierType.a1_24.components → ℚ)
-      (rootfulLattice .a1_24) golayConstructionA := sorry
+    IntegralLattice.Isometry (rootfulLattice .a1_24) golayConstructionA := sorry
 
 /-- Destination-to-source permutation for the ternary Golay acceptance calculation. -/
 def a2DestinationToSourceFun : Fin 12 → Fin 12 :=
@@ -752,8 +755,10 @@ noncomputable def constructionB : IntegralLattice (LeechCoordinate → ℚ) wher
   isLattice := sorry
   form := golayConstructionA.form
   isSymm := golayConstructionA.isSymm
-  nondegenerate := golayConstructionA.nondegenerate
   integral := sorry
+
+/-- `constructionB` reuses the ambient Construction-A form, so it inherits nondegeneracy. -/
+instance : constructionB.IsNondegenerate := sorry
 
 theorem constructionB_isEven : constructionB.IsEven := sorry
 
