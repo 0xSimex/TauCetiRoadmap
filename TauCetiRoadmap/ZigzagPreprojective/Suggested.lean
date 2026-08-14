@@ -265,18 +265,20 @@ theorem qHom_projective_eq_zigzagCartan (k : Type*) {V : Type u} [Field k] [Fint
       (Module.finrank k (gradedProjectiveHom k G i j d) : Polynomial ℤ) * Polynomial.X ^ d) =
       zigzagCartan G i j := sorry
 
-theorem d4Graph_edgeFinset_card : d4Graph.edgeFinset.card = 3 := by native_decide
+theorem d4Graph_edgeFinset_card : d4Graph.edgeFinset.card = 3 := by decide
 
-theorem e8Graph_edgeFinset_card : e8Graph.edgeFinset.card = 7 := by native_decide
+theorem e8Graph_edgeFinset_card : e8Graph.edgeFinset.card = 7 := by decide
 
-theorem affineE8Graph_edgeFinset_card : affineE8Graph.edgeFinset.card = 8 := by native_decide
+theorem affineE8Graph_edgeFinset_card : affineE8Graph.edgeFinset.card = 8 := by decide
 
-theorem zigzagDimension_d4 : 2 * 4 + 2 * d4Graph.edgeFinset.card = 14 := by native_decide
+theorem zigzagDimension_d4 : 2 * 4 + 2 * d4Graph.edgeFinset.card = 14 := by
+  rw [d4Graph_edgeFinset_card]
 
-theorem zigzagDimension_e8 : 2 * 8 + 2 * e8Graph.edgeFinset.card = 30 := by native_decide
+theorem zigzagDimension_e8 : 2 * 8 + 2 * e8Graph.edgeFinset.card = 30 := by
+  rw [e8Graph_edgeFinset_card]
 
 theorem zigzagDimension_affineE8 : 2 * 9 + 2 * affineE8Graph.edgeFinset.card = 34 := by
-  native_decide
+  rw [affineE8Graph_edgeFinset_card]
 
 /-! ## Additive preprojective and signless-dual relation quotients -/
 

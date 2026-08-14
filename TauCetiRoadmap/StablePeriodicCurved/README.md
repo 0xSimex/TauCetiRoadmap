@@ -94,11 +94,7 @@ Idempotent completion is visible. A functor is stated as an equivalence before K
 only when the cited theorem and its hypotheses give that equivalence. Otherwise the target is an
 equivalence after `KaroubiEnvelope`, together with the comparison functor before completion.
 
-## Baseline API inventory
-
-The audited baseline is Tau Ceti Roadmap `26d7fe2277d6fa1124a79b7e48fbd848c8b27e0a`, with Tau
-Ceti `86cc55d9192fc3f094f293ead6f2e7a153c79d17` and Mathlib
-`de5ce8a9a66a4aa68a9bdbb35b63a06d34d9ca11`.
+## Existing API inventory
 
 Use, extend, and interoperate with:
 
@@ -117,9 +113,10 @@ Use, extend, and interoperate with:
 - Tau Ceti's quiver-representation, projective-representation, and Euler-form APIs where examples
   need them.
 
-At these pins there is no packaged Frobenius exact category, stable category/module category,
-morphism ideal quotient, Gorenstein-projective or singularity category, periodic homotopy/derived
-category, curved DG algebra/module, or matrix-factorization category. `Suggested.lean` therefore
+Neither Mathlib nor Tau Ceti has a packaged Frobenius exact category, stable category/module
+category, morphism ideal quotient, Gorenstein-projective or singularity category, periodic
+homotopy/derived category, curved DG algebra/module, or matrix-factorization category. Adopt any
+of these that lands upstream, following its naming. `Suggested.lean` therefore
 prototypes an additive morphism ideal on top of Mathlib's quotient; concrete bounded-complex,
 exact-derived, perfect-kernel, orbit/compression, and matrix-factorization homotopy constructions;
 and the square equations for differential modules, duplexes, and curved DG objects. It does not
