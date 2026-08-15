@@ -1795,10 +1795,6 @@ Eisenstein family `X^p − p` over `ℚ_p` behaves the same way: `e = p` and
 *Prerequisites:* Local Fields and Ramification #189, tame equality criterion and wild bounds;
 Layers 5.5, 5.7, and 5.9.
 
-*Prerequisites:* Layer 6.3; Mathlib `pow_sub_one_dvd_differentIdeal`,
-`dvd_differentIdeal_of_not_isSeparable`, `ringChar`, `multiplicity`,
-`Algebra.IsSeparable (A ⧸ 𝔭) (B ⧸ P)`.
-
 #### 6.5 The permutation-action discriminant exponent formula
 
 For `L/K` Galois with group `G`, `H ≤ G`, `M = L^H`, `Q` a prime of `𝓞 L` over `𝔭`, and

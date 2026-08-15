@@ -1174,12 +1174,16 @@ example {L : Type*} [Field L] [NumberField L] [Algebra K L] [IsGalois K L]
 
 /-- **Layer 6.4, the exact tame exponent, restricted to number fields.** This is the global
 corollary of #189's local tame equality criterion, transported through the canonical completion
-and Layer 5.9. The roadmap makes no unsupported Dedekind-generic claim. -/
-example {L : Type*} [Field L] [NumberField L] [Algebra K L]
+and Layer 5.9. The equality, rather than only its weaker non-divisibility consequence, is the
+contract consumed by discriminant and conductor calculations. The roadmap makes no unsupported
+Dedekind-generic claim. -/
+theorem multiplicity_differentIdeal_eq_ramificationIdx_sub_one_of_tame
+    {L : Type*} [Field L] [NumberField L] [Algebra K L]
     {p : Ideal (𝓞 K)} [p.IsMaximal] (hp : p ≠ ⊥)
     {P : Ideal (𝓞 L)} [P.IsPrime] [P.LiesOver p]
     (htame : ¬ ringChar (𝓞 K ⧸ p) ∣ Ideal.ramificationIdx p P) :
-    ¬ P ^ Ideal.ramificationIdx p P ∣ differentIdeal (𝓞 K) (𝓞 L) :=
+    multiplicity P (differentIdeal (𝓞 K) (𝓞 L)) =
+      Ideal.ramificationIdx p P - 1 :=
   sorry
 
 /-- **Layer 6.4, the wild bounds**, restricted to number fields and imported from #189's local
