@@ -445,9 +445,8 @@ hewittSavage_trivial_of_iIndep
 Suggested home:
 
 ```text
-TauCeti/Probability/Exchangeability/L2/Covariance.lean
-TauCeti/Probability/Exchangeability/L2/BlockAverages.lean
-TauCeti/Probability/DeFinetti/ViaL2.lean
+TauCeti/Probability/Exchangeability/L2/
+TauCeti/Probability/DeFinetti/ViaL2/
 ```
 
 This is the first proof route to port after the shared layers. Its analytic core is
@@ -461,32 +460,44 @@ Build:
 * the uniform covariance structure of a contractable L² sequence;
 * two-window L² bounds for block averages;
 * long-average versus tail-average bounds;
-* L¹ convergence of weighted block averages;
-* extension from bounded measurable real observables to a countable determining class on the
-  standard Borel state space;
-* the directing-measure bridge;
-* the calls to the common endings — `mixedIID_of_mixingRepresentative` and the joint-rectangle
-  `conditionallyIID_of_jointRectangles` for the conditional summit.
+* L¹ convergence of bounded-observable block averages along moving selections that are eventually
+  injective, to a common limit independent of the selections;
+* tail measurability of that limit and its identification with
+  `μ[f ∘ X 0 | tailProcess X]`;
+* for indicator observables, identification of the same limit with the evaluation
+  `ω ↦ (directingMeasure μ X ω).real B` of the canonical tail conditional law;
+* simultaneous L¹ convergence of finite products along disjoint windows;
+* tail-conditioned invariance of finite blocks under strictly monotone selections;
+* finite-block conditional factorization, followed by the joint-rectangle common ending with
+  `directingProbabilityMeasure μ X` as the named witness.
 
 Key milestones:
 
 ```lean
 contractable_covariance_structure
-l2_bound_two_windows_uniform
-l2_bound_long_vs_tail
+integral_sq_blockAverage_sub_of_disjoint
+tendsto_integral_sq_prefixAverage_sub_followingAverage
 weighted_sums_converge_L1
-realObservables_determine_directing_measure
-directing_measure_satisfies_requirements
+tendsto_integral_abs_blockAverage_sub_condExp
+tendsto_integral_abs_blockAverage_indicator_sub_directingMeasure
+tendsto_integral_abs_prod_blockAverage_indicator_disjointWindow_sub_prod_directingMeasure
+condExp_blockIndicatorProd_strictMono_tailProcess_ae_eq_prod_directingMeasure
+conditionallyIIDWith_directingProbabilityMeasure
 conditionallyIID_of_contractable_viaL2
 deFinetti_viaL2
 deFinetti_RyllNardzewski_equivalence_viaL2
 ```
 
-Real-valued L² convergence is the intermediate analytic step. Through the common ending and a
-determining class of bounded measurable real observables on the standard Borel state space,
-the route reaches the standard-Borel de Finetti statement; the roadmap target is this
-library-level theorem, stronger than the bare real-valued conclusion the source currently
-carries.
+Real-valued L² convergence is the intermediate analytic step, not a reconstruction procedure for
+the directing measure. Use the canonical `directingMeasure`, defined as the conditional law of
+`X 0` given `tailProcess X`, and identify indicator limits with its evaluations through the
+conditional-expectation characterization. Reconstructing a second measure from a countable
+determining class would duplicate that object and is not part of this route. The finite-product
+limit and tail-conditioned selection invariance then give the conditional block factorization
+consumed by the common ending, yielding the standard-Borel de Finetti theorem rather than only a
+real-valued convergence result. The directing-measure construction and common ending are shared
+neutral API; the Layer 3 factorization and endpoint must not depend on reverse-martingale
+convergence or the unsuffixed summit theorem.
 
 ### Layer 4: reverse martingales and conditional-expectation limits
 
