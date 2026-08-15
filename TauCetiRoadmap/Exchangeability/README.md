@@ -449,9 +449,10 @@ TauCeti/Probability/Exchangeability/L2/
 TauCeti/Probability/DeFinetti/ViaL2/
 ```
 
-This is the first proof route to port after the shared layers. Its analytic core is
-real-valued and second-moment, but the Layer 3 milestone is the standard-Borel de Finetti
-statement, not a relabeled real-valued theorem.
+This route consumes the shared layers and reaches the standard-Borel de Finetti theorem
+independently of reverse-martingale convergence. Its analytic core is real-valued and
+second-moment, but the Layer 3 milestone is the standard-Borel theorem, not a relabeled
+real-valued result.
 
 Build:
 
