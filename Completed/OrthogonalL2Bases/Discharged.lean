@@ -2,6 +2,8 @@
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+
+-- tauceti-discharge:v1 {"roadmap":"OrthogonalL2Bases","tauceti":"bfeffdf0846483285e26a0815c13acbd77b30af9","mathlib":"77cbcbc65f9e26f6ede0a01b24c2cb909e11cc0d","toolchain":"leanprover/lean4:v4.34.0-rc1"}
 module
 
 import TauCeti.Analysis.InnerProductSpace.HilbertBasisMap
@@ -36,10 +38,19 @@ that realizes it. Definition targets are checked by type; theorem targets by app
 this file elaborates, each target is discharged *by the kernel*, not by matching names or by
 reading prose.
 
-All 27 targets discharge. Because this file lives under `TauCetiRoadmap/`, the
-`TauCetiRoadmap.*` glob builds it, so CI re-checks that claim on every push rather than
-trusting the commit named here. It has also been verified by hand at Tau Ceti `73d0d896`,
-`a7c87175` (both 2026-08-15), `58d1ae1c` (08-14) and `ce9fe563` (08-11).
+All 27 targets discharge. The `tauceti-discharge:v1` header above names the exact Tau Ceti,
+Mathlib and toolchain revisions this file elaborates against, which is what makes the claim
+reproducible rather than merely asserted: `.github/scripts/check_discharged.py` re-verifies the file
+against *those* revisions, not against whatever the repository happens to pin today. It was
+additionally verified by hand at Tau Ceti `73d0d896` and `a7c87175` (both 2026-08-15),
+`58d1ae1c` (08-14) and `ce9fe563` (08-11).
+
+Pinning it that way is the point. This is archival: it should never need updating, and it does
+not sit in the ordinary `TauCetiRoadmap` build, where a forward bump of the pin would redden a
+roadmap nobody is working on. What the record claims is correspondingly bounded — closing a
+roadmap is a judgment about the roadmap, not about the area, and Tau Ceti goes on developing
+weighted `L²` bases after this is archived. The file says the plan's targets were met when it
+was retired, and stays checkable forever against the revisions where that was true.
 
 Tau Ceti moved something under this file twice in those four days, and both times the file
 stopped elaborating:
@@ -55,8 +66,8 @@ this way rather than in prose, which would have gone on reporting the roadmap co
 naming a declaration and an import path that no longer resolve.
 
 This repository previously pinned Tau Ceti at `86cc55d9` (08-13), between the two events, so
-the file could not be green against both that pin and `main`. The pin is bumped forward in the
-same commit that adds this file; no compatibility shim bridges the two.
+the file could not be green against both that pin and `main`. The pin was bumped forward in
+the commit that added this file; no compatibility shim bridges the two.
 
 A hazard for anyone re-running this by hand: after changing the pin, confirm the imported
 modules actually *built* at the new revision. A stale `.olean` from the previous pin will let
