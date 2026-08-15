@@ -793,8 +793,8 @@ Build:
   - retain the exact representation of an exchangeable marginal as sampling without replacement:
     `ExchangeableAt.sampleWithoutReplacement_eq_prefixLaw`.
 
-  For `[IsProbabilityMeasure μ]`, `h : ExchangeableAt μ X n`, `0 < n`, `m ≤ n`, and measurable
-  coordinates among the first `n`, compare `prefixLaw μ X m` with
+  For `[IsProbabilityMeasure μ]`, `h : ExchangeableAt μ X n`, `0 < n`, `m ≤ n`, and
+  `hX : ∀ i : Fin n, AEMeasurable (X i.val) μ`, compare `prefixLaw μ X m` with
   `sampleWithReplacement (ι := Fin m) (prefixLaw μ X n)`. For every measurable
   `A : Set (Fin m → α)`, prove both inequalities
 
