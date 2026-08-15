@@ -67,14 +67,20 @@ example (π : 𝒪[K]) (_hπ : Irreducible π) :
       ∃ n : ℤ, (γ : ValueGroupWithZero K) = valuation K (π : K) ^ n :=
   sorry
 
-/-- **Layer 0.I, constructing the valuation on a finite extension.** For an abstract finite
-extension `M/K` with *no* valuative structure assumed on `M`, there is a valuation on `M`,
-with values in `ℤᵐ⁰`, restricting to the valuation class of `K`. This is the milestone the
-spectral norm and `RingTheory/Valuation/Extension.lean` are for, and it is what makes the
-`ValuativeRel M` instance of the next milestones exist at all; it is *not* prototyped by any
-statement that hypothesizes that instance. -/
-example (M : Type v) [Field M] [Algebra K M] [Module.Finite K M] :
-    ∃ w : Valuation M ℤᵐ⁰, (w.comap (algebraMap K M)).IsEquiv (valuation K) :=
+/-- **Layer 0.I, constructing the valuative structure on a finite extension.** The spectral
+norm supplies a `ValuativeRel M`; a particular `Valuation M ℤᵐ⁰` is an implementation witness,
+not a second public carrier. This is a definition rather than a global instance, avoiding a
+diamond when `M` already has a valuative structure. -/
+@[implicit_reducible]
+noncomputable def finiteExtensionValuativeRel (M : Type v) [Field M] [Algebra K M]
+    [Module.Finite K M] : ValuativeRel M :=
+  sorry
+
+/-- **Layer 0.I, compatibility of the constructed structure with the base field.** -/
+theorem finiteExtension_valuativeExtension (M : Type v) [Field M] [Algebra K M]
+    [Module.Finite K M] :
+    letI := finiteExtensionValuativeRel K M
+    ValuativeExtension K M :=
   sorry
 
 /-- **Layer 0.II, uniqueness.** Any two valuations on a finite extension `M/K` restricting to
@@ -157,29 +163,35 @@ theorem ramificationIndex_mul_inertiaDegree [Algebra K L] [ValuativeExtension K 
     ramificationIndex K L * inertiaDegree K L = Module.finrank K L :=
   sorry
 
-open Classical in
-/-- **Layer 0, the absolute ramification index** `e_K(p) = v_K(p)`, the decoded normalized
-valuation of the image of the natural number `p` in `K`. For `p` prime and `K/ℚ_p` finite it is
-`ramificationIndex ℚ_[p] K`, and it is `0` exactly when `p` is a unit of `𝒪[K]`, that is when `p`
-is not the residue characteristic. ⚠ In equal characteristic `p` the image of `p` in `K` is `0`
-and there is no such invariant. That branch takes the junk value `0`, in the manner of
-`Ideal.ramificationIdx`, so every statement below carries `(p : K) ≠ 0`; the hypothesis is what
-separates the two cases, and it is not a convenience. -/
-noncomputable def absoluteRamificationIndex (p : ℕ) : ℕ :=
-  if h : (p : K) = 0 then 0
-  else (Multiplicative.toAdd (normalizedValuation K (Units.mk0 (p : K) h))).toNat
+/-- **Layer 0, the valuation of a natural-number cast.** The nonzero proof is part of the input;
+there is no equal-characteristic junk branch. This is the general quantity in power-class
+formulas and wild-different bounds. -/
+noncomputable def natCastValuation (n : ℕ) (hn : (n : K) ≠ 0) : ℕ :=
+  (Multiplicative.toAdd (normalizedValuation K (Units.mk0 (n : K) hn))).toNat
 
-/-- **Layer 0, the characteristic property of the absolute ramification index.** Its value is a
-natural number, so the equation also carries the assertion that `p` lies in `𝒪[K]`. -/
-theorem normalizedValuation_natCast (p : ℕ) (hp : (p : K) ≠ 0) :
-    normalizedValuation K (Units.mk0 (p : K) hp)
-      = Multiplicative.ofAdd (absoluteRamificationIndex K p : ℤ) :=
+/-- **Layer 0, the characteristic property of `natCastValuation`.** Its value is a natural
+number, so the equation also records that the natural-number cast lies in `𝒪[K]`. -/
+theorem normalizedValuation_natCast (n : ℕ) (hn : (n : K) ≠ 0) :
+    normalizedValuation K (Units.mk0 (n : K) hn)
+      = Multiplicative.ofAdd (natCastValuation K n hn : ℤ) :=
   sorry
 
-/-- **Layer 0, the vanishing criterion.** `e_K(p) = 0` exactly when `p` is invertible in the
-valuation ring, which for `p` prime says that `p` is not the residue characteristic. -/
-theorem absoluteRamificationIndex_eq_zero_iff (p : ℕ) (_hp : (p : K) ≠ 0) :
-    absoluteRamificationIndex K p = 0 ↔ IsUnit (p : ↥𝒪[K]) :=
+/-- **Layer 0, the vanishing criterion for a natural-number cast.** -/
+theorem natCastValuation_eq_zero_iff (n : ℕ) (hn : (n : K) ≠ 0) :
+    natCastValuation K n hn = 0 ↔ IsUnit (n : ↥𝒪[K]) :=
+  sorry
+
+/-- **Layer 0, the absolute ramification index.** This name is reserved for a finite
+mixed-characteristic extension `K/ℚ_p`; definitionally it is the relative ramification index. -/
+noncomputable def absoluteRamificationIndex (p : ℕ) [Fact p.Prime] [Algebra ℚ_[p] K]
+    [ValuativeExtension ℚ_[p] K] [Module.Finite ℚ_[p] K] : ℕ :=
+  ramificationIndex ℚ_[p] K
+
+/-- **Layer 0, comparison with the valuation of the residue prime.** -/
+theorem absoluteRamificationIndex_eq_natCastValuation (p : ℕ) [Fact p.Prime]
+    [Algebra ℚ_[p] K] [ValuativeExtension ℚ_[p] K] [Module.Finite ℚ_[p] K]
+    (hp : (p : K) ≠ 0) :
+    absoluteRamificationIndex K p = natCastValuation K p hp :=
   sorry
 
 /-! ## Layer 1: units, the filtration, and the multiplicative group -/
@@ -214,6 +226,15 @@ theorem mem_unitFiltration_succ_valuation (i : ℕ) (x : Kˣ) (π : 𝒪[K]) (_h
 theorem unitFiltration_antitone : Antitone (unitFiltration K) :=
   sorry
 
+/-- **Layer 1, covariant unit-filtration map.** The algebra map scales depth by the
+ramification index. This is distinct from the contravariant, Herbrand-shifted norm theorem
+`map_norm_unitFiltration_psiNat_le` in Layer 3. -/
+theorem map_unitFiltration_le [Algebra K L] [ValuativeExtension K L] [Module.Finite K L]
+    (i : ℕ) :
+    Subgroup.map (Units.map (algebraMap K L : K →+* L).toMonoidHom) (unitFiltration K i)
+      ≤ unitFiltration L (ramificationIndex K L * i) :=
+  sorry
+
 /-- **Layer 1, the filtration separates points**, which with openness makes it a neighborhood
 basis of `1` in `Kˣ`. -/
 theorem iInf_unitFiltration : ⨅ i, unitFiltration K i = ⊥ :=
@@ -243,14 +264,14 @@ theorem teichmuller_section (x : (𝓀[K])ˣ) :
 /-- **Layer 1, the multiplicative decomposition.** A choice of uniformizer splits
 `Kˣ ≅ ℤ × 𝒪[K]ˣ`: every element of `Kˣ` is uniquely `π^n · u` with `u ∈ 𝒪[K]ˣ`. (With the
 Teichmüller milestone this refines to `Kˣ ≅ π^ℤ × μ_{q−1} × U(K,1)`, and `U(K,1)` is pro-`p`,
-in the quotient form that `Supplied.IsProP` unfolds to.) -/
+in the quotient form that `ProfiniteProPGroups.IsProP` unfolds to.) -/
 example (π : 𝒪[K]) (_hπ : Irreducible π) (x : Kˣ) :
     ∃! p : ℤ × (↥𝒪[K])ˣ, (x : K) = (π : K) ^ p.1 * ((p.2 : ↥𝒪[K]) : K) :=
   sorry
 
 /-- **Layer 1, power classes in the prime-to-residue-characteristic regime.** If `n` is a unit
 in the valuation ring, the count is exact and holds in either characteristic: the factor
-`q ^ v_K(n)` of the general formula is `1`, which is where the hypothesis is used. -/
+`q ^ natCastValuation K n` of the general formula is `1`, which is where the hypothesis is used. -/
 theorem card_powerClasses_of_isUnit (n : ℕ) (_hn : n ≠ 0) (_hn' : IsUnit (n : ↥𝒪[K])) :
     Nat.card (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range)
       = n * Nat.card (rootsOfUnity n K) :=
@@ -258,14 +279,15 @@ theorem card_powerClasses_of_isUnit (n : ℕ) (_hn : n ≠ 0) (_hn' : IsUnit (n 
 
 /-- **Layer 1, power classes in the mixed-characteristic regime.** For `K/ℚ_p` finite the same
 formula holds for every `n ≠ 0`, including `p ∣ n`, with the extra factor
-`q ^ v_K(n) = ‖n‖_K⁻¹` written here as the (finite) cardinality of `𝒪[K]/n𝒪[K]`, which avoids
-an integer-to-natural coercion. ⚠ This must not be generalized to equal characteristic: at
+`q ^ natCastValuation K n = ‖n‖_K⁻¹`. The nonzero cast is explicit rather than hidden behind a
+junk-valued definition. ⚠ This must not be generalized to equal characteristic: at
 `K = 𝔽_q((t))` and `n = p` the left-hand side is infinite. -/
-theorem card_powerClasses_mixed (p : ℕ) [Fact p.Prime] [Algebra ℚ_[p] K] [Module.Finite ℚ_[p] K]
-    (n : ℕ) (_hn : n ≠ 0) :
+theorem card_powerClasses_mixed (p : ℕ) [Fact p.Prime] [Algebra ℚ_[p] K]
+    [ValuativeExtension ℚ_[p] K] [Module.Finite ℚ_[p] K]
+    (n : ℕ) (_hn : n ≠ 0) (hnK : (n : K) ≠ 0) :
     Nat.card (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range)
       = n * Nat.card (rootsOfUnity n K)
-        * Nat.card (↥𝒪[K] ⧸ Ideal.span {(n : ↥𝒪[K])}) :=
+        * Nat.card 𝓀[K] ^ natCastValuation K n hnK :=
   sorry
 
 /-- **Layer 1, the square classes away from residue characteristic `2`.** The specialization of
@@ -281,15 +303,16 @@ specialization of `card_powerClasses_mixed` at `p = n = 2`, with `q = Nat.card �
 `q ^ e = Nat.card (𝒪[K] ⧸ 2𝒪[K])`. For `K/ℚ_2` of degree `N` it reads `2 ^ (N + 2)`, and at
 `K = ℚ_2` it reads `8`. ⚠ The factor `q ^ e` is not `1` here, so this is not the count of
 `card_squareClasses_of_isUnit` with a different proof; the two hypotheses are exclusive. -/
-theorem card_squareClasses_dyadic [Algebra ℚ_[2] K] [Module.Finite ℚ_[2] K] :
+theorem card_squareClasses_dyadic [Algebra ℚ_[2] K] [ValuativeExtension ℚ_[2] K]
+    [Module.Finite ℚ_[2] K] :
     Nat.card (Kˣ ⧸ (powMonoidHom 2 : Kˣ →* Kˣ).range)
       = 4 * Nat.card 𝓀[K] ^ absoluteRamificationIndex K 2 :=
   sorry
 
 /-- **Layer 1, the two spellings of the square classes.** Mathlib's `Subgroup.square Kˣ` is the
 subgroup of squares, and the counts above are stated at the range of `powMonoidHom`. This is the
-identification at `n = 2`, and it is what lets a consumer read the count of this layer, and the
-Kummer isomorphism of Layer 5, on `Subgroup.square Kˣ`. -/
+identification at `n = 2`, and it is what lets a consumer read the count of this layer, and
+`ProfiniteCohomology.kummerIso`, on `Subgroup.square Kˣ`. -/
 theorem square_eq_range_powMonoidHom :
     Subgroup.square Kˣ = (powMonoidHom 2 : Kˣ →* Kˣ).range :=
   sorry
@@ -303,10 +326,10 @@ example : Nat.card (ℚ_[2]ˣ ⧸ (powMonoidHom 2 : ℚ_[2]ˣ →* ℚ_[2]ˣ).ra
 /-- **Layer 1, the local square theorem, sharp form.** For `K/ℚ_2` finite and
 `e = absoluteRamificationIndex K 2`, every unit of depth `2e+1` is a square. ⚠ This is **not** an
 instance of the counts above, which decide how many square classes there are and not which
-subgroup lies inside the squares. ⚠ The hypothesis is mixed characteristic: in equal
-characteristic `2` the image of `2` is `0`, `absoluteRamificationIndex` takes its junk value, and
-the displayed statement is a different assertion. -/
-theorem unitFiltration_le_range_powMonoidHom_two [Algebra ℚ_[2] K] [Module.Finite ℚ_[2] K] :
+subgroup lies inside the squares. The mixed-characteristic hypothesis is part of the type; there
+is no equal-characteristic value of `absoluteRamificationIndex`. -/
+theorem unitFiltration_le_range_powMonoidHom_two [Algebra ℚ_[2] K]
+    [ValuativeExtension ℚ_[2] K] [Module.Finite ℚ_[2] K] :
     unitFiltration K (2 * absoluteRamificationIndex K 2 + 1)
       ≤ (powMonoidHom 2 : Kˣ →* Kˣ).range :=
   sorry
@@ -317,7 +340,8 @@ complement of the squares. The obstruction is the Artin–Schreier map `t ↦ t�
 which is `𝔽_2`-linear with kernel `𝔽_2` and therefore has image of index `2`; since
 `𝓂[K]^{2e} = 4 · 𝒪[K]`, a unit `1 + 4c` is a square exactly when the residue of `c` is in that
 image, so any `c` outside it is a witness. -/
-theorem not_unitFiltration_le_range_powMonoidHom_two [Algebra ℚ_[2] K] [Module.Finite ℚ_[2] K] :
+theorem not_unitFiltration_le_range_powMonoidHom_two [Algebra ℚ_[2] K]
+    [ValuativeExtension ℚ_[2] K] [Module.Finite ℚ_[2] K] :
     ¬ unitFiltration K (2 * absoluteRamificationIndex K 2)
       ≤ (powMonoidHom 2 : Kˣ →* Kˣ).range :=
   sorry
@@ -354,9 +378,8 @@ theorem valuation_frobeniusAlgEquiv_sub_pow [Algebra K L] [ValuativeExtension K 
   sorry
 
 /-- **The norm group** `N_{L/K}(Lˣ) : Subgroup Kˣ`, the image of the field norm. Layer 2 computes
-it for `L/K` unramified, and Layer 7 item 1 studies it for `L/K` finite abelian: openness, the
-index formula `[Kˣ : N_{L/K}Lˣ] = [L:K]`, and the lattice of norm groups. It is a definition and
-not a placeholder; the milestones are the laws about it. -/
+it for `L/K` unramified; `ClassFieldTheory.normResidue` and `conductorExponent` consume it for
+finite abelian extensions. It is a definition and not a placeholder. -/
 noncomputable def normGroup [Algebra K L] [Module.Finite K L] : Subgroup Kˣ :=
   (Units.map (Algebra.norm K : L →* K)).range
 
@@ -424,9 +447,9 @@ theorem lowerRamificationGroup_antitone [Algebra K L] [ValuativeExtension K L]
     Antitone (lowerRamificationGroup K L) :=
   sorry
 
-/-- **Layer 3, real indexing for Herbrand theory.** The ceiling convention makes the real
-filtration right-continuous and agrees definitionally with integer indexing through the theorem
-below. -/
+/-- **Layer 3, real indexing for Herbrand theory.** The ceiling convention makes the step family
+constant on `(i-1,i]`, hence left-continuous in the usual informal sense. We pin the interval
+identity below rather than assert a topological continuity theorem on subgroup values. -/
 noncomputable def lowerRamificationGroupReal [Algebra K L] [ValuativeExtension K L]
     [Module.Finite K L] [IsGalois K L] (u : ℝ) : Subgroup (L ≃ₐ[K] L) :=
   lowerRamificationGroup K L ⌈u⌉
@@ -435,6 +458,13 @@ noncomputable def lowerRamificationGroupReal [Algebra K L] [ValuativeExtension K
 theorem lowerRamificationGroupReal_intCast [Algebra K L] [ValuativeExtension K L]
     [Module.Finite K L] [IsGalois K L] (i : ℤ) :
     lowerRamificationGroupReal K L (i : ℝ) = lowerRamificationGroup K L i :=
+  sorry
+
+/-- **Layer 3, the interval selected by ceiling indexing.** -/
+theorem lowerRamificationGroupReal_eq_of_sub_one_lt_of_le [Algebra K L]
+    [ValuativeExtension K L] [Module.Finite K L] [IsGalois K L]
+    (i : ℤ) (u : ℝ) (hleft : (i : ℝ) - 1 < u) (hright : u ≤ (i : ℝ)) :
+    lowerRamificationGroupReal K L u = lowerRamificationGroup K L i :=
   sorry
 
 /-- **Layer 3, local monogenicity at the integer-ring level.** A finite separable extension of
@@ -449,7 +479,7 @@ theorem exists_integerRing_adjoin_eq_top [Algebra K L] [ValuativeExtension K L]
 Mathlib's relative different ideal; it is a local invariant, not the global relative
 discriminant owned by Number-Field Arithmetic #191. -/
 noncomputable def differentExponent [Algebra K L] [ValuativeExtension K L]
-    [Module.Finite K L] : ℕ :=
+    [Module.Finite K L] [Algebra.IsSeparable K L] : ℕ :=
   multiplicity 𝓂[L] (differentIdeal 𝒪[K] 𝒪[L])
 
 /-- **Layer 3, tame ramification.** The residue characteristic does not divide `e(L/K)`. -/
@@ -463,7 +493,8 @@ def IsWildlyRamified [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] 
 /-- **Layer 3, Hilbert's local different formula.** The sum is finite because the lower
 ramification groups are trivial at sufficiently large indices. -/
 theorem differentExponent_eq_finsum_lowerRamificationGroup [Algebra K L]
-    [ValuativeExtension K L] [Module.Finite K L] [IsGalois K L] :
+    [ValuativeExtension K L] [Module.Finite K L] [IsGalois K L]
+    [Algebra.IsSeparable K L] :
     differentExponent K L =
       ∑ᶠ i : ℕ, (Nat.card (lowerRamificationGroup K L (i : ℤ)) - 1) :=
   sorry
@@ -484,7 +515,7 @@ theorem differentExponent_bounds_of_wild [Algebra K L] [ValuativeExtension K L]
     (he : (ramificationIndex K L : L) ≠ 0) :
     ramificationIndex K L ≤ differentExponent K L ∧
       differentExponent K L ≤ ramificationIndex K L - 1 +
-        absoluteRamificationIndex L (ramificationIndex K L) :=
+        natCastValuation L (ramificationIndex K L) he :=
   sorry
 
 /-- **Layer 3, worked example: a totally ramified quadratic extension.** `ℚ_2(√2)/ℚ_2` has

@@ -8,7 +8,9 @@ maximal pro-`p` quotient of the absolute Galois group.
 The boundary is deliberate. The **Class Field Theory** roadmap consumes these objects to build
 finite-group Tate cohomology, class formations, local reciprocity, and duality. The **Local
 Galois Groups** roadmap consumes them, together with abstract pro-`p` group theory, to determine
-`G_K(p)` and its Demushkin presentation.
+`G_K(p)` and its Demushkin presentation. This roadmap in turn depends on **Profinite and
+Pro-`p` Groups** for abstract profinite Sylow theory, free profinite groups, and profinite
+presentations. It does not redeclare any of those group-theoretic suppliers.
 
 ## Scope and exported contract
 
@@ -73,13 +75,14 @@ pro-`p` quotient.
       neighbourhood basis of `0`, and `Kˣ` locally compact with `𝒪[K]ˣ` compact open;
     - naturality along a finite extension, which is the characteristic property of `e` below;
     - the worked values on `ℚ_2` in the examples section.
-- **Finite extensions, I: construction of the valuation.** Let `[Field L] [Algebra K L]
-  [Module.Finite K L]`, with no valuative structure assumed on `L`. Construct a valuation
-  `w : Valuation L ℤᵐ⁰` whose restriction along `algebraMap K L` is equivalent to `valuation K`.
-  Use the spectral norm. The output type is fixed: a `Valuation L ℤᵐ⁰`, a `ValuativeRel L` built
-  from it as a definition and not as a global instance, the compatibility `Valuation.Compatible`,
-  `IsValuativeTopology L` for the induced topology, and `ValuativeExtension K L`. A definition
-  rather than an instance keeps a field that already carries a `ValuativeRel` free of a diamond.
+- **Finite extensions, I: construction of the valuative structure.** Let
+  `[Field L] [Algebra K L] [Module.Finite K L]`, with no valuative structure assumed on `L`. Use the
+  spectral norm to construct `finiteExtensionValuativeRel K L : ValuativeRel L`. The public
+  outputs are that structure, `ValuativeExtension K L`, and `IsValuativeTopology L` for the
+  induced topology. A particular `Valuation L ℤᵐ⁰`, together with its equivalence to the pullback
+  of `valuation K`, is a proof witness rather than a second public carrier. The `ValuativeRel`
+  structure is a definition rather than a global instance, which keeps a field already carrying
+  one free of a diamond.
   - *Prerequisites:*
     - `Mathlib: Mathlib/RingTheory/Valuation/Extension.lean`;
     - `Mathlib: spectralNorm` and `Mathlib/Analysis/Normed/Field/Krasner.lean`;
@@ -142,34 +145,31 @@ pro-`p` quotient.
     valued base. *False generalization:* over an incomplete base, or with more than one prime
     above `𝓂[K]`, the identity becomes `∑_P e_P f_P = [L:K]`, which is `sum_ramification_inertia`
     and is a different theorem.
-- **The absolute ramification index.** Define `absoluteRamificationIndex K p : ℕ`, for a natural
-  number `p`, as the decoded valuation `v_K(p)` of the image of `p` in `K`. Its characteristic
-  property is `v_K^×(p) = Multiplicative.ofAdd (e_K(p))`, which carries the hypothesis
-  `(p : K) ≠ 0` and, since the exponent is a natural number, also says that `p` lies in `𝒪[K]`.
-  For `p` prime and `K/ℚ_p` finite this is the ramification index of `K/ℚ_p`, and it is the `e`
-  that the two deep-unit milestones of Layer 1 are stated with, at the residue characteristic and
-  at `p = 2` respectively. It is `0` exactly when `p` is a unit of `𝒪[K]`, that is when `p` is not
-  the residue characteristic; the relative `e(L/K)` above is a different invariant, and neither
-  name is used for the other. ⚠ In equal characteristic `p` the image of `p` in `K` is `0` and
-  there is no such invariant, so the definition takes the junk value `0` there, as
-  `Ideal.ramificationIdx` does in its degenerate case. The hypothesis `(p : K) ≠ 0` on every
-  statement is what separates the two cases.
+- **Valuations of natural numbers and the absolute ramification index.** Define
+  `natCastValuation K n hn : ℕ` as the decoded normalized valuation `v_K((n : K))`, where
+  `hn : (n : K) ≠ 0` is supplied to the definition. This is the general quantity used in power-class
+  formulas and in the wild-different upper bound. Separately, for `p` prime and `K/ℚ_p` finite,
+  define `absoluteRamificationIndex K p := ramificationIndex ℚ_[p] K`. Prove
+  `absoluteRamificationIndex_eq_natCastValuation`, identifying it with
+  `natCastValuation K p hp`. Thus the invariant called the absolute ramification index exists only
+  in mixed characteristic; there is no equal-characteristic junk branch, and the relative
+  `e(L/K)` above remains a different invariant.
   - *Prerequisites:*
     - `Layer 0: the normalized valuation`;
     - `Layer 0: e and f, intrinsically`, for the comparison below.
   - *API:*
-    - the definition and its characteristic equation;
-    - the vanishing criterion, `e_K(p) = 0` if and only if `p` is a unit of `𝒪[K]`;
-    - the comparison `absoluteRamificationIndex K p = ramificationIndex ℚ_[p] K` for `K/ℚ_p`
-      finite, with `e_K(p) · f = [K : ℚ_p]` as a corollary of the product formula above;
+    - `natCastValuation`, its characteristic equation, and its vanishing criterion when the cast
+      is nonzero;
+    - `absoluteRamificationIndex` for finite `K/ℚ_p` and
+      `absoluteRamificationIndex_eq_natCastValuation`, with `e_K · f = [K : ℚ_p]` as a corollary
+      of the product formula above;
     - multiplicativity along a finite extension `L/K`, that is
       `absoluteRamificationIndex L p = ramificationIndex K L * absoluteRamificationIndex K p`;
-    - the values `e_{ℚ_p}(p) = 1`, `e_{ℚ_p}(2) = 0` for odd `p`, and `e_K(2) = 2` for
+    - the values `e_{ℚ_p} = 1`, `natCastValuation ℚ_[p] 2 = 0` for odd `p`, and `e_K = 2` for
       `K = ℚ_2(√2)`, in the examples section.
-  - *Source:* Serre LF II §1; Neukirch ANT II §6, for `e_K(p) · f = [K : ℚ_p]`. The hypothesis
-    used there is that `K` is a finite extension of `ℚ_p`. *False generalization:* the vanishing
-    criterion is false without `(p : K) ≠ 0`. At `K = 𝔽_p((t))` the left-hand side is `0`, from
-    the junk branch, while `p` is not a unit of `𝒪[K]`, because it is `0`.
+  - *Source:* Serre LF II §1; Neukirch ANT II §6, for `e_K · f = [K : ℚ_p]`. The hypothesis is
+    explicitly that `K` is a finite extension of `ℚ_p`; no absolute-index statement is made for
+    `𝔽_p((t))`.
 
 ### Layer 1: units, the filtration, and the multiplicative group
 
@@ -192,7 +192,10 @@ pro-`p` quotient.
     - the family a neighbourhood basis of `1`;
     - stability under every `K`-automorphism of a Galois extension, which Layer 3 uses;
     - the index `[U(K,i) : U(K,i+1)]`, which is `q − 1` at `i = 0` and `q` otherwise;
-    - naturality along a finite extension, which is the norm package of Layer 3.
+    - the covariant algebra-map contract
+      `map_unitFiltration_le K L i : map(K → L)(U(K,i)) ≤ U(L,e(L/K) * i)`;
+    - separately, the contravariant norm contract
+      `map_norm_unitFiltration_psiNat_le K L i : N(U(L,ψℕ(i))) ≤ U(K,i)` from Layer 3.
 - **Graded pieces.** Prove `U(K,0)/U(K,1) ≃* 𝓀[K]ˣ` by reduction, and, for `i ≥ 1`,
   `U(K,i)/U(K,i+1) ≃* 𝓀[K]⁺` through `1 + x ↦ x mod 𝓂^{i+1}`. The counts `q − 1` and `q` are
   corollaries. ⚠ The depth-zero piece is multiplicative and the deeper pieces are additive. The
@@ -227,8 +230,9 @@ pro-`p` quotient.
 - **Structure of `Kˣ`.** Prove the topological isomorphism `Kˣ ≃ ℤ × 𝒪[K]ˣ` attached to a choice
   of uniformizer, and `𝒪[K]ˣ ≃ μ_{q−1} × U(K,1)`. Prove that `U(K,1)` is pro-`p`, as the inverse
   limit of the `p`-groups `U(K,1)/U(K,i)`. State it in quotient form: every continuous finite
-  quotient of `U(K,1)` is a `p`-group. That is the shape `Supplied.IsProP` unfolds to, so the two
-  statements are the same statement and not two rephrasings. Prove that the torsion subgroup
+  quotient of `U(K,1)` is a `p`-group. This is exactly the predicate
+  `ProfiniteProPGroups.IsProP p (U(K,1))`, so the two statements are the same statement and not
+  two rephrasings. Prove that the torsion subgroup
   `μ(K)` is finite.
   - *Prerequisites:*
     - `Layer 1: the unit filtration as an object`;
@@ -253,18 +257,22 @@ pro-`p` quotient.
     - `Layer 0: finite extensions, III`;
     - `Mathlib: exp` and `log` for a `p`-adic field.
   - *Source:* NSW (7.4.4); Neukirch ANT II §5. The hypotheses used are `char K = 0` and the
-    integer inequality. *False generalization:* at `(p − 1) * i = e` the series `log` still
-    converges, but it is not injective on `U(K,i)`, since a `p`-th root of unity can lie there.
+    integer inequality. At the boundary `(p − 1) * i = e`, the series `log` still converges but
+    injectivity is not uniform: it fails when `U(K,i)` contains a nontrivial `p`-power root of
+    unity, while fields without that torsion can still have injectivity. No unconditional boundary
+    theorem is part of the contract.
 - **Power classes, the primary statement.** For `n : ℕ` with `n ≠ 0`, the primary theorem is an
   equality of natural numbers:
 
   ```text
-  Nat.card (Kˣ ⧸ (powMonoidHom n).range) = n * Nat.card (μ_n(K)) * q ^ v_K(n),
+  Nat.card (Kˣ ⧸ (powMonoidHom n).range) =
+    n * Nat.card (μ_n(K)) * q ^ natCastValuation K n hnK,
   ```
 
-  where `μ_n(K)` is the group of `n`-th roots of unity in `K`, and `v_K(n) : ℕ` is the normalized
-  valuation of the image of `n` in `K`. In regime 1 the hypothesis `IsUnit (n : 𝒪[K])` gives
-  `v_K(n) = 0` as a named lemma, and the formula becomes `n · #μ_n(K)`; that case holds in either
+  where `μ_n(K)` is the group of `n`-th roots of unity in `K`, and the final exponent is
+  `natCastValuation K n hnK`, where `hnK : (n : K) ≠ 0`. In regime 1 the hypothesis
+  `IsUnit (n : 𝒪[K])` supplies `hnK` and gives `natCastValuation K n hnK = 0` as a named lemma,
+  so the formula becomes `n · #μ_n(K)`; that case holds in either
   characteristic. In regime 2, with `K/ℚ_p` finite, the formula holds for every `n ≠ 0`, including
   `p ∣ n`; the deep-unit logarithm supplies the `p`-primary factor. Finiteness of the quotient
   follows from the formula, and is not a separate theorem.
@@ -272,10 +280,10 @@ pro-`p` quotient.
     - `Layer 1: structure of Kˣ`;
     - `Layer 1: deep units in mixed characteristic` (regime 2 only);
     - `Layer 0: the normalized valuation`;
-    - `Layer 0: the absolute ramification index`, which is the `v_K(n)` of the formula.
+    - `Layer 0: natCastValuation` for the exponent in the formula.
   - *API:*
     - the count in each regime, named `card_powerClasses_of_isUnit` and `card_powerClasses_mixed`,
-      with `v_K(n) = 0` under `IsUnit (n : 𝒪[K])` as a named lemma;
+      with `natCastValuation K n hnK = 0` under `IsUnit (n : 𝒪[K])` as a named lemma;
     - finiteness of `Kˣ/(Kˣ)ⁿ`, which the formula gives and which is not a separate theorem;
     - the two specializations at `n = 2`, which is where the dyadic factor of two appears:
       `card_squareClasses_of_isUnit`,
@@ -285,7 +293,7 @@ pro-`p` quotient.
       ⚠ Their hypotheses are exclusive, and neither is an instance of the other;
     - the identification `Subgroup.square Kˣ = (powMonoidHom 2).range` of the two spellings of the
       square classes, Mathlib's subgroup of squares and the range this formula is stated at. It is
-      what lets the count at `n = 2`, and the Kummer isomorphism of Layer 5, be read on
+      what lets the count at `n = 2`, and `ProfiniteCohomology.kummerIso`, be read on
       `Subgroup.square Kˣ`;
     - the dyadic instance `#(ℚ_2ˣ/(ℚ_2ˣ)²) = 8` of the examples section.
   - *Source:* the formula follows from the structure of `Kˣ` above, with the logarithm in regime
@@ -294,8 +302,9 @@ pro-`p` quotient.
     `IsUnit (n : 𝒪[K])` excludes that case in regime 1, and `char K = 0` excludes it in regime 2.
 - **Power classes, the absolute-value form.** After the theorem in `ℕ`, derive
   `#(Kˣ/(Kˣ)ⁿ) = n · #μ_n(K) · ‖n‖_K⁻¹` as an equality in `ℚ≥0`, with the coercion `ℕ → ℚ≥0` named
-  in the statement. This form makes the comparison with the Euler characteristic of Layer 8
-  possible. It is the only place in this layer where the absolute value occurs.
+  in the statement. This form is the input compared with
+  `ClassFieldTheory.eulerCharacteristic_finrank_fp`. It is the only place in this layer where the
+  absolute value occurs.
   - *Prerequisites:*
     - `Layer 1: power classes, the primary statement`;
     - `Layer 0: the normalized valuation`.
@@ -314,8 +323,9 @@ pro-`p` quotient.
     root `1`. The derivative `n X^{n−1}` is a unit there, because `n` is a unit in `𝒪[K]`, and
     `1 − u ∈ 𝓂[K]` for `u ∈ U(K,1)`;
   - in regime 2, take `i` with `(p − 1) · i > e`. The logarithm of the deep-unit milestone carries
-    `x ↦ x^n` on `U(K,i)` to `y ↦ n · y` on `𝓂[K]^i`, and `n · 𝓂[K]^i = 𝓂[K]^{i + v_K(n)}`. So
-    `(U(K,i))^n = U(K, i + v_K(n))`, which is open. This covers the `p`-primary case, where the
+    `x ↦ x^n` on `U(K,i)` to `y ↦ n · y` on `𝓂[K]^i`, and
+    `n · 𝓂[K]^i = 𝓂[K]^{i + natCastValuation K n hnK}`. So
+    `(U(K,i))^n = U(K, i + natCastValuation K n hnK)`, which is open. This covers the `p`-primary case, where the
     argument of regime 1 is unavailable.
 
   A subgroup of a topological group that contains an open subgroup is open, and is then also
@@ -327,26 +337,30 @@ pro-`p` quotient.
     - `Mathlib: Subgroup.isOpen_of_isOpen_subgroup_le`.
   - *API:*
     - the openness statement in each regime;
-    - the containment `U(K,1) ⊆ (Kˣ)^n` in regime 1, and `U(K, i + v_K(n))` inside the range in
-      regime 2, as named lemmas, because Layer 7 uses the containment and not only the openness;
+    - the containment `U(K,1) ⊆ (Kˣ)^n` in regime 1, and
+      `U(K, i + natCastValuation K n hnK)` inside the range in regime 2, as named lemmas; these are
+      consumed by `ClassFieldTheory.conductorExponent` and `characterConductorExp`;
     - closedness and finite index of the range;
     - the corollary that every subgroup of `Kˣ` of finite index whose exponent satisfies the
-      regime hypothesis is open, which is what Layer 7 consumes.
+      regime hypothesis is open, which is an input to the local existence theorem accompanying
+      `ClassFieldTheory.normResidue`.
   - *Source:* Serre LF V §3 and Neukirch ANT II §5. The hypotheses are the regime hypotheses.
     *False generalization:* at `K = 𝔽_q((t))` and `n = p` the range is not open, because
     `1 + t^m` is not a `p`-th power for `p ∤ m` and those elements accumulate at `1`.
 - **The dyadic square-class count.** Prove `#(ℚ_2ˣ/(ℚ_2ˣ)²) = 8`. This is an instance of the
   primary statement, and not a separate theorem.
   - *Prerequisites:* `Layer 1: power classes, the primary statement`.
-- **Deep units are squares, in mixed characteristic.** Let `K/ℚ_2` be finite, and let
-  `e = absoluteRamificationIndex K 2`, that is `e = v_K(2)`. Then `U(K, 2e+1) ⊆ (Kˣ)²`, named
+- **Deep units are squares, in mixed characteristic.** Let `K/ℚ_2` be finite, let
+  `h2 : (2 : K) ≠ 0` be the characteristic-zero proof, and let
+  `e = absoluteRamificationIndex K 2`, equivalently `e = natCastValuation K 2 h2`. Then
+  `U(K, 2e+1) ⊆ (Kˣ)²`, named
   `unitFiltration_le_range_powMonoidHom_two`. ⚠ This is **not** an instance
   of the cardinality count, which decides how many square classes there are and not which
   subgroup lies inside the squares. The proof is Hensel's lemma applied to `X² − u`, or the
   deep-unit logarithm with the fact that multiplication by `2` carries the logarithmic lattice at
   depth `2e+1` into the lattice at depth `e+1`. ⚠ The hypothesis is mixed characteristic. In
-  equal characteristic `2` the element `2` is zero, there is no such `e`, the definition takes
-  its junk value there, and the displayed statement is a different assertion.
+  equal characteristic `2` the element `2` is zero and there is no absolute ramification index,
+  so the displayed statement is not even the contract for that case.
 
   The threshold is sharp, and sharp over every such `K` and not only over `ℚ_2`:
   `U(K, 2e) ⊄ (Kˣ)²`, named `not_unitFiltration_le_range_powMonoidHom_two`. This is a milestone
@@ -368,9 +382,8 @@ pro-`p` quotient.
     - the two-sided consequence, that `U(K,n) ⊆ (Kˣ)²` holds exactly for `n ≥ 2e+1`, which is
       antitonicity of the filtration applied to the two above.
   - *Source:* Serre, *A Course in Arithmetic*, II §3, for `ℚ_2`; Neukirch ANT II §5 in general.
-    The hypotheses used are that `K/ℚ_2` is finite, for both halves. *False generalization:* in
-    equal characteristic `2` the sharpness says nothing about the threshold, because `e` is the
-    junk value and the statement collapses to `U(K,0) ⊄ (Kˣ)²`, a different assertion.
+    The hypotheses used are that `K/ℚ_2` is finite, for both halves. There is no corresponding
+    absolute-index threshold statement in equal characteristic `2`.
 
 ### Layer 2: unramified extensions and Frobenius
 
@@ -399,8 +412,9 @@ pro-`p` quotient.
   for `y ∈ 𝒪[L]`, stated on the valuation of `σ(y) − y^q` so that it needs no separate name for
   the induced action on the residue field. Every later statement about Frobenius is stated at
   that declaration, and never at an arbitrary generator of `Gal(L/K)`: a cyclic group of order
-  `f > 2` has generators that are not Frobenius, so `θ(π) = Frob` of Layer 6 would be a strictly
-  weaker claim about one.
+  `f > 2` has generators that are not Frobenius, so the equation pinned by
+  `ClassFieldTheory.normResidue_uniformizer` would be strictly weaker if stated at an arbitrary
+  generator.
   - *Prerequisites:*
     - `Layer 2: the arithmetic predicate`;
     - `Layer 0: finite extensions, II`;
@@ -455,7 +469,7 @@ pro-`p` quotient.
     - the induced surjection `G_K → Ẑ`, which Layer 4 names;
     - the fixed field of a closed subgroup, in the two directions.
 - **Norms.** Name the image of the field norm: `normGroup L/K := (N_{L/K})(Lˣ) : Subgroup Kˣ`,
-  which is the object Layer 7 item 1 goes on to study. For `L/K` unramified prove
+  which `ClassFieldTheory.normResidue` and `conductorExponent` consume. For `L/K` unramified prove
   `N_{L/K}(𝒪[L]ˣ) = 𝒪[K]ˣ`, named `map_norm_unitFiltration_zero` and stated on the depth-zero
   step `U(L,0)` of the unit filtration, and `N_{L/K}(Lˣ) = π^{fℤ} × 𝒪[K]ˣ`. State the second in
   **norm-equation form**, as `mem_normGroup_iff_dvd_normalizedValuation`: `x ∈ normGroup L/K` if
@@ -463,8 +477,9 @@ pro-`p` quotient.
   element at a time when the equation `N_{L/K}(y) = x` is solvable, and it needs no chosen
   uniformizer, where the product description does. Both come from `e = 1`, which makes
   `v_K(N_{L/K} y) = f · v_L(y)`, together with surjectivity on units. This is the concrete form
-  of the statement that units are universal norms in the unramified direction. Layer 5 and
-  Layer 7 both use it. ⚠ `f` here is the residue degree `inertiaDegree K L` of Layer 0, and the
+  of the statement that units are universal norms in the unramified direction. It is consumed by
+  `ClassFieldTheory.normResidue` and the finite-Tate package `ClassFieldTheory.tateH`. ⚠ `f` here
+  is the residue degree `inertiaDegree K L` of Layer 0, and the
   letter is never reused for a conductor.
   - *Prerequisites:*
     - `Layer 2: residue correspondence`;
@@ -551,15 +566,19 @@ pro-`p` quotient.
   normal subgroup of `G`, and that the family is antitone. Prove that `G_0` is the inertia group,
   with one comparison lemma to `ValuationSubring.inertiaSubgroup` and one to `Ideal.inertia`.
   Prove that `G_i = 1` for large `i`. Extend to a real index by `G_u := G_{⌈u⌉}` for `u : ℝ` with
-  `u ≥ −1`, and prove that the two definitions agree at integers. The Herbrand integral below
-  needs `G_t` for real `t`. Prove compatibility with subgroups: `H_i = H ∩ G_i` for
+  `u ≥ −1`. This ceiling-indexed family is constant on `(i-1,i]`, hence left-continuous in the
+  usual step-function sense; do not call it right-continuous. Pin the interval theorem
+  `i - 1 < u → u ≤ i → lowerRamificationGroupReal K L u = lowerRamificationGroup K L i`, as
+  well as agreement at integers. No topological `LeftContinuous` theorem is required before a
+  topology on subgroup values is chosen. The Herbrand integral below needs `G_t` for real `t`.
+  Prove compatibility with subgroups: `H_i = H ∩ G_i` for
   `H = Gal(L/K')`.
   - *Prerequisites:*
     - `Layer 0: finite extensions, II`;
     - `Layer 0: the normalized valuation`;
     - `Mathlib: ValuationSubring.inertiaSubgroup`, `Ideal.inertia`.
   - *API:*
-    - the definition at integer and at real index, with the agreement lemma;
+    - the definition at integer and at real index, with the integer-agreement and interval lemmas;
     - normality;
     - antitonicity;
     - the two comparison lemmas at `i = 0`;
@@ -600,12 +619,21 @@ pro-`p` quotient.
   formula, strictly increasing and concave, `φ(0) = 0`, and `φ(u) = u` for `−1 ≤ u ≤ 0`. Define
   `ψ_{L/K} : ℝ → ℝ` as its inverse on `[−1, ∞)`, with `φ ∘ ψ = id` and `ψ ∘ φ = id` there. Prove
   that `ψ` carries the jumps of the upper filtration to the jumps of the lower one. The upper
-  numbering is `G^u := G_{ψ(u)}`, with the real-index groups above. Two theorems justify it:
-  **Herbrand's theorem** `(G/H)^u = G^u H/H`, and transitivity in a tower `M/L/K`, which is
-  `φ_{M/K} = φ_{L/K} ∘ φ_{M/L}` for `φ` and `ψ_{M/K} = ψ_{M/L} ∘ ψ_{L/K}` for `ψ`. State both
-  orders: inverting a composite reverses it, and the two orders differ as soon as one step of the
-  tower is wild. The upper numbering is defined here because Layer 7 needs it for the conductor
-  and for the compatibility with reciprocity.
+  numbering is `G^u := G_{ψ(u)}`, with the real-index groups above.
+
+  State the abstract quotient theorem first. Let `M/K` be finite Galois, put
+  `G = Gal(M/K)`, let `H ≤ G` be normal, and equip `G ⧸ H` with the quotient filtration. Then
+  `upperRamificationGroupQuotient H u` is the image of `G^u`, equivalently
+  `(G/H)^u = G^u H/H`. Only afterward derive the field-theoretic corollary: for an intermediate
+  field `L = M^H`, fix the restriction equivalence `G ⧸ H ≃ Gal(L/K)`; normality of `H`
+  (equivalently, `L/K` Galois) is required for that identification.
+
+  Tower transitivity carries the same hypotheses: `M/K` is finite Galois, `L` is intermediate,
+  and `L/K` is Galois. With the restriction/quotient equivalences fixed, prove
+  `φ_{M/K} = φ_{L/K} ∘ φ_{M/L}` and
+  `ψ_{M/K} = ψ_{M/L} ∘ ψ_{L/K}`. Inverting the composite reverses its order, and the two orders
+  differ as soon as one step is wild. These exports are consumed by
+  `ClassFieldTheory.conductorExponent` and `characterConductorExp`.
   - *Prerequisites:*
     - `Layer 3: the lower-numbering filtration`;
     - `Mathlib: intervalIntegral` and the API for piecewise linear monotone functions.
@@ -616,8 +644,9 @@ pro-`p` quotient.
     - the inverse relations;
     - the image of a jump;
     - the upper numbering as a filtration, with normality and antitonicity;
-    - Herbrand's theorem;
-    - the two transitivity statements;
+    - the abstract normal-quotient theorem and its field-theoretic corollary through a fixed
+      quotient/restriction equivalence;
+    - the two tower-transitivity statements with the finite-Galois and normality hypotheses above;
     - the computation for `ℚ_2(μ_8)/ℚ_2` in the examples section.
   - *Source:* Serre LF IV §3.
 - **Herbrand values as unit depths.** `φ` takes non-integral values at integers: in `ℚ_2(μ_8)/ℚ_2`
@@ -636,8 +665,9 @@ pro-`p` quotient.
     - `ψℕ 0 = 0`;
     - monotonicity;
     - `n ≤ ψℕ n`;
-    - transitivity `ψℕ_{M/K} = ψℕ_{M/L} ∘ ψℕ_{L/K}`, in the order inherited from the real-valued
-      statement;
+    - transitivity `ψℕ_{M/K} = ψℕ_{M/L} ∘ ψℕ_{L/K}`, under the same hypotheses as real-valued
+      transitivity: `M/K` finite Galois and the intermediate extension `L/K` Galois, with the
+      quotient/restriction equivalences fixed;
     - the closed form in the cyclic prime-degree case, which is `ψℕ v = v` for `v ≤ t` and
       `ψℕ v = t + ℓ(v − t)` for `v ≥ t`.
 - **The norm on the unit filtration.** ⚠ `N_{L/K}(U(L,i)) ⊆ U(K,i)` is **false** for a ramified
@@ -652,11 +682,12 @@ pro-`p` quotient.
   2. *The Herbrand-shifted inclusion, for `L/K` finite Galois.*
      `N_{L/K}(U(L, ψℕ_{L/K}(i))) ⊆ U(K, i)` for every `i : ℕ`. Both depths are natural numbers,
      because `ψℕ` is. The unshifted corollary is `N_{L/K}(U(L,i)) ⊆ U(K, ⌊φ_{L/K}(i)⌋)`, which
-     follows from `ψ(⌊φ(i)⌋) ≤ i`. The conductor of Layer 7, and its compatibility statement
-     `Art_K(U(K,n)) = (G_K^{ab})^{(n)}`, consume the shifted form.
+     follows from `ψ(⌊φ(i)⌋) ≤ i`. Name the shifted theorem
+     `map_norm_unitFiltration_psiNat_le`; it is the form consumed by
+     `ClassFieldTheory.conductorExponent` and `characterConductorExp`.
   3. *Unramified `L/K`.* `N_{L/K}(U(L,i)) = U(K,i)` for every `i : ℕ`, an equality, and here `ψℕ`
-     is the identity. The case `i = 0` is the norm surjectivity of Layer 2. The vanishing
-     `Hⁱ(Gal(L/K), 𝒪[L]ˣ) = 0` of Layer 5 is the cohomological form of the same computation.
+     is the identity. The case `i = 0` is the norm surjectivity of Layer 2. The downstream
+     cohomological formulation uses `ClassFieldTheory.tateH` on `ClassFieldTheory.unitsRep`.
   4. *Cyclic totally ramified of prime degree `ℓ`: the graded maps.* Write `G = ⟨σ⟩`, and let
      `t ≥ 0` be the unique jump, so that `G_i = G` for `i ≤ t` and `G_i = 1` for `i > t`. Then
      `t = 0` holds exactly in the tame case `ℓ ≠ p`, where the Galois hypothesis forces `μ_ℓ ⊆ K`
@@ -691,11 +722,21 @@ pro-`p` quotient.
   - *Source:* Serre LF V §2 for item 3, Serre LF V §3 for item 4, and Serre LF V §6 for item 2.
     *False generalization:* the unshifted inclusion in item 2, which the counterexample in the
     examples section refutes.
-- **Hasse–Arf.** For `G` abelian, the jumps of the upper-numbering filtration are integers.
+- **Hasse–Arf.** For a finite abelian Galois extension `L/K`, the jumps of the upper-numbering
+  filtration are integers. The proof contract includes the induction chain, not merely the phrase
+  “reduce to cyclic prime degree”:
+  1. prove the unique-break and conductor calculation for cyclic extensions of prime degree;
+  2. choose a prime-order normal quotient series for the finite abelian group;
+  3. transport the filtration at every step using the abstract Herbrand quotient theorem and its
+     fixed field-theoretic equivalence;
+  4. compare conductors with norms using the four graded norm maps and their kernel/cokernel
+     calculation above;
+  5. induct along the series, showing at each quotient that integrality of the upper breaks is
+     preserved.
   - *Prerequisites:*
     - `Layer 3: the norm on the unit filtration` (items 4 and 5);
-    - `Layer 3: Herbrand functions and the upper numbering` (transitivity of `φ`, which reduces
-      the general abelian case to the cyclic case of prime degree).
+    - `Layer 3: Herbrand functions and the upper numbering` (normal-quotient compatibility and
+      tower transitivity);
   - *Source:* Serre LF V §7. The hypothesis is that `G` is abelian. *False generalization:* for
     `G` non-abelian the jumps of the upper numbering need not be integers; the quaternion
     extension in Serre LF IV §3, exercise 3, is the standard witness.
@@ -707,10 +748,10 @@ pro-`p` quotient.
   for `L/K` Galois,
   `d(L/K) = ∑_{i≥0} (#(lowerRamificationGroup K L i) − 1)`; and generally
   `d(L/K) = e − 1` if and only if `L/K` is tamely ramified. Thus a wildly ramified extension has
-  `e ≤ d(L/K)`. When `(e : L) ≠ 0` (in particular in mixed characteristic), also prove the sharp
-  upper bound `d(L/K) ≤ e − 1 + v_L(e)`. Neither endpoint is forced in the wild case:
+  `e ≤ d(L/K)`. Given `he : (e : L) ≠ 0` (in particular in mixed characteristic), also prove the sharp
+  upper bound `d(L/K) ≤ e − 1 + natCastValuation L e he`. Neither endpoint is forced in the wild case:
   `ℚ_2(i)/ℚ_2` has `d = e = 2`, while `ℚ_2(√2)/ℚ_2` has
-  `d = 3 = e − 1 + v_L(e)`. The trace-dual definition comes before the valuation formula, which
+  `d = 3 = e − 1 + natCastValuation L e he`. The trace-dual definition comes before the valuation formula, which
   needs `L/K` Galois; the bounds and tame equality criterion do not.
   - *Prerequisites:*
     - `Mathlib: differentIdeal`, `Mathlib/RingTheory/Trace/`;
@@ -767,11 +808,12 @@ pro-`p` quotient.
   - *Prerequisites:*
     - `Layer 3: tame and wild`;
     - `Layer 4: inertia`;
-    - `Mathlib: Subgroup.normalClosure`, `OpenNormalSubgroup`.
-  - *Pro-`p` inputs:* the four Sylow theorems of `Supplied.ProPOps`, that is existence, the
-    containment of every closed pro-`p` subgroup in one, uniqueness of a normal one, and the image
-    under a continuous surjection. The predicate `Supplied.IsProPSylow` is a definition and not a
-    hypothesis.
+    - `Mathlib: Subgroup.normalClosure`, `OpenNormalSubgroup`;
+    - **Profinite and Pro-`p` Groups**:
+      `ProfiniteProPGroups.exists_isProPSylow`,
+      `ProfiniteProPGroups.IsProP.exists_le_isProPSylow`,
+      `ProfiniteProPGroups.IsProPSylow.eq_of_normal`, and
+      `ProfiniteProPGroups.IsProPSylow.map_of_surjective`.
   - *API:*
     - the field `K^{t}` and the subgroup `P_K`;
     - the pro-`p` property;
@@ -806,20 +848,26 @@ pro-`p` quotient.
   inertia that this presentation is about, so it is a different group.
   - *Prerequisites:*
     - `Layer 4: the tame character and the twist`;
+    - **Profinite and Pro-`p` Groups**:
+      `ProfiniteProPGroups.freeProfiniteGroup`,
+      `ProfiniteProPGroups.freeProfiniteGroup.of`,
+      `ProfiniteProPGroups.freeProfiniteGroup.lift`, and
+      `ProfiniteProPGroups.presentedProfiniteGroup`, with its quotient by the closed normal closure;
     - `Mathlib: ProfiniteGrp.profiniteCompletion`, `FreeGroup`, `Subgroup.normalClosure`, and
-      `Subgroup.topologicalClosure`. `Supplied.freeProfiniteGroup` and
-      `Supplied.presentedProfiniteGroup` are definitions built from these, with no `sorry`.
-  - *Pro-`p` inputs:* the universal property of the free profinite group,
-    `ProPOps.freeProfiniteGroupLift`, with its uniqueness clause.
+      `Subgroup.topologicalClosure` for the implementation beneath those supplied carriers.
   - *Source:* NSW (7.5.2) and (7.5.3), after Iwasawa. The hypotheses are that `K` is a
     nonarchimedean local field with finite residue field of order `q`. *False generalization:* the
-    analogous presentation of `G_K` itself is false; `G_K` is not 2-generated, and Layer 9
-    computes its rank as `[K:ℚ_p] + 2`.
+    analogous presentation of `G_K` itself is false. For a finite extension `K/ℚ_p`, the separate
+    **Local Galois Groups** export `LocalGaloisGroups.rank_absoluteGaloisGroup` computes its rank
+    as `[K:ℚ_p] + 2`. This roadmap makes no full-group rank claim in equal characteristic; a
+    characteristic-`p` analogue requires a separately stated theorem and hypotheses.
 - **Translation lemmas.** Prove the presentation with a geometric `σ`, through `σ ↦ σ⁻¹`. Prove
   the finite-level compatibility: the restriction of the sequence to a finite tame quotient
   recovers the twist formula of Layer 3. Two statements face reciprocity: units land in inertia,
-  and a uniformizer maps to the Frobenius coordinate. Both are theorems of Layer 7, and neither is
-  an assumption here. This layer supplies only the group-theoretic frame in which they are stated.
+  and a uniformizer maps to the Frobenius coordinate. They are supplied by
+  `ClassFieldTheory.artinMap`, `unramifiedCoordinate_artinMap`, and
+  `normResidue_uniformizer`, not assumed here. This layer supplies only the group-theoretic frame
+  in which they are stated.
   - *Prerequisites:*
     - `Layer 4: the Iwasawa presentation`;
     - `Layer 3: the quotient embeddings`.
@@ -834,9 +882,10 @@ generic theorems.
 
 ## Dependency order
 
-The intended order is Layer 0 → Layer 1 → Layer 2 → Layer 3 → Layer 4. Later work may proceed
-against explicit hypotheses, but the accepted exports use the canonical objects produced by
-the preceding layers.
+The external abstract dependency is **Profinite and Pro-`p` Groups**. Within this roadmap the
+intended order is Layer 0 → Layer 1 → Layer 2 → Layer 3 → Layer 4. Later work may proceed against
+explicit hypotheses, but the accepted exports use the canonical objects produced by the
+preceding layers.
 
 ## Material extracted from the former local-fields portfolio
 
@@ -849,5 +898,33 @@ This roadmap retains the local arithmetic and ramification inputs on which both 
 
 The mathematical spine is Serre, *Local Fields*; Neukirch, *Algebraic Number Theory*;
 Neukirch–Schmidt–Wingberg, *Cohomology of Number Fields*; and Ribes–Zalesskii,
-*Profinite Groups*. Exact source and implementation-survey details are recorded in
-[`PROVENANCE.md`](PROVENANCE.md).
+*Profinite Groups*.
+
+## Existing implementation audit: `LRubia/LeanBridge`
+
+The directory
+[`LeanBridge/PadicField`](https://github.com/LRubia/LeanBridge/tree/22c093c1c5de577acebe74cf76bb33d7d2734a6c/LeanBridge/PadicField)
+was audited at revision `22c093c1c5de577acebe74cf76bb33d7d2734a6c`. At that revision the
+repository is Apache-2.0 and the six files `Basic.lean`, `Ramification.lean`,
+`Monogenicity.lean`, `TraceFiltration.lean`, `DiffExp.lean`, and `Test.lean` are sorry-free.
+
+Contact status: this PR records no maintainer-contact outcome concerning reuse. Adaptation status:
+this roadmap PR copies no LeanBridge implementation; it records the overlap so an implementer can
+contact the maintainers, decide what to adapt, and record that decision before porting code.
+Apache-2.0 permits reuse subject to its notice requirements, but the eventual implementation must
+still preserve attribution and document any modifications.
+
+The declaration-level overlap is:
+
+| LeanBridge declarations at the audited revision | Roadmap destination and disposition |
+|---|---|
+| `PadicField.ringOfIntegers`, `PadicField.valuation`, `valuation_le_one_iff_isIntegral`, `ringEquiv_valuation_integer`, and the `ValuativeRel`, `IsValuativeTopology`, and `IsNonarchimedeanLocalField` instances | Adapt the proofs to the roadmap's `ValuativeRel`, `ValuativeExtension`, `𝒪[K]`, and `IsNonarchimedeanLocalField` carriers. The bespoke `PadicField` class is not exported. |
+| `PadicField.Extension.ramificationIdx`, `absoluteRamificationIndex`, `inertiaDeg`, `absoluteRamificationIndex_eq`, `ramificationIdx_mul_inertiaDeg`, and `map_maximalIdeal_eq_pow_ramificationIdx` | Reuse or adapt the ideal-theoretic proofs behind `ramificationIndex`, `absoluteRamificationIndex`, `inertiaDegree`, their tower law, and `e f = [L:K]`; replace the LeanBridge carriers by the intrinsic valuative contracts here. |
+| `mono_exists_primitive` and its supporting Newton-lift declarations | Adapt to `exists_integerRing_adjoin_eq_top` on `𝒪[K] → 𝒪[L]`; do not expose the generic helper namespace as a second local-field API. |
+| `TraceFiltration.intTrace_residue_scaling` | Reuse or adapt as the residue-trace input to tame/wild different bounds, behind the public different theorems. |
+| `PadicField.Extension.differentExponent`, `ramificationIdx_sub_one_le_differentExponent`, `ramificationIdx_le_differentExponent_of_dvd`, `differentExponent_tame`, `discExponent_eq_inertiaDeg_mul_differentExponent`, and `discExponent_tame` | Adapt the proofs to the separability-qualified `differentExponent` and the roadmap's intrinsic `e` and `f`; keep the global discriminant consequences in Number-Field Arithmetic #191. |
+
+For every adapted proof, the implementation record must identify the LeanBridge declaration and
+revision or say explicitly that the proof was replaced. Regardless of implementation source,
+`ValuativeRel`, `ValuativeExtension`, and `IsNonarchimedeanLocalField` remain the only public
+local-field carriers in this roadmap.
