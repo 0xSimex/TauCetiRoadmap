@@ -30,6 +30,14 @@ different, and the relative-discriminant consequences. In particular it imports
 `lowerRamificationGroup`; it does not define a second filtration or choose another indexing
 convention.
 
+[Counting Totally Ramified Extensions #226](https://github.com/TauCetiProject/TauCetiRoadmap/pull/226)
+is another downstream consumer. It owns Serre's counting and mass-formula argument, while this
+roadmap owns the ramification-theoretic substrate it counts: total ramification, Eisenstein
+generators and their power bases, the different and local discriminant exponents, their
+invariance under `K`-isomorphism, and the tame/wild criteria. In particular, #226 consumes the
+Eisenstein power-basis orthogonality and discriminant-invariance declarations specified in Layer
+3 below; it does not introduce second versions of those local invariants.
+
 Conventions are fixed throughout: valuations are normalized additively by `v_K(π) = 1`;
 arithmetic Frobenius is primary and geometric Frobenius is its inverse; upper numbering is the
 one functorial under quotients; and `G_K^t` means the quotient by wild inertia, not the maximal
@@ -549,7 +557,19 @@ pro-`p` quotient.
   `Algebra.adjoin 𝒪[K] {x} = ⊤`. Package the induced integral-basis and field-generation
   consequences so consumers do not have to reconstruct them from the primitive-element theorem.
   This is a local theorem: Number-Field Arithmetic #191 consumes it only after passing to a
-  completion.
+  completion. For an Eisenstein generator `ξ` of degree `n`, also prove the orthogonality of its
+  power basis. If `c_i ∈ 𝒪[K]`, then
+
+  ```text
+  v_L(Σ_{i<n} c_i ξ^i) = min_{i<n} (e(L/K) v_K(c_i) + i)
+                       = min_{i<n} (n v_K(c_i) + i).
+  ```
+
+  The second equality uses total ramification. The summands with nonzero coefficients have
+  pairwise distinct values modulo `n`, so there is no cancellation. Export the formula both in
+  the canonical `IsDiscreteValuationRing.addVal` spelling and as the box/ball corollary used by
+  coordinate and measure arguments. This is ramification substrate, not mass-formula counting;
+  Counting Totally Ramified Extensions #226 consumes it.
   - *Prerequisites:*
     - `Layer 0: finite extensions, III`;
     - `Mathlib: Algebra.adjoin`, `Mathlib: IsIntegral`;
@@ -558,6 +578,8 @@ pro-`p` quotient.
     - `exists_integerRing_adjoin_eq_top`;
     - the chosen-generator form, including integrality over `𝒪[K]` and generation of `L` over
       `K`;
+    - `addVal_sum_eisenstein_powerBasis`, the exact minimum formula above;
+    - the induced power basis and its box/ball membership corollaries;
     - compatibility with the comparison of `𝒪[L]` and the integral closure from Layer 0.III.
   - *Source:* Serre LF III §6, Proposition 12.
 - **The lower-numbering filtration.** For `L/K` finite Galois with group `G`, define `G_i = {σ | ∀
@@ -744,8 +766,12 @@ pro-`p` quotient.
   `𝔡_{L/K} ⊆ 𝒪[L]` from the trace form, as the inverse of the trace dual of `𝒪[L]`. Compare it
   with `differentIdeal` of Mathlib. Define the discriminant `𝔩_{L/K} = N_{L/K}(𝔡_{L/K}) ⊆ 𝒪[K]`,
   which is an ideal of the base. The two are not to be conflated. Define the local different
-  exponent `d(L/K) := v_L(𝔡_{L/K})`. Prove: `𝔡_{L/K} = 𝒪[L]` if and only if `L/K` is unramified;
-  for `L/K` Galois,
+  exponent `d(L/K) := v_L(𝔡_{L/K})` and the local discriminant exponent
+  `δ(L/K) := v_K(𝔩_{L/K})`; prove `δ(L/K) = f(L/K) d(L/K)`. Both exponents and both ideals are
+  invariant under a `K`-algebra isomorphism of finite separable extensions, with transport along
+  the induced integer-ring equivalence. This is the exact invariance consumed when #226 regroups
+  its mass formula by `K`-isomorphism classes. Prove: `𝔡_{L/K} = 𝒪[L]` if and only if `L/K` is
+  unramified; for `L/K` Galois,
   `d(L/K) = ∑_{i≥0} (#(lowerRamificationGroup K L i) − 1)`; and generally
   `d(L/K) = e − 1` if and only if `L/K` is tamely ramified. Thus a wildly ramified extension has
   `e ≤ d(L/K)`. Given `he : (e : L) ≠ 0` (in particular in mixed characteristic), also prove the sharp
@@ -760,6 +786,9 @@ pro-`p` quotient.
   - *API:*
     - the two ideals;
     - the comparison lemma with `differentIdeal`;
+    - `discriminantExponent` and
+      `discriminantExponent_eq_inertiaDegree_mul_differentExponent`;
+    - `differentExponent_eq_of_algEquiv` and `discriminantExponent_eq_of_algEquiv`;
     - multiplicativity in a tower;
     - the unramified criterion;
     - `differentExponent` and the Hilbert valuation formula in the Galois case;
@@ -770,6 +799,15 @@ pro-`p` quotient.
     the valuation formula, which needs `L/K` Galois.
 
 ### Layer 4: the tame quotient of the absolute Galois group
+
+**Supplier status.** The exact Lean-facing Layer-4 carriers must import
+`TauCetiRoadmap.ProfiniteProPGroups.Suggested` and apply its Sylow, free-profinite, and presented
+profinite-group declarations directly. That supplier is not yet present on upstream `main`, so
+this PR cannot currently add a compiling Layer-4 section to `Suggested.lean` without bundling or
+shadowing the supplier. The Layer-4 interface request therefore remains a declared dependency,
+not a discharged type-checked contract. Once the supplier PR lands, adding that import and the
+closed applications listed below is required before Layer 4 is accepted; no `Supplied.*` or
+private replacement carrier is permitted.
 
 - **The ambient model, fixed once.** Use `G_K := Field.absoluteGaloisGroup K` with the Krull
   topology, in every public statement and in every characteristic. Prove once, as a comparison

@@ -475,12 +475,67 @@ theorem exists_integerRing_adjoin_eq_top [Algebra K L] [ValuativeExtension K L]
     ∃ x : 𝒪[L], Algebra.adjoin 𝒪[K] {x} = ⊤ :=
   sorry
 
+/-- **Layer 3, orthogonality of an Eisenstein power basis.** For an Eisenstein generator, the
+values of the nonzero terms are distinct modulo the ramification index, so the valuation of the
+sum is their minimum. In the totally ramified situation supplied by the Eisenstein hypotheses,
+the ramification index is `f.natDegree`. This is the exact local-field contract consumed by the
+coordinate-box argument in Counting Totally Ramified Extensions #226. -/
+theorem addVal_sum_eisenstein_powerBasis [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [Algebra.IsSeparable K L]
+    (f : Polynomial 𝒪[K]) (hf : f.IsEisensteinAt 𝓂[K])
+    (ξ : 𝒪[L]) (hroot : (f.map (algebraMap 𝒪[K] 𝒪[L])).IsRoot ξ)
+    (hgen : Algebra.adjoin 𝒪[K] {ξ} = ⊤) (c : Fin f.natDegree → 𝒪[K]) :
+    IsDiscreteValuationRing.addVal 𝒪[L]
+        (∑ i, algebraMap 𝒪[K] 𝒪[L] (c i) * ξ ^ (i : ℕ)) =
+      ⨅ i, ramificationIndex K L • IsDiscreteValuationRing.addVal 𝒪[K] (c i) + (i : ℕ) :=
+  sorry
+
 /-- **Layer 3, the local different exponent.** This is the multiplicity of the maximal ideal in
 Mathlib's relative different ideal; it is a local invariant, not the global relative
 discriminant owned by Number-Field Arithmetic #191. -/
 noncomputable def differentExponent [Algebra K L] [ValuativeExtension K L]
     [Module.Finite K L] [Algebra.IsSeparable K L] : ℕ :=
   multiplicity 𝓂[L] (differentIdeal 𝒪[K] 𝒪[L])
+
+/-- **Layer 3, the local discriminant ideal.** This is the relative norm to `𝒪[K]` of the local
+different. It is distinct from the different ideal and from the global relative discriminant
+package owned by #191. -/
+noncomputable def localDiscriminantIdeal [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [Algebra.IsSeparable K L] : Ideal 𝒪[K] :=
+  sorry
+
+/-- **Layer 3, the local discriminant exponent** at the unique maximal ideal of the base. -/
+noncomputable def discriminantExponent [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [Algebra.IsSeparable K L] : ℕ :=
+  multiplicity 𝓂[K] (localDiscriminantIdeal K L)
+
+/-- **Layer 3, comparison of local discriminant and different exponents.** -/
+theorem discriminantExponent_eq_inertiaDegree_mul_differentExponent
+    [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] [Algebra.IsSeparable K L] :
+    discriminantExponent K L = inertiaDegree K L * differentExponent K L :=
+  sorry
+
+/-- **Layer 3, invariance of the different exponent under a `K`-isomorphism.** The unique
+extension of the valuation makes every `K`-algebra equivalence compatible with the maximal
+ideals and the trace different. -/
+theorem differentExponent_eq_of_algEquiv
+    (M : Type v) [Field M] [ValuativeRel M] [TopologicalSpace M]
+    [IsNonarchimedeanLocalField M]
+    [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] [Algebra.IsSeparable K L]
+    [Algebra K M] [ValuativeExtension K M] [Module.Finite K M] [Algebra.IsSeparable K M]
+    (e : L ≃ₐ[K] M) : differentExponent K L = differentExponent K M :=
+  sorry
+
+/-- **Layer 3, invariance of the local discriminant exponent under a `K`-isomorphism.** This is
+the form Counting Totally Ramified Extensions #226 consumes when regrouping by isomorphism
+classes. -/
+theorem discriminantExponent_eq_of_algEquiv
+    (M : Type v) [Field M] [ValuativeRel M] [TopologicalSpace M]
+    [IsNonarchimedeanLocalField M]
+    [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] [Algebra.IsSeparable K L]
+    [Algebra K M] [ValuativeExtension K M] [Module.Finite K M] [Algebra.IsSeparable K M]
+    (e : L ≃ₐ[K] M) : discriminantExponent K L = discriminantExponent K M :=
+  sorry
 
 /-- **Layer 3, tame ramification.** The residue characteristic does not divide `e(L/K)`. -/
 def IsTamelyRamified [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] : Prop :=
