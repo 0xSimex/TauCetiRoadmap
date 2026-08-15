@@ -2,8 +2,9 @@
 
 This roadmap develops the analytic infrastructure shared by zeta functions, Hecke L-functions,
 Chebotarev density, and explicit prime-counting arguments. It starts from arithmetic functions on
-the nonzero ideals of a number field, regroups them by norm into Mathlib's `LSeries`, builds local
-Euler factors and Euler products, and ends with Landau-type positivity, Perron summation,
+the nonzero ideals of a number field, regroups them by norm into Mathlib's `ArithmeticFunction`
+and `LSeries` APIs, builds local Euler factors and Euler products, and ends with Landau-type
+positivity, Perron summation,
 Dirichlet-density calculus, Wiener–Ikehara, and generic prime-number-theorem transfer.
 
 The roadmap owns no completed L-function, Hecke character, Frobenius class, Chebotarev theorem, or
@@ -20,21 +21,27 @@ small `Basic.lean` exporting the declarations in the contract table below.
 
 ### Owned here
 
-- multiplicative arithmetic functions on integral ideals, including their value at the zero ideal;
+- general arithmetic functions on nonzero integral ideals and their canonical zero extension;
+- completely multiplicative ideal weights as a special case;
 - regrouping ideal-indexed sums by absolute norm into Mathlib `LSeries`;
 - ideal convolution, logarithmic derivatives, local factors, and ideal-indexed Euler products;
 - nonzero prime-ideal carriers and locally finite weighted counting functions;
 - Abel–Stieltjes and Perron summation with fixed endpoint conventions;
-- Dirichlet density, upper and lower density, finite-error invariance, squeeze, and fibre counts;
+- Dirichlet density, one-sided density bounds, finite-error invariance, squeeze, and fibre counts;
 - reusable Landau positivity and Wiener–Ikehara theorems;
 - the generic passage from von Mangoldt asymptotics to `ψ`, `ϑ`, and `π` asymptotics.
 
 ### Consumed
 
-The pinned Mathlib supplies `Ideal`, `Ideal.absNorm`, unique factorization of nonzero ideals,
-`IsDedekindDomain.HeightOneSpectrum`, `LSeries`, Dirichlet convolution, filters and asymptotics,
-interval integration, and `Mathlib/NumberTheory/AbelSummation.lean`. This roadmap uses those
-objects directly and does not wrap a competing series type or prime predicate around them.
+Mathlib supplies `Ideal`, `Ideal.absNorm`, unique factorization of nonzero ideals,
+`IsDedekindDomain.HeightOneSpectrum`, `ArithmeticFunction`, `EulerProduct`, `LSeries`, filters and
+asymptotics, interval integration, and `Mathlib/NumberTheory/AbelSummation.lean`. Mathlib master
+also supplies `NumberField.Set.primeIdealZetaSum`, `NumberField.Set.HasDirichletDensity`, and
+`NumberField.Set.dirichletDensity` in
+`Mathlib/NumberTheory/NumberField/DirichletDensity.lean`. The repository pin predates that file;
+updating the pin to a revision containing it is the first task of Layer 7. This roadmap extends
+those objects and does not wrap competing series, convolution, Euler-product, Abel-summation, or
+density APIs around them.
 
 ### Not owned here
 
@@ -59,13 +66,14 @@ coefficients require separate prime-power local data and do not define an `Ideal
 
 | Subject | Convention |
 |---|---|
-| ideal weights | The carrier is completely multiplicative and degree-one. Its value at `⊥` is `0`; multiplicativity alone does not imply this, as the constant-one rejection test shows. It is not a carrier for arbitrary local reciprocal polynomials. |
-| norm coefficients | The `n = 0` coefficient is fixed by the ideal-weight convention. Equality of two `LSeries` coefficients is normally stated away from the irrelevant zero slot. |
+| ideal arithmetic functions | The primary carrier is a function on `(Ideal (𝓞 K))⁰`, so convolution never asks for a factorization of `⊥`. Its canonical extension to all ideals is `0` at `⊥`. |
+| ideal weights | The completely multiplicative degree-one special case uses Mathlib's `Ideal (𝓞 K) →*₀ ℂ` vocabulary, hence sends `⊥` to `0`. It is not a carrier for arbitrary local reciprocal polynomials. |
+| norm coefficients | `normCoeff` lands in `ArithmeticFunction ℂ`, so its `n = 0` coefficient is definitionally controlled by Mathlib's carrier. |
 | prime carrier | A prime is `IsDedekindDomain.HeightOneSpectrum (𝓞 K)`, not an arbitrary ideal with a later proof that it is nonzero and prime. |
 | density | `HasDirichletDensity S δ` is the limit of `P_S(s) / P_all(s)` as `s → 1⁺`; `HasNaturalDensity S δ` is the analogous ratio of prime-counting functions as `x → ∞`. Normalization by `log (1/(s-1))` is a theorem after the all-prime asymptotic, not the definition. |
 | cutoffs | Weighted counts include norm exactly equal to `x`. Natural-number and real cutoffs are connected by named lemmas. |
 | Abel summation | Finite identities use half-open intervals chosen so a boundary term is counted exactly once. |
-| Perron | The finite-height kernel at `x = 1` is `π⁻¹ arctan(T/c)`; `1/2` is only its limit. Arithmetic applications either exclude a norm endpoint or state the half-weight limit. |
+| Perron | For the real parameterization `s = c + it`, the prefactor is `(2π)⁻¹` because `ds = i dt`. The finite-height kernel at `x = 1` is `π⁻¹ arctan(T/c)`; `1/2` is only its limit. Arithmetic applications either exclude a norm endpoint or state the half-weight limit. |
 | logarithmic derivatives | Prime powers are part of the coefficient. Removing higher powers is a later estimate, never a definitional simplification. |
 
 The zero-ideal and Perron endpoint tests are required worked examples. They prevent two errors
@@ -77,21 +85,23 @@ that otherwise survive every coprimality-guarded or off-endpoint theorem.
 
 | Object or theorem | Layer | Required declaration | Contract |
 |---|---:|---|---|
-| multiplicative ideal weight | 0 | `IdealWeight` | includes `eq_zero_bot` and finite bad-prime support |
-| coefficient by norm | 1 | `normCoeff` | finite sum over ideals of absolute norm `n` |
+| ideal arithmetic function | 0 | `IdealArithmeticFunction`, `zeroExtend` | function on `(Ideal (𝓞 K))⁰` and canonical extension by zero at `⊥` |
+| multiplicative ideal weight | 0 | `IdealWeight` | `Ideal (𝓞 K) →*₀ ℂ` special case with finite bad-prime support |
+| coefficient by norm | 1 | `normCoeff` | an `ArithmeticFunction ℂ`, formed by finite norm fibres |
 | trivial-weight abscissa | 1 | `abscissaOfAbsConv_normCoeff_one` | exact abscissa `1`, the renamed Dedekind-zeta coefficient contract |
-| regrouping | 1 | `regroupByNorm` | ideal-indexed series equals Mathlib `LSeries normCoeff` on the common convergence region |
-| Euler-product package | 3 | `EulerProductData` | canonical local factors, convergence, finite bad set, and product equality |
-| nonzero prime Dirichlet sum | 5 | `primeDirichletSum` | indexed by `HeightOneSpectrum`, with a set or weight parameter |
+| regrouping | 1 | `regroupByNorm` | ungrouped absolute convergence implies grouped convergence and equality; converse needs ideal-summand nonnegativity/no cancellation |
+| convolution | 2 | `IdealArithmeticFunction.convolution`, `normCoeff_convolution` | convolution on nonzero ideals, transported to Mathlib Dirichlet convolution |
+| Euler-product package | 3 | `EulerProductData` | extends Mathlib `ArithmeticFunction.eulerProduct` and `EulerProduct` with ideal local factors |
+| nonzero prime Dirichlet sum | 7 | `NumberField.Set.primeIdealZetaSum` | consume Mathlib's `HeightOneSpectrum`-indexed definition directly |
 | weighted prime counts | 5 | `primeTheta`, `primeCount` | inclusive real cutoff and conversion to natural cutoffs |
-| density predicates | 7 | `HasDirichletDensity`, `HasNaturalDensity`, `LowerDirichletDensity`, `UpperDirichletDensity` | ratio normalization by the corresponding all-prime sum or count |
-| density conversions | 7 | `hasDirichletDensity_of_upper_of_lower`, `hasDirichletDensity_of_hasNaturalDensity` | agreement of one-sided limits and the one-way natural-to-Dirichlet implication |
-| Abel summation | 6 | `abelSummation` | exact finite identity plus an asymptotic corollary |
-| Perron summation | 6 | `perronFormula` | truncated kernel, endpoint value, and an arithmetic summatory form |
+| density predicates | 7 | `NumberField.Set.HasDirichletDensity`, `HasNaturalDensity`, `IsLowerDirichletDensityBound`, `IsUpperDirichletDensityBound` | extend Mathlib's ratio-normalized density; the latter two names denote bounds, not nonunique “densities” |
+| density conversions | 7 | `hasDirichletDensity_of_upperBound_of_lowerBound`, `hasDirichletDensity_of_hasNaturalDensity` | agreement of matching bounds and the one-way natural-to-Dirichlet implication |
+| Abel summation | 6 | `sum_mul_eq_sub_sub_integral_mul`, norm-indexed corollaries | consume Mathlib's exact identity and add only the Stieltjes/asymptotic bridges |
+| Perron summation | 6 | `perronFormula` | correctly parameterized truncated kernel, endpoint value, and an arithmetic summatory form |
 | cancellation and continuation | 6 | `HasCancellation`, `continuedLFunctionOfWeight` | a named continuation into the strip supplied by the ideal partial-sum estimate |
-| Landau positivity | 8 | `landau` | singularity at the abscissa for nonnegative coefficients |
-| Wiener–Ikehara | 9 | `wienerIkehara` | continuous boundary remainder on `Re s ≥ 1`, not a subtraction evaluated at the pole |
-| generic PNT transfer | 10 | `primeNumberTheoremTransfer` | logarithmic derivative to `ψ`, prime-power removal to `ϑ`, and Abel transfer to `π` |
+| Landau positivity | 8 | `landau` | singularity at the finite, actual abscissa for nonnegative coefficients |
+| Wiener–Ikehara | 9 | `wienerIkehara` | `LSeriesHasSum` on `Re s > 1` and a continuous boundary remainder on `Re s ≥ 1` |
+| generic PNT transfer | 10 | `PrimeBoundaryRemainder`, `primePsi`, `primePsi_asymptotic_of_boundary`, `primeNumberTheoremTransfer` | exact boundary input, then `ψ`, prime-power removal to `ϑ`, and Abel transfer to `π` |
 
 Consumers are `LFunctions`, `Chebotarev`, and `ZerosOfLFunctions`. Their contract tables name
 these declarations rather than prose such as “the density lemmas” or “a Tauberian theorem.”
@@ -100,33 +110,45 @@ these declarations rather than prose such as “the density lemmas” or “a Ta
 
 ## The build, in layers
 
-### Layer 0: arithmetic functions on ideals
+### Layer 0: arithmetic functions on nonzero ideals
 
-**0.1 The carrier.** Define `IdealWeight K` as a complex-valued multiplicative function on
-integral ideals, with a finite set of bad height-one primes, unit norm away from that set, value
-zero on it, and value zero at `⊥`. Supply coercions, extensionality, `map_one`, and simplification
-lemmas for good and bad primes. State explicitly that this completely multiplicative degree-one
-carrier excludes coefficient systems whose prime powers are independent local-polynomial data.
+**0.1 The general carrier.** Define `IdealArithmeticFunction K` as a complex-valued function on
+`(Ideal (𝓞 K))⁰`. Define its canonical `zeroExtend` to all integral ideals and prove that the
+extension is zero exactly at `⊥` when the original function has no zero values. All divisor sums
+and factorizations in Layers 0–3 use this nonzero carrier, so the infinitely many formal
+factorizations `⊥ · J = ⊥` never enter convolution.
 
-**0.2 Constructors and operations.** Build the trivial weight, conjugation, pointwise product,
-restriction away from a finite prime set, and finite-order weights. Keep pointwise multiplication
-separate from ideal convolution. Prove functoriality under a number-field equivalence.
+**0.2 The completely multiplicative specialization.** Define `IdealWeight K` using Mathlib's
+`Ideal (𝓞 K) →*₀ ℂ` vocabulary, with a finite set of bad height-one primes, unit norm away from
+that set, and value zero on it. The zero-ideal law is then inherited from `map_zero`. State
+explicitly that this degree-one carrier excludes the Möbius function and coefficient systems
+whose prime powers are independent local-polynomial data.
 
-**0.3 The zero-ideal rejection test.** Prove that the constant-one function cannot be an
-`IdealWeight`. Exhibit the corresponding multiplicative function without the zero law, so the
-hypothesis is demonstrably necessary rather than decorative.
+**0.3 Constructors and operations.** Build the trivial weight, conjugation, pointwise product,
+restriction away from a finite prime set, norm twists, and finite-order weights. Supply the map
+from `IdealWeight` to `IdealArithmeticFunction`, and prove functoriality under a number-field
+equivalence. Keep pointwise multiplication separate from ideal convolution.
+
+**0.4 The zero-ideal rejection test.** Show that an everywhere-one function on all ideals cannot
+be the zero extension of an `IdealArithmeticFunction` and cannot underlie an `IdealWeight`:
+Mathlib's `→*₀` carrier forces its value at `⊥` to be zero.
 
 *Prerequisites:* Mathlib `Ideal`, `HeightOneSpectrum`, finite sets, unique factorization.
 
 ### Layer 1: norm fibres and Mathlib `LSeries`
 
-**1.1 Finite norm fibres.** Package finiteness of `{I : Ideal (𝓞 K) | absNorm I = n}` and define
-`normCoeff χ n` as the sum of `χ I` on that fibre. Prove the values at `0` and `1`, compatibility
-with conjugation and pointwise products, and invariance under field equivalence.
+**1.1 Finite norm fibres.** Consume Mathlib's existing ideal-counting and finite-norm-fibre
+declarations. Define `normCoeff f : ArithmeticFunction ℂ` by summing a general
+`IdealArithmeticFunction` over the nonzero ideals of absolute norm `n`. Prove its values at `0`
+and `1`, compatibility with conjugation, norm twists, and field equivalence. There is deliberately
+no pointwise-product formula: even the trivial weight over `ℚ(i)` has two ideals of norm `5`, so
+the coefficient of the pointwise product is `2`, not `2 · 2`.
 
-**1.2 Regrouping.** Prove `regroupByNorm`: whenever the ideal-indexed series is absolutely
-summable, regrouping by `absNorm` gives Mathlib's `LSeries (normCoeff χ)`. Include equality of
-abscissae and the converse under nonnegative coefficients.
+**1.2 Regrouping.** Prove `regroupByNorm`: absolute convergence of the series indexed by nonzero
+ideals implies `LSeriesSummable (normCoeff f) s` and equality with its sum. Consequently the
+grouped absolute-convergence abscissa is at most the ideal-indexed boundary. State a converse or
+equality only under nonnegativity (or another no-cancellation hypothesis) for every individual
+ideal summand; nonnegative grouped coefficients alone do not suffice.
 
 **1.3 The trivial specialization.** For the trivial weight, identify `normCoeff` with the named
 Dedekind-zeta coefficient away from the zero slot. At `K = ℚ`, prove the coefficient is `1` for
@@ -136,13 +158,15 @@ every positive integer.
 
 ### Layer 2: convolution and logarithmic derivatives
 
-**2.1 Ideal convolution.** Define convolution over factorizations `BC = A`; prove associativity,
-commutativity, the delta identity, distributivity, and compatibility with norm regrouping and
-Mathlib Dirichlet convolution.
+**2.1 Ideal convolution.** Define convolution on `IdealArithmeticFunction K` by the finite
+factorizations `BC = A` of a nonzero ideal. Its codomain is again `IdealArithmeticFunction K`, so
+associativity, commutativity, the delta identity, distributivity, and iterated convolution are
+actual typed statements. Prove `normCoeff_convolution`, identifying it with multiplication in
+Mathlib's `ArithmeticFunction ℂ` (Dirichlet convolution).
 
-**2.2 Möbius inversion.** Define the ideal Möbius function through unique factorization, prove
-the expected prime-power values, and make it the convolution inverse of the trivial nonzero-ideal
-weight.
+**2.2 Möbius inversion.** Define the ideal Möbius function as an `IdealArithmeticFunction`, prove
+the expected prime-power values, and make it the convolution inverse of the constant-one function
+on nonzero ideals. It is not an `IdealWeight`: `μ(𝔭²) = 0` rules out complete multiplicativity.
 
 **2.3 Von Mangoldt transform.** Define the ideal von Mangoldt weight and the transform attached to
 a weight. Prove support on prime powers and the exact coefficient identity for the logarithmic
@@ -150,15 +174,18 @@ derivative of an Euler product on its absolute-convergence half-plane.
 
 ### Layer 3: local factors and Euler products
 
-**3.1 Local data.** `EulerProductData` records the local coefficient at every height-one prime,
-its bad set, and its local power series. Supply extensionality, restriction, product, conjugation,
-and trivial-weight instances.
+**3.1 Local data.** Extend Mathlib's `ArithmeticFunction.ofPowerSeries`,
+`ArithmeticFunction.eulerProduct`, and `EulerProduct` APIs. `EulerProductData` records the
+prime-power local series for a multiplicative `IdealArithmeticFunction`, its finite bad set, and
+the hypotheses needed to transport the ideal product through `normCoeff`. Supply extensionality,
+restriction, product, conjugation, and trivial-weight instances without introducing a second
+generic Euler-product framework.
 
 **3.2 Finite products first.** Prove the factorization of a coefficient over the prime-power
 factorization of a nonzero ideal and the equality for Euler products over a finite set of primes.
 
 **3.3 Infinite Euler product.** Under absolute convergence, pass to the directed limit of finite
-prime sets and identify the product with `LSeries (normCoeff χ)`. State nonvanishing only where
+prime sets and identify the product with `LSeries (normCoeff f)`. State nonvanishing only where
 absolute convergence of the reciprocal product proves it.
 
 **3.4 Logarithm and derivative.** On a simply connected zero-free region, choose a logarithm and
@@ -192,16 +219,20 @@ uses this when moving between a field and a fixed subfield.
 
 ### Layer 6: Abel and Perron summation
 
-**6.1 Abel summation.** Prove an exact formula for a locally finite norm-indexed family and a
-`C¹` test function. Give both finite and Stieltjes forms, with the inclusive cutoff and boundary
-term fixed by the conventions table.
+**6.1 Abel summation.** Extend `Mathlib/NumberTheory/AbelSummation.lean`, in particular the
+existing `sum_mul_eq_sub_sub_integral_mul` and zero-coefficient variants, from ordinary
+arithmetic functions to the norm-indexed and Stieltjes corollaries needed here. Do not restate
+Mathlib's finite summation-by-parts theorem under a new name. Keep the inclusive cutoff and
+boundary term fixed by the conventions table.
 
 **6.2 Standard transfers.** Derive `ϑ(x) ∼ δx ⟹ π(x) ∼ δ Li(x)` and
 `Li(x) ∼ x/log x`, including the zero-density and `δ = 0` cases.
 
-**6.3 Truncated Perron.** For `x > 0`, `c > 0`, and `T ≥ 1`, prove the vertical-segment kernel and
-its error away from `x = 1`. Prove separately that the exact value at `x = 1` is
-`π⁻¹ arctan(T/c)` and tends to `1/2`.
+**6.3 Truncated Perron.** For `x > 0`, `c > 0`, and `T ≥ 1`, parameterize the vertical segment by
+`s = c + it`. The real-`t` integral has prefactor `(2π)⁻¹`, since the `i` from `ds = i dt`
+cancels the `i` in `(2πi)⁻¹`. Prove an off-endpoint estimate with a proved universal constant,
+rather than hard-coding an unchecked constant. Prove separately that the exact value at `x = 1`
+is `π⁻¹ arctan(T/c)` and tends to `1/2`.
 
 **6.4 Arithmetic Perron.** Interchange the integral with an absolutely convergent `LSeries` and
 obtain a truncated summatory formula. State both the off-norm form and the limiting half-weight
@@ -217,9 +248,14 @@ good ideal explicitly excludes `⊥`, even when the bad set is empty.
 
 ### Layer 7: Dirichlet density
 
-**7.1 The predicates.** For `S : Set (HeightOneSpectrum (𝓞 K))`, define `P_S(s)` for real `s > 1`
-and define density by `P_S(s)/P_all(s) → δ` as `s → 1⁺`. Define upper and lower density by
-epsilon inequalities on the same ratio.
+**7.1 Adopt the Mathlib API.** Update the repository pin to include
+`Mathlib/NumberTheory/NumberField/DirichletDensity.lean` and use
+`NumberField.Set.primeIdealZetaSum`, `NumberField.Set.HasDirichletDensity`, and
+`NumberField.Set.dirichletDensity` directly. Add finite-error, union, squeeze, normalization, and
+contraction lemmas in the same namespace. Do not duplicate the sum, predicate, or junk-valued
+density. Define `IsLowerDirichletDensityBound S δ` and `IsUpperDirichletDensityBound S δ` for the
+epsilon inequalities used by squeeze arguments; these are deliberately called *bounds*. Actual
+lower and upper densities, if needed, are liminf and limsup values and are unique.
 
 **7.2 The all-prime normalization.** From the Dedekind Euler product and bounded higher-prime-
 power contribution, prove
@@ -227,8 +263,8 @@ power contribution, prove
 is a prerequisite. Deduce equivalence with logarithmic normalization.
 
 **7.3 Calculus.** Prove finite-set density zero, invariance under finite symmetric difference,
-monotonicity, complements, finite disjoint unions, squeeze, and the implication from natural to
-Dirichlet density.
+monotonicity, complements, finite disjoint unions, and squeeze as extensions of Mathlib's API.
+Use Layer 6's Abel-summation interface for the implication from natural to Dirichlet density.
 
 **7.4 Fibre counts.** If a locally finite map of prime carriers has constant finite fibre size
 away from a density-zero exception, relate the two prime sums and densities. State the variant
@@ -236,9 +272,12 @@ where fibres are counted only after intersecting with residue-degree-one primes.
 
 ### Layer 8: Landau-type positivity
 
-**8.1 Landau's theorem.** For a Dirichlet series with nonnegative real coefficients and finite
-abscissa of convergence, prove that the real point at the abscissa is a singularity of every
-analytic continuation. Include the meromorphic-order corollary used by nonvanishing arguments.
+**8.1 Landau's theorem.** For a Dirichlet series with nonnegative real coefficients, assume the
+Mathlib equality `LSeries.abscissaOfAbsConv a = (σ : EReal)`. Prove that the real point `σ` is a
+singularity of every analytic continuation from `Re s > σ`. The equality both makes `σ` the
+actual boundary and records finiteness; mere convergence throughout `Re s > σ` is insufficient.
+Record the equality between ordinary and absolute abscissae used for nonnegative coefficients,
+then derive the meromorphic-order corollary needed by nonvanishing arguments.
 
 **8.2 Positive combinations.** Package the `3-4-1` trigonometric nonnegativity argument as a
 finite nonnegative coefficient combination, keeping analytic input separate from the positivity
@@ -250,13 +289,18 @@ this is the required rejection test for downstream character-family hypotheses.
 
 ### Layer 9: Wiener–Ikehara
 
-**9.1 Boundary formulation.** Let `a n ≥ 0` and `F` agree with `LSeries a` on `Re s > 1`.
-Assume there is a separately named continuous function `G` on `Re s ≥ 1` agreeing there with
-`F(s) - κ/(s-1)`. Conclude `x⁻¹ ∑_{n≤x} a n → κ`.
+**9.1 Boundary formulation.** Let `a n ≥ 0` and require
+`LSeriesHasSum (fun n ↦ (a n : ℂ)) s (F s)` for every `s` with `Re s > 1`. Assume there is a
+separately named continuous function `G` on `Re s ≥ 1` agreeing on the open half-plane with
+`F(s) - κ/(s-1)`. Conclude `x⁻¹ ∑_{n≤x} a n → κ`. The `LSeriesHasSum` hypothesis is essential:
+Mathlib's totalized `LSeries` is zero at nonsummable inputs.
 
 The hypothesis is deliberately not continuity of the displayed subtraction at `s = 1`: both
 terms are total functions with junk values there. The separate `G` records the continuous
-extension.
+extension. The proof derives its Chebyshev-type growth bound from coefficient nonnegativity,
+the half-plane `LSeriesHasSum` hypothesis, and the boundary data; it does not silently assume that
+bound. If the chosen formal proof instead needs it as an input, expose it in the public theorem
+and prove the derived version as the exported corollary.
 
 **9.2 Variants.** Prove versions for natural cutoffs, finite changes of coefficients, a pole at a
 positive abscissa after rescaling, and coefficients in an ordered real normed algebra when the
@@ -264,22 +308,37 @@ proof permits it.
 
 ### Layer 10: generic prime-number-theorem transfer
 
-**10.1 From logarithmic derivative to `ψ`.** Apply Layer 9 to a nonnegative von Mangoldt
-coefficient whose series has a simple pole of residue `δ` and continuous boundary remainder.
+**10.1 Exact boundary input and `ψ`.** Define `primePsi` with all prime powers present. Package
+the analytic input in `PrimeBoundaryRemainder K S δ`: named functions `F` and `G`,
+`LSeriesHasSum` for the exact nonnegative von Mangoldt coefficient on `Re s > 1`, continuity of
+`G` on `Re s ≥ 1`, and the identity `G(s) = F(s) - δ/(s-1)` on `Re s > 1`. Apply Layer 9 to
+obtain `primePsi_asymptotic_of_boundary`. The construction of the coefficient and its series uses
+Layers 2–3; no continuation or nonvanishing fact is smuggled into the transfer theorem.
 
-**10.2 Remove higher prime powers.** Use Layer 5 to derive `ϑ(x) ∼ δx` from `ψ(x) ∼ δx`.
+**10.2 Remove higher prime powers.** Use Layer 5 to export
+`primeTheta_asymptotic_of_primePsi`, deriving `ϑ(x)/x → δ` from `ψ(x)/x → δ`.
 
-**10.3 Count primes.** Use Layer 6 to obtain `π(x) ∼ δ Li(x) ∼ δx/log x`. Keep the theorem
-generic in the prime set and weight. The trivial set gives the prime ideal theorem; a Frobenius
-class gives qualitative Chebotarev only after `Chebotarev` supplies the correct coefficient and
-analytic boundary statement.
+**10.3 Count primes and expose the summit.** Use Layer 6 to export
+`primeCount_asymptotic_of_primeTheta`. The summit `primeNumberTheoremTransfer` accepts a
+`PrimeBoundaryRemainder K S δ` and returns all three conclusions—`ψ`, `ϑ`, and `π`—so its target
+matches the export table rather than assuming the middle conclusion.
+
+**10.4 External prime-ideal input.** The trivial-set specialization is conditional on the exact
+downstream export
+`TauCeti.LFunctions.primeIdealVonMangoldtBoundary :
+  PrimeBoundaryRemainder K Set.univ 1`. Producing it requires continuation of `ζ_K` and a
+continuous extension of `-ζ'_K/ζ_K - 1/(s-1)` across `Re s = 1`, including nonvanishing on that
+line. Mathlib's one-sided residue theorem does not supply this. Until `LFunctions` proves the
+named export, this roadmap proves only the conditional `primeIdealTheorem_of_boundary`; likewise,
+Chebotarev supplies its own class-specific boundary package.
 
 ---
 
 ## Worked examples and rejection tests
 
-1. The constant-one ideal function is multiplicative but does not define `IdealWeight` because it
-   has value `1` at `⊥`.
+1. The everywhere-one function on all ideals is multiplicative but does not define `IdealWeight`
+   because it has value `1` at `⊥`; the constant-one function on nonzero ideals has canonical
+   zero extension instead.
 2. The trivial weight over `ℚ` regroups to the Riemann-zeta coefficient for every `n > 0`.
 3. A finite prime set has Dirichlet density zero, and changing a set on finitely many primes does
    not change its density.
@@ -287,22 +346,33 @@ analytic boundary statement.
    `π⁻¹ arctan(T/c)`, not `1/2`; its limit is `1/2`.
 5. Higher prime powers are visible in the logarithmic derivative before their contribution is
    estimated away.
-6. The trivial prime carrier and residue `1` recover the prime ideal theorem.
+6. Given `TauCeti.LFunctions.primeIdealVonMangoldtBoundary`, the trivial prime carrier and residue
+   `1` recover the prime ideal theorem. This is a conditional integration test, not an analytic
+   result owned by this roadmap.
 
 ---
 
 ## Ordering
 
 ```text
-0 → 1 → 2 → 3
-          ├────→ 7 → 8
-1 → 4 → 5 ├────→ 9 → 10
-      └→ 6 ┘
+0 ─→ 1 ─→ 3 ────────────────→ 7.2
+│    │                        ↑
+└─→ 2 ─→ 3 ─→ 10.1           5
+     │          ↑             ↑
+1 ─→ 4 ─→ 5 ─→ 10.2          │
+     └─→ 6 ─→ 10.3 and 7.3 ───┘
+
+9 ───────────→ 10.1
+LFunctions.primeIdealVonMangoldtBoundary ─→ primeIdealTheorem_of_boundary
 ```
 
-Layer 6 can be developed after Layers 1 and 4. Layer 7 needs the Euler product of Layer 3.
-Layer 9 is analytically independent of arithmetic ideals after its statement is expressed in
-Mathlib `LSeries` vocabulary. Layer 10 consumes Layers 5, 6, and 9.
+Layer 6 can be developed after Layers 1 and 4. The all-prime normalization in Layer 7.2 needs
+both the Euler product of Layer 3 and the higher-prime-power estimate of Layer 5; the
+natural-to-Dirichlet implication in Layer 7.3 needs Layer 6. Layer 9 is analytically independent
+of arithmetic ideals after its statement is expressed in Mathlib `LSeries` vocabulary. Layer
+10.1 consumes Layers 2, 3, and 9; Layers 10.2 and 10.3 consume Layers 5 and 6 respectively. The
+prime-ideal specialization additionally consumes the named external `LFunctions` boundary
+export.
 
 ## References
 
@@ -316,6 +386,3 @@ Mathlib `LSeries` vocabulary. Layer 10 consumes Layers 5, 6, and 9.
   finite-error calculus.
 - Titchmarsh, revised by Heath-Brown, *The Theory of the Riemann Zeta-Function*, Lemma 3.12 for
   the truncated Perron kernel and its endpoint restrictions.
-
-The source migration and licensing record is in [`PROVENANCE.md`](PROVENANCE.md). It is not part
-of this specification.
