@@ -778,7 +778,53 @@ and approximation results.
 
 Build:
 
-* finite de Finetti bounds, including quantitative approximation by mixtures of products;
+* **finite de Finetti bounds.** Build the finite-population sampling API rather than only its
+  final inequality:
+
+  - for a nonempty finite index type `κ`, define `empiricalMeasureOfFintype x`, the empirical
+    probability measure of a population `x : κ → α`, with evaluation, integration, and
+    measurability lemmas. Refactor the sequence-specific `empiricalMeasure x n` through its
+    `Fin (n + 1)` specialization rather than retaining two parallel finite-sum constructions;
+  - alongside `sampleWithoutReplacement`, define `sampleWithReplacement` for a random finite
+    population law `ρ : Measure (κ → α)` and a finite sample index `ι`, factoring their common
+    random-population reindexing map into one shared construction rather than duplicating it;
+  - identify `sampleWithReplacement ρ` with the mixture obtained by first drawing `x ∼ ρ` and
+    then taking the `ι`-fold product of the empirical probability measure of `x`;
+  - retain the exact representation of an exchangeable marginal as sampling without replacement:
+    `ExchangeableAt.sampleWithoutReplacement_eq_prefixLaw`.
+
+  For `[IsProbabilityMeasure μ]`, `h : ExchangeableAt μ X n`, `0 < n`, `m ≤ n`, and measurable
+  coordinates among the first `n`, compare `prefixLaw μ X m` with
+  `sampleWithReplacement (ι := Fin m) (prefixLaw μ X n)`. For every measurable
+  `A : Set (Fin m → α)`, prove both inequalities
+
+  ```text
+  prefixLaw μ X m A
+    ≤ sampleWithReplacement (ι := Fin m) (prefixLaw μ X n) A
+        + (m.choose 2 : ℝ≥0∞) / n,
+
+  sampleWithReplacement (ι := Fin m) (prefixLaw μ X n) A
+    ≤ prefixLaw μ X m A + (m.choose 2 : ℝ≥0∞) / n.
+  ```
+
+  These eventwise inequalities pin the normalization without depending on a particular
+  total-variation API. Under the probability convention
+  `dTV(P,Q) = sup_{A measurable} |P(A) - Q(A)|`, they say
+  `dTV(P,Q) ≤ (m.choose 2)/n`. Under the signed-measure norm convention
+  `‖P - Q‖TV = 2 * dTV(P,Q)`, the corresponding bound is
+  `‖P - Q‖TV ≤ 2 * (m.choose 2)/n`. Any total-variation corollary must state which convention it
+  uses; an unqualified “total variation at most `(m.choose 2)/n`” is not an acceptable target.
+
+  Key milestones:
+
+  ```lean
+  empiricalMeasureOfFintype
+  sampleWithoutReplacement
+  sampleWithReplacement
+  sampleWithReplacement_eq_bind_pi_empiricalMeasureOfFintype
+  ExchangeableAt.sampleWithoutReplacement_eq_prefixLaw
+  ExchangeableAt.finiteDeFinetti
+  ```
 * de Finetti for other countable index types;
 * the affine and ergodic decomposition of exchangeable laws: package `p ↦ p^{⊗ℕ}` and the de
   Finetti barycenter as an affine correspondence between mixing laws and exchangeable path laws.
@@ -841,6 +887,8 @@ representation theorems) sequences after the v1 theorem.
 * Czesław Ryll-Nardzewski, "On stationary sequences of random variables and the de
   Finetti's equivalence", 1957.
 * Edwin Hewitt and Leonard Savage, "Symmetric measures on Cartesian products", 1955.
+* Persi Diaconis and David Freedman, "Finite exchangeable sequences", *Annals of Probability*
+  8 (1980), 745–764.
 * Cameron Freer, *Three Roads to de Finetti's Theorem in Lean* (short paper),
   [ITP 2026](https://itp-conference-2026.github.io/program.html).
 * `cameronfreer/exchangeability`, Lean 4 formalization of exchangeability and de Finetti.
