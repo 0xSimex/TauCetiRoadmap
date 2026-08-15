@@ -10,6 +10,12 @@ arithmetic application, including roots of unity, rank formulas, Kummer orientat
 explicit local presentation, belongs to the **LocalGaloisGroups** roadmap, which consumes the
 abstract exports here together with `LocalFieldsRamification` and `ClassFieldTheory`.
 
+The **LocalFieldsRamification** roadmap is a separate arithmetic consumer of the abstract
+contracts here. It uses profinite Sylow theory to identify wild inertia inside inertia and uses
+the free-profinite and presented-profinite universal properties to identify the tame quotient.
+Those arithmetic identifications belong there; the reusable Sylow and presentation carriers and
+theorems belong here.
+
 ## Scope and exported contract
 
 The roadmap exports canonical carriers and universal properties for free profinite and free
@@ -24,8 +30,9 @@ The frozen downstream surface includes:
 | Topic | Exact declarations |
 |---|---|
 | pro-`p` carriers | `IsProP`, `proPKernel`, `maximalProPQuotient`, `IsProPSylow` |
+| profinite Sylow interface | `exists_isProPSylow`, `IsProP.exists_le_isProPSylow`, `IsProPSylow.eq_of_normal`, `IsProPSylow.map_of_surjective` |
 | finite generation | `IsTopologicallyFinitelyGenerated`, `topologicalGeneratorRank`, `topologicalGeneratorRankNat`, `proPFrattini` |
-| free objects and presentations | `freeProfiniteGroup`, `freeProC`, `freeProP`, `presentedProfiniteGroup`, `presentedProP` |
+| free objects and presentations | `freeProfiniteGroup`, `freeProfiniteGroup.of`, `freeProfiniteGroup.lift`, `freeProC`, `freeProP`, `presentedProfiniteGroup`, `presentedProP` |
 | Demushkin invariants | `IsDemushkin`, `demushkinRank`, `demushkinQ`, `demushkinCharacter`, `HasPrescriptionProperty` |
 | marked classification | `demushkinWordNeTwo`, `demushkinWordTwoOdd`, `demushkinWordTwoEven`, `isDemushkin_marked_of_q_ne_two`, `isDemushkin_marked_of_q_two_odd`, `isDemushkin_marked_of_q_two_even` |
 | standard dyadic group | `demushkinD0`, `d0A`, `d0S`, `d0Y`, `standardD0Orientation` and its value theorems |
@@ -1624,7 +1631,8 @@ approximations; Layers 9–10 complete the Demushkin classification and arbitrar
 The arithmetic of `G_K(p)`—finite generation, the `[K : ℚ_p] + 2` dichotomy, roots of unity,
 the canonical orientation, and the local Demushkin presentation—now belongs to
 `LocalGaloisGroups`. No theorem in this roadmap depends on a local field, and the
-`LocalGaloisGroups` dependency is one-way: it imports this roadmap.
+`LocalGaloisGroups` and `LocalFieldsRamification` dependencies are one-way: they import this
+roadmap, while this roadmap imports neither arithmetic supplier.
 
 ## References
 
