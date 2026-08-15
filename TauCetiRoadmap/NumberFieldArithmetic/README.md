@@ -73,10 +73,12 @@ No milestone here has a prerequisite of any other kind. In particular, no milest
 - a roadmap that does not yet exist.
 
 The [Local Fields and Ramification roadmap #189](https://github.com/TauCetiProject/TauCetiRoadmap/pull/189)
-is an explicit prerequisite of Layers 5.8 and 6.1–6.4. Those milestones consume its
-`LocalFieldsRamification.lowerRamificationGroup`, local monogenicity, Hilbert different formula,
-and tame/wild local different bounds. This is a declared inter-roadmap dependency, not an
-implicit reimplementation.
+is an explicit prerequisite throughout the local dictionary: Layer 5.2 supplies the canonical
+`ValuativeExtension` adapter; Layer 5.5 compares #189's local `(e,f)` with the global ideal
+invariants; Layer 5.7 consumes its finite-extension/integer-ring/integral-closure contracts;
+Layer 5.8 consumes local monogenicity; and Layers 6.1–6.4 consume the lower filtration, Hilbert
+different formula, and tame/wild local different bounds. This is a declared inter-roadmap
+dependency, not an implicit reimplementation.
 
 ## Boundaries
 
@@ -122,8 +124,9 @@ What this roadmap supplies to other subjects:
 - the local-field instance on `v.adicCompletion K`, and the localization of the different
   (Layer 5).
 
-Conversely, this roadmap consumes #189 by name in Layers 5.8 and 6.1–6.4. In particular,
-`LocalFieldsRamification.lowerRamificationGroup` is the sole local lower-filtration carrier.
+Conversely, this roadmap consumes #189 by name in Layers 5.2, 5.5, 5.7, 5.8, and 6.1–6.4. In
+particular, `LocalFieldsRamification.lowerRamificationGroup` is the sole local lower-filtration
+carrier, and every local invariant is formed using the `ValuativeExtension` installed in 5.2.
 
 The stable consumers are `GlobalNumberFields`, `ClassFieldTheory`,
 `PolynomialGaloisGroups`, and `Chebotarev`. In particular, Chebotarev consumes
@@ -212,9 +215,9 @@ two places.
 | Ideal-theoretic Artin map | `artinHomAway S hur : J^S →* (L ≃ₐ[K] L)`, for `L/K` finite abelian and `S` an arbitrary `Finset` of primes of `𝓞 K` that contains every prime that ramifies in `L`. `idealsAway S` is the subgroup of `(FractionalIdeal (𝓞 K)⁰ K)ˣ` of fractional ideals with valuation zero at every prime of `S`, and `J^S` is short for it in prose. `S` is a parameter of the construction. Taking `S = ramifiedSupport K L` is Layer 4.3. The integral-ideal monoid homomorphism is a corollary. |
 | Decomposition group | `MulAction.stabilizer G Q`, Mathlib's spelling. There is no second named definition. |
 | Inertia group | `Q.inertia G`, that is `Ideal.inertia`. |
-| Decomposition and inertia fields | Mathlib's `IsDecompositionField` and `IsInertiaField`. State Layer 1.3's degree and index formulas through `Ideal.under`, `ramificationIdx` and `inertiaDeg` of the ideals, not through the intermediate field. `PROVENANCE.md` records why. |
+| Decomposition and inertia fields | Mathlib's `IsDecompositionField` and `IsInertiaField`. State Layer 1.3's degree and index formulas through `Ideal.under`, `ramificationIdx` and `inertiaDeg` of the ideals, not through the intermediate field. |
 | Higher ramification groups | The local family is #189's total `LocalFieldsRamification.lowerRamificationGroup`, indexed by `ℤ` with `G_i = ⊤` for `i ≤ -1`. This roadmap's global ideal-theoretic family is indexed by `ℕ`, so `G 0` is inertia; the decomposition group keeps its own name. Layer 6.2 compares the global group at `i` with the imported local group at `(i : ℤ)`. |
-| `e` and `f` | `Ideal.ramificationIdx p P` and `Ideal.inertiaDeg p P`, which take two ideals at the pin, and the Galois-constant versions `ramificationIdxIn` and `inertiaDegIn`. ⚠ Mathlib is replacing both by their localization and residue-field definitions, under the same unqualified names but with the prime of `B` first and the base **ring** `A` second; the current definitions survive as `ramificationIdx'` and `inertiaDeg'`. State a milestone through a characterization that holds for both definitions, so that only the spelling of the arguments changes. `PROVENANCE.md` records the Mathlib work. |
+| `e` and `f` | `Ideal.ramificationIdx p P` and `Ideal.inertiaDeg p P`, which take two ideals at the pin, and the Galois-constant versions `ramificationIdxIn` and `inertiaDegIn`. ⚠ Mathlib is replacing both by their localization and residue-field definitions, under the same unqualified names but with the prime of `B` first and the base **ring** `A` second; the current definitions survive as `ramificationIdx'` and `inertiaDeg'`. State a milestone through a characterization that holds for both definitions, so that only the spelling of the arguments changes. |
 | Splitting type | The multiset `{(e₁,f₁), …, (e_g,f_g)}`. "Splits completely" is the count equation `(Ideal.primesOver (span {(p:ℤ)}) (𝓞 K)).ncard = finrank ℚ K`, which is Tau Ceti's convention. There is no new predicate. Cycle types use `Equiv.Perm.cycleType`, ⚠ which omits fixed points, so a partition-valued statement adds the `1`s back. |
 | Discriminant, absolute | The signed `NumberField.discr K : ℤ`. Its sign is a theorem, `NumberField.sign_discr`, not a convention. The label uses `\|discr\|`, and the sign is recovered from the signature. |
 | Discriminant, relative | A new ideal `relDiscr A B : Ideal A := Ideal.relNorm A (differentIdeal A B)`, defined in Layer 4.1 without hypotheses. Its theory, in Layer 4.2, carries `[Algebra.IsSeparable (FractionRing A) (FractionRing B)]`, without which the different, and so this ideal, can be `⊥`. It is never conflated with the signed integer. The reconciliation `relDiscr ℤ (𝓞 K) = span {discr K}` is a named lemma. |
@@ -223,7 +226,7 @@ two places.
 | Valuation of an ideal at a prime | `v_P(I) := multiplicity P I`, for `P` a nonzero prime of a Dedekind domain. This matches Mathlib's `finprod_heightOneSpectrum_pow_multiplicity`. Every exponent formula in Layers 4 to 6 uses this one normalization. That includes `v_P(e)` for a natural number `e`, which means the multiplicity of `P` in `span {(e : B)}`. |
 | Conductor | The only conductor formed anywhere in this roadmap is Mathlib's order conductor `conductor R x : Ideal S`, which Kummer–Dedekind uses, together with the number-field invariant `RingOfIntegers.exponent θ`. There is no Artin conductor object and no conductor exponent `f_𝔭(χ)`. |
 | The power-basis index | ⚠ `RingOfIntegers.exponent θ` is **not** the `ℤ`-module index `[𝓞 K : ℤ[θ]]`. The two have the same prime divisors, which is Layer 3.4, and only the index satisfies `disc(minpoly θ) = index² · discr K`. The index is defined on the subtype `IntegralPrimitiveElement K` of integral generators, never by `Nat.card` on all of `𝓞 K`. |
-| Completions at finite places | Mathlib's `v.adicCompletion K` for `v : HeightOneSpectrum (𝓞 K)`, with `FinitePlace K ≃ HeightOneSpectrum (𝓞 K)`. Local-field structure uses the `IsNonarchimedeanLocalField` vocabulary. Layer 5.1 states its instances through the `Valued` and `ValuativeRel` compatibility layer; `PROVENANCE.md` records why. |
+| Completions at finite places | Mathlib's `v.adicCompletion K` for `v : HeightOneSpectrum (𝓞 K)`, with `FinitePlace K ≃ HeightOneSpectrum (𝓞 K)`. Local-field structure uses the `IsNonarchimedeanLocalField` vocabulary. Layer 5.1 constructs the canonical `ValuativeRel` from the completion valuation and proves its topology and nontriviality before assembling the local-field instance. |
 | The completion of an extension | For `w ∣ v`, the algebra structure of `L_w` over `K_v` is the canonical one of Layer 5.2. ⚠ Mathlib's own `Module.Finite K_v L_w` instead quantifies over an arbitrary `[Algebra K_v L_w] [ContinuousSMul K_v L_w] [IsScalarTower K K_v L_w]`. No theorem in this roadmap does that, because an arbitrary structure lets a statement be about the wrong extension. |
 | Absolute values at finite places | Mathlib's `HeightOneSpectrum.adicAbv`, normalized by `absNorm v.asIdeal`. This is the normalization `‖x‖ = q^{−v(x)}`. Layer 5.1 states the agreement, and the product formula is the cross-check. |
 | LMFDB intrinsic label prefix | `d.r.\|D\|`, with `d = finrank ℚ K`, `r = nrRealPlaces K`, and `\|D\| = (discr K).natAbs`. These three coordinates are intrinsic theorems. The database index `i` and the canonical defining polynomial are not part of the API. A full label such as `2.2.5.1` is used below only as an external name for a field. |
@@ -481,8 +484,13 @@ Tau Ceti's `SplitsCompletely.lean` proves this over `ℚ`, and keeps the general
 declaration, made with the agreement of that file's authors. Do not restate the theorem in a
 second namespace.
 
+The general proof uses orbit–stabilizer for the Galois action together with
+`Ideal.sum_ramification_inertia`. It must not use `Ideal.card_stabilizer_eq`, whose clean
+`#D=e·f` statement assumes residue separability. The totally split conclusion itself does not
+need that hypothesis.
+
 *Prerequisites:* Tau Ceti `NumberField/SplitsCompletely.lean`; Mathlib
-`Ideal.sum_ramification_inertia`, `Ideal.card_stabilizer_eq`.
+`Ideal.sum_ramification_inertia`, orbit–stabilizer, and `orbit_eq_primesOver`.
 
 #### 1.2 Unramified sets of primes
 
@@ -496,26 +504,30 @@ and a quantified statement uses it directly.
 
 #### 1.3 The prime-in-subfield dictionary
 
-Let `Z` be the decomposition ring and `T` the inertia ring of `P` over `p`. Prove:
+Let `Z` be the decomposition ring and `T` the inertia ring of `P` over `p`. Without assuming
+separability of the residue extension, prove the parts that remain true:
 
 - `P` is the only prime of `L` over `P ∩ Z`;
 - `e(P∩Z/p) = 1` and `f(P∩Z/p) = 1`;
-- `f(P∩T/P∩Z) = f` and `e(P∩T/P∩Z) = 1`.
+- `[T:Z] = f_sep`, the separable residue degree;
 - `P` is the only prime of `L` over `P ∩ T`;
-- `L/T` is totally ramified at `P`, so `f(P/(P∩T)) = 1` and
-  `e(P/(P∩T)) = [L:T]`;
-- `[Z:K] = g`, `[T:Z] = f`, and `[L:T] = e`, hence `[L:K] = g·e·f`, with each formula
-  stated through the corresponding prime ideals and Mathlib's `ramificationIdx` and
-  `inertiaDeg`.
+- if `f = f_sep f_ins`, then `f(P/(P∩T)) = f_ins` and `[L:T] = e f_ins`;
+- `[Z:K] = g` and the full degree identity `[L:K] = g·e·f`.
+
+Under the additional hypothesis `[Algebra.IsSeparable (A ⧸ p) (B ⧸ P)]`, derive the clean
+corollary `f_ins = 1`: `f(P∩T/P∩Z) = f`, `L/T` is totally ramified with residue degree `1`, and
+`[L:T] = e`. Keep this hypothesis on every theorem that separately identifies the inertia index
+with `e`; without it that index is `e f_ins`.
 
 State these on Mathlib's `IsDecompositionField` and `IsInertiaField`. State the degree and index
 formulas through `Ideal.under`, `ramificationIdx` and `inertiaDeg` of the ideals, not through the
-intermediate field. `PROVENANCE.md` records why.
+intermediate field.
 
 *Source:* Neukirch I (9.3) and (9.6).
 
 *Prerequisites:* Mathlib `IsDecompositionField`, `IsInertiaField`,
-`Ideal.Quotient.stabilizerHom`, `Ideal.card_stabilizer_eq`; Layer 1.1.
+`Ideal.Quotient.stabilizerHom`; `Ideal.card_stabilizer_eq` only for the residue-separable clean
+corollary; Layer 1.1.
 
 #### 1.4 The double-coset law for non-Galois splitting
 
@@ -530,7 +542,8 @@ doubleCosetEquiv : DoubleCoset.Quotient H D ≃ Ideal.primesOver p (𝓞 L)
 and prove that it sends `HσD` to `σQ ∩ L`. Then prove the invariant formulas:
 
 - `e(𝔮_σ/p) · f(𝔮_σ/p) = |HσD| / |H| = [σDσ⁻¹ : H ∩ σDσ⁻¹]`;
-- `e(𝔮_σ/p) = [σIσ⁻¹ : H ∩ σIσ⁻¹]`;
+- under residue separability, `e(𝔮_σ/p) = [σIσ⁻¹ : H ∩ σIσ⁻¹]`; in general the subgroup index
+  measures `e f_ins`, and only the `e·f` formula above is retained without qualification;
 - `Σ_σ |HσD| / |H| = [L:K]`, which recovers the fundamental identity.
 
 **New object: `doubleCosetEquiv`.** Basic API:
@@ -559,7 +572,8 @@ and prove that it sends `HσD` to `σQ ∩ L`. Then prove the invariant formulas
 complete treatment.
 
 *Hypotheses:* `M/K` Galois and finite. `Q` a nonzero prime of `𝓞 M`. No separability hypothesis
-on residue fields is needed for the bijection.
+on residue fields is needed for the bijection or the decomposition-group `e·f` formula. The
+separate inertia-index formula for `e` requires a separable residue extension.
 
 *False generalization:* the formula `e·f = [σDσ⁻¹ : H ∩ σDσ⁻¹]` does not split into separate
 formulas for `e` and for `f` by replacing `D` with `I` and with `D/I`. Only the `e` half is a
@@ -970,9 +984,20 @@ Frobenius at a prime of `𝓞 M` over `p`. Then the multiset of degrees of the m
 factors of `f mod p` equals the cycle type of `σ` acting on the roots. Read both as partitions
 of `n`.
 
-Proof outline: Layer 1.4 identifies the primes of `K` over `p` with the orbits of `⟨Frob⟩` on
-`H\G`, that is, on the roots. Layer 3.6 identifies those primes with the factors. The two
-identifications match sizes.
+Proof outline, with the inertia step explicit:
+
+1. Layer 3.6 and squarefreeness give `e = 1` at every prime of every root field, hence inertia
+   fixes each root in the complete root set.
+2. Layer 1.4 identifies primes of a root field with decomposition-group orbits on `H\G`.
+3. The quotient `D/I` is cyclic, generated by the residue Frobenius. Since `I` fixes the roots,
+   any Frobenius lift has exactly the same orbits there as `D`.
+4. Layer 3.6 identifies those prime orbits with irreducible factors and matches orbit size with
+   factor degree.
+
+For reducible `f`, prove inertia triviality on the entire disjoint union of the root sets, not
+factor by factor with unrelated choices. One prime of one Galois splitting field supplies a
+single Frobenius lift; its restriction to each irreducible-factor orbit gives all components of
+the advertised cycle type.
 
 *Source:* Neukirch I §8 Exercises 4 and 5; Marcus Ch. 4.
 
@@ -1115,6 +1140,20 @@ Everything here is under the AKLB setup, with
   along an isomorphism. The pin collects the instances for a localized ring extension in
   `Mathlib/RingTheory/DedekindDomain/Instances.lean`.
 
+  The final equality is derived only after naming the base-change chain it uses. Prove, in this
+  order, compatibility of localization with:
+
+  1. `Algebra.trace` on the localized finite projective algebra;
+  2. `Submodule.traceDual` under the induced linear equivalence;
+  3. `FractionalIdeal.dual` and passage between fractional ideals and integral ideals;
+  4. `differentIdeal`, by taking the inverse of the localized trace dual;
+  5. `Ideal.relNorm`, including its value on localized height-one primes.
+
+  Name these `trace_localization`, `traceDual_localization`,
+  `fractionalIdealDual_localization`, `differentIdeal_localization`, and
+  `relNorm_localization`; then `relDiscr_localization` is their composite. The localized-ring
+  instances provide the types and algebra structures, not any of these equalities.
+
   ⚠ There is no unqualified base-change equation here, and none is asked for. An arbitrary base
   change does not commute with the different, and any such statement would need its own
   flatness or linear-disjointness hypotheses.
@@ -1237,10 +1276,22 @@ With it, prove:
 
 The product formula is the cross-check on the normalization.
 
-⚠ State the instances through the `Valued` and `ValuativeRel` compatibility layer rather than
-through `Valued` directly. `PROVENANCE.md` records why.
+The `ValuativeRel` is not an arbitrary input. Construct
+`adicCompletionValuativeRel v` from the completion valuation via
+`ValuativeRel.ofValuation`, and prove separately that the existing completion topology is its
+valuation topology and that the relation is nontrivial:
 
-*Prerequisites:* Mathlib `IsNonarchimedeanLocalField`,
+```text
+adicCompletionIsValuativeTopology v : IsValuativeTopology (v.adicCompletion K)
+adicCompletionValuativeRelIsNontrivial v : ValuativeRel.IsNontrivial (v.adicCompletion K)
+```
+
+Only then assemble `IsNonarchimedeanLocalField`. A theorem quantified over an arbitrary
+`[ValuativeRel (v.adicCompletion K)]` is false: the chosen relation need not induce the completion
+topology and may be trivial.
+
+*Prerequisites:* Mathlib `ValuativeRel.ofValuation`, `IsValuativeTopology`,
+`ValuativeRel.IsNontrivial`, `IsNonarchimedeanLocalField`,
 `IsDedekindDomain.HeightOneSpectrum.adicCompletion`, `adicCompletionIntegers`,
 `NumberField.FinitePlace.equivHeightOneSpectrum`, `NumberField.prod_abs_eq_one`.
 
@@ -1254,11 +1305,25 @@ completionAlgHom v w : K_v →ₐ[K] L_w
 
 by continuous extension of `K → L`.
 
+Construct it using the existing
+`IsDedekindDomain.HeightOneSpectrum.uniformContinuous_algebraMap_liesOver`; this is the
+`LiesOver`-dependent uniform-continuity bridge needed before
+`UniformSpace.Completion.extensionHom` can be applied.
+
 **New object: `completionAlgHom`.** Basic API:
 
 - *Constructors and instances.* The map; continuity; the induced `Algebra K_v L_w`; the derived
   `IsScalarTower K K_v L_w` and `ContinuousSMul K_v L_w`; `Module.Finite K_v L_w` for that
-  instance.
+  instance; the valuation-order comparison
+
+  ```text
+  completionAlgHom_vle_iff_vle v w :
+    completionAlgHom v w a ≤ᵥ completionAlgHom v w b ↔ a ≤ᵥ b
+  ```
+
+  and the resulting canonical
+  `completionValuativeExtension v w : ValuativeExtension K_v L_w`. Every use of #189's local
+  API is through this instance.
 - *Examples.* `L = K`, where the map is the identity; an unramified `w`, where `L_w/K_v` is
   unramified of degree `f`.
 - *Morphisms and functoriality.* For a tower `K ⊆ M ⊆ L` with `w ∣ u ∣ v`, the exact equation
@@ -1281,7 +1346,9 @@ for this instance.
 *Source:* Neukirch II §6.
 
 *Prerequisites:* Mathlib `UniformSpace.Completion.extensionHom`,
-`HeightOneSpectrum.denseRange_algebraMap`, `Module.Finite`; Layer 5.1.
+`IsDedekindDomain.HeightOneSpectrum.uniformContinuous_algebraMap_liesOver`,
+`HeightOneSpectrum.denseRange_algebraMap`, `ValuativeExtension`, `Module.Finite`; Layer 5.1;
+Local Fields and Ramification #189 for the precise `ValuativeExtension` contract consumed below.
 
 #### 5.3 Semi-local structure
 
@@ -1304,6 +1371,22 @@ tensor product, so that the `K_v`-algebra structure on the source is Mathlib's
 
 Name the equivalence `W v ≃ Ideal.primesOver v.asIdeal (𝓞 L)` as well, so that both spellings are
 available.
+
+The construction is split into named milestones rather than treating the displayed equivalence as
+its own proof:
+
+1. choose a primitive element `α` for `L/K` and identify `K_v ⊗[K] L` with
+   `K_v[X]/(minpoly K α)`;
+2. factor that polynomial over `K_v`, and construct the bijection between its irreducible factors
+   and `W v`;
+3. for each factor, construct the quotient-field/completion equivalence and prove compatibility
+   with the dense map `L → L_w`;
+4. assemble the factor equivalences with the finite Chinese remainder theorem;
+5. identify that assembly with `semilocalEquiv` by the pure-tensor formula.
+
+Name these `completionFactorsEquivPlaces`, `factorFieldEquivCompletion`,
+`factorFieldEquivCompletion_algebraMap`, and `semilocalEquiv_eq_crt`. They are the proof objects
+later integral and trace comparisons cite.
 
 Consequence: `Σ_{w ∣ v} [L_w : K_v] = [L : K]`, the finite-place analogue of Mathlib's
 archimedean `InfinitePlace.sum_inertiaDeg_eq_finrank`.
@@ -1334,17 +1417,34 @@ algebraMap K K_v (Algebra.trace K L x) = Σ_{w ∣ v} Algebra.trace K_v L_w (alg
 
 These are also what proves the localization of the different, in Layer 5.8.
 
+Before specializing along `semilocalEquiv`, add the reusable linear-algebra package:
+`Algebra.trace_algEquiv`, `Algebra.norm_algEquiv`, finite-`Pi` trace and norm formulas, and their
+compatibility with scalar extension. The pin's binary-product and equivalence lemmas do not by
+themselves establish the finite product appearing here.
+
 *Source:* Neukirch II (8.4).
 
-*Prerequisites:* Layer 5.3; Mathlib `Algebra.norm`, `Algebra.trace`.
+*Prerequisites:* Layer 5.3; Mathlib `Algebra.norm`, `Algebra.trace`, finite products and scalar
+extension.
 
 #### 5.5 Invariant matching
 
-Prove `[L_w : K_v] = e(w ∣ v) · f(w ∣ v)`, with `e` and `f` the **global**
-`Ideal.ramificationIdx` and `Ideal.inertiaDeg`.
+First prove the two invariant comparisons as separate named contracts:
 
-*Prerequisites:* Layers 5.1 and 5.2; Mathlib `Ideal.ramificationIdx`, `Ideal.inertiaDeg`,
-`IsNonarchimedeanLocalField`.
+```text
+LocalFieldsRamification.ramificationIndex K_v L_w =
+  Ideal.ramificationIdx v.asIdeal w.asIdeal
+LocalFieldsRamification.inertiaDegree K_v L_w =
+  Ideal.inertiaDeg v.asIdeal w.asIdeal
+```
+
+Their proofs use the residue-field equivalences and compatibility between valuation inequalities,
+integer rings, maximal ideals, and ideal powers. Then derive `[L_w : K_v] = e(w ∣ v)·f(w ∣ v)`
+from #189's local degree theorem. The degree formula is not a substitute for the two comparisons,
+because downstream code consumes the local invariants separately.
+
+*Prerequisites:* Layers 5.1 and 5.2; Local Fields and Ramification #189, Layer 0; Mathlib
+`Ideal.ramificationIdx`, `Ideal.inertiaDeg`, `IsNonarchimedeanLocalField`.
 
 #### 5.6 The decomposition group is the local Galois group
 
@@ -1383,8 +1483,15 @@ decompositionHom v w : MulAction.stabilizer (L ≃ₐ[K] L) w.asIdeal →* (L_w 
 
 *Source:* Neukirch II §9.
 
-*Prerequisites:* Layers 2.1, 5.2, 5.5; Mathlib `MulAction.stabilizer`,
-`IsFractionRing.stabilizerHom`, `stabilizerHom_surjective`.
+Surjectivity is not a consequence of the residue-field map
+`Ideal.Quotient.stabilizerHom_surjective`. Prove it by cardinalities: density gives injectivity;
+the global theorem gives `|D_w| = e f`; Layer 5.5 identifies `e f = [L_w:K_v]`; and
+`|Aut_{K_v}(L_w)| ≤ [L_w:K_v]`. The injection and these inequalities force equality and
+surjectivity, and also prove that `L_w/K_v` is Galois.
+
+*Prerequisites:* Layers 2.1, 5.2, 5.5; Mathlib `MulAction.stabilizer`, density,
+`Ideal.card_stabilizer_eq`, and `FiniteDimensional.card_algEquiv_le_finrank` (or its current
+spelling). The residue-field `stabilizerHom_surjective` is not used for this step.
 
 #### 5.7 The canonical map on completed integer rings
 
@@ -1454,6 +1561,24 @@ pin where the pin already has the statement, and prove the rest here.
   not an instance there, so the chain to `Algebra.IsSeparable` does not fire and this is a
   milestone and not a citation.
 
+- **The integral semilocal equivalence.** Restrict Layer 5.3 to the integral models and prove the
+  finite-product equivalence
+
+  ```text
+  integralSemilocalEquiv v :
+    v.adicCompletionIntegers K ⊗[𝓞 K] 𝓞 L ≃ₐ[v.adicCompletionIntegers K]
+      ∏ (w : W v), w.adicCompletionIntegers L.
+  ```
+
+  Pin its pure-tensor formula and compatibility with `semilocalEquiv`. For each component name the
+  projection, the localization-to-completion map, density of localized/global integers, the
+  residue-field equivalence, the image of the maximal ideal, and compatibility of every maximal-
+  ideal power. These are `integralSemilocalEquiv_tmul`,
+  `integralSemilocalEquiv_fieldCompatibility`, `localizationToCompletionIntegers`,
+  `denseRange_localizationToCompletionIntegers`, `residueFieldEquivCompletion`,
+  `maximalIdeal_map_completion`, and `maximalIdeal_pow_map_completion`. One component's intrinsic
+  integral-closure property does not imply this product comparison.
+
 None of this is decoration, and none of it can be deferred to an implementation detail. Mathlib's
 `conductor_mul_differentIdeal`, which is the named route of Layer 6.3, takes at the pin
 `[IsFractionRing A K]`, `[FiniteDimensional K L]`, `[Algebra.IsSeparable K L]`,
@@ -1464,7 +1589,8 @@ None of this is decoration, and none of it can be deferred to an implementation 
 `L = w.adicCompletion L`. `Suggested.lean` applies the Mathlib theorem to that instantiation, so
 the bridge is checked and not asserted.
 
-*Prerequisites:* Layers 5.1 and 5.2; Mathlib
+*Prerequisites:* Layers 5.1, 5.2, and 5.3; Local Fields and Ramification #189's
+finite-extension/integer-ring/integral-closure contracts; Mathlib
 `IsDedekindDomain.HeightOneSpectrum.adicCompletionIntegers`, `mem_adicCompletionIntegers`,
 `RingHom.toAlgebra`, `Module.IsTorsionFree`, `ValuationSubring`,
 `Valuation.Integers.mem_of_integral`, `IsIntegralClosure.finite`,
@@ -1524,8 +1650,13 @@ State it with the ideal map, not as multiplication by `𝓞_{L_w}`. The right-ha
 for the algebra structure of Layer 5.7 and for no other, and it needs the `IsTorsionFree`
 instance of that milestone to exist at all.
 
-The proof compares the two trace duals, through the trace formula of Layer 5.4. Both sides are
-ideals of `w.adicCompletionIntegers L`.
+The proof is a named finite-projective flat-base-change chain: trace commutes with completion;
+trace dual commutes with flat base change; inverse fractional ideals commute with it; and the
+integral semilocal equivalence of Layer 5.7 projects the resulting product equality to the chosen
+factor. Equivalently, a componentwise proof may start from that same integral equivalence. In
+either route, cite `trace_completion`, `traceDual_completion`,
+`fractionalIdealDual_completion`, and `differentIdeal_integralSemilocal` before deriving the
+displayed equality. Both sides are ideals of `w.adicCompletionIntegers L`.
 
 *Source:* Neukirch III (2.2)(iii).
 
@@ -1548,7 +1679,7 @@ of Layer 6 reduces to this formula.
 ### Layer 6: global ramification consequences
 
 This layer computes the exponents of the different and of the discriminant. It uses the Layer 5
-dictionary and nothing beyond it.
+dictionary together with the explicitly imported #189 local contracts and nothing beyond them.
 
 #### 6.1 The imported local lower filtration
 
@@ -1594,8 +1725,17 @@ ramificationGroup Q i := {σ ∈ MulAction.stabilizer (L ≃ₐ[K] L) Q | ∀ x 
 ⚠ The decomposition group is not a member of this family. It keeps its own name,
 `MulAction.stabilizer`, and is never written `G (-1)`.
 
+The comparison proof has its own named topological engine. Prove density of the global and
+localized integers in the completed integer ring; closedness of each maximal-ideal power; the
+equivalence between membership in `Q^(i+1)` and membership in `m_w^(i+1)` after completion; and
+continuity of every extended automorphism. Only then extend the congruence from the dense subset
+to all completed integers. Name these `denseRange_globalIntegers`,
+`denseRange_localizedIntegers`, `isClosed_maximalIdealPow`,
+`mem_globalIdealPow_iff_mem_completionIdealPow`, and `continuous_decompositionHom`. The group
+isomorphism alone does not identify the filtrations.
+
 *Prerequisites:* Local Fields and Ramification #189, lower-numbering filtration;
-Layers 5.6 and 6.1; Mathlib `Ideal.inertia`, `galRestrict`,
+Layers 5.6, 5.7, and 6.1; Mathlib `Ideal.inertia`, `galRestrict`,
 `MulAction.stabilizer`.
 
 #### 6.3 The different-exponent formula
@@ -1926,8 +2066,8 @@ goes towards the value the page displays, on one of four levels:
 | local algebras at a ramified prime | Layer 5.3 | carrier only |
 | Galois group, as an abstract group | — | none: Layer 7.1 supplies the `S_n`-embedding and the subfield dictionary, and identifies no abstract isomorphism type |
 | Galois group `nTj` label | — | none: polynomial Galois groups |
-| class group, as a group | Mathlib, with Tau Ceti `EffectiveBounds/` | carrier only: the class group and its finiteness exist, and the bounds discharge `h = 1` for the worked fields; no milestone computes the group structure for an arbitrary field |
-| class number | Mathlib `classNumber`, with `EffectiveBounds/` | worked only |
+| class group, as a group | Mathlib, with Tau Ceti `EffectiveBounds/` | carrier only: the class group and its finiteness exist; no milestone computes the group structure for an arbitrary field |
+| class number | Mathlib `classNumber`, with `EffectiveBounds/` | worked only where a cited Mathlib theorem or an explicit Minkowski certificate is named; no value is claimed for Dedekind's `−503` cubic |
 | narrow class group | — | none: global class field theory |
 | unit rank, torsion order | Mathlib | general |
 | fundamental units | Layer 7.4 | **rank one and prime degree only**. The criterion holds at rank one; the polynomial certificate that discharges it needs prime degree as well, so a rank-one field of degree 4 is not covered. §Explicit scope exclusions puts higher rank and that case out of scope |
@@ -1950,8 +2090,10 @@ No claim of full page coverage is made anywhere in this roadmap.
 
 #### 8.3 The worked suite
 
-Five fields, computed end to end: `2.2.5.1`, `2.0.4.1`, `4.0.125.1`, `3.1.23.1`, `3.1.503.1`.
-§Worked examples states them. Each has a section in `Suggested.lean`.
+Five fields exercise the suite: `2.2.5.1`, `2.0.4.1`, `4.0.125.1`, `3.1.23.1`, `3.1.503.1`.
+§Worked examples states exactly which invariants are certified for each; it does not claim that
+every displayed database invariant is proved for every field. Each has a section in
+`Suggested.lean`.
 
 *Prerequisites:* Layers 1 to 8, as named in each example.
 
@@ -2125,6 +2267,14 @@ The same enumeration gives the whole elimination as one decidable check: of the 
 `16` have discriminant `−23`, none has discriminant `−23m²` for any `m ≥ 2`, and none of those
 `16` has a root in `(1, w u)`.
 
+Package this enumeration as the named, concrete proof term
+`cubicUnitEliminationCertificate : UnitCandidateEliminationCertificate K w hw (w u)`. Its data
+contains one proof for each of all `98` candidates: interval exclusion for the `96` nonsurvivors,
+and the explicit discriminant obstruction for the two survivors. The theorem
+`cubicUnitEliminationCertificate_sound` applies the general certificate soundness theorem to
+this object. Neither the abstract predicate nor the statement that only two candidates survive
+constructs this acceptance artifact by itself.
+
 This is the acceptance target for Layer 7.4 in degree 3, and it is the reason Layer 7.4 asks for
 a candidate set, a completeness theorem, a root test **and** a field test, rather than for
 `Set.Finite`.
@@ -2152,10 +2302,26 @@ statement, with analytic/L-function work supplying its prerequisites.
 
 ### `3.1.503.1` = Dedekind's field
 
-`ℚ[x]/(x³ − x² − 2x − 8)`, with `disc(f) = −2012 = −4·503`, `index θ = 2`, and `discr K = −503`.
+`ℚ[x]/(x³ − x² − 2x − 8)`. Define
 
-*Proved here:* `2` splits completely, although `minpoly mod 2 = x²(x+1)`; `2` is a common index
-divisor, that is, `∀ θ' : IntegralPrimitiveElement K, 2 ∣ index θ'`; hence
+```text
+β = (θ² − θ)/2.
+```
+
+Prove integrality by the exact relation `β³ − 2β² + 3β − 10 = 0`, construct the integral basis
+`(1, θ, β)`, and compute its discriminant as `−503`. Since `503` is squarefree, the order spanned
+by this basis is maximal, proving `𝓞 K = ℤ·1 ⊕ ℤ·θ ⊕ ℤ·β`. Only after that conclusion may one
+deduce `index θ = 2` and `discr K = −503`; these are outputs, not inputs.
+
+*Proved here:* Use the same integral basis and the multiplication relations
+`θ² = θ + 2β`, `θβ = θ + 4`, and `β² = β + 2θ − 2` to compute
+
+```text
+(2) = (2, θ, β) · (2, θ, β − 1) · (2, θ − 1, β − 1).
+```
+
+Thus `2` splits completely even though `minpoly mod 2 = x²(x+1)`. It is a common index divisor,
+that is, `∀ θ' : IntegralPrimitiveElement K, 2 ∣ index θ'`; hence
 `¬ NumberField.IsMonogenic K`.
 
 This example is why Layer 3.10 is hypothesized on `p ∤ f.discr` and not on "`p` unramified". Here
@@ -2164,7 +2330,9 @@ type.
 
 *Source:* Neukirch III §2 Exercise 1.
 
-*From Mathlib:* `classNumber K = 1`, by the principal-ideal-ring criteria.
+No class-number value is claimed for this field. Adding `classNumber K = 1` would require a
+complete Minkowski-bound certificate, including explicit generators for every prime ideal below
+the bound; the generic principal-ideal-ring criteria do not supply that calculation.
 
 ### The dyadic quadratic law
 
@@ -2186,11 +2354,13 @@ extra information is which layers are independent of each other.
   parameter, so it does not need the relative discriminant.
 - **Layer 3** needs Layer 1 and Layer 2 for the cycle-type theorem. Its index material and its
   relative Dedekind–Kummer half need neither, and are independent of Layer 2.
-- **Layer 4** needs Layer 2.5 only for the specialization of the Artin map. The rest is
-  independent of Layers 2 and 3.
-- **Layer 5** needs Layer 2 for the Frobenius comparison and Layer 4 for the discriminant
-  valuation. Nothing else.
-- **Layer 6** needs Layer 5 and nothing else.
+- **Layer 4** is independent of Layer 2 through the construction of `ramifiedSupport`; only the
+  later adapter `artinHomAway_ramifiedSupport` depends on Layer 2.5.
+- **Layer 5** needs Layer 2 for the Frobenius comparison, Layer 4 for the discriminant
+  localization/valuation, and Local Fields and Ramification #189 directly in 5.2, 5.5, 5.7, and
+  5.8. Every #189 consumer also depends on the canonical `ValuativeExtension` of 5.2.
+- **Layer 6** needs Layer 5 and the named #189 Layer 3 filtration/different exports; it is not a
+  dependency on Layer 5 alone.
 - **Layer 7** needs Layers 1 to 3. Its unit certification needs Layers 3.1 and 3.3, for the index
   formula that eliminates a candidate minimal polynomial, and Layer 7.1, for the prime-degree
   argument that a competing unit generates the field; nothing else, so it can be done early.

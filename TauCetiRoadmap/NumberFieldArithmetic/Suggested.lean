@@ -746,12 +746,34 @@ extension. Nothing in this section does that. The comparison maps are named obje
 existence statements: `∃! f, …` fixes a map mathematically but leaves later theorems with
 nothing to be about, and `Nonempty (… ≃ …)` does not even do that. -/
 
+/-- **Layer 5.1, the canonical valuative relation on a completion.** It is induced by the
+existing completion valuation. In particular, the local-field theorem below is not quantified
+over an arbitrary `ValuativeRel`, which need not induce the completion topology. -/
+@[implicit_reducible]
+noncomputable def adicCompletionValuativeRel (v : HeightOneSpectrum (𝓞 K)) :
+    ValuativeRel (v.adicCompletion K) :=
+  ValuativeRel.ofValuation (Valued.v : Valuation (v.adicCompletion K) _)
+
+attribute [local instance] adicCompletionValuativeRel
+
+/-- **Layer 5.1, the completion topology is the topology of the canonical relation.** -/
+noncomputable instance adicCompletionIsValuativeTopology
+    (v : HeightOneSpectrum (𝓞 K)) : IsValuativeTopology (v.adicCompletion K) :=
+  sorry
+
+/-- **Layer 5.1, the canonical relation is nontrivial.** Kept separate from the topology
+comparison because both are fields of `IsNonarchimedeanLocalField`. -/
+noncomputable instance adicCompletionValuativeRelIsNontrivial
+    (v : HeightOneSpectrum (𝓞 K)) :
+    ValuativeRel.IsNontrivial (v.adicCompletion K) :=
+  sorry
+
 /-- **Layer 5.1, completions of number fields are local fields.** The full class, not merely
-local compactness, which is one of its corollaries. ⚠ Stated once
-`ValuativeRel (v.adicCompletion K)` is available through the `Valued`-compatibility layer;
-the `Valued → ValuativeRel` migration must be a refactor of this instance, not a re-proof. -/
+local compactness, which is one of its corollaries. The preceding declarations fix the relation
+from the completion valuation and prove its topology and nontriviality; no arbitrary relation is
+accepted. -/
 theorem isNonarchimedeanLocalField_adicCompletion
-    (v : HeightOneSpectrum (𝓞 K)) [ValuativeRel (v.adicCompletion K)] :
+    (v : HeightOneSpectrum (𝓞 K)) :
     IsNonarchimedeanLocalField (v.adicCompletion K) :=
   sorry
 
@@ -804,6 +826,25 @@ be about a different extension. -/
   (completionAlgHom v w : v.adicCompletion K →+* w.adicCompletion L).toAlgebra
 
 attribute [local instance] completionAlgebra
+
+/-- **Layer 5.2, valuation-order compatibility for the canonical completion map.** The
+construction of `completionAlgHom` uses
+`IsDedekindDomain.HeightOneSpectrum.uniformContinuous_algebraMap_liesOver` before applying
+`UniformSpace.Completion.extensionHom`; this theorem is the valuation statement that remains
+after extension. -/
+theorem completionAlgHom_vle_iff_vle {L : Type*} [Field L] [NumberField L] [Algebra K L]
+    (v : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 L))
+    [w.asIdeal.LiesOver v.asIdeal] (a b : v.adicCompletion K) :
+    completionAlgHom v w a ≤ᵥ completionAlgHom v w b ↔ a ≤ᵥ b :=
+  sorry
+
+/-- **Layer 5.2, the canonical local extension is valuative.** Every invocation of #189's
+local `(e,f)`, integer-ring, filtration, and different API uses this instance. -/
+noncomputable instance completionValuativeExtension {L : Type*} [Field L] [NumberField L]
+    [Algebra K L] (v : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 L))
+    [w.asIdeal.LiesOver v.asIdeal] :
+    ValuativeExtension (v.adicCompletion K) (w.adicCompletion L) where
+  vle_iff_vle := completionAlgHom_vle_iff_vle v w
 
 /-- The subtype of primes over `v` carries its `LiesOver` proof; making that an instance is
 what lets `K_v`-algebra structures be found for each factor of the semi-local decomposition. -/
@@ -1523,6 +1564,28 @@ example : (X ^ 3 + X ^ 2 - 2 * X - 1 : ℤ[X]).discr = 49 := sorry
 
 example : (X ^ 3 + 2 * X ^ 2 - 3 * X - 1 : ℤ[X]).discr = 257 := sorry
 
+/-- **The concrete 98-candidate acceptance artifact.** Unlike the abstract predicate, this
+constructs an elimination proof for this exact field and bound: the 96 interval failures and
+the two displayed discriminant obstructions. -/
+theorem cubicUnitEliminationCertificate (w : NumberField.InfinitePlace K) (hw : w.IsReal)
+    (u : (𝓞 K)ˣ) (hu : (u : 𝓞 K) = θ ^ 2 - θ) :
+    UnitCandidateEliminationCertificate K w hw
+      (w.embedding_of_isReal hw (((u : 𝓞 K) : K))) :=
+  sorry
+
+/-- Applying the general soundness theorem to the concrete certificate rules out every smaller
+normalized unit, including the 96 candidates that do not appear in the survivor table. -/
+example (w : NumberField.InfinitePlace K) (hw : w.IsReal)
+    (u : (𝓞 K)ˣ) (hu : (u : 𝓞 K) = θ ^ 2 - θ)
+    (hrank : NumberField.Units.rank K = 1)
+    (hdeg : Nat.Prime (Module.finrank ℚ K)) :
+    ¬ ∃ v : (𝓞 K)ˣ,
+      1 < w.embedding_of_isReal hw (((v : 𝓞 K) : K)) ∧
+        w.embedding_of_isReal hw (((v : 𝓞 K) : K)) <
+          w.embedding_of_isReal hw (((u : 𝓞 K) : K)) :=
+  UnitCandidateEliminationCertificate.sound hrank hdeg w hw _
+    (cubicUnitEliminationCertificate hmin hgen w hw u hu)
+
 example (θ' : IntegralPrimitiveElement K) : (minpoly ℤ θ'.1).discr < 0 := sorry
 
 /-- The conclusion of the four steps: no unit lies strictly between `1` and `u`, which is
@@ -1591,6 +1654,25 @@ variable {θ : 𝓞 K} (hmin : minpoly ℤ θ = X ^ 3 - X ^ 2 - 2 * X - 8)
 
 include hmin hgen
 
+/-- The half-integral element `β = (θ² - θ)/2` exists in the full ring of integers. This is the
+first step of the noncircular discriminant calculation. -/
+example : ∃ β : 𝓞 K,
+    (2 : K) * (β : K) = (θ : K) ^ 2 - (θ : K) :=
+  sorry
+
+variable {β : 𝓞 K} (hβ : (2 : K) * (β : K) = (θ : K) ^ 2 - (θ : K))
+
+/-- Integrality is certified by the exact monic equation for `β`. -/
+example : β ^ 3 - 2 * β ^ 2 + 3 * β - 10 = 0 :=
+  sorry
+
+/-- The integral basis `(1, θ, β)` has squarefree discriminant `-503`; hence its order is the
+full ring of integers. This is the source of `discr K = -503` and `index θ = 2`, not a
+consequence of either assertion. -/
+example : ∃ b : Module.Basis (Fin 3) ℤ (𝓞 K),
+    b 0 = 1 ∧ b 1 = θ ∧ b 2 = β ∧ Algebra.discr ℤ b = -503 :=
+  sorry
+
 example : NumberField.discr K = -503 := sorry
 
 example : HasLMFDBIntrinsicLabel K 3 1 503 := sorry
@@ -1598,6 +1680,15 @@ example : HasLMFDBIntrinsicLabel K 3 1 503 := sorry
 /-- The index-divisor caveat as a theorem: `2` splits completely even though
 `f mod 2 = x²(x+1)`, so the polynomial factorization does *not* compute the splitting here. -/
 example : (Ideal.primesOver (Ideal.span {(2 : ℤ)}) (𝓞 K)).ncard = 3 := sorry
+
+/-- The factorization of `(2)` computed in the full integral basis, not by reducing the
+index-divisible power-basis polynomial. -/
+example :
+    Ideal.span ({(2 : 𝓞 K), θ, β} : Set (𝓞 K)) *
+        Ideal.span ({(2 : 𝓞 K), θ, β - 1} : Set (𝓞 K)) *
+        Ideal.span ({(2 : 𝓞 K), θ - 1, β - 1} : Set (𝓞 K)) =
+      Ideal.span {(2 : 𝓞 K)} :=
+  sorry
 
 /-- `2` is a common index divisor: every integral generator has even index. -/
 example : ∀ θ' : IntegralPrimitiveElement K, 2 ∣ index θ' := sorry
