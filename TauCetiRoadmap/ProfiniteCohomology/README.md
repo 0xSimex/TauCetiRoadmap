@@ -32,8 +32,9 @@ profinite-group, or Galois-theoretic material, so all of this is new work there.
 
 1. Discrete modules over a topological group: the openness API, the closure properties actually
    used, continuous sections of profinite quotients (Layer 0).
-2. Functoriality of Mathlib's continuous cohomology in compatible pairs, with restriction and
-   inflation, and the dictionary from the unbundled classes into its category (Layer 1).
+2. Adoption of Mathlib's compatible-pair functoriality for continuous cohomology, together with
+   named restriction and inflation maps and the dictionary from the unbundled classes into its
+   category (Layer 1).
 3. The explicit inhomogeneous complex in degrees `0, 1, 2` over an arbitrary topological group,
    with functoriality by compatible pairs and the three named instances (Layer 2).
 4. The comparison isomorphisms: explicit against canonical for profinite groups, and continuous
@@ -62,7 +63,10 @@ Named theorem by theorem, or file by file, in §4. They are: Mathlib's discrete 
 package including `LowDegree`, `Functoriality`, `LongExactSequence`, `Shapiro` and `Hilbert90`;
 Mathlib's `OpenSubgroup`/`OpenNormalSubgroup`, `ProfiniteGrp` and `ClopenNhdofOne` material;
 Mathlib's Krull topology, infinite Galois correspondence and separable-closure API; and Mathlib's
-`continuousCohomology` carrier, which the pin has.
+`continuousCohomology` carrier. Current Mathlib master also supplies the compatible-pair maps in
+`Mathlib/RepresentationTheory/Homological/ContCohomology/Functoriality.lean`; the repository pin
+predates that file, so the pin-local prototypes in `Suggested.lean` are temporary compatibility
+signatures rather than new public API.
 
 ### Supplied to other roadmaps
 
@@ -105,9 +109,13 @@ competing one. The pinned Mathlib supplies it:
 `ContinuousCohomology.homogeneousCochains` for the complex it is the homology of,
 `ContinuousCohomology.invariants`, and
 `continuousCohomologyZeroIso : continuousCohomology R G 0 ≅ invariants R G` for the one degree
-Mathlib computes. What it does not supply is functoriality in compatible pairs, and Layer 1
-supplies that. Every canonical-facing statement below is written against `TopRep R G`, an
-abbreviation for the pin's `Action (TopModuleCat R) G`.
+Mathlib computes. Current Mathlib master additionally supplies
+`ContinuousCohomology.resolutionMap`, `cochainsMap`, `cocyclesMap`, `map`, `map_id`, and
+`map_comp` in `RepresentationTheory/Homological/ContCohomology/Functoriality.lean`. Layer 1
+consumes those declarations; while this repository remains on its older pin, `Suggested.lean`
+records buildable compatibility prototypes with the same mathematical contracts. Updating the pin
+replaces those prototypes with the Mathlib declarations. Every canonical-facing statement below
+is written against `TopRep R G`, an abbreviation for the pin's `Action (TopModuleCat R) G`.
 
 Any other implementation of continuous cohomology replaces this one only after an explicit
 comparison of the coefficient categories and of the resolutions has been proved. Equivalence of
@@ -219,8 +227,8 @@ two constructions of the same operation exist here, the identification is a targ
 
 A joint contract with a consuming roadmap is recorded as a four-column table, consumer layer
 against supplier layer against exact object against declaration name, carried identically in both
-roadmaps. This section states settled contracts only. Coordination that is not yet settled is
-recorded in [`PROVENANCE.md`](PROVENANCE.md), which is not normative.
+roadmaps. This section states settled contracts only; unsettled coordination is handled outside
+the normative roadmap.
 
 Nothing here depends on another roadmap except the merged
 [`RepresentationTheory/InductionRestriction`](../RepresentationTheory/InductionRestriction/README.md),
@@ -532,7 +540,9 @@ unbundled classes of §3.
 ### Layer 1: the canonical carrier and its functoriality
 
 **Prerequisites.** Mathlib: `continuousCohomology`, `ContinuousCohomology.homogeneousCochains`,
-`ContinuousCohomology.invariants`, `continuousCohomologyZeroIso`, `Action`, `Action.res`,
+`ContinuousCohomology.invariants`, `continuousCohomologyZeroIso`, and, on current master,
+`ContinuousCohomology.{resolutionMap,cochainsMap,cocyclesMap,map,map_id,map_comp}` from
+`ContCohomology/Functoriality.lean`; also `Action`, `Action.res`,
 `TopModuleCat`, `ContinuousMonoidHom`. This roadmap: Layer 0.
 
 The pin supplies the carrier and nothing else. This layer supplies the rest of the interface every
@@ -570,11 +580,13 @@ canonical-facing statement below uses.
   ⚠ Every canonical-facing comparison below quantifies over the image of `ofDiscreteModule`, never
   over an arbitrary `TopRep` object. A statement that forgets this is false, not merely
   unprovable.
-- **Functoriality in compatible pairs.** For a continuous homomorphism `φ : H →ₜ* G` and a
+- **Functoriality in compatible pairs (consume current Mathlib).** For a continuous homomorphism `φ : H →ₜ* G` and a
   morphism `f : Action.res _ φ X ⟶ Y` in `TopRep R H`: the cochain map `cochainsMap φ f`, then
   `cocyclesMap φ f n`, then `map φ f n : Hⁿ_cont(G, X) ⟶ Hⁿ_cont(H, Y)`, with `map_id` and
-  `map_comp`. Name them `ContinuousCohomology.cochainsMap`, `cocyclesMap` and `map`, matching
-  Mathlib's continuous-cohomology functoriality API, so that the swap to it is a deletion.
+  `map_comp`. These are the declarations now provided by
+  `Mathlib/RepresentationTheory/Homological/ContCohomology/Functoriality.lean`. The compatibility
+  prototypes at the older repository pin must be deleted when the pin is updated; downstream code
+  uses Mathlib's names and types rather than a parallel implementation.
 - **The three named instances.** Restriction along the inclusion of a subgroup, inflation along a
   quotient map with invariant coefficients, and coefficient maps at `φ = id`, each as a natural
   transformation of functors on `TopRep R G`, and each with its composition law. Name the first
@@ -596,8 +608,9 @@ trivial group, the trivial subgroup, and an object that is discrete but **not** 
 exists and is the reason the subcategory is named. Downstream interfaces: Layers 3, 4, 7, 8, 10
 and 12 all state their canonical halves against this layer and against nothing else.
 
-⚠ Do not restate the carrier. If a milestone below needs a property of `continuousCohomology`
-that Mathlib already proves, cite it; this layer adds only what the pin is missing.
+⚠ Do not restate the carrier or compatible-pair functoriality. If a milestone below needs a
+property Mathlib already proves, cite it; this layer adds only the named restriction/inflation
+interfaces, the discrete-module dictionary, and compatibility results not supplied upstream.
 
 **API** for `M^U`. Constructors: `Invariants U M` as an additive subgroup of `M`, its `G`-action
 for normal `U`, and the descent of that action to `G ⧸ U`. Worked example: for `M = ZMod n` with
@@ -1795,12 +1808,3 @@ Item numbers are verified against the editions cited.
   (the transfer, five constructions), III §10 ((10.1) annihilation by the index), Ch. V §3 (cup
   products; (3.5) associativity at the cochain level, (3.6) commutativity, (3.8) the transfer
   formula `cor (res u ⌣ v) = u ⌣ cor v`).
-
----
-
-## Appendices
-
-The dated record of what exists outside this roadmap, upstream and in neighboring repositories,
-together with the licence and coordination table for the sources it draws on, is in
-[`PROVENANCE.md`](PROVENANCE.md). That file is **not** normative: it is a snapshot, it goes out of
-date, and no milestone above depends on anything recorded there.

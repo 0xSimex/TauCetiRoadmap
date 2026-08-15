@@ -10,15 +10,17 @@ finishes neither a layer nor the roadmap.
 
 The narrative roadmap (the layer-by-layer build plan Layers 0-13, the worked examples, and
 the references) is in `README.md`. The canonical continuous cohomology object is available at
-the pin under its former name,
+the repository pin under its former name,
 `continuousCohomology R G n : Action (TopModuleCat R) G ⥤ TopModuleCat R`, together with the
-complex it is the homology of and the degree-0 computation. Mathlib's own rebuild of the same
-object carries it on a category named `TopRep k G` with functoriality in compatible pairs. So
-`TopRep` below is an abbreviation for the pinned category, Layer 1 states the missing
-functoriality against it under Mathlib's names, and the canonical-facing milestones of Layers 3,
-10 and 12 are stated against those declarations and nothing else. The two categories are
-equivalent and the resolutions agree in shape, so adopting Mathlib's version later is a transport
-rather than a redesign; it is not claimed to be definitional.
+complex it is the homology of and the degree-0 computation. Current Mathlib master now carries the
+object on `TopRep k G` and provides `ContinuousCohomology.resolutionMap`, `cochainsMap`,
+`cocyclesMap`, `map`, `map_id`, and `map_comp` in
+`RepresentationTheory/Homological/ContCohomology/Functoriality.lean`. Thus the declarations with
+those short names below are compatibility prototypes needed only to keep this file buildable at
+the older repository pin. They specify the same contracts and are to be deleted in favor of the
+Mathlib declarations when the pin is updated; they are not a second public functoriality API.
+`TopRep` below is an abbreviation for the pinned category, and the canonical-facing milestones of
+Layers 3, 10 and 12 are stated against the canonical carrier.
 
 The two central interfaces are prototyped here rather than described. Layer 1's chain is
 `resolutionMap`, `cochainsMap`, `cocyclesMap`, `map`, `map_id`, `map_comp`, `res`,
@@ -263,9 +265,10 @@ Layer 3's comparison is checked against this before any harder degree exists. -/
 noncomputable example : continuousCohomology R G 0 ≅ ContinuousCohomology.invariants R G :=
   ContinuousCohomology.continuousCohomologyZeroIso R G
 
-/-- **Layer 1, the resolution comparison.** The carrier is the homology of a complex built from
-an iterated coinduction; a compatible pair induces a map of those resolutions, and everything
-below is its consequence. This is the first link of the chain the pin does not have. -/
+/-- **Layer 1, pin-compatibility prototype for Mathlib's `ContinuousCohomology.resolutionMap`.**
+The carrier is the homology of a complex built from an iterated coinduction; a compatible pair
+induces a map of those resolutions. Current Mathlib supplies this declaration, but the repository
+pin predates it. -/
 noncomputable def resolutionMap (φ : ContinuousMonoidHom H G) (n : ℕ) (X : TopRep R G) :
     (Action.res _ (φ : H →* G)).obj ((ContinuousCohomology.MultiInd.functor R G n).obj X) ⟶
       (ContinuousCohomology.MultiInd.functor R H n).obj
@@ -287,11 +290,11 @@ noncomputable def cocyclesMap (φ : ContinuousMonoidHom H G) {X : TopRep R G} {Y
       ((ContinuousCohomology.homogeneousCochains R H).obj Y).cycles n :=
   HomologicalComplex.cyclesMap (cochainsMap R φ f) n
 
-/-- **Layer 1, the compatible-pair map,** the half of the interface the pin does not have. For a
+/-- **Layer 1, pin-compatibility prototype for the compatible-pair map.** For a
 continuous homomorphism `φ : H →ₜ* G` and a morphism `f` from the restriction of `X` to `Y`, this
 is the induced map on continuous cohomology. It is the homology of `cochainsMap`, so once that
-exists this definition is not a further obligation. Mathlib's name for it is
-`ContinuousCohomology.map`. -/
+exists this definition is not a further obligation. Current Mathlib supplies it as
+`ContinuousCohomology.map`; delete this prototype after updating the pin. -/
 noncomputable def map (φ : ContinuousMonoidHom H G) {X : TopRep R G} {Y : TopRep R H}
     (f : (Action.res _ (φ : H →* G)).obj X ⟶ Y) (n : ℕ) :
     (continuousCohomology R G n).obj X ⟶ (continuousCohomology R H n).obj Y :=
