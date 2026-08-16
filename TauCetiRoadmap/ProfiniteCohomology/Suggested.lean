@@ -9,21 +9,17 @@ contributors and reviewers converge on names and signatures; discharging all of 
 finishes neither a layer nor the roadmap.
 
 The narrative roadmap (the layer-by-layer build plan Layers 0-13, the worked examples, and
-the references) is in `README.md`. The canonical continuous cohomology object is available at
-the repository pin under its former name,
-`continuousCohomology R G n : Action (TopModuleCat R) G ⥤ TopModuleCat R`, together with the
-complex it is the homology of and the degree-0 computation. Current Mathlib master now carries the
-object on `TopRep k G` and provides `ContinuousCohomology.resolutionMap`, `cochainsMap`,
-`cocyclesMap`, `map`, `map_id`, and `map_comp` in
-`RepresentationTheory/Homological/ContCohomology/Functoriality.lean`. Thus the declarations with
-those short names below are compatibility prototypes needed only to keep this file buildable at
-the older repository pin. They specify the same contracts and are to be deleted in favor of the
-Mathlib declarations when the pin is updated; they are not a second public functoriality API.
-`TopRep` below is an abbreviation for the pinned category, and the canonical-facing milestones of
-Layers 3, 10 and 12 are stated against the canonical carrier.
+the references) is in `README.md`. At the repository pin, Mathlib carries the canonical object as
+`continuousCohomology n X : TopModuleCat k` for `X : TopRep k G`, together with
+`TopRep.homogeneousCochains`, the degree-0 computation, and the functorial maps
+`ContinuousCohomology.resolutionMap`, `cochainsMap`, `cocyclesMap`, `map`, `map_id`, and
+`map_comp`. This file uses those Mathlib declarations directly. A pair of private notation adapters
+below only preserves the concise `.obj`/`.map` notation used throughout these suggested signatures;
+it creates no second public cohomology API.
 
 The two central interfaces are prototyped here rather than described. Layer 1's chain is
-`resolutionMap`, `cochainsMap`, `cocyclesMap`, `map`, `map_id`, `map_comp`, `res`,
+Mathlib's `resolutionMap`, `cochainsMap`, `cocyclesMap`, `map`, `map_id`, and `map_comp`, followed by
+this roadmap's `res`,
 `quotientToInvariants`, `infl` and `coeffMap`, together with `IsSmoothDiscrete` and the
 dictionary `ofDiscreteModule`. Layer 2's explicit theory is `C1`, `C2`, `d0`, `d1`, `Z1`, `Z2`,
 `B1`, `B2`, `H0`, `H1`, `H2` and the two class maps. With those in place Layer 3's comparison
@@ -118,6 +114,12 @@ which fixes the conventions of `README.md`.
 universe u v
 
 namespace TauCetiRoadmap.ProfiniteCohomology
+
+/-- The roadmap works in the universe where coefficient modules and the profinite group live
+together. This is definitionally Mathlib's `TopRep`; the explicit universe parameter prevents
+unconstrained carrier-universe metavariables in signatures quantified only over `G`. -/
+abbrev TopRep (R : Type v) [Ring R] [TopologicalSpace R]
+    (G : Type u) [Monoid G] := _root_.TopRep.{u} R G
 
 /-! ### Layer 0: discrete modules, invariant coefficients, and continuous sections -/
 
@@ -218,21 +220,7 @@ theorem evalPairing_equivariant {G : Type*} [Group G] (M N : Type*) [AddCommGrou
 
 /-! ### Layer 1: the canonical carrier and its functoriality -/
 
-open CategoryTheory in
-/-- **Layer 1, the canonical carrier.** `TopRep R G` is Mathlib's name for this category. At the
-pin it is `Action (TopModuleCat R) G`, and `continuousCohomology R G n` is a functor out of it.
-Every canonical-facing statement in the roadmap is written against this abbreviation, so that
-adopting Mathlib's `TopRep` later is a rename.
-
-The coefficient ring lives in its own universe `v` and the modules in the group's universe `u`,
-as Mathlib's `TopModuleCat.{u} R` allows. Pinning the two together would make a small ring such as
-`ZMod n : Type 0` unusable over a group in a higher universe, which is exactly the instantiation
-the arithmetic consumers of this interface need. -/
-abbrev TopRep (R : Type v) [CommRing R] [TopologicalSpace R]
-    (G : Type u) [Group G] [TopologicalSpace G] :=
-  Action (TopModuleCat.{u} R) G
-
-open CategoryTheory in
+open CategoryTheory
 /-- **Layer 1, the smooth discrete objects.** An object of `TopRep` carries one continuous
 operator per group element and nothing there forces the action to be continuous in the group
 variable, so an object whose module is discrete can still have non-open stabilizers. The
@@ -243,7 +231,41 @@ structure IsSmoothDiscrete (R : Type v) [CommRing R] [TopologicalSpace R]
   /-- the underlying module is discrete -/
   discreteTopology : DiscreteTopology X.V
   /-- every point stabilizer is open, which for a discrete module is continuity of the action -/
-  stabilizer_isOpen : ∀ x : X.V, IsOpen {g : G | (X.ρ g).hom x = x}
+  stabilizer_isOpen : ∀ x : X.V, IsOpen {g : G | X.ρ g x = x}
+
+/-- The object and morphism fields used by the private homogeneous-cochain notation adapter. -/
+private structure HomogeneousCochainsAdapter
+    (R : Type v) [CommRing R] [TopologicalSpace R]
+    (G : Type u) [Group G] [TopologicalSpace G] [IsTopologicalGroup G] where
+  obj : TopRep R G → CochainComplex (TopModuleCat.{u} R) ℕ
+  map : {X Y : TopRep R G} → (X ⟶ Y) → (obj X ⟶ obj Y)
+
+/-- Private notation adapter for the canonical Mathlib cochain complex. It is not a roadmap
+declaration: its only purpose is to retain compact `.obj`/`.map` notation in target types. The
+functor laws themselves are Mathlib's `cochainsMap_id` and `cochainsMap_comp`. -/
+private noncomputable def homogeneousCochainsFunctor
+    (R : Type v) [CommRing R] [TopologicalSpace R]
+    (G : Type u) [Group G] [TopologicalSpace G] [IsTopologicalGroup G] :
+    HomogeneousCochainsAdapter R G where
+  obj X := TopRep.homogeneousCochains X
+  map f := ContinuousCohomology.cochainsMap (ContinuousMonoidHom.id G) f
+
+/-- The object and morphism fields used by the private continuous-cohomology notation adapter. -/
+private structure ContinuousCohomologyAdapter
+    (R : Type v) [CommRing R] [TopologicalSpace R]
+    (G : Type u) [Group G] [TopologicalSpace G] [IsTopologicalGroup G] (n : ℕ) where
+  obj : TopRep R G → TopModuleCat.{u} R
+  map : {X Y : TopRep R G} → (X ⟶ Y) → (obj X ⟶ obj Y)
+
+/-- Private notation adapter for Mathlib's object-valued `continuousCohomology`. This is not a
+second public carrier; its objects and maps are definitionally the canonical Mathlib ones, and
+their functor laws are Mathlib's `map_id` and `map_comp`. -/
+private noncomputable def continuousCohomology
+    (R : Type v) [CommRing R] [TopologicalSpace R]
+    (G : Type u) [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+    (n : ℕ) : ContinuousCohomologyAdapter R G n where
+  obj X := _root_.continuousCohomology n X
+  map f := ContinuousCohomology.map (ContinuousMonoidHom.id G) f n
 
 section Carrier
 
@@ -255,71 +277,21 @@ variable (R : Type v) [CommRing R] [TopologicalSpace R]
   [Group K] [TopologicalSpace K] [IsTopologicalGroup K]
 
 /-- **Layer 1, the carrier is already at the pin.** No part of this roadmap builds a continuous
-cohomology functor; this example records that the canonical one elaborates here, so that the
-statements below are about Mathlib's object rather than a private copy. -/
-noncomputable example (n : ℕ) : TopRep R G ⥤ TopModuleCat.{u} R :=
-  continuousCohomology R G n
+cohomology object; this example records that the canonical Mathlib object elaborates here. -/
+noncomputable example (X : TopRep R G) (n : ℕ) : TopModuleCat R :=
+  _root_.continuousCohomology n X
 
 /-- **Layer 1, degree 0 is already computed at the pin.** The only degree Mathlib evaluates.
 Layer 3's comparison is checked against this before any harder degree exists. -/
-noncomputable example : continuousCohomology R G 0 ≅ ContinuousCohomology.invariants R G :=
-  ContinuousCohomology.continuousCohomologyZeroIso R G
-
-/-- **Layer 1, pin-compatibility prototype for Mathlib's `ContinuousCohomology.resolutionMap`.**
-The carrier is the homology of a complex built from an iterated coinduction; a compatible pair
-induces a map of those resolutions. Current Mathlib supplies this declaration, but the repository
-pin predates it. -/
-noncomputable def resolutionMap (φ : ContinuousMonoidHom H G) (n : ℕ) (X : TopRep R G) :
-    (Action.res _ (φ : H →* G)).obj ((ContinuousCohomology.MultiInd.functor R G n).obj X) ⟶
-      (ContinuousCohomology.MultiInd.functor R H n).obj
-        ((Action.res _ (φ : H →* G)).obj X) :=
-  sorry
-
-/-- **Layer 1, the cochain map of a compatible pair.** Mathlib's name for it is
-`ContinuousCohomology.cochainsMap`. -/
-noncomputable def cochainsMap (φ : ContinuousMonoidHom H G) {X : TopRep R G} {Y : TopRep R H}
-    (f : (Action.res _ (φ : H →* G)).obj X ⟶ Y) :
-    (ContinuousCohomology.homogeneousCochains R G).obj X ⟶
-      (ContinuousCohomology.homogeneousCochains R H).obj Y :=
-  sorry
-
-/-- **Layer 1, the induced map on cocycles.** -/
-noncomputable def cocyclesMap (φ : ContinuousMonoidHom H G) {X : TopRep R G} {Y : TopRep R H}
-    (f : (Action.res _ (φ : H →* G)).obj X ⟶ Y) (n : ℕ) :
-    ((ContinuousCohomology.homogeneousCochains R G).obj X).cycles n ⟶
-      ((ContinuousCohomology.homogeneousCochains R H).obj Y).cycles n :=
-  HomologicalComplex.cyclesMap (cochainsMap R φ f) n
-
-/-- **Layer 1, pin-compatibility prototype for the compatible-pair map.** For a
-continuous homomorphism `φ : H →ₜ* G` and a morphism `f` from the restriction of `X` to `Y`, this
-is the induced map on continuous cohomology. It is the homology of `cochainsMap`, so once that
-exists this definition is not a further obligation. Current Mathlib supplies it as
-`ContinuousCohomology.map`; delete this prototype after updating the pin. -/
-noncomputable def map (φ : ContinuousMonoidHom H G) {X : TopRep R G} {Y : TopRep R H}
-    (f : (Action.res _ (φ : H →* G)).obj X ⟶ Y) (n : ℕ) :
-    (continuousCohomology R G n).obj X ⟶ (continuousCohomology R H n).obj Y :=
-  HomologicalComplex.homologyMap (cochainsMap R φ f) n
-
-/-- **Layer 1, the identity law.** -/
-theorem map_id (X : TopRep R G) (n : ℕ) :
-    map R (ContinuousMonoidHom.id G) (X := X) (Y := X) (𝟙 _) n = 𝟙 _ :=
-  sorry
-
-/-- **Layer 1, the composition law.** Compatible pairs compose, and `map` takes the composite to
-the composite. -/
-theorem map_comp (φ : ContinuousMonoidHom H G) (ψ : ContinuousMonoidHom K H)
-    {X : TopRep R G} {Y : TopRep R H} {Z : TopRep R K}
-    (f : (Action.res _ (φ : H →* G)).obj X ⟶ Y)
-    (g : (Action.res _ (ψ : K →* H)).obj Y ⟶ Z) (n : ℕ) :
-    map R (φ.comp ψ) ((Action.res _ (ψ : K →* H)).map f ≫ g) n =
-      map R φ f n ≫ map R ψ g n :=
-  sorry
+noncomputable example (X : TopRep R G) :
+    _root_.continuousCohomology 0 X ≅ X.invariants :=
+  ContinuousCohomology.zeroIso X
 
 /-- **Layer 1, restriction to a subgroup,** the first of the three named instances of `map`. The
 subgroup carries the subspace topology and needs no openness or closedness hypothesis. -/
 noncomputable def res (S : Subgroup G) (X : TopRep R G) (n : ℕ) :
     (continuousCohomology R G n).obj X ⟶
-      (continuousCohomology R S n).obj ((Action.res _ S.subtype).obj X) :=
+      (continuousCohomology R S n).obj ((TopRep.resFunctor S.subtype).obj X) :=
   sorry
 
 /-- **Layer 1, the invariants of a closed normal subgroup, as a `G ⧸ N`-object.** The coefficient
@@ -334,7 +306,7 @@ inflation compatibility for the cup product is stated through it, because the tw
 compatibility relates live on objects with different underlying modules, so they cannot be compared
 by an equation between their bilinear maps the way the restricted pairing can. -/
 noncomputable def quotientToInvariantsι (N : Subgroup G) [N.Normal] (X : TopRep R G) :
-    (Action.res _ (QuotientGroup.mk' N : G →* G ⧸ N)).obj (quotientToInvariants R N X) ⟶ X :=
+    (TopRep.resFunctor (QuotientGroup.mk' N : G →* G ⧸ N)).obj (quotientToInvariants R N X) ⟶ X :=
   sorry
 
 /-- **Layer 1, inflation,** the second named instance. -/
@@ -354,18 +326,18 @@ canonical complex onto continuous cohomology. A construction given by a cochain 
 Layer 13's norm, is compared with a class-valued map through this, and without it the public
 class-valued function would have no stated relation to the cochain it descends from. -/
 noncomputable def cochainClass (X : TopRep R G) (n : ℕ)
-    (a : ((ContinuousCohomology.homogeneousCochains R G).obj X).X n)
-    (ha : (((ContinuousCohomology.homogeneousCochains R G).obj X).d n (n + 1)).hom a = 0) :
+    (a : ((homogeneousCochainsFunctor R G).obj X).X n)
+    (ha : (((homogeneousCochainsFunctor R G).obj X).d n (n + 1)).hom a = 0) :
     (continuousCohomology R G n).obj X :=
   sorry
 
 /-- **Layer 1, cohomologous cocycles have the same class.** -/
 theorem cochainClass_eq_of_sub_eq_d (X : TopRep R G) (n j : ℕ) (hj : j + 1 = n)
-    (a b : ((ContinuousCohomology.homogeneousCochains R G).obj X).X n)
-    (ha : (((ContinuousCohomology.homogeneousCochains R G).obj X).d n (n + 1)).hom a = 0)
-    (hb : (((ContinuousCohomology.homogeneousCochains R G).obj X).d n (n + 1)).hom b = 0)
-    (c : ((ContinuousCohomology.homogeneousCochains R G).obj X).X j)
-    (hc : a - b = hj ▸ ((((ContinuousCohomology.homogeneousCochains R G).obj X).d j
+    (a b : ((homogeneousCochainsFunctor R G).obj X).X n)
+    (ha : (((homogeneousCochainsFunctor R G).obj X).d n (n + 1)).hom a = 0)
+    (hb : (((homogeneousCochainsFunctor R G).obj X).d n (n + 1)).hom b = 0)
+    (c : ((homogeneousCochainsFunctor R G).obj X).X j)
+    (hc : a - b = hj ▸ ((((homogeneousCochainsFunctor R G).obj X).d j
       (j + 1)).hom c)) :
     cochainClass R X n a ha = cochainClass R X n b hb :=
   sorry
@@ -682,7 +654,7 @@ noncomputable def explicitH2Obj : TopModuleCat ℤ := TopModuleCat.of ℤ (Discr
 discrete module to a subgroup gives the canonical object of the same module over that subgroup.
 The transport squares below cannot be typed without it. -/
 noncomputable def ofDiscreteModuleRes (S : Subgroup G) :
-    (Action.res _ S.subtype).obj (ofDiscreteModule G M) ≅ ofDiscreteModule S M :=
+    (TopRep.resFunctor S.subtype).obj (ofDiscreteModule G M) ≅ ofDiscreteModule S M :=
   sorry
 
 /-- **Layer 2, restriction on the explicit model in degree 0,** the inclusion `M^G ⊆ M^S`. -/
@@ -765,7 +737,7 @@ noncomputable def ofDiscreteModulePair (H : Type u) [Group H] [TopologicalSpace 
     [IsTopologicalAddGroup N] [DiscreteTopology N] [DistribMulAction H N] [ContinuousSMul H N]
     (φ : ContinuousMonoidHom H G) (f : M →+ N) (hf : Continuous f)
     (hequiv : ∀ (h : H) (m : M), f (φ h • m) = h • f m) :
-    (Action.res _ (φ : H →* G)).obj (ofDiscreteModule G M) ⟶ ofDiscreteModule H N :=
+    (TopRep.resFunctor (φ : H →* G)).obj (ofDiscreteModule G M) ⟶ ofDiscreteModule H N :=
   sorry
 
 /-- **Layer 3, the comparison is natural in compatible pairs.** The general square, of which the
@@ -779,7 +751,7 @@ theorem explicitIso_map [CompactSpace G] [TotallyDisconnectedSpace G]
     [DiscreteTopology N] [DistribMulAction H N] [ContinuousSMul H N]
     (φ : ContinuousMonoidHom H G) (f : M →+ N) (hf : Continuous f)
     (hequiv : ∀ (h : H) (m : M), f (φ h • m) = h • f m) (x : DiscreteH1 G M) :
-    (map ℤ φ (ofDiscreteModulePair G M H N φ f hf hequiv) 1).hom
+    (ContinuousCohomology.map φ (ofDiscreteModulePair G M H N φ f hf hequiv) 1).hom
         ((explicitH1IsoContinuousCohomology G M).hom.hom x) =
       (explicitH1IsoContinuousCohomology H N).hom.hom
         (explicitMap1 G M H N φ f hf hequiv (discreteH1Equiv G M x) : DiscreteH1 H N) :=
@@ -1409,13 +1381,13 @@ variable (R : Type v) [CommRing R] [TopologicalSpace R]
 point for the subgroup is the intersection of its `G`-stabilizer with the subgroup. Layer 10 needs
 it to feed restricted coefficients to coinduction. -/
 theorem IsSmoothDiscrete.res (S : Subgroup G) {X : TopRep R G} (hX : IsSmoothDiscrete R X) :
-    IsSmoothDiscrete R ((Action.res _ S.subtype).obj X) :=
+    IsSmoothDiscrete R ((TopRep.resFunctor S.subtype).obj X) :=
   sorry
 
 /-- **Layer 10, the restricted coefficients as a smooth discrete object.** -/
 noncomputable def resSmooth (S : Subgroup G) (X : TopRep R G) (hX : IsSmoothDiscrete R X) :
     SmoothDiscreteTopRep R S :=
-  ⟨(Action.res _ S.subtype).obj X, hX.res R S⟩
+  ⟨(TopRep.resFunctor S.subtype).obj X, hX.res R S⟩
 
 /-- **Layer 7, the coinduced object, bundled.** `Coind_H^G A` with its right-translation action.
 The coefficients are **smooth discrete** on both sides, and that is not a convenience: the carrier
@@ -1476,7 +1448,7 @@ coefficient modules out of scope. -/
 noncomputable def corestriction (U : OpenSubgroup G) (X : TopRep R G) (hX : IsSmoothDiscrete R X)
     (n : ℕ) :
     (continuousCohomology R U.toSubgroup n).obj
-        ((Action.res _ U.toSubgroup.subtype).obj X) ⟶
+        ((TopRep.resFunctor U.toSubgroup.subtype).obj X) ⟶
       (continuousCohomology R G n).obj X :=
   (shapiroIso R U.toSubgroup U.isClosed (resSmooth R U.toSubgroup X hX) n).inv ≫
     (continuousCohomology R G n).map (coindTrace R U X hX)
@@ -1485,7 +1457,7 @@ noncomputable def corestriction (U : OpenSubgroup G) (X : TopRep R G) (hX : IsSm
 theorem corestriction_naturality (U : OpenSubgroup G) {X Y : TopRep R G}
     (hX : IsSmoothDiscrete R X) (hY : IsSmoothDiscrete R Y) (f : X ⟶ Y) (n : ℕ) :
     corestriction R U X hX n ≫ (continuousCohomology R G n).map f =
-      (continuousCohomology R U.toSubgroup n).map ((Action.res _ U.toSubgroup.subtype).map f) ≫
+      (continuousCohomology R U.toSubgroup n).map ((TopRep.resFunctor U.toSubgroup.subtype).map f) ≫
         corestriction R U Y hY n :=
   sorry
 
@@ -1493,9 +1465,9 @@ theorem corestriction_naturality (U : OpenSubgroup G) {X Y : TopRep R G}
 `res` goes down from the ambient group only; the transitivity and Mackey statements below need the
 relative map, so it is named here rather than quantified over. -/
 noncomputable def resLe (V W : OpenSubgroup G) (hWV : W ≤ V) (X : TopRep R G) (n : ℕ) :
-    (continuousCohomology R V.toSubgroup n).obj ((Action.res _ V.toSubgroup.subtype).obj X) ⟶
+    (continuousCohomology R V.toSubgroup n).obj ((TopRep.resFunctor V.toSubgroup.subtype).obj X) ⟶
       (continuousCohomology R W.toSubgroup n).obj
-        ((Action.res _ W.toSubgroup.subtype).obj X) :=
+        ((TopRep.resFunctor W.toSubgroup.subtype).obj X) :=
   sorry
 
 /-- **Layer 10, corestriction between two open subgroups,** `cor_W^V` for open `W ≤ V ≤ G`. The
@@ -1503,9 +1475,9 @@ relative form of `corestriction`, obtained by running the same Shapiro-then-trac
 inside `V`. -/
 noncomputable def corestrictionLe (V W : OpenSubgroup G) (hWV : W ≤ V) (X : TopRep R G)
     (hX : IsSmoothDiscrete R X) (n : ℕ) :
-    (continuousCohomology R W.toSubgroup n).obj ((Action.res _ W.toSubgroup.subtype).obj X) ⟶
+    (continuousCohomology R W.toSubgroup n).obj ((TopRep.resFunctor W.toSubgroup.subtype).obj X) ⟶
       (continuousCohomology R V.toSubgroup n).obj
-        ((Action.res _ V.toSubgroup.subtype).obj X) :=
+        ((TopRep.resFunctor V.toSubgroup.subtype).obj X) :=
   sorry
 
 /-- **Layer 2, the conjugate of an open subgroup,** `gUg⁻¹`. Conjugation is a homeomorphism, so the
@@ -1520,9 +1492,9 @@ of `g`). The Mackey formula names this map; a sum over an arbitrary family of mo
 different statement, and a false one. -/
 noncomputable def conjMapOf (g : G) (W W' : OpenSubgroup G) (hconj : W' = conjOpenSubgroup g W)
     (X : TopRep R G) (n : ℕ) :
-    (continuousCohomology R W.toSubgroup n).obj ((Action.res _ W.toSubgroup.subtype).obj X) ⟶
+    (continuousCohomology R W.toSubgroup n).obj ((TopRep.resFunctor W.toSubgroup.subtype).obj X) ⟶
       (continuousCohomology R W'.toSubgroup n).obj
-        ((Action.res _ W'.toSubgroup.subtype).obj X) :=
+        ((TopRep.resFunctor W'.toSubgroup.subtype).obj X) :=
   sorry
 
 /-- **Layer 2, conjugation distributes over the Mackey intersections.** The group-theoretic fact
@@ -1542,9 +1514,9 @@ theorem corestriction_trans (U V : OpenSubgroup G) (hVU : V ≤ U) (X : TopRep R
 the formula, so that the formula states which sum is meant. -/
 noncomputable def mackeyTerm (U V : OpenSubgroup G) (g : G) (X : TopRep R G)
     (hX : IsSmoothDiscrete R X) (n : ℕ) :
-    (continuousCohomology R U.toSubgroup n).obj ((Action.res _ U.toSubgroup.subtype).obj X) ⟶
+    (continuousCohomology R U.toSubgroup n).obj ((TopRep.resFunctor U.toSubgroup.subtype).obj X) ⟶
       (continuousCohomology R V.toSubgroup n).obj
-        ((Action.res _ V.toSubgroup.subtype).obj X) :=
+        ((TopRep.resFunctor V.toSubgroup.subtype).obj X) :=
   resLe R U (U ⊓ conjOpenSubgroup g⁻¹ V) inf_le_left X n ≫
     conjMapOf R g (U ⊓ conjOpenSubgroup g⁻¹ V) (V ⊓ conjOpenSubgroup g U)
         (conjOpenSubgroup_inf g U V) X n ≫
@@ -2200,7 +2172,7 @@ structure TopPairing (X Y Z : TopRep R G) where
   cont : Continuous fun p : X.V × Y.V => bil p.1 p.2
   /-- equivariance -/
   equivariant : ∀ (g : G) (x : X.V) (y : Y.V),
-    bil ((X.ρ g).hom x) ((Y.ρ g).hom y) = (Z.ρ g).hom (bil x y)
+    bil (X.ρ g x) (Y.ρ g y) = Z.ρ g (bil x y)
 
 /-- Transport along an equality of degrees. The cup lands in `H^{m+n}`, and `(p+q)+r` and
 `p+(q+r)` are equal but not definitionally so, so associativity and commutativity are stated
@@ -2212,22 +2184,22 @@ noncomputable def degreeCast {m n : ℕ} (h : m = n) (X : TopRep R G) :
 /-- **Layer 1, the class of an invariant coefficient in degree 0.** Degree 0 is the invariants, so
 an invariant element has a class; this is the map the unit laws below name. -/
 noncomputable def degreeZeroClass (Y : TopRep R G) (u : Y.V)
-    (hinv : ∀ g : G, (Y.ρ g).hom u = u) : (continuousCohomology R G 0).obj Y :=
+    (hinv : ∀ g : G, Y.ρ g u = u) : (continuousCohomology R G 0).obj Y :=
   sorry
 
 /-- Transport along an equality of degrees, at cochain level. `(m + 1) + n` and `m + (n + 1)` are
 equal but not definitionally so, which is why the Leibniz identity below needs it. -/
 noncomputable def cochainDegreeCast {m n : ℕ} (h : m = n) (X : TopRep R G) :
-    ((ContinuousCohomology.homogeneousCochains R G).obj X).X m →
-      ((ContinuousCohomology.homogeneousCochains R G).obj X).X n :=
+    ((homogeneousCochainsFunctor R G).obj X).X m →
+      ((homogeneousCochainsFunctor R G).obj X).X n :=
   fun x => h ▸ x
 
 /-- **Layer 12, milestone 3: the cochain-level product,** on the terms of the complex the carrier
 is the homology of. The Leibniz identity is a statement about this, not about classes. -/
 noncomputable def cupCochain {X Y Z : TopRep R G} (P : TopPairing X Y Z) (m n : ℕ) :
-    ((ContinuousCohomology.homogeneousCochains R G).obj X).X m →
-      ((ContinuousCohomology.homogeneousCochains R G).obj Y).X n →
-        ((ContinuousCohomology.homogeneousCochains R G).obj Z).X (m + n) :=
+    ((homogeneousCochainsFunctor R G).obj X).X m →
+      ((homogeneousCochainsFunctor R G).obj Y).X n →
+        ((homogeneousCochainsFunctor R G).obj Z).X (m + n) :=
   sorry
 
 /-- **Layer 12, milestone 5: the cup product in bidegree `(m, n)`.** A plain function here
@@ -2242,16 +2214,16 @@ variable {X Y Z : TopRep R G}
 
 /-- **Layer 12, milestone 4: the Leibniz identity,** with the sign convention fixed here. -/
 theorem cupCochain_leibniz (P : TopPairing X Y Z) (m n : ℕ)
-    (a : ((ContinuousCohomology.homogeneousCochains R G).obj X).X m)
-    (b : ((ContinuousCohomology.homogeneousCochains R G).obj Y).X n) :
-    (((ContinuousCohomology.homogeneousCochains R G).obj Z).d (m + n) (m + n + 1)).hom
+    (a : ((homogeneousCochainsFunctor R G).obj X).X m)
+    (b : ((homogeneousCochainsFunctor R G).obj Y).X n) :
+    (((homogeneousCochainsFunctor R G).obj Z).d (m + n) (m + n + 1)).hom
         (cupCochain P m n a b) =
       cochainDegreeCast (by omega) Z
           (cupCochain P (m + 1) n
-            ((((ContinuousCohomology.homogeneousCochains R G).obj X).d m (m + 1)).hom a) b) +
+            ((((homogeneousCochainsFunctor R G).obj X).d m (m + 1)).hom a) b) +
         ((-1 : R) ^ m) •
           cupCochain P m (n + 1) a
-            ((((ContinuousCohomology.homogeneousCochains R G).obj Y).d n (n + 1)).hom b) :=
+            ((((homogeneousCochainsFunctor R G).obj Y).d n (n + 1)).hom b) :=
   sorry
 
 /-- **Layer 12, milestone 5: additivity in the first argument.** -/
@@ -2271,13 +2243,13 @@ theorem cup_add_right (P : TopPairing X Y Z) (m n : ℕ)
 /-- **Layer 12, milestone 6: the unit on the right.** For a discrete `G`-ring the class of `1` in
 `H⁰` is a unit for the cup; the hypothesis is the coefficient-level equation and the conclusion is
 the class-level one. -/
-theorem cup_one_right (P : TopPairing X Y X) (u : Y.V) (hinv : ∀ g : G, (Y.ρ g).hom u = u)
+theorem cup_one_right (P : TopPairing X Y X) (u : Y.V) (hinv : ∀ g : G, Y.ρ g u = u)
     (hu : ∀ x : X.V, P.bil x u = x) (m : ℕ) (a : (continuousCohomology R G m).obj X) :
     cup P m 0 a (degreeZeroClass Y u hinv) = a :=
   sorry
 
 /-- **Layer 12, milestone 6: the unit on the left.** -/
-theorem cup_one_left (P : TopPairing Y X X) (u : Y.V) (hinv : ∀ g : G, (Y.ρ g).hom u = u)
+theorem cup_one_left (P : TopPairing Y X X) (u : Y.V) (hinv : ∀ g : G, Y.ρ g u = u)
     (hu : ∀ x : X.V, P.bil u x = x) (n : ℕ) (a : (continuousCohomology R G n).obj X) :
     cup P 0 n (degreeZeroClass Y u hinv) a = degreeCast (Nat.zero_add n).symm X a :=
   sorry
@@ -2305,8 +2277,8 @@ theorem cup_gradedComm (P : TopPairing X Y Z) (Pop : TopPairing Y X Z)
 /-- **Layer 12, milestone 9: restriction compatibility.** The restricted pairing is supplied with
 its defining equation, since restriction does not change the coefficient map. -/
 theorem cup_res (P : TopPairing X Y Z) (S : Subgroup G)
-    (Pres : TopPairing ((Action.res _ S.subtype).obj X) ((Action.res _ S.subtype).obj Y)
-      ((Action.res _ S.subtype).obj Z))
+    (Pres : TopPairing ((TopRep.resFunctor S.subtype).obj X) ((TopRep.resFunctor S.subtype).obj Y)
+      ((TopRep.resFunctor S.subtype).obj Z))
     (hPres : Pres.bil = P.bil) (m n : ℕ)
     (a : (continuousCohomology R G m).obj X) (b : (continuousCohomology R G n).obj Y) :
     (res R S Z (m + n)).hom (cup P m n a b) =
@@ -2335,7 +2307,7 @@ tied together by the three coefficient morphisms, which is what makes this a sta
 determined pair of cups rather than about two unrelated ones. -/
 theorem cup_coeffMap (P : TopPairing X Y Z) {X' Y' Z' : TopRep R G} (P' : TopPairing X' Y' Z')
     (f : X ⟶ X') (g : Y ⟶ Y') (h : Z ⟶ Z')
-    (hcompat : ∀ (x : X.V) (y : Y.V), h.hom.hom (P.bil x y) = P'.bil (f.hom.hom x) (g.hom.hom y))
+    (hcompat : ∀ (x : X.V) (y : Y.V), h (P.bil x y) = P'.bil (f x) (g y))
     (m n : ℕ) (a : (continuousCohomology R G m).obj X)
     (b : (continuousCohomology R G n).obj Y) :
     (coeffMap R h (m + n)).hom (cup P m n a b) =
@@ -2346,13 +2318,13 @@ theorem cup_coeffMap (P : TopPairing X Y Z) {X' Y' Z' : TopRep R G} (P' : TopPai
 theorem cup_projection [CompactSpace G] [TotallyDisconnectedSpace G] (U : OpenSubgroup G)
     (hY : IsSmoothDiscrete R Y) (hZ : IsSmoothDiscrete R Z)
     (P : TopPairing X Y Z)
-    (Pres : TopPairing ((Action.res _ U.toSubgroup.subtype).obj X)
-      ((Action.res _ U.toSubgroup.subtype).obj Y)
-      ((Action.res _ U.toSubgroup.subtype).obj Z))
+    (Pres : TopPairing ((TopRep.resFunctor U.toSubgroup.subtype).obj X)
+      ((TopRep.resFunctor U.toSubgroup.subtype).obj Y)
+      ((TopRep.resFunctor U.toSubgroup.subtype).obj Z))
     (hPres : Pres.bil = P.bil) (m n : ℕ)
     (a : (continuousCohomology R G m).obj X)
     (b : (continuousCohomology R U.toSubgroup n).obj
-      ((Action.res _ U.toSubgroup.subtype).obj Y)) :
+      ((TopRep.resFunctor U.toSubgroup.subtype).obj Y)) :
     (corestriction R U Z hZ (m + n)).hom
         (cup Pres m n ((res R U.toSubgroup X m).hom a) b) =
       cup P m n a ((corestriction R U Y hY n).hom b) :=
@@ -2616,12 +2588,66 @@ universe. The canonical resolution builds its terms from `C(G, -)`, so the coeff
 consumer of the Evens norm to a `Type 0` group. The explicit cochain formulas below stay valued in
 `ZMod 2` itself; `inhomogeneousCochain1` and `inhomogeneousCochain2` are where they enter the
 complex, and they are the only place the lift is crossed. -/
-noncomputable def trivialF2 : TopRep ℤ G := ⟨TopModuleCat.of ℤ (ULift.{u} (ZMod 2)), 1⟩
+noncomputable def trivialF2 : TopRep ℤ G :=
+  TopRep.of (ContRepresentation.trivial ℤ G (ULift.{u} (ZMod 2)))
+
+/-- **Layer 13, restriction preserves the trivial `𝔽₂` object.** Mathlib's representation
+objects remember how their actions were constructed, so restriction of the ambient trivial object
+and the trivial object constructed directly on the subgroup are canonically isomorphic rather than
+definitionally equal. -/
+noncomputable def trivialF2Res (S : Subgroup G) :
+    (TopRep.resFunctor S.subtype).obj (trivialF2 G) ≅ trivialF2 S where
+  hom := TopRep.ofHom <| (ContRepresentation.Equiv.mk
+    (ContinuousLinearEquiv.refl ℤ (ULift.{u} (ZMod 2))) (by
+      intro s
+      ext x
+      rfl)).toContIntertwiningMap
+  inv := TopRep.ofHom <| (ContRepresentation.Equiv.mk
+    (ContinuousLinearEquiv.refl ℤ (ULift.{u} (ZMod 2))) (by
+      intro s
+      ext x
+      rfl)).toContIntertwiningMap
+  hom_inv_id := by ext x; rfl
+  inv_hom_id := by ext x; rfl
+
+/-- **Layer 13, restriction on cohomology with trivial `𝔽₂` coefficients.** This is the
+generic restriction followed by the canonical coefficient identification `trivialF2Res`. -/
+noncomputable def trivialF2ResMap (S : Subgroup G) (n : ℕ) :
+    (continuousCohomology ℤ G n).obj (trivialF2 G) ⟶
+      (continuousCohomology ℤ S n).obj (trivialF2 S) :=
+  res ℤ S (trivialF2 G) n ≫
+    (continuousCohomology ℤ S n).map (trivialF2Res G S).hom
 
 /-- **Layer 13, the trivial `𝔽₂` object is smooth discrete.** `ZMod 2` is discrete and the action is
 trivial, so every stabilizer is all of `G`. Layer 10's corestriction consumes this. -/
 theorem trivialF2_isSmoothDiscrete : IsSmoothDiscrete ℤ (trivialF2 G) :=
   sorry
+
+/-- **Layer 13, corestriction on cohomology with trivial `𝔽₂` coefficients.** The
+canonical coefficient identification supplies the restricted coefficient object consumed by the
+generic all-degree corestriction. -/
+noncomputable def trivialF2Corestriction (U : OpenSubgroup G) (n : ℕ) :
+    (continuousCohomology ℤ U.toSubgroup n).obj (trivialF2 U.toSubgroup) ⟶
+      (continuousCohomology ℤ G n).obj (trivialF2 G) :=
+  (continuousCohomology ℤ U.toSubgroup n).map (trivialF2Res G U.toSubgroup).inv ≫
+    corestriction ℤ U (trivialF2 G) (trivialF2_isSmoothDiscrete G) n
+
+/-- **Layer 13, restriction between open subgroups with trivial `𝔽₂` coefficients.** -/
+noncomputable def trivialF2ResLe (V W : OpenSubgroup G) (hWV : W ≤ V) (n : ℕ) :
+    (continuousCohomology ℤ V.toSubgroup n).obj (trivialF2 V.toSubgroup) ⟶
+      (continuousCohomology ℤ W.toSubgroup n).obj (trivialF2 W.toSubgroup) :=
+  (continuousCohomology ℤ V.toSubgroup n).map (trivialF2Res G V.toSubgroup).inv ≫
+    resLe ℤ V W hWV (trivialF2 G) n ≫
+      (continuousCohomology ℤ W.toSubgroup n).map (trivialF2Res G W.toSubgroup).hom
+
+/-- **Layer 13, conjugation between open subgroups with trivial `𝔽₂` coefficients.** -/
+noncomputable def trivialF2ConjMapOf (g : G) (W W' : OpenSubgroup G)
+    (hconj : W' = conjOpenSubgroup g W) (n : ℕ) :
+    (continuousCohomology ℤ W.toSubgroup n).obj (trivialF2 W.toSubgroup) ⟶
+      (continuousCohomology ℤ W'.toSubgroup n).obj (trivialF2 W'.toSubgroup) :=
+  (continuousCohomology ℤ W.toSubgroup n).map (trivialF2Res G W.toSubgroup).inv ≫
+    conjMapOf ℤ g W W' hconj (trivialF2 G) n ≫
+      (continuousCohomology ℤ W'.toSubgroup n).map (trivialF2Res G W'.toSubgroup).hom
 
 /-- **Layer 3, an explicit inhomogeneous 1-cochain as an element of the canonical complex,** with
 trivial `𝔽₂` coefficients. The formulas of this layer are functions `G → 𝔽₂` and `G × G → 𝔽₂`, and
@@ -2629,26 +2655,26 @@ this is how they enter the complex whose homology the canonical objects are. Wit
 relating an explicit formula to a class could only be stated about an arbitrary element of the
 complex. -/
 noncomputable def inhomogeneousCochain1 (f : G → ZMod 2) (hf : Continuous f) :
-    ((ContinuousCohomology.homogeneousCochains ℤ G).obj (trivialF2 G)).X 1 :=
+    ((homogeneousCochainsFunctor ℤ G).obj (trivialF2 G)).X 1 :=
   sorry
 
 /-- **Layer 3, the same in degree 2.** -/
 noncomputable def inhomogeneousCochain2 (f : G × G → ZMod 2) (hf : Continuous f) :
-    ((ContinuousCohomology.homogeneousCochains ℤ G).obj (trivialF2 G)).X 2 :=
+    ((homogeneousCochainsFunctor ℤ G).obj (trivialF2 G)).X 2 :=
   sorry
 
 /-- **Layer 3, the inhomogeneous 1-cocycle condition is the canonical differential.** With trivial
 coefficients a 1-cocycle is a homomorphism. -/
 theorem inhomogeneousCochain1_d_eq_zero (f : G → ZMod 2) (hf : Continuous f)
     (hcocycle : ∀ g h : G, f (g * h) = f g + f h) :
-    (((ContinuousCohomology.homogeneousCochains ℤ G).obj (trivialF2 G)).d 1 2).hom
+    (((homogeneousCochainsFunctor ℤ G).obj (trivialF2 G)).d 1 2).hom
       (inhomogeneousCochain1 G f hf) = 0 :=
   sorry
 
 /-- **Layer 3, the inhomogeneous 2-cocycle condition is the canonical differential.** -/
 theorem inhomogeneousCochain2_d_eq_zero (f : G × G → ZMod 2) (hf : Continuous f)
     (hcocycle : ∀ g h j : G, f (g * h, j) + f (g, h) = f (h, j) + f (g, h * j)) :
-    (((ContinuousCohomology.homogeneousCochains ℤ G).obj (trivialF2 G)).d 2 3).hom
+    (((homogeneousCochainsFunctor ℤ G).obj (trivialF2 G)).d 2 3).hom
       (inhomogeneousCochain2 G f hf) = 0 :=
   sorry
 
@@ -2714,18 +2740,18 @@ noncomputable def tensorInductionTrivialF2 (U : OpenSubgroup G) (q : ℕ) :
 is the map produced by `monomialHom` and `tensorInduction`: it is where the degree formula
 `q ↦ l * q` comes from, and its coefficients are the tensor-induced ones. -/
 noncomputable def evensNormCochainRaw (U : OpenSubgroup G) (q : ℕ) (t : CosetTransversal U) :
-    ((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+    ((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
         (trivialF2 U.toSubgroup)).X q →
-      ((ContinuousCohomology.homogeneousCochains ℤ G).obj
+      ((homogeneousCochainsFunctor ℤ G).obj
         (tensorInduction U q (trivialF2 U.toSubgroup))).X (U.toSubgroup.index * q) :=
   sorry
 
 /-- **Layer 13, milestone 4: the norm at cochain level,** with the degree formula `q ↦ l * q`.
 This is the map the public function descends from. -/
 noncomputable def evensNormCochain (U : OpenSubgroup G) (q : ℕ) (t : CosetTransversal U) :
-    ((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+    ((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
         (trivialF2 U.toSubgroup)).X q →
-      ((ContinuousCohomology.homogeneousCochains ℤ G).obj (trivialF2 G)).X
+      ((homogeneousCochainsFunctor ℤ G).obj (trivialF2 G)).X
         (U.toSubgroup.index * q) :=
   sorry
 
@@ -2733,10 +2759,10 @@ noncomputable def evensNormCochain (U : OpenSubgroup G) (q : ℕ) (t : CosetTran
 equivalence.** This is what ties `monomialHom` and `tensorInduction` to the public construction;
 without it they are declared and never used. -/
 theorem evensNormCochain_eq (U : OpenSubgroup G) (q : ℕ) (t : CosetTransversal U)
-    (a : ((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+    (a : ((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
       (trivialF2 U.toSubgroup)).X q) :
     evensNormCochain U q t a =
-      (((ContinuousCohomology.homogeneousCochains ℤ G).map
+      (((homogeneousCochainsFunctor ℤ G).map
           (tensorInductionTrivialF2 U q).hom).f (U.toSubgroup.index * q)).hom
         (evensNormCochainRaw U q t a) :=
   sorry
@@ -2744,11 +2770,11 @@ theorem evensNormCochain_eq (U : OpenSubgroup G) (q : ℕ) (t : CosetTransversal
 /-- **Layer 13, milestone 5: the cochain norm sends cocycles to cocycles.** Without it the public
 norm has no source of classes, and the degree `l * q` is not the degree of anything. -/
 theorem evensNormCochain_mem_cycles (U : OpenSubgroup G) (q : ℕ) (t : CosetTransversal U)
-    (a : ((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+    (a : ((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
       (trivialF2 U.toSubgroup)).X q)
-    (ha : (((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+    (ha : (((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
       (trivialF2 U.toSubgroup)).d q (q + 1)).hom a = 0) :
-    (((ContinuousCohomology.homogeneousCochains ℤ G).obj (trivialF2 G)).d
+    (((homogeneousCochainsFunctor ℤ G).obj (trivialF2 G)).d
         (U.toSubgroup.index * q) (U.toSubgroup.index * q + 1)).hom
       (evensNormCochain U q t a) = 0 :=
   sorry
@@ -2759,21 +2785,21 @@ additivity and has to be its own milestone. -/
 theorem evensNormCochain_representative_independent (U : OpenSubgroup G) (q : ℕ)
     (t : CosetTransversal U) (j : ℕ) (hj : j + 1 = q) (k : ℕ)
     (hk : k + 1 = U.toSubgroup.index * q)
-    (a b : ((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+    (a b : ((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
       (trivialF2 U.toSubgroup)).X q)
-    (ha : (((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+    (ha : (((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
       (trivialF2 U.toSubgroup)).d q (q + 1)).hom a = 0)
-    (hb : (((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+    (hb : (((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
       (trivialF2 U.toSubgroup)).d q (q + 1)).hom b = 0)
-    (c : ((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+    (c : ((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
       (trivialF2 U.toSubgroup)).X j)
     (hc : a - b = cochainDegreeCast hj (trivialF2 U.toSubgroup)
-      ((((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+      ((((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
         (trivialF2 U.toSubgroup)).d j (j + 1)).hom c)) :
-    ∃ e : ((ContinuousCohomology.homogeneousCochains ℤ G).obj (trivialF2 G)).X k,
+    ∃ e : ((homogeneousCochainsFunctor ℤ G).obj (trivialF2 G)).X k,
       evensNormCochain U q t a - evensNormCochain U q t b =
         cochainDegreeCast hk (trivialF2 G)
-          ((((ContinuousCohomology.homogeneousCochains ℤ G).obj (trivialF2 G)).d k (k + 1)).hom
+          ((((homogeneousCochainsFunctor ℤ G).obj (trivialF2 G)).d k (k + 1)).hom
             e) :=
   sorry
 
@@ -2790,9 +2816,9 @@ noncomputable def evensNorm (U : OpenSubgroup G) (q : ℕ) :
 Together with the two milestone-5 theorems and transversal independence it is what makes the
 descent well defined. -/
 theorem evensNorm_eq_class (U : OpenSubgroup G) (q : ℕ) (t : CosetTransversal U)
-    (a : ((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+    (a : ((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
       (trivialF2 U.toSubgroup)).X q)
-    (ha : (((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+    (ha : (((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
       (trivialF2 U.toSubgroup)).d q (q + 1)).hom a = 0) :
     evensNorm U q (cochainClass ℤ (trivialF2 U.toSubgroup) q a ha) =
       cochainClass ℤ (trivialF2 G) (U.toSubgroup.index * q) (evensNormCochain U q t a)
@@ -2877,14 +2903,14 @@ a different and stronger claim; that stronger form is the cochain homotopy, and 
 public norm needs. -/
 theorem evensNormCochain_transversal_independent (t t' : CosetTransversal U) (j : ℕ)
     (hj : j + 1 = U.toSubgroup.index * q)
-    (a : ((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+    (a : ((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
       (trivialF2 U.toSubgroup)).X q)
-    (ha : (((ContinuousCohomology.homogeneousCochains ℤ U.toSubgroup).obj
+    (ha : (((homogeneousCochainsFunctor ℤ U.toSubgroup).obj
       (trivialF2 U.toSubgroup)).d q (q + 1)).hom a = 0) :
-    ∃ c : ((ContinuousCohomology.homogeneousCochains ℤ G).obj (trivialF2 G)).X j,
+    ∃ c : ((homogeneousCochainsFunctor ℤ G).obj (trivialF2 G)).X j,
       evensNormCochain U q t a - evensNormCochain U q t' a =
         cochainDegreeCast hj (trivialF2 G)
-          ((((ContinuousCohomology.homogeneousCochains ℤ G).obj (trivialF2 G)).d j (j + 1)).hom
+          ((((homogeneousCochainsFunctor ℤ G).obj (trivialF2 G)).d j (j + 1)).hom
             c) :=
   sorry
 
@@ -2930,9 +2956,9 @@ noncomputable def evensDoubleCosetFactor (V : OpenSubgroup G) (g : G) :
           (trivialF2 V.toSubgroup)) :=
   fun x =>
     evensNormLe V q (V ⊓ conjOpenSubgroup g U) inf_le_left
-      ((conjMapOf ℤ g (U ⊓ conjOpenSubgroup g⁻¹ V) (V ⊓ conjOpenSubgroup g U)
-            (conjOpenSubgroup_inf g U V) (trivialF2 G) q).hom
-        ((resLe ℤ U (U ⊓ conjOpenSubgroup g⁻¹ V) inf_le_left (trivialF2 G) q).hom x))
+      ((trivialF2ConjMapOf G g (U ⊓ conjOpenSubgroup g⁻¹ V)
+          (V ⊓ conjOpenSubgroup g U) (conjOpenSubgroup_inf g U V) q).hom
+        ((trivialF2ResLe G U (U ⊓ conjOpenSubgroup g⁻¹ V) inf_le_left q).hom x))
 
 /-- **Layer 13, milestone 8: the restriction and double-coset formula** (Evens §6 Prop. 3). The
 restriction of a norm is the cup product of the norms over the double cosets. The degree hypothesis
@@ -2944,7 +2970,7 @@ theorem evensNorm_res_doubleCoset (V : OpenSubgroup G)
     (hdeg : ∑ i : ι, (V ⊓ conjOpenSubgroup (g i) U).toSubgroup.relIndex V.toSubgroup * q =
       U.toSubgroup.index * q)
     (x : (continuousCohomology ℤ U.toSubgroup q).obj (trivialF2 U.toSubgroup)) :
-    (res ℤ V.toSubgroup (trivialF2 G) (U.toSubgroup.index * q)).hom (evensNorm U q x) =
+    (trivialF2ResMap G V.toSubgroup (U.toSubgroup.index * q)).hom (evensNorm U q x) =
       degreeCast hdeg (trivialF2 V.toSubgroup)
         (cupFamily V.toSubgroup
           (fun i => (V ⊓ conjOpenSubgroup (g i) U).toSubgroup.relIndex V.toSubgroup * q)
@@ -2985,12 +3011,11 @@ the formula a conjugation rather than what makes it well typed. -/
 noncomputable def evensConj (_hU : U.toSubgroup.index = 2) (n : ℕ)
     (x : (continuousCohomology ℤ U.toSubgroup n).obj (trivialF2 U.toSubgroup)) :
     (continuousCohomology ℤ U.toSubgroup n).obj (trivialF2 U.toSubgroup) :=
-  -- The `let` is what puts the restricted class at the coefficient object of `U`. The two objects
-  -- are the same, but only up to unfolding `Action.res`, which instance search does not do, so a
-  -- bare subtraction would not find its `HSub`.
+  -- The named trivial-coefficient wrappers transport through `trivialF2Res`, so both terms of the
+  -- subtraction live at the coefficient object constructed directly on `U`.
   let y : (continuousCohomology ℤ U.toSubgroup n).obj (trivialF2 U.toSubgroup) :=
-    (res ℤ U.toSubgroup (trivialF2 G) n).hom
-      ((corestriction ℤ U (trivialF2 G) (trivialF2_isSmoothDiscrete G) n).hom x)
+    (trivialF2ResMap G U.toSubgroup n).hom
+      ((trivialF2Corestriction G U n).hom x)
   y - x
 
 /-- **Layer 13, the conjugate is conjugation by any element outside `U`.** Layer 10's `conjMapOf`
@@ -2999,17 +3024,18 @@ which is why no identity below has to name one. -/
 theorem evensConj_eq_conjMapOf (hU : U.toSubgroup.index = 2) (s : G) (hs : s ∉ U) (n : ℕ)
     (x : (continuousCohomology ℤ U.toSubgroup n).obj (trivialF2 U.toSubgroup)) :
     evensConj U hU n x =
-      (conjMapOf ℤ s U U (conjOpenSubgroup_eq_of_index_two U hU s).symm (trivialF2 G) n).hom x :=
+      (trivialF2ConjMapOf G s U U (conjOpenSubgroup_eq_of_index_two U hU s).symm n).hom x :=
   sorry
 
 /-- **Layer 13, `res ∘ cor` at index two is `1 + conj`.** It holds by the definition of
 `evensConj`, and it is named because that is the form later proofs apply. -/
 theorem res_corestriction_eq_add_evensConj (hU : U.toSubgroup.index = 2) (n : ℕ)
     (x : (continuousCohomology ℤ U.toSubgroup n).obj (trivialF2 U.toSubgroup)) :
-    (res ℤ U.toSubgroup (trivialF2 G) n).hom
-        ((corestriction ℤ U (trivialF2 G) (trivialF2_isSmoothDiscrete G) n).hom x) =
+    (trivialF2ResMap G U.toSubgroup n).hom
+        ((trivialF2Corestriction G U n).hom x) =
       x + evensConj U hU n x := by
-  simp [evensConj]
+  dsimp only [evensConj]
+  rw [add_comm x, sub_add_cancel]
 
 /-- **Layer 13, the class of a continuous trivial-action 1-cocycle.** With trivial `𝔽₂`
 coefficients `H¹` is the group of continuous homomorphisms, so a continuous `α` has a class; the
@@ -3055,7 +3081,7 @@ theorem graphClass_representative_independent (hU : U.toSubgroup.index = 2)
 `evensConj`. -/
 theorem evensNorm_res (hU : U.toSubgroup.index = 2)
     (α : (continuousCohomology ℤ U.toSubgroup 1).obj (trivialF2 U.toSubgroup)) :
-    (res ℤ U.toSubgroup (trivialF2 G) 2).hom (evensNormIndexTwo U hU α) =
+    (trivialF2ResMap G U.toSubgroup 2).hom (evensNormIndexTwo U hU α) =
       cup (f2Pairing U.toSubgroup) 1 1 α (evensConj U hU 1 α) :=
   sorry
 
@@ -3064,7 +3090,7 @@ carries the **conjugate** class; a formula without the conjugate is a different 
 theorem evensNorm_polarization (hU : U.toSubgroup.index = 2)
     (α β : (continuousCohomology ℤ U.toSubgroup 1).obj (trivialF2 U.toSubgroup)) :
     evensNormIndexTwo U hU (α + β) - evensNormIndexTwo U hU α - evensNormIndexTwo U hU β =
-      (corestriction ℤ U (trivialF2 G) (trivialF2_isSmoothDiscrete G) 2).hom
+      (trivialF2Corestriction G U 2).hom
         (cup (f2Pairing U.toSubgroup) 1 1 α (evensConj U hU 1 β)) :=
   sorry
 
@@ -3075,7 +3101,7 @@ their sum is a cocycle whose class is the corestriction. The element `s` is carr
 the class-level identities above, because it is the cochain formula that depends on it. -/
 theorem evensNorm_cor_shapiro (hU : U.toSubgroup.index = 2) (s : G) (hs : s ∉ U)
     (α : U.toSubgroup →* Multiplicative (ZMod 2)) (hα : Continuous α) :
-    (corestriction ℤ U (trivialF2 G) (trivialF2_isSmoothDiscrete G) 1).hom
+    (trivialF2Corestriction G U 1).hom
         (homClass U.toSubgroup α hα) =
       cochainClass ℤ (trivialF2 G) 1
         (inhomogeneousCochain1 G (evensCorCochain U.toSubgroup s α)
