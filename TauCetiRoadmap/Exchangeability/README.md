@@ -800,8 +800,7 @@ theorem invariantConditionalProbabilityMeasure_ae_eq_directingProbabilityMeasure
 end ContractableLaw
 ```
 
-The intended proof applies `conditionallyIID_ae_unique` to the two existing named-witness
-theorems:
+The proof applies `conditionallyIID_ae_unique` to the two named-witness theorems:
 
 * `conditionallyIIDWith_of_contractable_pathSpace`;
 * `ContractableLaw.conditionallyIIDWith_invariantConditionalProbabilityMeasure`.
@@ -897,9 +896,9 @@ routes may share the representation predicates, path-law bridges, the canonical 
 definitions, and genuinely generic common endings. The prohibition concerns another route's
 proof-specific machinery.
 
-The facade exception codifies the existing public import topology: the final `DeFinetti` facade
-already aggregates the independent route endpoints. `WitnessAgreement` is likewise a downstream
-comparison module, never an input to a proof route.
+`TauCeti.Probability.DeFinetti` is the designated aggregation boundary: it may import all three
+route endpoints and `WitnessAgreement`. The comparison module is downstream only and must not be
+imported by any route.
 
 Automating this invariant belongs to Tau Ceti's human-owned module-system governance. This roadmap
 pins the dependency invariant; it does not authorize ordinary mathematical PRs to edit `scripts/`,
