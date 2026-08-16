@@ -221,7 +221,7 @@ theorem exists_isArithFrobAt_pow_inertiaDeg {L : Type*} [Field L] [NumberField L
     (hur : ∀ (Q' : Ideal (𝓞 L)) [Q'.IsPrime] [Q'.LiesOver 𝔭], Algebra.IsUnramifiedAt (𝓞 K) Q')
     (σ : L ≃ₐ[K] L) (hσ : IsArithFrobAt (𝓞 K) σ Q) :
     ∃ τ : L ≃ₐ[M] L, IsArithFrobAt (𝓞 M) τ Q ∧
-      AlgEquiv.restrictScalars K τ = σ ^ Ideal.inertiaDeg 𝔭 𝔓 :=
+      AlgEquiv.restrictScalars K τ = σ ^ 𝔓.inertiaDeg (𝓞 K) :=
   sorry
 
 /-- **Layer 2.5, the carrier `J^S`.** The fractional ideals with valuation zero at every prime
@@ -540,7 +540,7 @@ example {R S : Type*} [CommRing R] [IsDomain R] [IsIntegrallyClosed R] [CommRing
     (hcond : (conductor R x).comap (algebraMap R S) ⊔ I = ⊤)
     {J : Ideal S} (hJ : J ∈ UniqueFactorizationMonoid.normalizedFactors
       (I.map (algebraMap R S))) :
-    Ideal.inertiaDeg I J =
+    J.inertiaDeg R =
       (KummerDedekind.normalizedFactorsMapEquivNormalizedFactorsMinPolyMk
         hI hI' hcond hx ⟨J, hJ⟩).val.natDegree :=
   sorry
@@ -908,7 +908,7 @@ example {L : Type*} [Field L] [NumberField L] [Algebra K L]
     (v : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 L))
     [w.asIdeal.LiesOver v.asIdeal] :
     Module.finrank (v.adicCompletion K) (w.adicCompletion L) =
-      Ideal.ramificationIdx v.asIdeal w.asIdeal * Ideal.inertiaDeg v.asIdeal w.asIdeal :=
+      w.asIdeal.ramificationIdx (𝓞 K) * w.asIdeal.inertiaDeg (𝓞 K) :=
   sorry
 
 /-- **Layer 5.6, the decomposition group is the local Galois group** (Neukirch II §9), again as
@@ -1127,7 +1127,7 @@ exponent computation of Layer 6 lands. -/
 example {L : Type*} [Field L] [NumberField L] [Algebra K L] (v : HeightOneSpectrum (𝓞 K)) :
     multiplicity v.asIdeal (relDiscr (𝓞 K) (𝓞 L)) =
       ∑ᶠ P ∈ Ideal.primesOver v.asIdeal (𝓞 L),
-        Ideal.inertiaDeg v.asIdeal P * multiplicity P (differentIdeal (𝓞 K) (𝓞 L)) :=
+        P.inertiaDeg (𝓞 K) * multiplicity P (differentIdeal (𝓞 K) (𝓞 L)) :=
   sorry
 
 /-! ## Layer 6: global ramification consequences
@@ -1181,9 +1181,9 @@ theorem multiplicity_differentIdeal_eq_ramificationIdx_sub_one_of_tame
     {L : Type*} [Field L] [NumberField L] [Algebra K L]
     {p : Ideal (𝓞 K)} [p.IsMaximal] (hp : p ≠ ⊥)
     {P : Ideal (𝓞 L)} [P.IsPrime] [P.LiesOver p]
-    (htame : ¬ ringChar (𝓞 K ⧸ p) ∣ Ideal.ramificationIdx p P) :
+    (htame : ¬ ringChar (𝓞 K ⧸ p) ∣ P.ramificationIdx (𝓞 K)) :
     multiplicity P (differentIdeal (𝓞 K) (𝓞 L)) =
-      Ideal.ramificationIdx p P - 1 :=
+      P.ramificationIdx (𝓞 K) - 1 :=
   sorry
 
 /-- **Layer 6.4, the wild bounds**, restricted to number fields and imported from #189's local
@@ -1192,12 +1192,12 @@ same normalization as `v_P(𝔡)`; Layer 5.9 supplies the transport. -/
 example {L : Type*} [Field L] [NumberField L] [Algebra K L]
     {p : Ideal (𝓞 K)} [p.IsMaximal] (hp : p ≠ ⊥)
     {P : Ideal (𝓞 L)} [P.IsPrime] [P.LiesOver p]
-    (hwild : ringChar (𝓞 K ⧸ p) ∣ Ideal.ramificationIdx p P)
-    (he : Ideal.ramificationIdx p P ≠ 0) :
-    Ideal.ramificationIdx p P ≤ multiplicity P (differentIdeal (𝓞 K) (𝓞 L)) ∧
+    (hwild : ringChar (𝓞 K ⧸ p) ∣ P.ramificationIdx (𝓞 K))
+    (he : P.ramificationIdx (𝓞 K) ≠ 0) :
+    P.ramificationIdx (𝓞 K) ≤ multiplicity P (differentIdeal (𝓞 K) (𝓞 L)) ∧
       multiplicity P (differentIdeal (𝓞 K) (𝓞 L)) ≤
-        Ideal.ramificationIdx p P - 1 +
-          multiplicity P (Ideal.span {(Ideal.ramificationIdx p P : 𝓞 L)}) :=
+        P.ramificationIdx (𝓞 K) - 1 +
+          multiplicity P (Ideal.span {(P.ramificationIdx (𝓞 K) : 𝓞 L)}) :=
   sorry
 
 /-- **Layer 6.5, the permutation-action discriminant exponent formula.** Both sides are
@@ -1207,7 +1207,7 @@ permutation action. A future ArtinRepresentations roadmap may recognize this int
 Artin conductor; that identification is theirs and is needed by nothing here. -/
 example {L : Type*} [Field L] [NumberField L] [IsGalois ℚ L] (M : IntermediateField ℚ L)
     (Q : Ideal (𝓞 L)) [Q.IsPrime] (hQ : Q ≠ ⊥) :
-    Ideal.ramificationIdx (Q.under (𝓞 M)) Q *
+    Q.ramificationIdx (𝓞 M) *
         multiplicity (Q.under (𝓞 M)) (differentIdeal ℤ (𝓞 M)) =
       ∑ᶠ i : ℕ, (Nat.card (ramificationGroup (K := ℚ) Q i) -
         Nat.card ((ramificationGroup (K := ℚ) Q i ⊓ M.fixingSubgroup :
