@@ -783,14 +783,15 @@ Build:
 
   - for a nonempty finite index type `κ`, define `empiricalMeasureOfFintype x`, the empirical
     probability measure of a population `x : κ → α`, with evaluation, integration, and
-    measurability lemmas. Refactor the sequence-specific `empiricalMeasure x n` through its
-    `Fin (n + 1)` specialization rather than retaining two parallel finite-sum constructions;
+    measurability lemmas. Require the sequence-specific `empiricalMeasure x n` to be its
+    `Fin (n + 1)` specialization, so both APIs share one finite-sum construction;
   - alongside `sampleWithoutReplacement`, define `sampleWithReplacement` for a random finite
-    population law `ρ : Measure (κ → α)` and a finite sample index `ι`, factoring their common
-    random-population reindexing map into one shared construction rather than duplicating it;
+    population law `ρ : Measure (κ → α)` and a finite sample index `ι`. Sampling with and without
+    replacement use one shared random-population reindexing construction and differ only in
+    whether the sampled index map is unrestricted or conditioned to be injective;
   - identify `sampleWithReplacement ρ` with the mixture obtained by first drawing `x ∼ ρ` and
     then taking the `ι`-fold product of the empirical probability measure of `x`;
-  - retain the exact representation of an exchangeable marginal as sampling without replacement:
+  - use the exact representation of an exchangeable marginal as sampling without replacement:
     `ExchangeableAt.sampleWithoutReplacement_eq_prefixLaw`.
 
   For `[IsProbabilityMeasure μ]`, `h : ExchangeableAt μ X n`, `0 < n`, `m ≤ n`, and
