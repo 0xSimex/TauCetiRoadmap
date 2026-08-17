@@ -277,7 +277,7 @@ in Mathlib's multiplication. Geometrically: the concatenated loop "`γ0`, then `
 is not this relation.** The LMFDB's knowl shows `σ_∞ σ_1 σ_0 = 1`, typographically the
 relation above; but the stored triples are computed left-to-right, so as *functions* they
 satisfy `σ0 ∘ σ1 ∘ σinf = id`, which in Mathlib's multiplication is `σ0 * σ1 * σinf = 1` —
-the **opposite** relation. `PROVENANCE.md` verifies this against frozen records rather than
+the **opposite** relation. The private provenance ledger verifies this against frozen records rather than
 inferring it from the display. The two conventions differ by the componentwise-inversion
 involution of Layer 0.1, and Layer 14.2 states that translation as a theorem about the
 stored data.
@@ -410,7 +410,7 @@ convention.
 ## What Mathlib supplies
 
 The load-bearing imports, against the pinned Mathlib (`9caeba1000`, Lean `v4.31.0-rc1`);
-`PROVENANCE.md` carries the dated audit that produced this list:
+The private provenance ledger carries the dated audit that produced this list:
 
 | Area | Declarations |
 | --- | --- |
@@ -1006,7 +1006,7 @@ is recomputed here and compared:
   equalities, so that the class lists and passport sizes are `#eval`-able at small degree and
   `decide`-checked at `n ≤ 3`. The prototype carries those checks: `(isoClasses n).card` is
   `1, 3, 7` for `n = 1, 2, 3` and one passport fiber has size `1`, all by kernel `decide`,
-  agreeing with the independent enumeration in `PROVENANCE.md`. ⚠ At `n = 4` kernel reduction
+  agreeing with the independent enumeration in the private provenance ledger. ⚠ At `n = 4` kernel reduction
   does not complete in reasonable time; `#eval` gives `26` there, and that is recorded as a
   computation rather than promoted to a theorem — `native_decide` would prove it but would add
   a trusted-compiler axiom to a repository that has none.
@@ -1165,7 +1165,7 @@ the database lists all ordered classes, and none is needed.
 *Source:* Musty–Schiavone–Sijsling–Voight, *A database of Belyi maps*, **Algorithm 2.3.1**,
 for the one-representative-per-`S₃`-orbit tabulation.
 
-*Prerequisites:* Layers 2.6, 3.1, 3.4; the frozen snapshot in `PROVENANCE.md`.
+*Prerequisites:* Layers 2.6, 3.1, 3.4; the frozen snapshot in the private provenance ledger.
 
 ### Layer 4: triangle groups
 
@@ -2464,7 +2464,8 @@ its invariants directly from the equation rather than by appeal to the classific
   transitively on a generic fiber, so the pair is regular with deck group `ℤ/4` — matching
   Layer 0.8's automorphism group of `torusTriple` and Layer 6.4's deck-group theorem.
 
-The frozen LMFDB record for this passport is `4T1-4_4_2.2-a` (`PROVENANCE.md`), whose curve
+The frozen LMFDB record for this passport is `4T1-4_4_2.2-a` (retained in the private
+provenance ledger), whose curve
 friend is an elliptic curve over `ℚ`, so the example is also Layer 10.8's genus-one
 acceptance instance.
 
@@ -3225,7 +3226,7 @@ over `ℚ̄`" is not an argument; it names no descent datum and no model.
 ⚠ *Nearby false statement:* a dense set of good specializations taking finitely many
 isomorphism classes does **not** put the generic fiber in one of those classes. That
 inference needs an isomorphism scheme, constructibility, or a rigidity theorem, none of
-which this roadmap has; `PROVENANCE.md` records the specialization-and-pigeonhole route as
+which this roadmap has; the private provenance ledger records the specialization-and-pigeonhole route as
 rejected for exactly that reason.
 
 *Source:* Köck **(2.2) Theorem** for steps 1–5 — "the curve `X/C` and the morphism `t` are
@@ -3416,7 +3417,7 @@ cardinality `[S : H]`.
 
 ⚠ **The map need not be injective**, and the degree `[k : ℚ] = [G : H]` therefore need not
 equal `trueOrbitSize c = [G : S]`. Two embeddings can produce simultaneously conjugate
-triples, hence the *same* Belyi-pair isomorphism class; `PROVENANCE.md` records witnesses in
+triples, hence the *same* Belyi-pair isomorphism class; the private provenance ledger records witnesses in
 the frozen database.
 
 ⚠ **Do not characterize the fibers by `Aut(k/ℚ)`.** For a nonnormal `k`, `Aut(k/ℚ)` is
@@ -3878,7 +3879,7 @@ Also: Stix, "On cuspidal sections of algebraic fundamental groups", ASPM 63 (201
 **Definition 37(i)**, in §7 ("Orientation and degree") — a commutative square whose content
 for an element of the decomposition group is exactly `γ x γ⁻¹ = x ^ χ(γ)`, with the
 **non-inverted** exponent, matching the Kummer computation above. ⚠ Three citation traps,
-each recorded in `PROVENANCE.md`: the formula is in §7 and **not** in §3.3, which only sets
+each recorded in the private provenance ledger: the formula is in §7 and **not** in §3.3, which only sets
 up inertia and decomposition groups; "Definition 37" is numbered only in the published ASPM
 version, the arXiv preprint carrying the same content as unnumbered text; and Stix's `π₁` is
 the **opposite** group of the deck group, compensated by a matching inverse in his
@@ -3936,7 +3937,7 @@ preceding data. Therefore each Galois orbit is contained in a single passport, c
 Layer 11.2's partial statement.
 
 ⚠ *Nearby false statement:* the converse fails, and its failure is the reason a passport is
-not a Galois orbit — the frozen `5T1-5_5_5` passport in `PROVENANCE.md` has one passport
+not a Galois orbit — the frozen `5T1-5_5_5` passport in the private provenance ledger has one passport
 and three orbits. Layer 14 never treats `pass_size` and `orbit_size` as the same datum.
 
 *Prerequisites:* Layers 0.5, 0.6, 1.1, 1.4, 11.1, 12.11.
@@ -4117,7 +4118,7 @@ faithfulness on dessins.
 
 This layer says what a stored record asserts, mathematically. It certifies no database value
 and asserts nothing about the completeness of the database. The schema it mirrors is frozen,
-with its retrieval date, in `PROVENANCE.md`; the milestones below cite that snapshot rather
+with its retrieval date, in the private provenance ledger; the milestones below cite that snapshot rather
 than the live site.
 
 #### 14.1 The passport record
@@ -4175,7 +4176,7 @@ distinctive content is three theorems, not a list of fields.
 stored data is the componentwise inverse of a triple in this roadmap's convention. The
 milestone states that the Layer 0.1 involution is the translation, and that it preserves
 every invariant the record asserts: degree, all three full cycle types, the monodromy group,
-connectedness, the automorphism group, the genus, and the passport. `PROVENANCE.md` records
+connectedness, the automorphism group, the genus, and the passport. The private provenance ledger records
 the frozen records the translation was verified against, including which records are
 symmetric under the swap and therefore cannot verify it.
 
@@ -4211,7 +4212,7 @@ With those apart, state each assertion against the right one:
   embedding entries onto the true orbit classes, by Layer 11.7's `G/H ↠ G/S`;
 - ⚠ **that map need not be injective, so `r.orbit_size = trueOrbitSize c` is not asserted.**
   It requires a separate certificate — that `H = S`, equivalently that the stored base field
-  is the field of moduli — which Layer 11.6 shows is not automatic. `PROVENANCE.md` records
+  is the field of moduli — which Layer 11.6 shows is not automatic. The private provenance ledger records
   frozen records where several stored embeddings yield simultaneously conjugate triples,
   hence one class.
 
@@ -4267,7 +4268,7 @@ counts the failure is exactly describable: `Σ_r storedEmbeddingCount r` counts 
 embedding entries, while `pass_size` counts simultaneous-conjugacy classes, and the map from
 the former to the latter is surjective but not injective. It fails precisely when the
 per-embedding triples of a single Galois orbit are simultaneously conjugate to one another;
-`PROVENANCE.md` records the two witnesses in the current database. A certificate that
+The private provenance ledger records the two witnesses in the current database. A certificate that
 assumed the sum formula would be unsound on real records.
 
 *Prerequisites:* Layers 0.4, 1.2, 1.4, 1.6, 3.4, 9.1, 11.7, 14.1, 14.2.
@@ -4313,7 +4314,7 @@ by any invariant, is the witness.
 
 #### 14.6 The frozen acceptance suite
 
-The five frozen records of `PROVENANCE.md` — genus zero, positive genus, primitive,
+The five frozen records in the private provenance ledger — genus zero, positive genus, primitive,
 imprimitive, a passport with three Galois orbits, and links to both an elliptic and a
 genus-two curve — each carried through 14.1–14.5 at the highest certification level its data
 admits. ⚠ The database itself is complete only through degree `6` by its own account, and
@@ -4401,7 +4402,7 @@ The layer numbering is the citation order; the two-track structure is the parall
 ## References
 
 Primary sources, with the convention-sensitive role of each recorded; exact theorem numbers
-are verified against the copies recorded in `PROVENANCE.md` before any milestone cites one.
+are verified against the copies recorded in the private provenance ledger before any milestone cites one.
 
 - E. Girondo, G. González-Diez, *Introduction to Compact Riemann Surfaces and Dessins
   d'Enfants*, LMS Student Texts 79, CUP 2012 — the analytic theory at this roadmap's exact

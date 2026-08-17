@@ -142,7 +142,7 @@ example : (ofTwo (Equiv.swap 0 1) 1 : PermutationTriple 2).σinf = Equiv.swap 0 
 
 /-! ### The LMFDB translation, machine-checked
 
-The frozen LMFDB record `3T2-3_2.1_2.1-a` (`PROVENANCE.md`) stores the triple
+The frozen LMFDB record `3T2-3_2.1_2.1-a` (retained in the private provenance ledger) stores the triple
 `(1,2,3)`, `(2,3)`, `(1,2)`, which `0`-indexed is `finRotate 3`, `swap 1 2`, `swap 0 1`.
 Because the database composes permutations left to right, that stored triple satisfies the
 **opposite** relation in Mathlib's multiplication — and its componentwise inverse, the
@@ -316,7 +316,7 @@ theorem even_two_sub_eulerChar (t : PermutationTriple n) : Even (2 - t.eulerChar
 
 /-- **Layer 0.6 (the connected bound).** `χ ≤ 2` for connected triples. Proof route:
 induction along a minimal transposition factorization of `σ1` with
-`cycleCount_swap_mul`; source Lando–Zvonkin (see `PROVENANCE.md`). -/
+`cycleCount_swap_mul`; source Lando–Zvonkin (see the private provenance ledger). -/
 theorem eulerChar_le_two (t : PermutationTriple n) (ht : t.IsConnected) :
     t.eulerChar ≤ 2 := by
   sorry
@@ -760,13 +760,13 @@ def computedPassportOf (t : PermutationTriple n) : PassportData n :=
 /-! **Layer 3.1, the executable acceptance checks.** These run the enumeration end to end —
 connected triples, relabeling orbits, passport datum, fiber, cardinality — and are proved by
 kernel reduction, so they are evidence and not annotation. The counts agree with the
-independent enumeration recorded in `PROVENANCE.md`.
+independent enumeration recorded in the private provenance ledger.
 
 ⚠ `native_decide` is deliberately not used anywhere in this file. It would discharge the
 degree-`4` case too, but at the cost of adding `Lean.ofReduceBool` — a trusted-compiler axiom
 — to a repository that currently has none, and the degree-`4` run exercises no code path that
 degree `3` does not. Kernel `decide` does not complete at degree `4` within ten minutes;
-`#eval` gives `26` classes and passport size `1` there, matching `PROVENANCE.md`, and that is
+`#eval` gives `26` classes and passport size `1` there, matching the private provenance ledger, and that is
 recorded as a computation rather than promoted to a theorem. -/
 
 section AcceptanceCounts
