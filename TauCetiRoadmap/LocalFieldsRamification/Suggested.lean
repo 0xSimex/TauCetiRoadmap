@@ -289,8 +289,9 @@ extension supplied by `residueFieldAlgebra`. -/
 noncomputable def inertiaDegree [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] :
     ℕ := Module.finrank 𝓀[K] 𝓀[L]
 
-/-- **Layer 0, total ramification.** This is the canonical predicate consumed by #226; that
-roadmap must not keep a parallel `IsTotallyRamified`. -/
+/-- **Layer 0, total ramification.** This is the canonical one-extension predicate consumed by
+#226. An intermediate-field family wrapper must compare to it and must not contain an independent
+definition of total ramification. -/
 def IsTotallyRamified [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] : Prop :=
   ramificationIndex K L = Module.finrank K L
 
@@ -315,6 +316,15 @@ this is the fundamental identity of the layer. The reconciliation with the Dedek
 theorem ramificationIndex_mul_inertiaDegree [Algebra K L] [ValuativeExtension K L]
     [Module.Finite K L] :
     ramificationIndex K L * inertiaDegree K L = Module.finrank K L :=
+  sorry
+
+/-- **Layer 0, residue-degree characterization of total ramification.** This is the stable
+one-extension bridge consumed by `TotallyRamified`; a family-level intermediate-field wrapper
+must compare to this theorem rather than define a second ramification predicate. No dependency on
+the consumer roadmap is introduced here. -/
+theorem isTotallyRamified_iff_inertiaDegree_eq_one [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] :
+    IsTotallyRamified K L ↔ inertiaDegree K L = 1 :=
   sorry
 
 /-- **Layer 0, the valuation of a natural-number cast.** The nonzero proof is part of the input;
@@ -919,11 +929,24 @@ theorem exists_integerRing_adjoin_eq_top [Algebra K L] [ValuativeExtension K L]
     ∃ x : 𝒪[L], Algebra.adjoin 𝒪[K] {x} = ⊤ :=
   sorry
 
+/-- **Layer 3, total ramification is equivalent to an Eisenstein generator.** The generator is
+integral, is a root after mapping coefficients to `𝒪[L]`, and generates the entire integer ring.
+This is arithmetic of one extension; `TotallyRamified` may install the intermediate-field
+adapters and consume this theorem when constructing a family. -/
+theorem isTotallyRamified_iff_exists_eisenstein_generator
+    [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] :
+    IsTotallyRamified K L ↔
+      ∃ (f : Polynomial 𝒪[K]) (ξ : 𝒪[L]),
+        f.IsEisensteinAt 𝓂[K] ∧
+          (f.map (algebraMap 𝒪[K] 𝒪[L])).IsRoot ξ ∧
+            Algebra.adjoin 𝒪[K] {ξ} = ⊤ :=
+  sorry
+
 /-- **Layer 3, orthogonality of an Eisenstein power basis.** For an Eisenstein generator, the
 values of the nonzero terms are distinct modulo the ramification index, so the valuation of the
 sum is their minimum. In the totally ramified situation supplied by the Eisenstein hypotheses,
-the ramification index is `f.natDegree`. This is the exact local-field contract consumed by the
-coordinate-box argument in Counting Totally Ramified Extensions #226. -/
+the ramification index is `f.natDegree`. This export is consumed by `TotallyRamified`, which owns
+the coordinate-box and measure consequences. No dependency on that roadmap is introduced here. -/
 theorem addVal_sum_eisenstein_powerBasis [Algebra K L] [ValuativeExtension K L]
     [Module.Finite K L] [Algebra.IsSeparable K L]
     (f : Polynomial 𝒪[K]) (hf : f.IsEisensteinAt 𝓂[K])
@@ -970,9 +993,9 @@ theorem differentExponent_eq_of_algEquiv
     (e : L ≃ₐ[K] M) : differentExponent K L = differentExponent K M :=
   sorry
 
-/-- **Layer 3, invariance of the local discriminant exponent under a `K`-isomorphism.** This is
-the form Counting Totally Ramified Extensions #226 consumes when regrouping by isomorphism
-classes. -/
+/-- **Layer 3, invariance of the local discriminant exponent under a `K`-isomorphism.** This
+export is consumed by `TotallyRamified`, which derives invariance of its mass-formula weight from
+it. No dependency on that roadmap is introduced here. -/
 theorem discriminantExponent_eq_of_algEquiv
     (M : Type v) [Field M] [ValuativeRel M] [TopologicalSpace M]
     [IsNonarchimedeanLocalField M]

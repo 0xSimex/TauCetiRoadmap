@@ -31,12 +31,14 @@ different, and the relative-discriminant consequences. In particular it imports
 convention.
 
 [Counting Totally Ramified Extensions #226](https://github.com/TauCetiProject/TauCetiRoadmap/pull/226)
-is another downstream consumer. It owns Serre's counting and mass-formula argument, while this
-roadmap owns the ramification-theoretic substrate it counts: total ramification, Eisenstein
-generators and their power bases, the different and local discriminant exponents, their
-invariance under `K`-isomorphism, and the tame/wild criteria. In particular, #226 consumes the
-Eisenstein power-basis orthogonality and discriminant-invariance declarations specified in Layer
-3 below; it does not introduce second versions of those local invariants.
+is a direct downstream consumer. This roadmap owns the arithmetic of each finite extension:
+the induced local-field structures, `ramificationIndex`, `inertiaDegree`, total/tame/wild
+ramification, Eisenstein generators and integral monogenicity, the different and local
+discriminant exponents, their invariance under `K`-equivalence, and Eisenstein power-basis
+valuation orthogonality. #226 owns the family and counting layer: `σ_K(n)`, its derived weight
+`c(L) = d(L) - n + 1`, representative sets, quantitative root counting, coefficient-space and
+Haar-measure calculations, and the mass formulas. It may define intermediate-field wrappers,
+but they must install this roadmap's canonical structures and reduce to its canonical invariants.
 
 Conventions are fixed throughout: valuations are normalized additively by `v_K(π) = 1`;
 arithmetic Frobenius is primary and geometric Frobenius is its inverse; upper numbering is the
@@ -597,10 +599,10 @@ pro-`p` quotient.
   ```
 
   The second equality uses total ramification. The summands with nonzero coefficients have
-  pairwise distinct values modulo `n`, so there is no cancellation. Export the formula both in
-  the canonical `IsDiscreteValuationRing.addVal` spelling and as the box/ball corollary used by
-  coordinate and measure arguments. This is ramification substrate, not mass-formula counting;
-  Counting Totally Ramified Extensions #226 consumes it.
+  pairwise distinct values modulo `n`, so there is no cancellation. Export the formula in the
+  canonical `IsDiscreteValuationRing.addVal` spelling. Counting Totally Ramified Extensions #226
+  consumes it to derive the box/ball and coordinate-cube descriptions used by its measure
+  argument; those family-level corollaries are not owned here.
   - *Prerequisites:*
     - `Layer 0: finite extensions, III`;
     - `Mathlib: Algebra.adjoin`, `Mathlib: IsIntegral`;
@@ -610,7 +612,7 @@ pro-`p` quotient.
     - the chosen-generator form, including integrality over `𝒪[K]` and generation of `L` over
       `K`;
     - `addVal_sum_eisenstein_powerBasis`, the exact minimum formula above;
-    - the induced power basis and its box/ball membership corollaries;
+    - the induced power basis;
     - compatibility with the comparison of `𝒪[L]` and the integral closure from Layer 0.III.
   - *Source:* Serre LF III §6, Proposition 12.
 - **The lower-numbering filtration.** For `L/K` finite Galois with group `G`, define `G_i = {σ | ∀
@@ -847,29 +849,63 @@ pro-`p` quotient.
   - *Source:* Serre LF III §§3–6 for the different and the discriminant, and Serre LF IV §1 for
     the valuation formula, which needs `L/K` Galois.
 
-### Consumer contract: Counting Totally Ramified Extensions #226
+### Consumer contract: Counting Totally Ramified Extensions
 
-The ownership boundary is exact. #226 may carry temporary declarations while this supplier is
-unmerged, but they are adapters to be deleted, not milestones owned by that roadmap:
+The governing rule is that this roadmap owns the arithmetic of one finite extension of a
+nonarchimedean local field, while [Counting Totally Ramified Extensions
+#226](https://github.com/TauCetiProject/TauCetiRoadmap/pull/226) owns the construction and counting
+of families of such extensions. The dependency is one-way:
 
-| Temporary #226 name | Canonical export here |
+```text
+LocalFieldsRamification (#189) → TotallyRamified (#226)
+```
+
+This roadmap owns the canonical induced local-field structure, `e` and `f`, total/tame/wild
+ramification, Eisenstein generators and integral monogenicity, the different and local
+discriminant exponents, their invariance under `K`-algebra equivalence, and the valuation formula
+for an Eisenstein power basis.
+
+#226 consumes those declarations. It owns the family `σ_K(n)`, `totallyRamifiedOfDegree`,
+`IsRepresentativeSet`, the mass-formula weight `wildExponent c(L) = d(L) - n + 1`, quantitative
+Newton and root-counting arguments, local constancy of root counts, the coefficient space and
+Eisenstein region, nonarchimedean lattice-index and Haar-scaling formulas, finiteness and
+orbit-stabilizer weights, and both forms of Serre's mass formula. None of those are definitions or
+milestones of this roadmap.
+
+The consumer represents extensions by arbitrary terms
+`M : IntermediateField K (SeparableClosure K)`. It may define total or junk-tolerant wrappers such
+as `intermediateFieldIsTotallyRamified` and `intermediateFieldDiscriminantExponent`, but each
+wrapper must install this roadmap's `finiteIntermediateField*` structures and carry a comparison
+theorem with the canonical invariant below. A wrapper must not contain an independent definition
+of the ramification index, total-ramification predicate, different, discriminant ideal, or
+discriminant exponent. This permits harmless family-level totalization without making #189 a
+counting roadmap or introducing a dependency on #226.
+
+| Consumer need in #226 | Owner/export in #189 |
 |---|---|
-| `ramificationIdx` | `ramificationIndex` |
-| `IsTotallyRamified` | `LocalFieldsRamification.IsTotallyRamified` |
-| `discriminantIdeal` | `localDiscriminantIdeal` |
-| `discExponent` | `discriminantExponent` |
-| `discExponent_eq_of_algEquiv` | `discriminantExponent_eq_of_algEquiv` |
+| local structure on a finite intermediate field | `finiteIntermediateFieldNormedField`, `finiteIntermediateFieldValuativeRel`, `finiteIntermediateFieldTopology`, `finiteIntermediateField_valuativeExtension`, `finiteIntermediateField_isValuativeTopology`, `finiteIntermediateField_isNonarchimedeanLocalField` |
+| ramification index | `ramificationIndex` |
+| residue degree | `inertiaDegree` |
+| total ramification | `IsTotallyRamified`, `isTotallyRamified_iff_inertiaDegree_eq_one` |
+| Eisenstein generator | `isTotallyRamified_iff_exists_eisenstein_generator` |
+| integral monogenicity | `exists_integerRing_adjoin_eq_top` |
+| local different exponent | `differentExponent` |
+| local discriminant exponent | `discriminantExponent` |
+| tame and wild bounds | `differentExponent_eq_ramificationIndex_sub_one_iff`, `differentExponent_bounds_of_wild` |
+| invariance under `K`-equivalence | `differentExponent_eq_of_algEquiv`, `discriminantExponent_eq_of_algEquiv` |
+| power-basis valuation orthogonality | `addVal_sum_eisenstein_powerBasis` |
 
-In particular, invariance of the discriminant exponent is not a #226 milestone. Its
-coordinate-box proof consumes `addVal_sum_eisenstein_powerBasis` directly. The carrier adapter is
-also part of this supplier: for `M : IntermediateField K (SeparableClosure K)` with
-`Module.Finite K M`, use `finiteIntermediateFieldNormedField`,
-`finiteIntermediateFieldValuativeRel`, `finiteIntermediateFieldTopology`,
-`finiteIntermediateField_valuativeExtension`, `finiteIntermediateField_isValuativeTopology`, and
-`finiteIntermediateField_isNonarchimedeanLocalField`, then the canonical integer/residue algebra
-and invariant declarations above. No already-topologized intermediate-field hypothesis may be
-inserted by the consumer. #226 must state this table and adapter identically before the joint
-boundary is accepted.
+Two results needed by the mass formula remain owned here:
+
+1. `discriminantExponent_eq_of_algEquiv`, since invariance of a local arithmetic invariant is
+   reusable outside counting;
+2. `addVal_sum_eisenstein_powerBasis`, since it is a valuation theorem about one Eisenstein
+   extension.
+
+The counting roadmap owns only their family-level consequences: invariance of `wildExponent`,
+coordinate-box and coordinate-cube descriptions, volume computations, and the resulting
+integrals. #226 itself must be updated separately to install this adapter contract and replace its
+temporary arithmetic declarations with the canonical exports above.
 
 ### Layer 4: the tame quotient of the absolute Galois group
 
