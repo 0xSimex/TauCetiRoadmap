@@ -114,12 +114,12 @@ No milestone depends on anything else. In particular, no milestone depends on an
 - an external repository;
 - a roadmap that does not exist yet.
 
-Dated information about the surrounding ecosystem is not part of the specification. It is in
-[PROVENANCE.md](PROVENANCE.md).
+Dated information about the surrounding ecosystem is not part of the specification. It is
+maintained in a private provenance ledger.
 
 "The pinned Mathlib" means the version in the repository's `lake-manifest.json`. Every claim
-below about what Mathlib has was checked against it. `PROVENANCE.md` records the date of that
-check.
+below about what Mathlib has was checked against it. The date of that check is maintained in the
+private provenance ledger.
 
 ## What this roadmap consumes from the Number Field Arithmetic roadmap
 
@@ -251,7 +251,7 @@ records:
 reference is transitive, and Layers 6 and 7 prove the invariants, so nothing downstream trusts
 the export beyond the numbering itself. The numbering is that of Butler and McKay, which the
 LMFDB follows. A comparison with the `TransitiveGroup(n, j)` identifiers of GAP and Magma is
-recorded in `PROVENANCE.md`; no code and no data come from either system.
+maintained in the private provenance ledger; no code and no data come from either system.
 
 ### Cycle types count fixed points
 
@@ -1589,5 +1589,5 @@ instead.
 - E. R. Berlekamp, *An analog of the discriminant over fields of characteristic two*, J. Algebra
   38 (1976) 315-317. Cited only to name what the exclusion of characteristic 2 excludes.
 
-Provenance of the data, comparisons with related repositories, and licensing are recorded in
-[PROVENANCE.md](PROVENANCE.md). That file is not part of the specification.
+Provenance of the data, comparisons with related repositories, and licensing are maintained in
+a private provenance ledger. That ledger is not part of the specification.
