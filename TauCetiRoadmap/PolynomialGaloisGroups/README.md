@@ -25,7 +25,7 @@ One of those gaps is filled elsewhere. The factorization-type theorem is ramific
 number fields, and the [Number Field Arithmetic](../NumberFieldArithmetic/README.md) roadmap owns
 it and states it in `Polynomial.Gal` vocabulary. This roadmap consumes that one declaration and
 proves the polynomial and permutation consequences: which cycle types a factorization exhibits,
-what those exhibitions recognize, what a certificate may claim from them, and the three-prime
+what those exhibitions recognize, and the three-prime
 realization of `Sₙ`. It does not develop a second route to the theorem.
 
 ## Scope
@@ -37,18 +37,12 @@ The boundary is part of the specification.
   reference subgroup. Every separable irreducible polynomial of positive degree at most 5
   therefore has exactly one label. A reducible, inseparable, or constant polynomial has none,
   and that is the intended behaviour.
-- **Reference data and certificates, for `6 ≤ n ≤ 11`.** For these degrees the roadmap gives
-  named reference subgroups, proves their invariants, defines the label predicates, and proves
-  that the certificate checker is sound. It does not claim that the list of reference subgroups
-  is complete. A certificate in these degrees concludes a label only by a proof of conjugacy to
-  the named reference subgroup.
 - **The consequences of Dedekind's factorization theorem.** Let `f : ℤ[X]` be monic, and let `p`
   be a prime that does not divide `disc f`. The degrees of the irreducible factors of `f mod p`
   are then the cycle lengths of one element of the Galois group. That theorem is **not** proved
   here: Number Field Arithmetic Layer 3.10 owns it, and Layer 5 imports it. What is in scope is
-  everything the theorem is used for — the membership of a factorization type in the set of
-  Galois cycle types, the recognition theorems it feeds, the certificate fields that record it,
-  and their soundness.
+  everything the theorem is used for—the membership of a factorization type in the set of
+  Galois cycle types and the recognition theorems it feeds.
 - **One theorem of inverse Galois theory.** `Sₙ` is a Galois group over `ℚ` for every `n`, by
   the three-prime construction. The theorem is a constructive existence statement: it produces a
   polynomial from the three prescribed reductions. It is not a closed formula, and the roadmap
@@ -59,10 +53,11 @@ The following subjects are outside this roadmap. They are not later milestones o
 
 - Hilbert irreducibility, thin sets, and specialization from `ℚ(t)` to `ℚ`.
 - The realization of `Aₙ` over `ℚ` for general `n`. Serre derives it from Hilbert
-  irreducibility. Explicit `Aₙ` polynomials in the certified degree range remain in scope, with
-  their certificates.
+  irreducibility.
 - Completeness of the classification of transitive subgroups in degrees 6 to 11.
-- Chebotarev density. Certificate soundness does not use it. See the conventions below.
+- Stored database exports, precomputed transitive-group tables, and Galois-group certificates.
+  Those may be appropriate for a computational database such as Hex, but not for this roadmap.
+- Chebotarev density.
 - Ramification theory of number fields: the different, the relative discriminant ideal,
   decomposition fields, and inertia fields. It is Number Field Arithmetic that owns them, and
   that owns the factorization-type theorem they prove. Layer 5 here holds no Frobenius element,
@@ -77,12 +72,12 @@ The following subjects are outside this roadmap. They are not later milestones o
 
 Two directories, because the two halves have different customers.
 
-- `TauCeti/GroupTheory/Permutation/` holds Layer 1, and the group-theoretic parts of Layers 6
-  to 8. That is: the block-stabilizer correspondence, wreath products, imprimitivity, the
+- `TauCeti/GroupTheory/Permutation/` holds Layer 1 and the group-theoretic part of Layer 6.
+  That is: the block-stabilizer correspondence, wreath products, imprimitivity, the
   recognition theorems, the classification, and the label predicates on subgroups.
-- `TauCeti/FieldTheory/GaloisGroups/` holds Layers 0, 2 to 5, and 9, and the field-theoretic
-  parts of Layers 6 to 8. That is: the polynomial dictionary, discriminants, resolvents,
-  Frobenius specialization, labels of polynomials, certificates, and the realization of `Sₙ`.
+- `TauCeti/FieldTheory/GaloisGroups/` holds Layers 0, 2 to 6, and 9. That is: the polynomial
+  dictionary, discriminants, resolvents, Frobenius specialization, degree-at-most-five labels,
+  and the realization of `Sₙ`.
 
 The split follows Mathlib, which keeps its permutation library in
 `Mathlib/GroupTheory/GroupAction/` and its Galois groups in `Mathlib/FieldTheory/`. It also
@@ -201,14 +196,14 @@ order on the roots is ever fixed.
 
 For `n ≤ 47` the LMFDB numbers the conjugacy classes of transitive subgroups of `Sₙ` as
 `nT1, nT2, …`. The numbering follows the transitive group tables of Butler and McKay for
-`n ≤ 11`. It is a convention of the published tables, not an intrinsic invariant. It is
-therefore fixed by explicit reference subgroups, and is not derived. The data model is:
+`n ≤ 11`. This roadmap uses only the fully proved classification for `n ≤ 5`; it does not import
+or store the larger database tables. The data model is:
 
-- `numTransitiveGroups : ℕ → ℕ` is the number of classes in each degree. It is given by the
-  table below, and is `0` outside the range of this roadmap.
+- `numTransitiveGroups : ℕ → ℕ` is the number of proved classes for `1 ≤ n ≤ 5`, and is `0`
+  outside that range.
 - `TransitiveGroupIndex n := Fin (numTransitiveGroups n)`. A label index is valid by
   construction. No unconstrained natural number is used as one.
-- `referenceSubgroup n j ≤ Equiv.Perm (Fin n)` is given by explicit generators.
+- `referenceSubgroup n j ≤ Equiv.Perm (Fin n)` is a proved library representative.
 - `TransitiveGroupLabel j G` says that some element of `Equiv.Perm (Fin n)` conjugates `G` onto
   `referenceSubgroup n j`.
 - `HasGaloisLabel f j` says that `f` is separable of degree `n`, and that some numbering of its
@@ -226,35 +221,9 @@ The invariants that the LMFDB displays are fixed in Mathlib vocabulary:
 | parity `+1` | `G ≤ alternatingGroup (Fin n)` |
 | primitive | `MulAction.IsPreprimitive G (Fin n)` for the natural action |
 | solvable | `IsSolvable G` |
-| cycle types | the set of values of `Equiv.Perm.cycleType` on `G` |
-
-### The generator data
-
-The reference generators are in this repository, in `TransitiveGroupData.lean`. Nothing has to
-be fetched to read or to build the roadmap. That file carries, for every degree from 1 to 11 and
-every index in that degree, the generators as lists of cycles on `0, …, n-1`. Its header
-records:
-
-- the source, which is the `gps_transitive` table of the LMFDB, and the exact query used;
-- the retrieval date;
-- the SHA-256 of the raw result, which is retained beside it as
-  `transitive_groups_export.json`;
-- the conversion, which subtracts 1 from every point because the source counts from 1 and
-  `Fin n` counts from 0;
-- the row counts by degree, and the total of 174;
-- the recomputation of every row from its generators alone: the order by the Schreier-Sims
-  algorithm, the parity from the signs of the generators, transitivity from the orbit of a
-  point, primitivity from the minimal block containing each pair, and solvability from the
-  derived series.
-
-`referenceSubgroup n j` is the subgroup generated by that data. Layer 6 proves that each
-reference is transitive, and Layers 6 and 7 prove the invariants, so nothing downstream trusts
-the export beyond the numbering itself. The numbering is that of Butler and McKay, which the
-LMFDB follows. A comparison with the `TransitiveGroup(n, j)` identifiers of GAP and Magma is
-maintained in the private provenance ledger; no code and no data come from either system.
+| full cycle types | the set of values of `fullCycleType` on `G`, including the fixed-point parts; equivalently, `Equiv.Perm.cycleType` together with the ambient degree |
 
 ### Cycle types count fixed points
-
 Mathlib's `Equiv.Perm.cycleType` lists only the cycle lengths that are at least 2. The
 factorization type of `f mod p` is a partition of `n` that includes its parts equal to 1. The
 correction is made once:
@@ -306,37 +275,11 @@ some root of `q` lies in `solvableByRad F E`, then `IsSolvable q.Gal`. The conve
 Mathlib and is not a milestone here. No statement below is an equivalence that mentions
 `solvableByRad`.
 
-### What certificate soundness claims
-
-Computation of a Galois group appears here as the checking of a certificate. Three claims must
-be kept apart.
-
-1. **Soundness.** If `check cert = true`, then the label follows. This roadmap proves it. The
-   proof uses no density theorem.
-2. **Existence.** Every polynomial in scope has a certificate. This is not claimed. A search for
-   suitable primes may need Chebotarev density to be guaranteed to succeed.
-3. **Termination.** A search for a certificate stops. This is not addressed.
-
-Only the first claim is proved here. Chebotarev density belongs to the L-functions roadmap.
-
-Inside soundness, lower bounds and upper bounds on the group come from different evidence.
-
-- A factorization type exhibits an element of the group. It gives a lower bound only. No finite
-  set of factorization types proves `Gal f ≤ H` for a proper subgroup `H`.
-- The discriminant and the resolvents give upper bounds. A resolvent gives one only when
-  specialization has not identified two distinct cosets. The checked resolvent must have its
-  full orbit degree and be separable. As an alternative, the certificate must supply a
-  Tschirnhaus transform with those two properties, which the checker then confirms.
-
-A rational root, or a list of factor degrees, proves no upper bound without that evidence.
-
 ### Names
-
 The roadmap introduces these names: `fullCycleType`, `factorDegrees`, `numTransitiveGroups`,
 `TransitiveGroupIndex`, `referenceSubgroup`, `TransitiveGroupLabel`, `HasGaloisLabel`,
 `HasFullSymmetricGaloisGroup`, `coordPermAut`, `WreathProduct`, `ResolventSpec`,
-`galResolvent`, `resolventCubic`, `resolventSextic`, and `GaloisCertificate` with its `check`
-and `check_sound`. `Suggested.lean` fixes their forms.
+`galResolvent`, `resolventCubic`, and `resolventSextic`. `Suggested.lean` fixes their forms.
 
 ## What Mathlib provides
 
@@ -375,8 +318,8 @@ Each item was checked in the pinned Mathlib.
   `Equiv.Perm.cycleType` with its sum, order, sign, and conjugacy lemmas, among them
   `sign_of_cycleType`, `cycleType_conj`, `isConj_iff_cycleType_eq`, and
   `subgroup_eq_top_of_swap_mem`. That last theorem says that a transitive subgroup of `Perm α`
-  of prime cardinality degree that contains a transposition is everything. It is what the
-  certificates in prime degree use. `Perm/Cycle/PossibleTypes.lean` has
+  of prime cardinality degree that contains a transposition is everything. The prime-degree
+  recognition theorem uses it. `Perm/Cycle/PossibleTypes.lean` has
   `Equiv.Perm.exists_with_cycleType_iff`. `Perm/Centralizer.lean` has the centralizer of a
   permutation in terms of its cycle type. `Perm/ClosureSwap.lean`,
   `SpecificGroups/Alternating/Simple.lean` (`alternatingGroup.isSimpleGroup` for
@@ -429,7 +372,7 @@ Everything that concerns labels. At the pinned version there is:
 - no general wreath product, only `RegularWreathProduct`;
 - no theorem of Jordan for a `p`-cycle;
 - no classification of the transitive subgroups of `Sₙ` for any `n ≥ 3`;
-- no `nTj` labels, no layer of invariants, and no certificates;
+- no `nTj` labels or layer of proved low-degree invariants;
 - no realization of `Sₙ` over `ℚ`, beyond the criterion in prime degree.
 ---
 
@@ -465,8 +408,8 @@ This layer relates polynomial data to the image subgroup
   - *Morphisms and naturality:* `fullCycleType` is constant on conjugacy classes, and it commutes
     with transport along an equivalence `α ≃ β`, that is, with `Equiv.permCongrHom`.
   - *Edge cases:* `α` empty; `σ` with no fixed point; `σ = 1`.
-  - *Downstream interfaces:* Layer 5 compares it with factor degrees; Layer 7 uses it for the
-    cycle-type invariant; Layer 8 uses it in the checker.
+  - *Downstream interface:* Layer 5 compares it with factor degrees and Layer 6 uses it in the
+    low-degree recognition theorems.
 
   *Needs:* `Equiv.Perm.cycleType` with its sum and conjugacy lemmas (Mathlib);
   `Equiv.permCongrHom` (Mathlib).
@@ -631,8 +574,8 @@ group action, in Mathlib's vocabulary. No statement mentions a field.
   *Needs:* `IsPreprimitive` (Mathlib); `Equiv.Perm.cycleType` (Mathlib);
   `alternatingGroup` (Mathlib).
 
-- **The recognition theorems.** Each is a small named theorem. Together they settle every
-  certificate in degree at most 5, and the realization of `Sₙ` in Layer 9.
+- **The recognition theorems.** Each is a small named theorem. Together they support the
+  degree-at-most-five classification and the realization of `Sₙ` in Layer 9.
 
   - A transitive subgroup of `S_p`, for `p` prime, contains a `p`-cycle.
     *Needs:* Cauchy's theorem `exists_prime_orderOf_dvd_card` (Mathlib).
@@ -769,8 +712,8 @@ Let `p` be irreducible and separable over `F`, with a root `α` in `L = p.Splitt
 
 ### Layer 4: resolvents
 
-A resolvent converts a constraint on the subgroup into a statement about a factorization. Two
-levels of data are kept apart throughout. The soundness of Layer 8 depends on that separation.
+A resolvent converts a constraint on the subgroup into a statement about a factorization. The
+root-side meaning and coefficient-side computation are kept distinct throughout.
 
 - **Static resolvent specifications, with their API.** A `ResolventSpec n` is library data,
   written and proved once. It has three fields: a subgroup `H ≤ Equiv.Perm (Fin n)`, an invariant
@@ -789,12 +732,8 @@ levels of data are kept apart throughout. The soundness of Layer 8 depends on th
     `H = ⊥`, where the orbit has `n!` elements.
   - *The coefficient-side resolvent:* a field `specialize : ℤ[X] → ℚ[X]`, an executable
     function of the coefficients of `f`, together with a theorem that its image in a splitting
-    field is the root-side orbit resolvent below. Without that field the checker of Layer 8 has
-    nothing to compute, and nothing to compare a claimed factorization against. The root
-    product says what the resolvent means; `specialize` says how to obtain it.
-  - *Downstream interface:* Layer 8 selects a specification by a bounded index. An untrusted
-    certificate never supplies an invariant together with an unverified claim about its
-    stabilizer.
+    field is the root-side orbit resolvent below. The root product says what the resolvent
+    means; `specialize` says how to obtain it.
 
   Three specifications are registered: the quartic `D₄` invariant, the quintic `F₂₀` invariant,
   and the quintic pair sum. `resolventSextic` is the `specialize` of the second. Each exact
@@ -817,7 +756,7 @@ levels of data are kept apart throughout. The soundness of Layer 8 depends on th
     is over the whole orbit.
   - *Degree:* the degree is `[Sₙ : H]` provided the values on the orbit stay distinct.
   - *Edge cases:* two orbit values that agree, which is the degenerate case below.
-  - *Downstream interfaces:* the quartic and quintic tables below, and the checker of Layer 8.
+  - *Downstream interfaces:* the quartic and quintic tables below.
 
   *Needs:* the resolvent specification above (Layer 4); `MvPolynomial.IsSymmetric` and the
   fundamental theorem of symmetric polynomials (Mathlib); the degree bookkeeping (Layer 0).
@@ -846,7 +785,6 @@ levels of data are kept apart throughout. The soundness of Layer 8 depends on th
     the separation hypothesis, and only then.
 
   A rational root therefore proves the containment only when separation evidence is present.
-  Layer 8 is built around this asymmetry.
   *Needs:* the factorization theorem above (Layer 4).
 
 - **Tschirnhaus transforms, as coefficient-side objects.** When the specialized resolvent is not
@@ -854,22 +792,17 @@ levels of data are kept apart throughout. The soundness of Layer 8 depends on th
   of `f`. Two definitions and three theorems:
 
   - `tschirnhausPolynomial f T : ℤ[X]`, the transformed polynomial. It is a resultant in two
-    variables, so it is a function of the coefficients of `f` and `T` alone, and the checker can
-    recompute it.
-  - `TschirnhausAdmissible f T`, saying that `T` separates the roots of `f`, with a Boolean
-    reflection that the checker verifies before it uses a transformed resolvent.
+    variables, so it is a function of the coefficients of `f` and `T` alone.
+  - `TschirnhausAdmissible f T`, saying that `T` separates the roots of `f`.
   - Under admissibility: the transform preserves the degree; it preserves separability; the root
     sets correspond; the splitting fields agree up to an `AlgEquiv`; and the Galois images are
     conjugate. The last of these is what carries an upper bound back to `f`.
 
-  This roadmap states the soundness milestone only. If a certificate supplies a transform, and
-  the transformed resolvent is checked to have full orbit degree and to be separable, then the
-  upper bound follows.
+  If the transform is admissible and the transformed resolvent has full orbit degree and is
+  separable, then the subgroup upper bound transports back to `f`.
 
-  - *Hypotheses:* the transform is supplied and both properties are checked.
   - *Not a milestone:* the classical claim that such a transform always exists over an infinite
-    field. That claim needs the finitely many bad coincidences to define proper algebraic
-    subsets. Certificate soundness does not use it, and this roadmap does not assert it.
+    field. That claim needs the finitely many bad coincidences to define proper algebraic subsets.
 
   *Needs:* the orbit resolvent and the degenerate case above (Layer 4).
 
@@ -947,18 +880,15 @@ records the contract. That theorem is ramification theory: its proof needs the r
 the roots, a maximal ideal over `p`, the surjection of a decomposition group onto a residue
 Galois group, and the triviality of inertia, and none of those objects appears in this roadmap.
 
-What this layer owns is the polynomial and permutation half: the carrier a certificate claims,
-the finite-field input its irreducibility test rests on, and the membership statement that every
-recognition theorem downstream is applied to.
+What this layer owns is the polynomial and permutation half: the factor-degree carrier and the
+membership statement to which every downstream recognition theorem is applied.
 
 - **`factorDegrees`, with its basic API.** Define `factorDegrees f p` as the multiset of degrees
   of the monic irreducible factors of `f mod p`. This is the object the imported theorem compares
-  with a cycle type, and the object that a certificate claims. The API:
+  with a cycle type. The API:
 
   - *Constructor:* the defining equation, through `UniqueFactorizationMonoid.normalizedFactors`
-    over `ZMod p`. This is the mathematical multiset, and it is noncomputable. The checker of
-    Layer 8 never evaluates it; it verifies a factor list that the certificate supplies. Those
-    are two different objects, and the roadmap keeps them apart.
+    over `ZMod p`. This is the mathematical multiset, and it is noncomputable.
   - *Examples:* `factorDegrees (X⁵ − X − 1) 2 = {3, 2}` and
     `factorDegrees (X⁵ − X − 1) 5 = {5}`.
   - *Multiplicity:* the multiset counts each irreducible factor as often as it occurs. The sum
@@ -968,13 +898,12 @@ recognition theorem downstream is applied to.
     multiplicity is 1 and the multiset is the set of degrees of the distinct factors.
   - *Edge cases:* `p` divides `f.discr`, where a factor can repeat and no theorem below applies;
     `f` not monic, where the degree can drop.
-  - *Downstream interfaces:* the membership statement below; the checker of Layer 8; and the
-    right-hand side of the imported theorem, which is this multiset with the definition unfolded.
+  - *Downstream interfaces:* the membership statement below and the right-hand side of the
+    imported theorem, which is this multiset with the definition unfolded.
 
   The multiplicity-one comparison lemma is not a step of Dedekind's theorem, and it is not a
-  second proof of anything the supplier proves. It is what lets the checker of Layer 8 read a
-  certificate that lists distinct factors, and it is one line from the base change of `discr` in
-  Layer 3.
+  second proof of anything the supplier proves. It is one line from the base change of `discr`
+  in Layer 3.
 
   *Needs:* `UniqueFactorizationMonoid.normalizedFactors` over a finite field (Mathlib);
   `Polynomial.map` along `ℤ → ZMod p` (Mathlib); base change of `discr` and the criterion
@@ -986,11 +915,8 @@ recognition theorem downstream is applied to.
   is a statement about finite fields only. It uses no Galois theory over `ℚ`, and it is not a
   step of the imported theorem.
 
-  It is kept because Layer 8 needs it. Rabin's irreducibility test decides whether a monic `g` of
-  degree `d` over `𝔽_p` is irreducible by evaluating `X^(p^d) mod g` and the gcds at the prime
-  divisors of `d`, and Lemma 1 of that paper is exactly the statement above in its
-  minimal-polynomial form: the degree of `minpoly 𝔽_q α` is the least `n` with `α^(q^n) = α`.
-  Layer 8's soundness proof is where it is discharged.
+  It also supports the finite-field existence steps in Layer 9. Rabin's Frobenius criterion is
+  one implementation route, but no certificate carrier or checker is part of this roadmap.
 
   *Needs:* `FiniteField` and `GaloisField` (Mathlib); the minimal polynomial over a finite field
   (Mathlib).
@@ -1044,7 +970,7 @@ recognition theorem downstream is applied to.
   group as well. Upper bounds come from Layer 3 and Layer 4. The pair `D₅` against `A₅` in the
   worked examples
   below is the standard illustration. The statistics of cycle types are the subject of Chebotarev
-  density, which belongs to the L-functions roadmap. Certificate soundness does not use them.
+  density, which belongs to the Chebotarev roadmap.
   *Needs:* the membership statement above (Layer 5).
 
 ### Layer 6: transitive subgroups of `Sₙ` for `n ≤ 5`, and the label predicates
@@ -1068,9 +994,8 @@ The reference subgroups for these degrees, in cycle notation:
 | `5T4` | `(123), (345)` | `A₅` | 60 | + | yes | no |
 | `5T5` | `(12), (12345)` | `S₅` | 120 | − | yes | no |
 
-These are the generators of `TransitiveGroupData.lean`, written on `1, …, n` as the source
-writes them; the file itself counts from 0. Every row was recomputed from its generators, as
-the conventions record. The names in the third column are the usual ones for these groups.
+These rows specify the proved representatives for degrees at most five. Their implementation is
+ordinary theorem-backed library data; this roadmap stores no raw LMFDB export or larger table.
 
 In Lean these entries are `referenceSubgroup n j`, for `j : TransitiveGroupIndex n`. The
 function `numTransitiveGroups` takes the values `1, 1, 2, 5, 5` in degrees 1 to 5. Index `j`
@@ -1079,8 +1004,7 @@ displays as `nT(j+1)`.
 - **The label API.** The four definitions `numTransitiveGroups`, `TransitiveGroupIndex`,
   `referenceSubgroup`, and `TransitiveGroupLabel` are in the conventions above. Their API:
 
-  - *Constructors:* `referenceSubgroup` from the generator list; a `Decidable` instance for
-    `TransitiveGroupLabel` in the degrees where the subgroup is finite and given by generators.
+  - *Constructors:* one theorem-backed `referenceSubgroup` for each row of the table.
   - *Examples:* every row of the table above, as a theorem that identifies the reference subgroup
     with a familiar group. For instance `referenceSubgroup 4 2 ≃* DihedralGroup 4`, which is
     the label `4T3` and the group of order 8. The index is one less than the number in the
@@ -1094,8 +1018,8 @@ displays as `nT(j+1)`.
     transport along an equivalence `Fin n ≃ Fin n`.
   - *Edge cases:* `n = 0` and `n = 1`, where `numTransitiveGroups` is `0` and `1`; an index out of
     range, which the type `Fin` makes impossible.
-  - *Downstream interfaces:* `HasGaloisLabel` below; the checker of Layer 8; the display layer of
-    any roadmap that reports LMFDB labels.
+  - *Downstream interfaces:* `HasGaloisLabel` below and any display layer that reports the proved
+    low-degree LMFDB labels.
 
   *Needs:* `Equiv.Perm` and `Subgroup.map` with `MulAut.conj` (Mathlib); `MulAction.IsPretransitive`
   (Mathlib).
@@ -1111,8 +1035,7 @@ displays as `nT(j+1)`.
     primitivity, and the solvability of `f.Gal`.
   - *Edge cases:* `f` inseparable, and `f` of the wrong degree. In both cases the predicate is
     false for every `j`, which is the intended behaviour.
-  - *Downstream interfaces:* Layer 8 concludes `HasGaloisLabel`; the worked examples below are
-    instances.
+  - *Downstream interfaces:* the worked examples below are instances.
 
   *Needs:* the label API above (Layer 6); the degree bookkeeping and the invariants (Layer 0).
 
@@ -1161,8 +1084,6 @@ displays as `nT(j+1)`.
   - *False generalization:* order alone is not enough in degree 4. Both `4T1 = C₄` and
     `4T2 = V₄` are transitive of order 4, and they are not conjugate. `IsCyclic` separates them.
 
-  A certificate terminates on these theorems. A lower bound from factorization types and an upper
-  bound from a resolvent or from the discriminant meet in a count of the order.
   *Needs:* the classification theorems above (Layer 6).
 
 - **Recognition by order in degree 5.** A transitive `G ≤ S₅` that contains an element of order 6
@@ -1193,166 +1114,7 @@ displays as `nT(j+1)`.
   the quadratic extension (Layer 3); the quartic and quintic resolvents (Layer 4); the
   membership statement (Layer 5).
 
-### Layer 7: degrees 6 to 11 as reference data
-
-The same treatment for each degree from 6 to 11, but without a classification theorem. The
-reference data is stated. The semantics and the invariants of each named reference are proved.
-The list is not claimed to be complete.
-
-- **Reference data.** For `6 ≤ n ≤ 11`, `numTransitiveGroups` takes the values
-  `16, 7, 50, 34, 45, 8`, and `referenceSubgroup n j` is given by the generator lists described
-  in the conventions.
-  *Needs:* the label API (Layer 6).
-
-- **Invariants by certificate, not by enumeration.** Each invariant of an explicit finite subgroup
-  is decidable in principle. Decidability is not an implementation plan. Enumeration of `S₁₁`
-  inside kernel reduction will not run. Each invariant therefore has a named route.
-
-  | Invariant | Route |
-  |---|---|
-  | order | a closure certificate: a list of elements closed under the generators and under multiplication, together with its cardinality |
-  | parity | the signs of the generators, with closure; the sign character is a morphism, so no enumeration is needed |
-  | transitivity | a checked orbit computation that reaches every point |
-  | primitivity | for an imprimitive reference, an exhibited nontrivial block; for a primitive one, a checked exhaustion of the candidate block sizes, which is a finite list because a block size divides `n` |
-  | solvability | a checked derived series that reaches the trivial subgroup; for the references containing `Aₙ` with `n ≥ 5`, simplicity of `Aₙ` |
-  | cycle types | the set of cycle types that occur, read off the closure certificate for the order |
-
-  The cycle-type invariant is the set of types that occur. It is not a histogram with
-  multiplicities. A histogram, if wanted later, is a separate definition with its own name.
-  *Needs:* the label API (Layer 6); the recognition theorems (Layer 1).
-
-- **An acceptance test on build performance.** Each data file for a degree must compile in
-  ordinary project continuous integration. It must not raise the limits on kernel reduction, and
-  it must not hide a large `native_decide` computation inside a theorem. A data file that
-  compiles only with raised limits has not met this specification.
-
-- **Certificates conclude by conjugacy.** No classification is claimed in these degrees.
-  A certificate therefore concludes `HasGaloisLabel f j` only by a proof that the image is
-  conjugate to `referenceSubgroup n j`. It may not conclude a label by elimination of the other
-  listed references, because the list is not known here to be complete.
-  *Needs:* the label API (Layer 6).
-
-- **Realizations.** This roadmap does not claim a certified polynomial for every label in every
-  degree up to 11. That claim needs a manifest of explicit polynomials, and without one it is not
-  a specification. In scope are the labels that the worked examples below need, with their
-  polynomials written out. A full manifest for each label is outside this roadmap.
-
-- **Siblings and subfields.** The "siblings" of the LMFDB are the other transitive actions of the
-  same abstract group. Its "resolvents and subfields" column records actions on block systems and
-  on coset spaces of the reference subgroups. This roadmap proves the semantics for the named
-  references only. A complete classification of siblings falls under the same exclusion as
-  completeness of the classification.
-  *Needs:* the wreath products and blocks (Layer 1); the label API (Layer 6).
-
-### Layer 8: the certificate checker
-
-The design keeps three things apart. The certificate is data. Checking is a Boolean function. The
-conclusion is a soundness theorem about that function. A caller submits data, and never
-constructs a field whose value is a proof.
-
-- **The data, with its API.** Let `f : ℤ[X]` be a polynomial and let `j` be a target index. A
-  `GaloisCertificate f j` has four fields:
-
-  - a list of claims about factorizations at primes;
-  - a claim about the discriminant;
-  - a list of claims about resolvents, each naming a registered specification by a bounded
-    index, and carrying an irreducibility certificate for each claimed rational factor;
-  - a bounded index that selects a registered group-theoretic deduction.
-
-  Both identifiers are bounded index types, not bare natural numbers, so an identifier that
-  names nothing cannot be written down and the checker has nothing to reject.
-
-  Nothing in the data is trusted. The API:
-
-  - *Constructors:* one per claim type, each of them pure data.
-  - *Examples:* the two-prime certificate for `x⁵ − x − 1`, written out in the worked examples
-    below.
-  - *Edge cases:* an empty list of primes; a repeated prime. The checker rejects both. An
-    unregistered identifier is not an edge case, because the index types make it
-    unrepresentable.
-  - *Downstream interface:* a computational repository builds these values and calls `check`.
-
-- **What `check` verifies.** Each item is checked, and none is assumed.
-
-  - `f` is monic, of the claimed degree, and `f.discr ≠ 0`;
-  - each claimed prime is prime, and does not divide `f.discr`;
-  - the claimed factors of `f mod p` multiply to `f mod p`;
-  - each claimed factor is monic and irreducible, and the factors are pairwise distinct;
-  - the resulting multiset of factor degrees, with the parts equal to 1 included;
-  - the claim that `f.discr` is, or is not, a square in `ℤ`;
-  - that each resolvent claim names a registered specification, so that the invariant and its
-    exact stabilizer come from proved library data;
-  - recomputation of the transformed polynomial and of the specialized resolvent from `f` itself,
-    and equality with any resolvent polynomial that the certificate claims;
-  - that the specialized resolvent has the expected full orbit degree `[Sₙ : H]`;
-  - that the specialized resolvent is separable, which here is the same as squarefree;
-  - the claimed factorization, or the claimed rational root, of the resolvent, by the same
-    product and irreducibility checks;
-  - the final group-theoretic deduction.
-
-  Two different irreducibility questions arise, over two different fields, and they need two
-  different certificates.
-
-  - Over `ZMod p`, for the reductions of `f`, the algorithm is Rabin's test: a monic `g` of
-    degree `d` is irreducible over `𝔽_p` exactly when `X^(p^d) ≡ X (mod g)`, and
-    `gcd(X^(p^(d/ℓ)) − X, g) = 1` for every prime `ℓ ∣ d`.
-  - Over `ℚ`, for the claimed factors of a resolvent, the certificate is a primitive integral
-    representative `h` of the factor together with a prime `p` that does not divide the leading
-    coefficient of `h`, such that `h mod p` is irreducible of the same degree. Soundness is
-    Rabin's test at `p` followed by Gauss's lemma. This is `ratIrreducibleCheck`, and it is a
-    separate milestone; the modular test alone does not answer the rational question.
-
-  Correctness of both is a milestone of this layer.
-
-  - *Source:* Rabin, *Probabilistic algorithms in finite fields*, SIAM J. Comput. 9 (1980),
-    273-280, Lemma 1.
-  - *Hypotheses:* `p` prime, `g` monic of degree `d ≥ 1`.
-
-  *Needs:* the membership statement and the finite-field orbit lemma (Layer 5); the discriminant
-  test (Layer 3); the resolvent specifications and the factorization theorem (Layer 4); the label
-  API (Layer 6); polynomial arithmetic over `ZMod p` (Mathlib).
-
-- **The group-theoretic deduction.** An exhibited cycle type proves that its order divides the
-  order of the group, so cycle types do give lower bounds on the order. What they do not give is
-  containment in a proper subgroup. The step from the checked constraints to a label is therefore
-  its own object. A
-  `GroupDeductionCertificate n j` witnesses a statement of the following shape.
-
-  > Every subgroup `K ≤ Sₙ` that is transitive, that contains elements of the exhibited cycle
-  > types, that satisfies the exhibited parity constraint, and that is contained in the exhibited
-  > resolvent subgroups, is conjugate to `referenceSubgroup n j`.
-
-  The parity constraint has three values, and not two. `even` means `K ≤ alternatingGroup`,
-  `notEven` means `¬ K ≤ alternatingGroup`, and `unconstrained` imposes nothing. A checked
-  nonsquare discriminant produces `notEven`, which is what separates `A₄` from `S₄` and `A₅`
-  from `S₅`; a two-valued flag would throw that evidence away.
-
-  Each registered deduction is a structure carrying the required cycle types, the parity
-  constraint, the registered resolvents that bound the group above, and the proof of the
-  statement above. `check_sound` composes the reflection lemmas of the individual checks with
-  that proof. It does not consult an unspecified lookup table.
-
-  In degree at most 5 this is discharged by the recognition theorems of Layer 6. In degrees 6 to
-  11 it is discharged by a verified chain in the lattice of subgroups, by bounds on the order, or
-  by nested resolvents. Each such deduction is a separate proved statement about the reference
-  data. It is never discharged by the observation of several cycle types.
-  *Needs:* the classification and the recognition theorems (Layer 6); the label API (Layer 6).
-
-- **Soundness.** If `check cert = true`, then `HasGaloisLabel f j`. The theorem is
-  unconditional. That every polynomial has a certificate, and that a search for one stops, are
-  separate questions. Neither is claimed.
-  *Needs:* every other milestone of this layer (Layer 8).
-
-- **The generic quintic theorem.** Let `f` be a monic quintic over `ℤ`. Let `p` and `q` be primes
-  that do not divide `f.discr`. Assume that `f mod p` is irreducible, and that `f mod q` has
-  factor degrees `(2,1,1,1)`. Then `f` has full `S₅` Galois group. The proof is transitivity,
-  plus a transposition, in prime degree. A downstream certificate for one explicit quintic
-  instantiates this theorem.
-  *Needs:* the membership statement (Layer 5); `subgroup_eq_top_of_swap_mem` (Mathlib); the
-  transposition-extraction theorem (Layer 1).
-
 ### Layer 9: `Sₙ` as a Galois group over `ℚ`
-
 - **The full-symmetric predicate.** `HasFullSymmetricGaloisGroup f` says that `f` is separable
   and that `galActionHom f f.SplittingField` is surjective. Separability is part of the
   predicate.
@@ -1406,9 +1168,9 @@ constructs a field whose value is a proof.
   8. Separate arguments for `n = 1`, and for any other value that the three patterns do not cover
      uniformly.
 
-  This layer needs Layer 1 and Layer 5 only. It does not need Layers 6 to 8.
+  This layer needs Layer 1 and Layer 5 only. It does not need Layer 6.
 
-- **The alternating examples, as an exact list.** Three polynomials, with their certificates:
+- **The alternating examples, as an exact list.** Three polynomials with proved labels:
   `x³ − 3x − 1` for `3T1`, `x⁴ + 8x + 12` for `4T4`, and `x⁵ + 20x − 16` for `5T4`. Each has
   square discriminant and the alternating label. That list is the whole deliverable; the roadmap
   makes no claim for degrees 6 to 11, and it does not carry a manifest for them. The realization
@@ -1445,8 +1207,8 @@ LMFDB field pages. Each one tests a specific layer.
     `8000²`. This example shows why upper bounds need more than factorization types. A 5-cycle
     and an element of type `(1,2,2)` occur. Every factorization type of this `f` at a prime that
     does not divide the discriminant is a cycle type of `D₅ ⊂ A₅`, so no prime excludes `A₅`. The
-    certificate needs the square discriminant, which excludes `S₅` and `F₂₀`, together with a
-    rational root of the sextic resolvent, which excludes `A₅`. The order then gives `5T2`.
+    proof uses the square discriminant, which excludes `S₅` and `F₂₀`, together with a rational
+    root of the sextic resolvent, which excludes `A₅`. The order then gives `5T2`.
   - `x⁵ − 2` gives `F₂₀ = 5T3`, with field `5.1.50000.1`. This is the Kummer example. Its Galois
     group is solvable, the sextic resolvent has a rational root, and the discriminant `50000` is
     not a square.
@@ -1459,11 +1221,10 @@ LMFDB field pages. Each one tests a specific layer.
     Modulo 2 the factorization is `(x² + x + 1)(x³ + x² + 1)`, which exhibits an element of
     order 6. Modulo 5 the polynomial is `x⁵ − x − 1`, which is Artin-Schreier and therefore
     irreducible; that exhibits a 5-cycle and proves irreducibility over `ℚ`. A transitive group
-    with an element of order 6 is `S₅`, by the recognition theorems. This certificate uses two
-    primes and no discriminant computation.
-- **The generic instance, for Layers 5 and 8.** A quintic that is irreducible modulo one good
-  prime, and that has factor type `(1,1,1,2)` modulo another, has group `S₅`. The acceptance test
-  is that the checker accepts a certificate with those two items.
+    with an element of order 6 is `S₅`, by the recognition theorems; no discriminant computation
+    is needed.
+- **The generic instance, for Layer 5.** A quintic that is irreducible modulo one good prime and
+  has factor type `(1,1,1,2)` modulo another has group `S₅`.
 - **Non-examples.** These test that the definitions exclude what they should.
   - `x⁴` and `(x² − 2)²` are not separable. No claim about permutations is made for them. In
     particular they do not satisfy the full-symmetric predicate of Layer 9.
@@ -1488,18 +1249,15 @@ The layer numbering is a topological order. No layer depends on a later one.
 | 4 | 0, 3 | resolvents, and the quartic and quintic specifications |
 | 5 | 0, 1, 3, and Number Field Arithmetic 3.10 | the factorization-degree carrier, the finite-field orbit lemma, and the membership statement derived from the imported theorem |
 | 6 | 1, 2, 3, 4, 5 | the classification for `n ≤ 5`, the label predicates, and the decision procedures |
-| 7 | 1, 6 | degrees 6 to 11 as reference data |
-| 8 | 3, 4, 5, 6, 7 | the certificate checker |
 | 9 | 1, 5 | `Sₙ` as a Galois group over `ℚ` |
 
 Layers 0 and 1 have no dependency inside the roadmap, so they can start at once and run in
-parallel. Layer 9 needs only Layers 1 and 5, so it can be done before Layers 6 to 8. Layer 7 can
-be done one degree at a time.
+parallel. Layer 9 needs only Layers 1 and 5, so it can be done before Layer 6.
 
 Layer 5 is the only layer with a dependency outside the roadmap, and it is one declaration.
-This roadmap therefore follows Number Field Arithmetic in the merge order, and nothing else in
-the order changes: Layers 0 to 4, 6 and 7 can be implemented before that supplier lands, and
-only the membership statement of Layer 5 and its consumers in Layers 8 and 9 wait on it.
+This roadmap therefore follows Number Field Arithmetic in the merge order. Layers 0 to 4 and 6
+can be implemented before that supplier lands; only the membership statement of Layer 5 and its
+consumer in Layer 9 wait on it.
 
 Two rules keep the graph acyclic, and both are worth stating because the natural way to write
 this material breaks them. Any theorem whose proof reads the table of Layer 6 belongs to Layer 6,
@@ -1512,7 +1270,6 @@ their proofs.
 - The membership statement of Layer 5, whose shape is fixed by the supplied theorem and can be
   written down before that theorem is proved.
 - The tables in degree at most 5, in Layer 6.
-- The certificate types, in Layer 8.
 
 ## Related roadmaps
 
@@ -1522,10 +1279,9 @@ This roadmap serves the LMFDB section `galois_groups`.
   factorization theorem and the ramification theory behind it. This is the one upstream
   relation, it is a single declaration, and §What this roadmap consumes is the contract. That
   roadmap merges first.
-- The merged [Modular Forms](../ModularForms/README.md) roadmap, Layer 9, asks for a checker for
-  Galois-group certificates rather than a search. Layer 8 here supplies that interface, and
-  Layer 8's generic quintic theorem is the theorem that its example needs. This is a downstream
-  relation. No milestone here depends on it.
+- Computational certificate storage or search requested by downstream projects belongs in a
+  dedicated computational repository such as Hex. The generic quintic recognition theorem here
+  remains available as a mathematical API.
 - The [representation theory](../RepresentationTheory/README.md) roadmaps own data about abstract
   groups, such as character tables. This roadmap owns only permutation data.
 - Density of the cycle types is the subject of Chebotarev's theorem, which belongs to the
@@ -1539,8 +1295,7 @@ instead.
 
 - A. Hulpke, *Constructing transitive permutation groups*, J. Symbolic Comput. 39 (2005) 1-30.
   In the project's `references/`. The inflation and base-group method of §3 is the construction
-  behind the iterated chain of imprimitivity in Layer 1. It is also the source for the history of
-  the classification by degree in Layer 7.
+  behind the iterated chain of imprimitivity in Layer 1.
 - J. D. Dixon and B. Mortimer, *Permutation Groups*, GTM 163, Springer, 1996. The traditional
   source for Layer 1, with blocks and imprimitivity in §1.5, wreath products in §2.6, and
   Jordan's theorems in §7.4. It is also the source for the tables in low degree in Appendix B.
@@ -1557,9 +1312,8 @@ instead.
   semantics, under the discipline recorded in the conventions. The table in degree at most 5 was
   checked against it.
 - G. Butler and J. McKay, *The transitive groups of degree up to eleven*, Comm. Algebra 11 (1983)
-  863-911. The origin of the `T` numbering and of the class counts used in Layer 7. *Not
-  inspected for this pass.* The counts were taken from OEIS A002106 and compared with the LMFDB.
-  The generators come from the LMFDB export.
+  863-911. The origin of the `T` numbering used for the low-degree table. *Not inspected for
+  this pass.* The low-degree entries were compared with the LMFDB.
 - J. H. Conway, A. Hulpke, and J. McKay, *On transitive permutation groups*, LMS J. Comput. Math.
   1 (1998) 1-8. Names and properties in degrees up to 15, which is the name column of the LMFDB.
   Context only. This roadmap does not own names of abstract groups.
@@ -1577,15 +1331,12 @@ instead.
   coefficient formula for the resolvent sextic. *Not inspected for this pass*, and no milestone
   depends on it. Layer 4 defines `resolventSextic` as the orbit resolvent of an invariant that is
   written out in full.
-- M. O. Rabin, *Probabilistic algorithms in finite fields*, SIAM J. Comput. 9 (1980) 273-280. The
-  irreducibility test used by the checker of Layer 8. *Not inspected for this pass.* The test is
-  written out in full in Layer 8, so the milestone is grounded in this document.
 - L. Soicher and J. McKay, *Computing Galois groups over the rationals*, J. Number Theory 20
   (1985) 273-281. Linear resolvents. Context for Layer 4.
 - R. P. Stauduhar, *The determination of Galois groups*, Math. Comp. 27 (1973) 981-996, and
   K. Geissler and J. Klüners, *Galois group computation for rational polynomials*, J. Symbolic
-  Comput. 30 (2000) 653-674. The numerical method and the modern algorithmic method. Context for
-  why the resolvents here are exact and why the interface is a checker.
+  Comput. 30 (2000) 653-674. Context for exact resolvent methods; no computational certificate
+  interface is owned here.
 - E. R. Berlekamp, *An analog of the discriminant over fields of characteristic two*, J. Algebra
   38 (1976) 315-317. Cited only to name what the exclusion of characteristic 2 excludes.
 

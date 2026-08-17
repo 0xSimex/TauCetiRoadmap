@@ -1,6 +1,5 @@
 import Mathlib
 import TauCetiRoadmap.NumberFieldArithmetic.Suggested
-import TauCetiRoadmap.PolynomialGaloisGroups.TransitiveGroupData
 
 /-!
 # Galois groups of polynomials: target signatures
@@ -95,10 +94,27 @@ abbrev WreathProduct (D : Type u) [Group D] (ι : Type v) :=
 
 /-! ### The `nTj` data model
 
-`numTransitiveGroups`, `TransitiveGroupIndex`, and `referenceSubgroup` are in
-`TransitiveGroupData.lean`, together with the frozen generators they are built from. A label
-index is valid by construction, so no unconstrained natural number is ever used as one.
+The roadmap owns only the proved degree-at-most-five classification. Raw database exports,
+precomputed subgroup tables, and Galois-group certificates are deliberately not stored here.
 -/
+
+/-- The number of proved transitive-group classes in degrees at most five; zero outside the
+classified range. -/
+def numTransitiveGroups : ℕ → ℕ
+  | 1 => 1
+  | 2 => 1
+  | 3 => 2
+  | 4 => 5
+  | 5 => 5
+  | _ => 0
+
+abbrev TransitiveGroupIndex (n : ℕ) : Type := Fin (numTransitiveGroups n)
+
+/-- The named representative subgroup for a proved class in degree at most five. Its eventual
+implementation is ordinary proved library data, not an imported database dump. -/
+noncomputable def referenceSubgroup (n : ℕ) (j : TransitiveGroupIndex n) :
+    Subgroup (Equiv.Perm (Fin n)) :=
+  sorry
 
 /-- **The label predicate.** `G` carries the label `nT(j+1)` when some numbering conjugates
 it onto the reference subgroup. Transitivity of the reference is proved once (below), and a
@@ -148,9 +164,7 @@ noncomputable def galResolvent {F : Type u} [Field F] {L : Type v} [Field L] [Al
     (X - C (MvPolynomial.aeval x Ψ))
 
 /-- **Layer 4, a static resolvent specification.** Library data, written and proved once: an
-invariant together with the subgroup that is *exactly* its stabilizer. A certificate selects
-a registered specification by identifier; it never supplies an invariant alongside an
-unverified claim about its stabilizer. -/
+invariant together with the subgroup that is *exactly* its stabilizer. -/
 structure ResolventSpec (n : ℕ) where
   /-- The subgroup the resolvent tests membership in. -/
   H : Subgroup (Equiv.Perm (Fin n))
@@ -158,11 +172,10 @@ structure ResolventSpec (n : ℕ) where
   Φ : MvPolynomial (Fin n) ℤ
   /-- The stabilizer of `Φ` is exactly `H`, not merely contained in it. -/
   stabilizer_eq : ∀ σ : Equiv.Perm (Fin n), MvPolynomial.rename (⇑σ) Φ = Φ ↔ σ ∈ H
-  /-- **The coefficient-side resolvent.** An executable function of the coefficients of `f`.
-  This is what a checker computes; the root product below is what it means. -/
+  /-- **The coefficient-side resolvent.** An executable function of the coefficients of `f`;
+  the root product below is what it means. -/
   specialize : ℤ[X] → ℚ[X]
-  /-- `specialize` computes the orbit resolvent. Without this field the checker would have
-  nothing to compare a claimed factorization against. -/
+  /-- `specialize` computes the orbit resolvent. -/
   specialize_correct :
     ∀ f : ℤ[X], f.Monic → f.natDegree = n →
       ∀ x : Fin n → (f.map (Int.castRingHom ℚ)).SplittingField,
@@ -187,11 +200,10 @@ noncomputable def quinticF20Invariant : MvPolynomial (Fin 5) ℤ :=
     (MvPolynomial.X (a + 1) * MvPolynomial.X (a - 1) +
       MvPolynomial.X (a + 2) * MvPolynomial.X (a - 2))
 
-/-- **Layers 4 and 8, collision evidence for a specialized orbit resolvent.** A resolvent
+/-- **Layer 4, collision evidence for a specialized orbit resolvent.** A resolvent
 supplies a sound subgroup upper bound only when specialization has preserved the full orbit
 degree and kept the orbit values distinct; over a field, separability records the latter.
-The checker must have this evidence, for the resolvent itself or for a checked Tschirnhaus
-transform of it, before its upper-bound theorem may run. -/
+This evidence is required before the corresponding upper-bound theorem may run. -/
 structure ResolventSeparationEvidence {F : Type u} [Field F] (R : F[X])
     (expectedOrbitDegree : ℕ) : Prop where
   /-- The specialized resolvent still has the full orbit degree `[Sₙ : H]`. -/
@@ -207,8 +219,7 @@ function of the coefficients of `f` and `T` alone. -/
 def tschirnhausPolynomial (f T : ℤ[X]) : ℤ[X] :=
   sorry
 
-/-- **Layer 4.** `T` separates the roots of `f`: it is admissible as a Tschirnhaus transform.
-The checker verifies a Boolean reflection of this before it uses a transformed resolvent. -/
+/-- **Layer 4.** `T` separates the roots of `f`: it is admissible as a Tschirnhaus transform. -/
 def TschirnhausAdmissible (f T : ℤ[X]) : Prop :=
   sorry
 
@@ -239,9 +250,8 @@ def quinticF20Spec : ResolventSpec 5 :=
 def quinticPairSumSpec : ResolventSpec 5 :=
   sorry
 
-/-- The registry. Every resolvent a certificate may name is one of these: index `0` in degree 4
-is `quarticD4Spec`, index `0` in degree 5 is `quinticF20Spec`, and index `1` in degree 5 is
-`quinticPairSumSpec`. In every other degree the index type is empty. -/
+/-- The small library registry: index `0` in degree 4 is `quarticD4Spec`, index `0` in degree 5
+is `quinticF20Spec`, and index `1` in degree 5 is `quinticPairSumSpec`. -/
 def registeredResolvent (n : ℕ) (i : ResolventSpecIndex n) : ResolventSpec n :=
   sorry
 
@@ -249,139 +259,6 @@ def registeredResolvent (n : ℕ) (i : ResolventSpecIndex n) : ResolventSpec n :
 `F₂₀` specification. -/
 def resolventSextic (f : ℤ[X]) : ℚ[X] :=
   quinticF20Spec.specialize f
-
-/-! ### Exact irreducibility over `ℚ`
-
-Rabin's test decides irreducibility over `ZMod p`. A resolvent claim carries factors in `ℚ[X]`,
-so it needs its own certificate; the two are not the same check.
--/
-
-/-- **Layer 8.** A certificate that `g : ℚ[X]` is irreducible: a primitive integral
-representative `h` of `g`, and a prime `p` that does not divide the leading coefficient of `h`,
-such that `h mod p` is irreducible of the same degree. -/
-def ratIrreducibleCheck (g : ℚ[X]) (h : ℤ[X]) (p : ℕ) : Bool :=
-  sorry
-
-/-- Soundness of that certificate. The proof is Rabin's test at `p`, then Gauss's lemma. -/
-theorem ratIrreducibleCheck_sound (g : ℚ[X]) (h : ℤ[X]) (p : ℕ)
-    (hchk : ratIrreducibleCheck g h p = true) : Irreducible g :=
-  sorry
-
-/-! ### The certificate: data, a Boolean check, and a soundness theorem
-
-The three are kept apart on purpose. A caller submits data and never constructs a
-proof-valued field; `check` verifies rather than trusts; and the theorem is about `check`.
--/
-
-/-- A claimed factorization of `f mod p`. Pure data: primality of `p`, the product identity,
-monicity, distinctness and irreducibility of the factors are all checked, not assumed. -/
-structure PrimeFactorizationClaim where
-  /-- The prime at which the polynomial is reduced. -/
-  p : ℕ
-  /-- The claimed monic irreducible factors of the reduction. -/
-  factors : List ((ZMod p)[X])
-
-/-- A claim about the discriminant, checked over `ℤ`. -/
-structure DiscriminantClaim where
-  /-- Whether `f.discr` is claimed to be a square. -/
-  isSquare : Bool
-
-/-- **Layer 8, a parity constraint.** A nonsquare discriminant is evidence, and the deduction
-must be able to use it, so the constraint has three values and not two. -/
-inductive ParityConstraint
-  | unconstrained
-  | even
-  | notEven
-  deriving DecidableEq
-
-/-- The exact meaning of each constraint. -/
-def ParityConstraint.Holds (c : ParityConstraint) {n : ℕ}
-    (K : Subgroup (Equiv.Perm (Fin n))) : Prop :=
-  match c with
-  | .unconstrained => True
-  | .even => K ≤ alternatingGroup (Fin n)
-  | .notEven => ¬ K ≤ alternatingGroup (Fin n)
-
-/-- The constraint that a checked discriminant claim delivers. A square discriminant gives
-`even`, and a nonsquare one gives `notEven`; neither is discarded. -/
-def DiscriminantClaim.parity (c : DiscriminantClaim) : ParityConstraint :=
-  if c.isSquare then .even else .notEven
-
-/-- A claimed resolvent computation. `spec` names a registered specification, so the invariant
-and its exact stabilizer come from proved library data. -/
-structure ResolventClaim (n : ℕ) where
-  /-- Which registered specification was used. -/
-  spec : ResolventSpecIndex n
-  /-- An optional Tschirnhaus transform, applied before the resolvent is recomputed. -/
-  tschirnhaus : Option (ℤ[X])
-  /-- The claimed factors of the specialized resolvent over `ℚ`. -/
-  claimedFactors : List (ℚ[X])
-  /-- One irreducibility certificate for each claimed factor. -/
-  factorCertificates : List (ℤ[X] × ℕ)
-
-open scoped Classical in
-/-- **Layer 8, a registered group-theoretic deduction.** The step from checked constraints to a
-label is its own object. An exhibited cycle type proves that its order divides the order of the
-group, so cycle types do give lower bounds; what they do not give is containment in a proper
-subgroup. That is why `parity` and `upperSpecs` are here as well. -/
-structure RegisteredDeduction (n : ℕ) (j : TransitiveGroupIndex n) where
-  /-- Cycle types the certificate must exhibit. -/
-  requiredCycleTypes : List (Multiset ℕ)
-  /-- What the discriminant must show. -/
-  parity : ParityConstraint
-  /-- Registered resolvents that must bound the group above. -/
-  upperSpecs : List (ResolventSpecIndex n)
-  /-- The theorem that makes the deduction sound. -/
-  valid : ∀ K : Subgroup (Equiv.Perm (Fin n)),
-    IsPretransitive K (Fin n) →
-    (∀ t ∈ requiredCycleTypes, ∃ g ∈ K, fullCycleType g = t) →
-    parity.Holds K →
-    (∀ i ∈ upperSpecs, ∃ σ : Equiv.Perm (Fin n),
-      Subgroup.map (MulAut.conj σ).toMonoidHom K ≤ (registeredResolvent n i).H) →
-    TransitiveGroupLabel j K
-
-/-- The number of registered deductions for each label. -/
-def numDeductions (n : ℕ) (j : TransitiveGroupIndex n) : ℕ :=
-  sorry
-
-/-- A registered deduction is named by a bounded index, as a resolvent specification is. -/
-abbrev DeductionIndex (n : ℕ) (j : TransitiveGroupIndex n) : Type := Fin (numDeductions n j)
-
-/-- The registry of deductions. In degree at most 5 these come from the order-recognition
-theorems of Layer 6; in degrees 6 to 11 each is proved for its own reference subgroup. -/
-def registeredDeduction (n : ℕ) (j : TransitiveGroupIndex n) (d : DeductionIndex n j) :
-    RegisteredDeduction n j :=
-  sorry
-
-/-- **Layer 8, the certificate.** Everything is data; nothing here is trusted. Both identifiers
-are bounded indices, so an identifier that names nothing cannot be written down. -/
-structure GaloisCertificate (f : ℤ[X]) {n : ℕ} (j : TransitiveGroupIndex n) where
-  /-- Lower-bound evidence: factorization types at primes not dividing the discriminant. -/
-  frobenius : List PrimeFactorizationClaim
-  /-- Evidence from the discriminant, which constrains the parity in both directions. -/
-  discriminant : DiscriminantClaim
-  /-- Upper-bound evidence from resolvents. -/
-  resolvents : List (ResolventClaim n)
-  /-- Which registered group-theoretic deduction closes the argument. -/
-  deduction : DeductionIndex n j
-
-/-- **Layer 8, the checker.** A Boolean function of the data. `README.md` lists every condition
-it must verify. Irreducibility over `ZMod p` is decided by Rabin's test, and irreducibility over
-`ℚ` by `ratIrreducibleCheck`; the resolvent is recomputed with the `specialize` field of the
-named registered specification. -/
-def GaloisCertificate.check {f : ℤ[X]} {n : ℕ} {j : TransitiveGroupIndex n}
-    (_cert : GaloisCertificate f j) : Bool :=
-  sorry
-
-/-- **Layer 8, soundness, and only soundness.** If the checker accepts, the label follows,
-unconditionally: no density theorem enters. The proof composes the reflection lemmas for the
-individual checks with `(registeredDeduction n j cert.deduction).valid`. That every polynomial
-admits a certificate, and that a search for one terminates, are separate questions, and neither
-is claimed. -/
-theorem GaloisCertificate.check_sound {f : ℤ[X]} {n : ℕ} {j : TransitiveGroupIndex n}
-    (cert : GaloisCertificate f j) (_h : cert.check = true) :
-    HasGaloisLabel (f.map (Int.castRingHom ℚ)) j :=
-  sorry
 
 end Prototypes
 
@@ -684,8 +561,7 @@ example (G : Subgroup (Equiv.Perm (Fin 5))) [IsPretransitive G (Fin 5)] :
   sorry
 
 /-- **Layer 6, order classifies in degree 5:** two transitive subgroups of `S₅` of the same
-order are conjugate. This is the theorem that lets a certificate terminate in an order
-count. -/
+order are conjugate. -/
 example (G H : Subgroup (Equiv.Perm (Fin 5))) [IsPretransitive G (Fin 5)]
     [IsPretransitive H (Fin 5)] (h : Nat.card G = Nat.card H) :
     ∃ g : Equiv.Perm (Fin 5), Subgroup.map (MulAut.conj g).toMonoidHom G = H :=
@@ -753,26 +629,23 @@ attribute [local instance] Polynomial.Gal.splits_ℚ_ℂ
 
 open scoped Classical in
 /-- **Layer 5 carrier.** The multiset of degrees of the monic irreducible factors of the
-reduction of `f` modulo `p`. This is the object that a certificate claims, and it is the
-right-hand side of the imported factorization theorem with this definition unfolded. -/
+reduction of `f` modulo `p`; this is the right-hand side of the imported factorization theorem. -/
 noncomputable def factorDegrees (f : ℤ[X]) (p : ℕ) [Fact p.Prime] : Multiset ℕ :=
   Multiset.map Polynomial.natDegree
     (UniqueFactorizationMonoid.normalizedFactors (f.map (Int.castRingHom (ZMod p))))
 
 /-- **Layer 5, carrier API: multiplicity one.** For monic `f` and a prime `p` that does not
 divide `f.discr`, the reduction of `f` modulo `p` is separable, so no factor repeats and
-`factorDegrees f p` is the multiset of degrees of *distinct* factors. This is what lets the
-checker of Layer 8 read a certificate that lists distinct factors; it is one line from the base
-change of `discr` in Layer 3, and it is not a step of the imported theorem. -/
+`factorDegrees f p` is the multiset of degrees of distinct factors. -/
 example (f : ℤ[X]) (hf : f.Monic) (p : ℕ) [Fact p.Prime] (hp : ¬ (p : ℤ) ∣ f.discr) :
     (f.map (Int.castRingHom (ZMod p))).Separable :=
   sorry
 
-/-- **Layer 5, the finite-field input to Layer 8.** For an element `α` of an extension of
+/-- **Layer 5, a finite-field input.** For an element `α` of an extension of
 `ZMod q`, the degree of the minimal polynomial is the size of the orbit of `α` under `x ↦ x ^ q`.
 This statement mentions no Galois theory over `ℚ`, and it is not a step of the imported theorem
-either. It is Lemma 1 of Rabin's paper, which is what makes the irreducibility test of Layer 8's
-checker sound, so this roadmap keeps it and Layer 8 discharges it. -/
+either. It is Lemma 1 of Rabin's paper and supports the finite-field existence results in
+Layer 9. -/
 example (q : ℕ) [Fact q.Prime] {K : Type u} [Field K] [Algebra (ZMod q) K] (α : K)
     (hα : IsIntegral (ZMod q) α) (n : ℕ) (hn : 0 < n) :
     (minpoly (ZMod q) α).natDegree = n ↔
@@ -798,11 +671,9 @@ example (f : ℤ[X]) (hf : f.Monic) (p : ℕ) [Fact p.Prime] (hp : ¬ (p : ℤ) 
     NumberFieldArithmetic.exists_gal_fullCycleType_eq_factorizationType f hf p hp
 
 /-- **Layer 5, the membership statement.** The first theorem of this layer that this roadmap
-owns. The factor degrees of `f mod p` are exhibited by an element *of the Galois image*, which
-is the shape `RegisteredDeduction.valid` consumes: its hypothesis is `∀ t ∈ requiredCycleTypes,
-∃ g ∈ K, fullCycleType g = t`, with `K` the image. Everything downstream — the irreducibility
-criterion, the recognition theorems, the certificate checker, and Layer 9 — is applied to this
-form, and none of it mentions a prime ideal or a Frobenius element.
+owns. The factor degrees of `f mod p` are exhibited by an element *of the Galois image*.
+Everything downstream—the irreducibility criterion, recognition theorems, and Layer 9—is applied
+to this form, and none of it mentions a prime ideal or a Frobenius element.
 
 The criterion is applied to an `f` that is not yet known to be irreducible, which is why the
 supplied theorem has to cover reducible `f`. -/
@@ -826,12 +697,11 @@ group `4T2`): order 4 and not cyclic. Consume the cyclotomic API
 example : Nat.card (X ^ 4 + 1 : ℚ[X]).Gal = 4 ∧ ¬ IsCyclic (X ^ 4 + 1 : ℚ[X]).Gal :=
   sorry
 
-/-- **Layer 8, the generic quintic theorem.** Let `f` be a monic quintic over `ℤ`, and let `p`
+/-- **Layer 5, the generic quintic theorem.** Let `f` be a monic quintic over `ℤ`, and let `p`
 and `q` be primes that do not divide `f.discr`. Assume that `f mod p` is irreducible, and that
 `f mod q` has factor degrees `(2,1,1,1)`. Then `f` has full `S₅` Galois group. The proof is
 transitivity, plus a transposition, in prime degree; it consumes
-`Equiv.Perm.subgroup_eq_top_of_swap_mem`. A downstream certificate for one explicit quintic
-instantiates this theorem. The roadmap states the theorem, and not the coefficients. -/
+`Equiv.Perm.subgroup_eq_top_of_swap_mem`. Worked examples instantiate this theorem. -/
 example (f : ℤ[X]) (hf : f.Monic) (hdeg : f.natDegree = 5)
     (p q : ℕ) [Fact p.Prime] [Fact q.Prime]
     (hp : ¬ (p : ℤ) ∣ f.discr) (hq : ¬ (q : ℤ) ∣ f.discr)
@@ -841,7 +711,7 @@ example (f : ℤ[X]) (hf : f.Monic) (hdeg : f.natDegree = 5)
   sorry
 
 /-- **Layers 5 and 6, the `S₅` acceptance instance** (`x⁵ − x − 1`; LMFDB field `5.1.2869.1`,
-group `5T5`). Certificate: modulo 2 the factorization `(x² + x + 1)(x³ + x² + 1)` exhibits an
+group `5T5`). Modulo 2 the factorization `(x² + x + 1)(x³ + x² + 1)` exhibits an
 element of order 6; modulo 5 the polynomial is Artin–Schreier, hence irreducible; transitive
 together with an element of order 6 forces `S₅`. -/
 example : Nat.card (X ^ 5 - X - 1 : ℚ[X]).Gal = 120 :=
