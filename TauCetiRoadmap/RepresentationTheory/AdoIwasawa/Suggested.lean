@@ -48,6 +48,24 @@ the nilrepresentation condition. -/
 theorem isNilpotent_ad_of_mem_nilradical [FiniteDimensional K L] {x : L}
     (hx : x ∈ nilradical K L) : IsNilpotent (LieAlgebra.ad K L x) := sorry
 
+/-- In characteristic zero every derivation maps the solvable radical into the nilradical. This is
+the theorem from which derivation-invariance of the nilradical and `[L, radical L] ≤ nilradical L`
+are derived; no characteristic-free version is asserted. -/
+theorem lieDerivation_radical_le_nilradical [CharZero K] [FiniteDimensional K L]
+    (D : LieDerivation K L L) {x : L} (hx : x ∈ LieAlgebra.radical K L) :
+    D x ∈ nilradical K L := sorry
+
+/-- The radical criterion used in Hochschild's characteristic-zero assembly. -/
+theorem mem_nilradical_of_mem_radical_of_isNilpotent_ad [CharZero K]
+    [FiniteDimensional K L] {x : L} (hx : x ∈ LieAlgebra.radical K L)
+    (hnil : IsNilpotent (LieAlgebra.ad K L x)) : x ∈ nilradical K L := sorry
+
+/-- The internal form of Levi decomposition. The definitive roadmap packages the complement as the
+external `LieAlgebra.SemiDirectSum` equivalence consumed by Layer 4. -/
+theorem exists_leviComplement [CharZero K] [FiniteDimensional K L] :
+    ∃ S : LieSubalgebra K L,
+      IsCompl (LieAlgebra.radical K L).toSubmodule S.toSubmodule := sorry
+
 /-- A faithful embedding in a finite-dimensional associative algebra gives a faithful
 finite-dimensional representation by left multiplication. -/
 theorem ado_of_finiteAssociativeEmbedding {A : Type u} [Ring A] [Algebra K A]
@@ -97,6 +115,22 @@ theorem envelopingDerivation_mul (D : LieDerivation K L L)
 theorem envelopingDerivation_ι (D : LieDerivation K L L) (x : L) :
     envelopingDerivation K L D (UniversalEnvelopingAlgebra.ι K x) =
       UniversalEnvelopingAlgebra.ι K (D x) := sorry
+
+/-- The packaged output of the stable-cofinite-ideal construction. The roadmap decomposes its proof
+through the nilradical-generated ideal `B`, the power `J = B^m`, range containment for lifted
+derivations, PBW finiteness, and preservation of nilpotence modulo `J`. -/
+theorem exists_derivationStable_cofiniteIdeal [CharZero K] [FiniteDimensional K L]
+    (I : Ideal (UniversalEnvelopingAlgebra K L)) [I.IsTwoSided]
+    (hI : FiniteDimensional K (UniversalEnvelopingAlgebra K L ⧸ I))
+    (hnil : ∀ x : L, x ∈ nilradical K L →
+      ∃ n : ℕ, (UniversalEnvelopingAlgebra.ι K x) ^ n ∈ I) :
+    ∃ J : Ideal (UniversalEnvelopingAlgebra K L),
+      J ≤ I ∧ J.IsTwoSided ∧
+      FiniteDimensional K (UniversalEnvelopingAlgebra K L ⧸ J) ∧
+      (∀ x : L, x ∈ nilradical K L →
+        ∃ n : ℕ, (UniversalEnvelopingAlgebra.ι K x) ^ n ∈ J) ∧
+      ∀ (D : LieDerivation K L L) {a : UniversalEnvelopingAlgebra K L},
+        a ∈ J → envelopingDerivation K L D a ∈ J := sorry
 
 /-- The characteristic-free Birkhoff checkpoint, obtained from a lower-central-series-weighted
 PBW truncation: a finite-dimensional nilpotent Lie algebra has a faithful finite-dimensional

@@ -166,15 +166,16 @@ shared Tau Ceti PBW development.
 The missing library is substantially larger than the final existential theorem:
 
 - the nilradical `nil L` (the largest nilpotent ideal) and its basic theory, which Mathlib does not have;
-- PBW consequences for arbitrary fields: injectivity of `ι`, ordered monomials, filtrations, domains, and
-  Noetherianity of `U(L)`;
+- PBW consequences for arbitrary fields: injectivity of `ι`, ordered monomials, filtrations, functoriality
+  for general Lie maps and quotients, domains and Noetherianity of `U(L)`, and finite spanning from
+  central monic relations;
 - the augmentation ideal and lower-central-series-weighted PBW truncations;
 - a reusable type for derivations of a noncommutative associative algebra, and extension of
   `LieDerivation K L L` to such a derivation of `U(L)`, functorially and compatibly with commutators;
 - derivation-stable cofinite ideals in enveloping algebras of solvable Lie algebras;
 - extension of nilrepresentations across split Lie-ideal extensions;
-- the characteristic-zero structure lemmas needed by the extension argument: Levi decomposition,
-  characteristicity of the radical and nilradical, and `D(rad L) ≤ nil L`;
+- the characteristic-zero structure lemmas needed by the extension argument: derivation-invariance of
+  the radical and nilradical, `D(rad L) ≤ nil L`, and a dependency-closed proof of Levi decomposition;
 - central `p`-polynomials in `U(L)` and module-finiteness over the commutative algebra they generate,
   together with the identity `(UC)^n = J^n · U(L)` that lets Mathlib's Krull intersection theorem
   reach the two-sided filtration;
@@ -210,8 +211,8 @@ Build the interface before either proof track.
 - **The nilradical.** Define `nil L`, the largest nilpotent ideal of `L`, as the `sSup` of the
   nilpotent `LieIdeal K L`, and prove it is itself nilpotent for `L` Noetherian, by the same
   sum-of-two-nilpotent-ideals argument that makes the `sSup` well behaved. Prove the basic theory the
-  later layers use: an ideal is nilpotent iff it is `≤ nil L`; `nil L` is characteristic, so every
-  `LieDerivation K L L` and every automorphism preserves it; `Z(L) ≤ nil L ≤ radical K L`;
+  later layers use: an ideal is nilpotent iff it is `≤ nil L`; every Lie-algebra automorphism preserves
+  `nil L`; `Z(L) ≤ nil L ≤ radical K L`;
   `x ∈ nil L → IsNilpotent (LieAlgebra.ad K L x)`; `LieAlgebra.maxNilpotentIdeal K L ≤ nil L`, with
   the two-dimensional nonabelian algebra as the witness that the containment is strict; and
   `nil L = ⊤ ↔ LieRing.IsNilpotent L`. This is general Lie theory, wanted independently of Ado, and
@@ -224,26 +225,28 @@ the distinction the conventions draw is pinned by a theorem rather than by prose
 
 ### Layer 1: the PBW consequences Ado uses
 
-The PBW project is owned by [the highest-weight roadmap](../LieHighestWeight/README.md), which now
-lists each item below among its own targets and states them with no characteristic or algebraic-closure
-hypothesis. **That roadmap is accountable for them**; this layer names them because Ado–Iwasawa is
-their first consumer and because the generality matters here (Ado needs all of them over `𝔽₂`). They
-live in the common Tau Ceti PBW development, never in a second PBW theorem beside the Ado proof.
+The PBW project is owned by [the highest-weight roadmap](../LieHighestWeight/README.md). Its PBW unit
+has the following exact supplier contract, stated with no characteristic or algebraic-closure hypothesis.
+**That roadmap is accountable for these targets**; this layer records the contract because Ado–Iwasawa
+is its first consumer and needs every item over `𝔽₂`. They live in the common Tau Ceti PBW development,
+never in a second PBW theorem beside the Ado proof. The separate noncentral monic-relation argument used
+to prove `U(S)/B^m` finite-dimensional in Layer 3 remains owned by this roadmap.
 
 - **Canonical embedding.** Prove `Function.Injective (UniversalEnvelopingAlgebra.ι K)` over a field.
 - **PBW filtration and ordered monomials.** Expose the degree filtration, its multiplicativity, the
   associated-graded equivalence with `SymmetricAlgebra K L`, and the ordered-monomial basis attached to a
   basis of `L`. The basis-free theorem and the concrete basis corollary are both required.
-- **Functoriality.** Prove compatibility of the filtration and ordered-monomial spans with Lie maps,
-  subalgebras, quotients, and direct sums. The later semidirect and central-polynomial arguments must not
-  re-prove straightening identities by hand.
+- **Functoriality.** For every Lie map, prove compatibility of the induced enveloping-algebra map with
+  the filtration and associated-graded map. Derive the corresponding ordered-monomial-span statements
+  for subalgebras, surjections and quotients, and direct sums. The later semidirect and central-polynomial
+  arguments must not re-prove straightening identities by hand.
 - **Domain and Noetherian corollaries.** For finite-dimensional `L`, prove that `U(L)` has no zero divisors
   and is left and right Noetherian. Route these through the associated graded symmetric algebra and
   filtered-to-graded transfer in reusable ring-theoretic form.
-- **Finite spanning from monic relations.** If each member of a finite ordered generating basis satisfies a
-  monic relation over a central commutative subalgebra `R`, prove that the bounded PBW monomials span
-  `U(L)` over `R`. Package this as a module-finiteness theorem, not merely a dimension count inside the
-  eventual proof.
+- **Finite spanning from central monic relations.** If each member of a finite ordered generating basis
+  satisfies a monic relation over a central commutative subalgebra `R`, prove that the bounded PBW
+  monomials span `U(L)` over `R`. Package this as a module-finiteness theorem, not merely a dimension
+  count inside the eventual proof. This is the exact result consumed by Layer 6.
 
 Acceptance: for an abelian `L`, recover the polynomial/symmetric algebra basis and the familiar domain and
 Noetherian instances. The statements must work over finite fields and in characteristics `2` and `3`.
@@ -289,23 +292,38 @@ not.
   closure hypothesis to the theorem: prove that `nil` and `radical` commute with base change to `K̄`
   for finite-dimensional `L` over a characteristic-zero field, and that a `LieDerivation K L L`
   extends to `L ⊗[K] K̄`, so that a containment of ideals may be checked after extension and descended.
+  Also prove the linear range-membership descent used in Layer 5: if the scalar extension of
+  `s : S` belongs to the range of `t ↦ ⁅s,t⁆`, then already `s = ⁅s,t⁆` for some `t : S` over `K`.
   Build on `Mathlib/Algebra/Lie/BaseChange.lean` and `Derivation/BaseChange.lean`;
   `Mathlib/Algebra/Lie/CartanCriterion.lean` is Mathlib's own precedent for arranging a
   characteristic-zero structural result this way. Nothing downstream base-changes the representation
   itself, only these structural statements.
 - **Nilradical under derivations.** Over characteristic zero, prove that every `D : LieDerivation K L L`
   satisfies `D (radical K L) ≤ nil L`, and in particular that a derivation of a solvable
-  finite-dimensional Lie algebra maps it into its nilradical. Characteristicity of the radical and of
-  `nil` is Layer 0; this is the substantive statement on top of it, and it is where the previous
+  finite-dimensional Lie algebra maps it into its nilradical. Deduce `D (nil L) ≤ nil L`; this is the
+  characteristic-zero derivation-invariance statement deliberately absent from Layer 0. For every ideal
+  `I` of `L`, derive the identity `nil I = nil L ⊓ I`: derivation-invariance makes `nil I` an `L`-ideal,
+  and the reverse containment is immediate. These are the substantive statements for which the previous
   milestone's descent is used.
 - **Cofinite kernels.** Extend a finite-dimensional representation `σ` of a solvable `S` to an algebra map
   `U(S) →ₐ[K] Module.End K V`; its kernel is a cofinite two-sided ideal. Relate nilpotence of `σ(x)` to
   nilpotence of `ι(x)` modulo that ideal.
-- **Derivation-stable refinement.** Given a cofinite ideal `I` for which every nilradical element is
-  nilpotent modulo `I`, construct `J ≤ I` with the same two properties and stable under every lifted
-  derivation. Follow the standard construction: let `B/I` be the ideal generated by the nilradical image
-  and take a sufficiently large power `J = B^m`. Prove finiteness of `U(S)/J` from PBW and monic
-  relations, not from an implicit finite-generation claim.
+- **The nilradical-generated ideal is nilpotent modulo `I`.** Given a cofinite two-sided ideal `I` for
+  which every nilradical element is nilpotent modulo `I`, let `Q` be the two-sided ideal of `U(S)/I`
+  generated by the image of `nil S`, and let `B` be its preimage in `U(S)`. Use Engel's theorem for the
+  left-multiplication action of `nil S`, followed by PBW straightening that moves nilradical factors
+  together, to choose `m` with `Q^m = 0`; equivalently, `B^m ≤ I`.
+- **Lifted derivations have range in `B`.** From `D(S) ≤ nil S` and the fact that `ι(S)` generates
+  `U(S)`, prove `Dᵁ(U(S)) ≤ B` for every lifted derivation. Do not assert that `B` itself is stable:
+  `I` was not assumed stable. The Leibniz rule and the range containment give the exact statement needed,
+  `Dᵁ(B^m) ≤ B^m`.
+- **The power remains cofinite.** For an ordered basis `x₁, …, x_d` of `S`, choose monic one-variable
+  polynomials `Pᵢ` with `Pᵢ(ι(xᵢ)) ∈ B`. Then `Pᵢ(ι(xᵢ))^m ∈ B^m`; use their leading terms and the
+  ordered PBW basis to give a finite spanning set for `U(S)/B^m`. This is the noncentral monic-relation
+  argument owned here, not Layer 1's central-subalgebra module-finiteness theorem.
+- **Nilpotence survives the refinement.** If `x ∈ nil S` and `ι(x)^e ∈ I`, then
+  `ι(x)^(em) ∈ I^m ≤ B^m`. Thus every nilradical element remains nilpotent modulo `J = B^m`.
+  Package these milestones as the derivation-stable cofinite refinement `J ≤ I` consumed by Layer 4.
 
 Acceptance: prove the refinement is unchanged by replacing `I` with the kernel of an isomorphic
 representation, and verify it for a two-dimensional nonabelian solvable Lie algebra.
@@ -349,18 +367,38 @@ ideal preserves detection of that center.
 - **A faithful nilrepresentation of the center.** For a basis of `Z(L)`, construct commuting square-zero
   endomorphisms that detect every basis direction. Record a basis-free existence theorem and one explicit
   model.
-- **Ideal flags.** Construct a finite flag `Z(L) = S₀ ⊂ S₁ ⊂ … ⊂ S_k = radical K L` in which **every**
-  term is a codimension-one ideal of the next. No step of this is conditional: `radical K L` is
-  solvable and `Z(L)` is an ideal of it, and for any solvable `T` the quotient `T/⁅T,T⁆` is abelian,
-  so every codimension-one subspace of `T` containing `⁅T,T⁆` is an ideal of `T`; iterating in
-  `(radical K L)/Z(L)` and pulling back gives the flag over an arbitrary field. Prove the structural
-  lemmas that make the Layer 4 hypotheses hold at each step. The final extension, across the Levi
-  complement, is the one that is not codimension one and is handled by the next milestone.
-- **Levi decomposition.** Prove the characteristic-zero Levi decomposition in Mathlib's `LieIdeal`,
-  `LieSubalgebra`, and `LieAlgebra.SemiDirectSum` vocabulary: `L` is a semidirect product of its
-  solvable radical with a semisimple complement, presented in the `Nonempty (L ≃ₗ⁅K⁆ _ ⋊⁅ψ⁆ _)` form
-  Layer 4 consumes. Include conjugacy/uniqueness facts only where they are needed to make the
-  construction independent of choices; do not hide the existence theorem in an Ado-specific lemma.
+- **The flag passes through the nilradical.** Put `N = nil L` and `R = radical K L`, and construct a
+  codimension-one flag
+
+  `Z(L) = S₀ ⊂ ⋯ ⊂ S_a = N ⊂ ⋯ ⊂ S_b = R`.
+
+  Below `N`, use the normalizer property for proper subalgebras of a finite-dimensional nilpotent Lie
+  algebra to refine from `Z(L)` to `N`, with every term an ideal of the next; every larger term in these
+  steps is nilpotent. Above `N`, first prove `[L,R] ≤ N` by applying Layer 3 to inner derivations. It
+  follows that every vector subspace `T` with `N ≤ T ≤ R` is a Lie subalgebra and an `L`-ideal, so an
+  ordinary vector-space flag supplies the codimension-one steps. Layer 3's ideal formula gives
+  `nil T = nil L ⊓ T = N` for every such `T`. Thus every application of Layer 4 uses one of its two
+  stated hypotheses: the larger algebra is nilpotent below `N`, and the two nilradicals agree above it.
+  The same ideal formula gives `nil R = N`, justifying the final extension from `R` to `L`.
+- **Levi decomposition: quotient induction.** Prove Levi decomposition without Ado or any linear
+  structure theorem derived from Ado, following Fulton–Harris Appendix E. Induct on `finrank K L`.
+  If `R` contains a nonzero proper `L`-ideal `A`, apply the induction hypothesis to `L/A`, pull its
+  complement back to an algebra whose radical is `A`, and apply induction there. This reduces to the
+  case where `R` has no nonzero proper `L`-ideal. Then `[R,R]` is proper because `R` is solvable, so
+  minimality makes `R` abelian, and minimality also gives `[L,R] = 0` or `[L,R] = R`.
+- **Levi decomposition: split the two minimal-radical cases.** If `[L,R] = 0`, the adjoint action factors
+  through the semisimple quotient `L/R`; use Weyl complete reducibility to complement the submodule `R`
+  in `L`. If `[L,R] = R`, form the nested `L`-submodules of `Module.End K L`
+  used in the standard proof: `A` consists of `ad r` for `r ∈ R`, `B` consists of endomorphisms with
+  range in `R` and restriction zero on `R`, and `C` consists of endomorphisms with range in `R` whose
+  restriction to `R` is scalar. Prove `A ≤ B ≤ C`, `C/B ≃ K`, `L · C ≤ B`, and `R · C ≤ A`.
+  Weyl complete reducibility for the semisimple quotient splits `C/A → C/B`; a lift `φ` of `1` has
+  `φ|R = id` and `L · φ ≤ A`, and `{x : L | x · φ = 0}` is the required complement. The exact supplier
+  here is the arbitrary-characteristic-zero form of Weyl complete reducibility in the highest-weight
+  roadmap, including scalar-extension and descent from its algebraically closed development.
+- **Levi decomposition: exported interface.** Package the complement as a `LieSubalgebra` and export the
+  semidirect-product existence theorem in the `Nonempty (L ≃ₗ⁅K⁆ R ⋊⁅ψ⁆ S)` form consumed by Layer 4.
+  Conjugacy of Levi complements is not a target: no named consumer here requires it.
 - **Iterate kernel control.** Extend the center representation along the flag and then across the Levi
   complement. The resulting representation `ρ₀` satisfies `ker ρ₀ ∩ Z(L) = 0`.
 - **Add the adjoint representation.** Since `ker(ad) = Z(L)`, the direct sum `ρ₀ ⊕ ad` is faithful.
@@ -371,10 +409,11 @@ a corollary of it, and it decomposes as follows. Throughout, `M` is a finite-dim
 which `nil L` acts nilpotently, and `x : L` has `ad x` nilpotent; the goal is that `x` acts
 nilpotently on `M`.
 
-- **A nilpotent-extension lemma.** If an ideal `N` and an element `s` both act nilpotently on a
-  finite-dimensional module `M`, and `⁅s, N⁆ ≤ N`, then the Lie algebra spanned by `s` and `N` acts
-  nilpotently on `M`. Hochschild uses this three times, on two different modules; state it once, for a
-  general module, and derive both uses.
+- **A nilpotent-extension lemma.** If a Lie subalgebra `H` acts nilpotently on a finite-dimensional
+  module `M`, an element `y` acts nilpotently, and `⁅y,H⁆ ≤ H`, then the Lie algebra spanned by `y`
+  and `H` acts nilpotently on `M`. Include the special case in which `H` is a nilpotent ideal whose
+  elements act nilpotently. Hochschild uses this repeatedly on two different modules; state it once for
+  a general module and derive all uses.
 - **The semisimple component acts nilpotently.** Write `L = S ⊕ radical K L` by Levi and `x = s + r`
   accordingly. Prove that `ad x` nilpotent forces `ad_S s` nilpotent, and then that `ad s` is
   nilpotent on `L` and `s` is nilpotent on `M`. Hochschild does this by producing `t : S` with
@@ -382,11 +421,20 @@ nilpotently on `M`.
   `⁅s, t⁆ = s` step is the easy half of the `sl₂`-triple existence statement for a semisimple Lie
   algebra and should be named as its own target, reusing whatever Mathlib's
   `LieAlgebra.IsKilling.exists_isSl2Triple_of_weight_isNonZero` and `Sl2.lean` already give. This is
-  the second place the splitting hypothesis on Lie's theorem appears, so it consumes Layer 3's
-  scalar-extension milestone.
-- **Assemble.** Apply the extension lemma to `s` and `nil L` on `L` to get `r ∈ nil L`, then again on
-  `M` to conclude that `x = s + r` is nilpotent on `M`. Deduce the characteristic-zero Hochschild
-  theorem, `exists_faithful_preserving_ad_nilpotence_charZero`.
+  the second place the splitting hypothesis on Lie's theorem appears. Prove the statement after scalar
+  extension, then use Layer 3's range-membership descent to obtain `t` over the original field; nilpotence
+  of the resulting endomorphisms also descends.
+- **The radical criterion.** Prove
+  `r ∈ R ∧ IsNilpotent (LieAlgebra.ad K L r) → r ∈ N`. Indeed `[L,R] ≤ N` makes `N + K r` an ideal;
+  the extension lemma makes its adjoint action nilpotent, so Engel makes it a nilpotent ideal, whence it
+  is contained in `N`.
+- **Assemble the nested extension argument.** On the adjoint module `L`, the extension lemma first shows
+  that `H = span(s,N)` acts nilpotently. Since `[x,s] = [r,s] ∈ [R,L] ≤ N` and `[x,N] ≤ N`, the element
+  `x` normalizes `H`; apply the lemma again, using the assumed nilpotence of `ad x`, to the algebra
+  spanned by `x` and `H`. Its element `r = x - s` is therefore adjoint-nilpotent, so the radical criterion
+  gives `r ∈ N`. Finally, on `M`, the actions of `s` and `N` are nilpotent, hence `span(s,N)` acts
+  nilpotently and contains `x = s + r`. Deduce
+  `exists_faithful_preserving_ad_nilpotence_charZero`.
 
 Acceptance: for centerless `L`, the construction reduces to `ad`; for nilpotent `L`, it agrees at the level
 of guarantees with Layer 2 and remains a nilrepresentation. For `L = sl₂` over `ℚ`, where `nil L = ⊥`
@@ -510,6 +558,11 @@ now that the commutative theorem is Mathlib's, so Layer 6 is the substantial hal
 completed tracks only because its statement has no characteristic hypothesis; the real consumer in
 `LieGroups` can use Layer 5 as soon as that track lands.
 
+Within Layer 5, the Levi unit consumes only the arbitrary-characteristic-zero Weyl complete-reducibility
+contract of `LieHighestWeight`; its direct induction is independent of Ado and may proceed alongside the
+stable-ideal work. The flag and Hochschild assembly then consume the characteristic-zero nilradical API of
+Layer 3, especially `[L, radical K L] ≤ nil L` and the nilradical formula for ideals.
+
 The largest risks are not the final compositions. They are concrete PBW infrastructure, the
 derivation-stable ideal lemma, Levi decomposition at the right generality, the scalar-extension and
 descent step that keeps the characteristic-zero track honest over non-closed fields, and the clean
@@ -526,6 +579,7 @@ TauCeti/RepresentationTheory/Lie/FiniteTarget.lean
 TauCeti/Algebra/Lie/UniversalEnveloping/PBWConsequences.lean
 TauCeti/Algebra/Lie/UniversalEnveloping/Augmentation.lean
 TauCeti/Algebra/Lie/UniversalEnveloping/Derivation.lean
+TauCeti/Algebra/Lie/LeviDecomposition.lean
 TauCeti/RepresentationTheory/Lie/NilpotentFaithful.lean
 TauCeti/RepresentationTheory/Lie/Ado/CharZero.lean
 TauCeti/Algebra/Lie/UniversalEnveloping/PCenter.lean
