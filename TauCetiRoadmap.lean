@@ -24,6 +24,7 @@ import TauCetiRoadmap.CombinatorialHeegaardFloer.Suggested
 import TauCetiRoadmap.HeegaardFloer.Suggested
 import TauCetiRoadmap.IntegralLattices.Suggested
 import TauCetiRoadmap.GeometricTopology.Suggested
+import TauCetiRoadmap.HopfRinow.Suggested
 import TauCetiRoadmap.Exchangeability.Suggested
 import TauCetiRoadmap.ContourIntegration.Suggested
 import TauCetiRoadmap.DGAInfinity.Suggested
