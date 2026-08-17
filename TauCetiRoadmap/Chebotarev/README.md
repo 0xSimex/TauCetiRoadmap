@@ -25,8 +25,8 @@ Suggested home: `TauCeti/NumberTheory/Chebotarev/`, with files grouped as `Frobe
 live in the namespace `NumberField.Chebotarev`.
 
 [`Suggested.lean`](Suggested.lean) pins representative declaration shapes. It is not exhaustive;
-this document is the specification. [`PROVENANCE.md`](PROVENANCE.md) records dated prior art,
-source revisions, licences, and coordination status. Nothing in that file is a prerequisite.
+this document is the specification. Dated prior-art, source-revision, licence, and coordination
+records are maintained privately and are not prerequisites.
 
 ## Scope
 
