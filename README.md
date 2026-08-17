@@ -19,6 +19,7 @@ If you want to write or review a roadmap, start with [CONTRIBUTING.md](CONTRIBUT
 - [Contour integration and the Hungerbühler–Wasem generalized residue theorem](TauCetiRoadmap/ContourIntegration/README.md)
 - [DG and A-infinity algebras, categories, and modules](TauCetiRoadmap/DGAInfinity/README.md)
 - [Elliptic curves](TauCetiRoadmap/EllipticCurves/README.md)
+- [Dense graph limits and graphons](TauCetiRoadmap/DenseGraphLimits/README.md)
 - [Exchangeability and de Finetti](TauCetiRoadmap/Exchangeability/README.md)
 - [Foundations of adic spaces](TauCetiRoadmap/AdicSpaces/README.md)
 - [Geometric topology and the Kirby-list problems](TauCetiRoadmap/GeometricTopology/README.md)
