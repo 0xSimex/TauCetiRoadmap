@@ -267,6 +267,29 @@ private noncomputable def continuousCohomology
   obj X := _root_.continuousCohomology n X
   map f := ContinuousCohomology.map (ContinuousMonoidHom.id G) f n
 
+/-- **Layer 10, the canonical carrier packaged as an actual functor.** Its object and map fields
+are Mathlib's `continuousCohomology` and `ContinuousCohomology.map`; the functor laws are
+Mathlib's `map_id` and `map_comp`. This packaging is what the filtered-colimit theorem names. -/
+noncomputable def continuousCohomologyFunctor
+    (R : Type v) [CommRing R] [TopologicalSpace R]
+    (G : Type u) [Group G] [TopologicalSpace G] [IsTopologicalGroup G] (n : ℕ) :
+    TopRep R G ⥤ TopModuleCat.{u} R :=
+  sorry
+
+/-- **Layer 10, Mathlib's homogeneous cochains packaged as a functor.** This is the functor to
+which the short exact coefficient complex is mapped before applying the homology-sequence API. -/
+noncomputable def continuousCochainsFunctor
+    (R : Type v) [CommRing R] [TopologicalSpace R]
+    (G : Type u) [Group G] [TopologicalSpace G] [IsTopologicalGroup G] :
+    TopRep R G ⥤ CochainComplex (TopModuleCat.{u} R) ℕ :=
+  sorry
+
+noncomputable instance continuousCochainsFunctor_preservesZeroMorphisms
+    (R : Type v) [CommRing R] [TopologicalSpace R]
+    (G : Type u) [Group G] [TopologicalSpace G] [IsTopologicalGroup G] :
+    (continuousCochainsFunctor R G).PreservesZeroMorphisms :=
+  sorry
+
 section Carrier
 
 open CategoryTheory
@@ -380,6 +403,11 @@ def SmoothDiscreteTopRep : Type _ :=
 
 noncomputable instance : Category (SmoothDiscreteTopRep R G) :=
   inferInstanceAs (Category (ObjectProperty.FullSubcategory _))
+
+/-- Smooth discrete objects inherit zero morphisms from `TopRep`; the zero map preserves the
+underlying object property. -/
+noncomputable instance : CategoryTheory.Limits.HasZeroMorphisms (SmoothDiscreteTopRep R G) :=
+  sorry
 
 /-- **Layer 1, the inclusion of the smooth discrete subcategory into `TopRep`,** which is how a
 coinduced object of Layer 7 reaches the canonical cohomology functor. -/
@@ -814,21 +842,65 @@ noncomputable def explicitInfl2 (N : Subgroup G) [N.Normal]
     H2 (G ⧸ N) (Invariants N M) →+ H2 G M :=
   sorry
 
-/-- **Layer 6, corestriction on the explicit model in degree 0,** the norm
-`cor⁰ m = ∑ u, t u • m` at `t = Quotient.out`. -/
-noncomputable def explicitCor0 (U : OpenSubgroup G) : H0 U.toSubgroup M →+ H0 G M :=
+/-- **Layer 6, variable-transversal corestriction in degree 0.** Finite index is data: openness
+alone does not make the quotient finite for a general topological group. -/
+noncomputable def explicitCor0Transversal (U : OpenSubgroup G)
+    [Fintype (G ⧸ U.toSubgroup)] (t : G ⧸ U.toSubgroup → G)
+    (ht : ∀ x, QuotientGroup.mk (t x) = x) : H0 U.toSubgroup M →+ H0 G M :=
   sorry
 
-/-- **Layer 6, corestriction on the explicit model in degree 1,** the `t = Quotient.out`
-specialization of the transversal formula of `README.md` §3. The subgroup is **open**, which is
-what makes the transversal finite. -/
-noncomputable def explicitCor1 (U : OpenSubgroup G) : H1 U.toSubgroup M →+ H1 G M :=
+/-- **Layer 6, variable-transversal corestriction in degree 1.** -/
+noncomputable def explicitCor1Transversal (U : OpenSubgroup G)
+    [Fintype (G ⧸ U.toSubgroup)] (t : G ⧸ U.toSubgroup → G)
+    (ht : ∀ x, QuotientGroup.mk (t x) = x) : H1 U.toSubgroup M →+ H1 G M :=
   sorry
 
-/-- **Layer 6, corestriction on the explicit model in degree 2,** the `t = Quotient.out`
-specialization of `(cor²_t f) (γ, η) = ∑ u, t u • f (ℓᵗ_u γ, ℓᵗ_{γ⁻¹ • u} η)`. The two nested
-transversal words are what make this a separate target from degree 1. -/
-noncomputable def explicitCor2 (U : OpenSubgroup G) : H2 U.toSubgroup M →+ H2 G M :=
+/-- **Layer 6, variable-transversal corestriction in degree 2.** -/
+noncomputable def explicitCor2Transversal (U : OpenSubgroup G)
+    [Fintype (G ⧸ U.toSubgroup)] (t : G ⧸ U.toSubgroup → G)
+    (ht : ∀ x, QuotientGroup.mk (t x) = x) : H2 U.toSubgroup M →+ H2 G M :=
+  sorry
+
+/-- **Layer 6, change of transversal in degree 0.** The cochain formula is independent after
+passing to invariants. -/
+theorem explicitCor0_changeTransversal (U : OpenSubgroup G) [Fintype (G ⧸ U.toSubgroup)]
+    (t t' : G ⧸ U.toSubgroup → G) (ht : ∀ x, QuotientGroup.mk (t x) = x)
+    (ht' : ∀ x, QuotientGroup.mk (t' x) = x) :
+    explicitCor0Transversal G M U t ht = explicitCor0Transversal G M U t' ht' :=
+  sorry
+
+/-- **Layer 6, change of transversal in degree 1,** after the named coboundary identity on
+representatives. -/
+theorem explicitCor1_changeTransversal (U : OpenSubgroup G) [Fintype (G ⧸ U.toSubgroup)]
+    (t t' : G ⧸ U.toSubgroup → G) (ht : ∀ x, QuotientGroup.mk (t x) = x)
+    (ht' : ∀ x, QuotientGroup.mk (t' x) = x) :
+    explicitCor1Transversal G M U t ht = explicitCor1Transversal G M U t' ht' :=
+  sorry
+
+/-- **Layer 6, change of transversal in degree 2,** after the named continuous 1-cochain
+coboundary identity. -/
+theorem explicitCor2_changeTransversal (U : OpenSubgroup G) [Fintype (G ⧸ U.toSubgroup)]
+    (t t' : G ⧸ U.toSubgroup → G) (ht : ∀ x, QuotientGroup.mk (t x) = x)
+    (ht' : ∀ x, QuotientGroup.mk (t' x) = x) :
+    explicitCor2Transversal G M U t ht = explicitCor2Transversal G M U t' ht' :=
+  sorry
+
+/-- **Layer 6, public corestriction on the explicit model in degree 0,** the norm at
+`t = Quotient.out`. -/
+noncomputable def explicitCor0 (U : OpenSubgroup G) [Fintype (G ⧸ U.toSubgroup)] :
+    H0 U.toSubgroup M →+ H0 G M :=
+  sorry
+
+/-- **Layer 6, public corestriction on the explicit model in degree 1,** the
+`t = Quotient.out` specialization. -/
+noncomputable def explicitCor1 (U : OpenSubgroup G) [Fintype (G ⧸ U.toSubgroup)] :
+    H1 U.toSubgroup M →+ H1 G M :=
+  sorry
+
+/-- **Layer 6, public corestriction on the explicit model in degree 2,** the
+`t = Quotient.out` specialization with two nested transversal words. -/
+noncomputable def explicitCor2 (U : OpenSubgroup G) [Fintype (G ⧸ U.toSubgroup)] :
+    H2 U.toSubgroup M →+ H2 G M :=
   sorry
 
 /-- **Layer 3, transport of inflation.** Stated in the same shape as restriction, with the
@@ -967,6 +1039,73 @@ variable (G : Type u) [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [Com
   (M : Type u) [AddCommGroup M] [TopologicalSpace M] [IsTopologicalAddGroup M]
   [DiscreteTopology M] [DistribMulAction G M] [ContinuousSMul G M]
 
+/-- **Layer 4, the explicit degree-0 transition,** defined directly from the quotient map and
+`M^U ↪ M^V`. It does not pass through the small-universe `groupCohomology` comparison. -/
+noncomputable def explicitFiniteQuotientTransition0 (U V : OpenNormalSubgroup G) (hVU : V ≤ U) :
+    H0 (G ⧸ U.toSubgroup) (Invariants U.toSubgroup M) →+
+      H0 (G ⧸ V.toSubgroup) (Invariants V.toSubgroup M) :=
+  sorry
+
+/-- **Layer 4, the explicit degree-1 transition,** the universe-polymorphic `explicitMap1` for
+the compatible pair `(G ⧸ V → G ⧸ U, M^U ↪ M^V)`. -/
+noncomputable def explicitFiniteQuotientTransition1 (U V : OpenNormalSubgroup G) (hVU : V ≤ U) :
+    H1 (G ⧸ U.toSubgroup) (Invariants U.toSubgroup M) →+
+      H1 (G ⧸ V.toSubgroup) (Invariants V.toSubgroup M) :=
+  sorry
+
+/-- **Layer 4, the explicit degree-2 transition,** defined directly on explicit cochains. -/
+noncomputable def explicitFiniteQuotientTransition2 (U V : OpenNormalSubgroup G) (hVU : V ≤ U) :
+    H2 (G ⧸ U.toSubgroup) (Invariants U.toSubgroup M) →+
+      H2 (G ⧸ V.toSubgroup) (Invariants V.toSubgroup M) :=
+  sorry
+
+theorem explicitFiniteQuotientTransition1_id (U : OpenNormalSubgroup G) :
+    explicitFiniteQuotientTransition1 G M U U le_rfl = AddMonoidHom.id _ :=
+  sorry
+
+theorem explicitFiniteQuotientTransition1_comp (U V W : OpenNormalSubgroup G)
+    (hVU : V ≤ U) (hWV : W ≤ V) :
+    explicitFiniteQuotientTransition1 G M U W (hWV.trans hVU) =
+      (explicitFiniteQuotientTransition1 G M V W hWV).comp
+        (explicitFiniteQuotientTransition1 G M U V hVU) :=
+  sorry
+
+/-- **Layer 4, the finite-quotient system in degree 0.** -/
+noncomputable def explicitFiniteQuotientSystem0 :
+    (OpenNormalSubgroup G)ᵒᵖ ⥤ AddCommGrpCat.{u} :=
+  { obj := fun U => AddCommGrpCat.of
+      (H0 (G ⧸ U.unop.toSubgroup) (Invariants U.unop.toSubgroup M))
+    map := fun {U V} f => AddCommGrpCat.ofHom
+      (explicitFiniteQuotientTransition0 G M U.unop V.unop (leOfHom f.unop))
+    map_id := by intros; sorry
+    map_comp := by intros; sorry }
+
+theorem explicitFiniteQuotientSystem0_obj (U : OpenNormalSubgroup G) :
+    (explicitFiniteQuotientSystem0 G M).obj (Opposite.op U) =
+      AddCommGrpCat.of (H0 (G ⧸ U.toSubgroup) (Invariants U.toSubgroup M)) :=
+  rfl
+
+theorem explicitFiniteQuotientSystem0_map {U V : (OpenNormalSubgroup G)ᵒᵖ} (f : U ⟶ V) :
+    (explicitFiniteQuotientSystem0 G M).map f = AddCommGrpCat.ofHom
+      (explicitFiniteQuotientTransition0 G M U.unop V.unop (leOfHom f.unop)) :=
+  rfl
+
+/-- **Layer 4, the named comparison legs in degree 0.** -/
+noncomputable def explicitFiniteQuotientComparison0 :
+    explicitFiniteQuotientSystem0 G M ⟶
+      (Functor.const ((OpenNormalSubgroup G)ᵒᵖ)).obj (AddCommGrpCat.of (H0 G M)) :=
+  sorry
+
+noncomputable def explicitFiniteQuotientCocone0 :
+    Limits.Cocone (explicitFiniteQuotientSystem0 G M) where
+  pt := AddCommGrpCat.of (H0 G M)
+  ι := explicitFiniteQuotientComparison0 G M
+
+/-- **Layer 4, universality of the degree-0 comparison cocone.** -/
+noncomputable def explicitFiniteQuotientColimit0 :
+    Limits.IsColimit (explicitFiniteQuotientCocone0 G M) :=
+  sorry
+
 /-- **Layer 4, the finite-quotient system in degree 1,** as a functor on
 `(OpenNormalSubgroup G)ᵒᵖ`. The index category is the opposite one because the transition maps run
 from the `U`-level to the `V`-level for `V ≤ U`, against the direction of
@@ -979,14 +1118,27 @@ noncomputable def explicitFiniteQuotientSystem1 (G : Type u) [Group G] [Topologi
     (M : Type u) [AddCommGroup M] [TopologicalSpace M] [IsTopologicalAddGroup M]
     [DiscreteTopology M] [DistribMulAction G M] [ContinuousSMul G M] :
     (OpenNormalSubgroup G)ᵒᵖ ⥤ AddCommGrpCat.{u} :=
-  sorry
+  { obj := fun U => AddCommGrpCat.of
+      (H1 (G ⧸ U.unop.toSubgroup) (Invariants U.unop.toSubgroup M))
+    map := fun {U V} f => AddCommGrpCat.ofHom
+      (explicitFiniteQuotientTransition1 G M U.unop V.unop (leOfHom f.unop))
+    map_id := by intros; sorry
+    map_comp := by intros; sorry }
 
 /-- **Layer 4, the value of the finite-quotient system,** which is what makes the colimit statement
 below a statement about `Hⁱ(G ⧸ U, M^U)` rather than about an unnamed functor. -/
 theorem explicitFiniteQuotientSystem1_obj (U : OpenNormalSubgroup G) :
     (explicitFiniteQuotientSystem1 G M).obj (Opposite.op U) =
       AddCommGrpCat.of (H1 (G ⧸ U.toSubgroup) (Invariants U.toSubgroup M)) :=
-  sorry
+  rfl
+
+/-- **Layer 4, the arrow of the explicit degree-1 system is exactly the direct explicit
+transition.** This rules out silently transporting `finiteLevelTransition` through a
+universe-restricted comparison. -/
+theorem explicitFiniteQuotientSystem1_map {U V : (OpenNormalSubgroup G)ᵒᵖ} (f : U ⟶ V) :
+    (explicitFiniteQuotientSystem1 G M).map f = AddCommGrpCat.ofHom
+      (explicitFiniteQuotientTransition1 G M U.unop V.unop (leOfHom f.unop)) :=
+  rfl
 
 /-- **Layer 4, the comparison maps into `H¹(G, M)`,** inflation along `G → G ⧸ U` followed by the
 coefficient inclusion `M^U ↪ M`, assembled into the leg family of a cocone. They are named because
@@ -1012,7 +1164,87 @@ noncomputable def explicitFiniteQuotientColimit1 :
     Limits.IsColimit (explicitFiniteQuotientCocone1 G M) :=
   sorry
 
+/-- **Layer 4, the finite-quotient system in degree 2.** -/
+noncomputable def explicitFiniteQuotientSystem2 :
+    (OpenNormalSubgroup G)ᵒᵖ ⥤ AddCommGrpCat.{u} :=
+  { obj := fun U => AddCommGrpCat.of
+      (H2 (G ⧸ U.unop.toSubgroup) (Invariants U.unop.toSubgroup M))
+    map := fun {U V} f => AddCommGrpCat.ofHom
+      (explicitFiniteQuotientTransition2 G M U.unop V.unop (leOfHom f.unop))
+    map_id := by intros; sorry
+    map_comp := by intros; sorry }
+
+theorem explicitFiniteQuotientSystem2_obj (U : OpenNormalSubgroup G) :
+    (explicitFiniteQuotientSystem2 G M).obj (Opposite.op U) =
+      AddCommGrpCat.of (H2 (G ⧸ U.toSubgroup) (Invariants U.toSubgroup M)) :=
+  rfl
+
+theorem explicitFiniteQuotientSystem2_map {U V : (OpenNormalSubgroup G)ᵒᵖ} (f : U ⟶ V) :
+    (explicitFiniteQuotientSystem2 G M).map f = AddCommGrpCat.ofHom
+      (explicitFiniteQuotientTransition2 G M U.unop V.unop (leOfHom f.unop)) :=
+  rfl
+
+/-- **Layer 4, the named comparison legs in degree 2.** -/
+noncomputable def explicitFiniteQuotientComparison2 :
+    explicitFiniteQuotientSystem2 G M ⟶
+      (Functor.const ((OpenNormalSubgroup G)ᵒᵖ)).obj (AddCommGrpCat.of (H2 G M)) :=
+  sorry
+
+noncomputable def explicitFiniteQuotientCocone2 :
+    Limits.Cocone (explicitFiniteQuotientSystem2 G M) where
+  pt := AddCommGrpCat.of (H2 G M)
+  ι := explicitFiniteQuotientComparison2 G M
+
+/-- **Layer 4, universality of the degree-2 comparison cocone.** -/
+noncomputable def explicitFiniteQuotientColimit2 :
+    Limits.IsColimit (explicitFiniteQuotientCocone2 G M) :=
+  sorry
+
 end FiniteQuotientColimit
+
+section AllDegreeFiniteQuotient
+
+open CategoryTheory
+
+variable (G : Type u) [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [CompactSpace G]
+  [TotallyDisconnectedSpace G]
+  (M : Type u) [AddCommGroup M] [TopologicalSpace M] [IsTopologicalAddGroup M]
+  [DiscreteTopology M] [DistribMulAction G M] [ContinuousSMul G M]
+
+/-- **Layer 10, the canonical finite-quotient system in degree `n`.** Its object and arrow
+formulas are the all-degree counterparts of Layer 4's three explicit systems. -/
+noncomputable def continuousFiniteQuotientSystem
+    (M₀ : Type u) [AddCommGroup M₀] [TopologicalSpace M₀] [IsTopologicalAddGroup M₀]
+    [DiscreteTopology M₀] [DistribMulAction G M₀] [ContinuousSMul G M₀] (n : ℕ) :
+    (OpenNormalSubgroup G)ᵒᵖ ⥤ TopModuleCat.{u} ℤ :=
+  { obj := fun U =>
+      letI : ContinuousSMul (G ⧸ U.unop.toSubgroup)
+          (Invariants U.unop.toSubgroup M₀) :=
+        ⟨continuous_of_discreteTopology⟩
+      (continuousCohomology ℤ (G ⧸ U.unop.toSubgroup) n).obj
+        (ofDiscreteModule (G ⧸ U.unop.toSubgroup) (Invariants U.unop.toSubgroup M₀))
+    map := fun {_ _} _ => sorry
+    map_id := by intros; sorry
+    map_comp := by intros; sorry }
+
+/-- **Layer 10, the inflation-and-inclusion cocone into canonical continuous cohomology.** -/
+noncomputable def continuousFiniteQuotientCocone (n : ℕ) :
+    Limits.Cocone (continuousFiniteQuotientSystem G M n) :=
+  sorry
+
+/-- **Layer 10, universality of the canonical finite-quotient cocone in every degree.** -/
+noncomputable def continuousFiniteQuotientColimit (n : ℕ) :
+    Limits.IsColimit (continuousFiniteQuotientCocone G M n) :=
+  sorry
+
+/-- **Layer 10, continuous cohomology preserves filtered colimits of smooth discrete
+coefficients.** This is the exact categorical theorem consumed by Layer 11's devissage. -/
+theorem continuousCohomology_preservesFilteredColimits (n : ℕ) :
+    CategoryTheory.Limits.PreservesFilteredColimitsOfSize.{u, u}
+      (smoothDiscreteι ℤ G ⋙ continuousCohomologyFunctor ℤ G n) :=
+  sorry
+
+end AllDegreeFiniteQuotient
 
 /-! ### Layer 5: exactness of cochains -/
 
@@ -1084,6 +1316,29 @@ def DiscreteShortExact.restrict (S : DiscreteShortExact G A B C) (T : Subgroup G
   incl_injective := S.incl_injective
   proj_surjective := S.proj_surjective
   exact_middle := S.exact_middle
+
+/-- **Layer 10, the coefficient short complex in `TopRep`.** -/
+noncomputable def DiscreteShortExact.toShortComplex (S : DiscreteShortExact G A B C) :
+    ShortComplex (TopRep ℤ G) :=
+  ShortComplex.mk
+    (ofDiscreteModuleMap G A B S.incl S.incl_continuous S.incl_equivariant)
+    (ofDiscreteModuleMap G B C S.proj S.proj_continuous S.proj_equivariant) (by sorry)
+
+/-- **Layer 10, the bundled coefficient short complex is short exact.** -/
+theorem DiscreteShortExact.toShortComplex_shortExact (S : DiscreteShortExact G A B C) :
+    (S.toShortComplex G A B C).ShortExact :=
+  sorry
+
+/-- **Layer 10, the short complex of canonical homogeneous-cochain complexes.** -/
+noncomputable def continuousCochainsShortExact (S : DiscreteShortExact G A B C) :
+    ShortComplex (CochainComplex (TopModuleCat.{u} ℤ) ℕ) :=
+  (S.toShortComplex G A B C).map (continuousCochainsFunctor ℤ G)
+
+/-- **Layer 10, degreewise short exactness of the canonical cochain complexes.** This is the
+input to Mathlib's `HomologicalComplex.HomologySequence`; it is not supplied by the carrier. -/
+theorem continuousCochainsShortExact_shortExact (S : DiscreteShortExact G A B C) :
+    (continuousCochainsShortExact G A B C S).ShortExact :=
+  sorry
 
 /-- **Layer 5, the connecting map `δ⁰ : H⁰(G, C) → H¹(G, A)`.** Choose a preimage in `B` of an
 invariant of `C` and apply `d⁰`; the result lands in `A` because the class of the preimage in `C`
@@ -1175,6 +1430,7 @@ theorem explicitDelta1_res (S : DiscreteShortExact G A B C) (T : Subgroup G) (x 
 /-- **Layer 6, corestriction commutes with `δ⁰`** (NSW (1.5.2)). The sequence on `U` is the
 restriction of the sequence on `G`, so both sides name the same two coefficient maps. -/
 theorem explicitCor_delta0 (S : DiscreteShortExact G A B C) (U : OpenSubgroup G)
+    [Fintype (G ⧸ U.toSubgroup)]
     (x : H0 U.toSubgroup C) :
     explicitCor1 G A U
         (explicitDelta0 U.toSubgroup A B C (S.restrict G A B C U.toSubgroup) x) =
@@ -1183,6 +1439,7 @@ theorem explicitCor_delta0 (S : DiscreteShortExact G A B C) (U : OpenSubgroup G)
 
 /-- **Layer 6, corestriction commutes with `δ¹`.** -/
 theorem explicitCor_delta1 (S : DiscreteShortExact G A B C) (U : OpenSubgroup G)
+    [Fintype (G ⧸ U.toSubgroup)]
     (y : H1 U.toSubgroup C) :
     explicitCor2 G A U
         (explicitDelta1 U.toSubgroup A B C (S.restrict G A B C U.toSubgroup) y) =
@@ -1197,6 +1454,63 @@ noncomputable def delta [CompactSpace G] [TotallyDisconnectedSpace G]
     (S : DiscreteShortExact G A B C) (n : ℕ) :
     (continuousCohomology ℤ G n).obj (ofDiscreteModule G C) ⟶
       (continuousCohomology ℤ G (n + 1)).obj (ofDiscreteModule G A) :=
+  sorry
+
+/-- **Layer 10, exactness of the all-degree long exact sequence at its three repeating nodes.** -/
+theorem longExact_exact [CompactSpace G] [TotallyDisconnectedSpace G]
+    (S : DiscreteShortExact G A B C) (n : ℕ) :
+    Function.Exact
+        ((continuousCohomology ℤ G n).map
+          (ofDiscreteModuleMap G B C S.proj S.proj_continuous S.proj_equivariant)).hom
+        (delta G A B C S n).hom ∧
+      Function.Exact (delta G A B C S n).hom
+        ((continuousCohomology ℤ G (n + 1)).map
+          (ofDiscreteModuleMap G A B S.incl S.incl_continuous S.incl_equivariant)).hom ∧
+      Function.Exact
+        ((continuousCohomology ℤ G n).map
+          (ofDiscreteModuleMap G A B S.incl S.incl_continuous S.incl_equivariant)).hom
+        ((continuousCohomology ℤ G n).map
+          (ofDiscreteModuleMap G B C S.proj S.proj_continuous S.proj_equivariant)).hom :=
+  sorry
+
+/-- **Layer 10, naturality of `delta` in a morphism of short exact coefficient complexes.** -/
+theorem delta_naturality [CompactSpace G] [TotallyDisconnectedSpace G]
+    (S T : DiscreteShortExact G A B C)
+    (F : S.toShortComplex G A B C ⟶ T.toShortComplex G A B C) (n : ℕ) :
+    delta G A B C S n ≫ (continuousCohomology ℤ G (n + 1)).map F.τ₁ =
+      (continuousCohomology ℤ G n).map F.τ₃ ≫ delta G A B C T n :=
+  sorry
+
+/-- **Layer 10, restriction commutes with the all-degree connecting map.** -/
+theorem delta_res [CompactSpace G] [TotallyDisconnectedSpace G]
+    (S : DiscreteShortExact G A B C) (T : Subgroup G)
+    [CompactSpace T] [TotallyDisconnectedSpace T] (n : ℕ) :
+    delta G A B C S n ≫ res ℤ T (ofDiscreteModule G A) (n + 1) ≫
+        (continuousCohomology ℤ T (n + 1)).map (ofDiscreteModuleRes G A T).hom =
+      res ℤ T (ofDiscreteModule G C) n ≫
+        (continuousCohomology ℤ T n).map (ofDiscreteModuleRes G C T).hom ≫
+          delta T A B C (S.restrict G A B C T) n :=
+  sorry
+
+/-- **Layer 10, inflation commutes with the all-degree connecting map.** `SN` is the induced short
+exact sequence on `N`-invariants; its existence is carried explicitly because invariants do not
+preserve an arbitrary epimorphism without this exactness hypothesis. -/
+theorem delta_infl [CompactSpace G] [TotallyDisconnectedSpace G]
+    (S : DiscreteShortExact G A B C) (N : Subgroup G) [N.Normal]
+    [IsTopologicalGroup (G ⧸ N)] [CompactSpace (G ⧸ N)]
+    [TotallyDisconnectedSpace (G ⧸ N)]
+    [ContinuousSMul (G ⧸ N) (Invariants N A)]
+    [ContinuousSMul (G ⧸ N) (Invariants N B)]
+    [ContinuousSMul (G ⧸ N) (Invariants N C)]
+    (SN : DiscreteShortExact (G ⧸ N) (Invariants N A) (Invariants N B) (Invariants N C))
+    (hincl : ∀ a, ((SN.incl a : Invariants N B) : B) = S.incl (a : A))
+    (hproj : ∀ b, ((SN.proj b : Invariants N C) : C) = S.proj (b : B)) (n : ℕ) :
+    delta (G ⧸ N) (Invariants N A) (Invariants N B) (Invariants N C) SN n ≫
+        (continuousCohomology ℤ (G ⧸ N) (n + 1)).map
+          (ofDiscreteModuleQuotient G A N) ≫
+        infl ℤ N (ofDiscreteModule G A) (n + 1) =
+      (continuousCohomology ℤ (G ⧸ N) n).map (ofDiscreteModuleQuotient G C N) ≫
+        infl ℤ N (ofDiscreteModule G C) n ≫ delta G A B C S n :=
   sorry
 
 /-- **Layer 3, the explicit and canonical connecting maps agree in degree 0.** -/
@@ -1247,6 +1561,59 @@ sequence. It has a real body once the previous statement is available. -/
 noncomputable def explicitResConj1 : H1 G M →+ H1ConjInvariants G M N :=
   AddMonoidHom.codRestrict (explicitRes1 G M N) _ (explicitRes1_mem_conjInvariants G M N)
 
+/-- **Layer 5, the section-dependent lift used by transgression.** It is a continuous 1-cochain on
+`G` extending a representative on `N`; its differential is `N`-invariant and descends to the
+quotient. -/
+noncomputable def transgressionLift [CompactSpace G] [TotallyDisconnectedSpace G]
+    (hN : IsClosed (N : Set G)) (s : G ⧸ N → G) (hs_cont : Continuous s)
+    (hs : ∀ q, QuotientGroup.mk (s q) = q) (y : H1ConjInvariants G M N) : C1 G M :=
+  sorry
+
+/-- **Layer 5, the raw transgression 2-cochain,** obtained by differentiating
+`transgressionLift` and descending through the chosen continuous section. -/
+noncomputable def transgressionCochain [CompactSpace G] [TotallyDisconnectedSpace G]
+    (hN : IsClosed (N : Set G)) (s : G ⧸ N → G) (hs_cont : Continuous s)
+    (hs : ∀ q, QuotientGroup.mk (s q) = q) (y : H1ConjInvariants G M N) :
+    C2 (G ⧸ N) (Invariants N M) :=
+  sorry
+
+/-- **Layer 5, the lift-and-differentiate application formula.** This pins the normalization of
+the raw transgression before quotienting: after inclusion `M^N ↪ M`, its value is `d¹` of the
+named lift at the chosen representatives. -/
+theorem transgressionCochain_apply [CompactSpace G] [TotallyDisconnectedSpace G]
+    (hN : IsClosed (N : Set G)) (s : G ⧸ N → G) (hs_cont : Continuous s)
+    (hs : ∀ q, QuotientGroup.mk (s q) = q) (y : H1ConjInvariants G M N)
+    (q r : G ⧸ N) :
+    (((transgressionCochain G M N hN s hs_cont hs y).1 (q, r) : Invariants N M) : M) =
+      d1 G M (transgressionLift G M N hN s hs_cont hs y) (s q, s r) :=
+  sorry
+
+/-- **Layer 5, the raw transgression is a cocycle.** -/
+theorem transgressionCochain_isCocycle [CompactSpace G] [TotallyDisconnectedSpace G]
+    (hN : IsClosed (N : Set G)) (s : G ⧸ N → G) (hs_cont : Continuous s)
+    (hs : ∀ q, QuotientGroup.mk (s q) = q) (y : H1ConjInvariants G M N) :
+    (transgressionCochain G M N hN s hs_cont hs y :
+      (G ⧸ N) × (G ⧸ N) → Invariants N M) ∈ Z2 (G ⧸ N) (Invariants N M) :=
+  sorry
+
+/-- The raw cochain bundled as a 2-cocycle. -/
+noncomputable def transgressionCocycle [CompactSpace G] [TotallyDisconnectedSpace G]
+    (hN : IsClosed (N : Set G)) (s : G ⧸ N → G) (hs_cont : Continuous s)
+    (hs : ∀ q, QuotientGroup.mk (s q) = q) (y : H1ConjInvariants G M N) :
+    Z2 (G ⧸ N) (Invariants N M) :=
+  sorry
+
+/-- **Layer 5, change of section is an explicit coboundary.** This is proved before passing to
+`H²`; it is the choice-independence mechanism for the public transgression. -/
+theorem transgression_changeSection [CompactSpace G] [TotallyDisconnectedSpace G]
+    (hN : IsClosed (N : Set G)) (s s' : G ⧸ N → G) (hs_cont : Continuous s)
+    (hs'_cont : Continuous s') (hs : ∀ q, QuotientGroup.mk (s q) = q)
+    (hs' : ∀ q, QuotientGroup.mk (s' q) = q) (y : H1ConjInvariants G M N) :
+    (transgressionCochain G M N hN s hs_cont hs y :
+        (G ⧸ N) × (G ⧸ N) → Invariants N M) -
+      transgressionCochain G M N hN s' hs'_cont hs' y ∈ B2 (G ⧸ N) (Invariants N M) :=
+  sorry
+
 /-- **Layer 5, the transgression** `tg : H¹(N, M)^{G ⧸ N} → H²(G ⧸ N, M^N)`, defined by lifting a
 cocycle on `N` through a **continuous section** of `G → G ⧸ N` supplied by Layer 0 and
 differentiating, and independent of the section chosen as an identity of classes. Profiniteness of
@@ -1255,6 +1622,14 @@ for an arbitrary topological group. -/
 noncomputable def transgression [CompactSpace G] [TotallyDisconnectedSpace G]
     (hN : IsClosed (N : Set G)) :
     H1ConjInvariants G M N →+ H2 (G ⧸ N) (Invariants N M) :=
+  sorry
+
+/-- **Layer 5, the public transgression is the class of the raw cochain.** -/
+theorem transgression_apply [CompactSpace G] [TotallyDisconnectedSpace G]
+    (hN : IsClosed (N : Set G)) (s : G ⧸ N → G) (hs_cont : Continuous s)
+    (hs : ∀ q, QuotientGroup.mk (s q) = q) (y : H1ConjInvariants G M N) :
+    transgression G M N hN y =
+      H2pi (G ⧸ N) (Invariants N M) (transgressionCocycle G M N hN s hs_cont hs y) :=
   sorry
 
 /-- **Layer 5, the five-term sequence is exact at `H¹(N, M)^{G ⧸ N}`** (NSW (1.6.7)). -/
@@ -1340,6 +1715,30 @@ example {G : Type*} [Group G] {M : Type*} [AddCommGroup M] [DistribMulAction G M
       U.index • f γ + (γ • (∑ v : G ⧸ U, f (t v)) - ∑ v : G ⧸ U, f (t v)) :=
   sorry
 
+section LowDegreeCorestrictionLaws
+
+variable (G : Type u) [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+  (M : Type u) [AddCommGroup M] [TopologicalSpace M] [IsTopologicalAddGroup M]
+  [DiscreteTopology M] [DistribMulAction G M] [ContinuousSMul G M]
+  (U : OpenSubgroup G) [Fintype (G ⧸ U.toSubgroup)]
+
+/-- **Layer 6, `cor ∘ res = index` in degree 0.** -/
+theorem explicitCor_comp_res0 (x : H0 G M) :
+    explicitCor0 G M U (explicitRes0 G M U.toSubgroup x) = U.toSubgroup.index • x :=
+  sorry
+
+/-- **Layer 6, `cor ∘ res = index` in degree 1,** after the explicit coboundary correction. -/
+theorem explicitCor_comp_res1 (x : H1 G M) :
+    explicitCor1 G M U (explicitRes1 G M U.toSubgroup x) = U.toSubgroup.index • x :=
+  sorry
+
+/-- **Layer 6, `cor ∘ res = index` in degree 2,** after the explicit 1-cochain correction. -/
+theorem explicitCor_comp_res2 (x : H2 G M) :
+    explicitCor2 G M U (explicitRes2 G M U.toSubgroup x) = U.toSubgroup.index • x :=
+  sorry
+
+end LowDegreeCorestrictionLaws
+
 /-! ### Layer 7: coinduction -/
 
 /-- **Layer 7, uniform local constancy.** On a compact topological group a locally constant
@@ -1423,12 +1822,112 @@ theorem coindFunctor_preservesMonomorphisms (H : Subgroup G) (hH : IsClosed (H :
     (coindFunctor R H hH).PreservesMonomorphisms :=
   sorry
 
-/-- **Layer 7, Shapiro's lemma in every degree,** as an isomorphism in the category the canonical
-cohomology objects live in. Closedness of `H` is what supplies the inverse map. -/
+noncomputable instance coindFunctor_preservesZeroMorphisms (H : Subgroup G)
+    (hH : IsClosed (H : Set G)) : (coindFunctor R H hH).PreservesZeroMorphisms :=
+  sorry
+
+/-- **Layer 7, exactness of coinduction on a specified short exact sequence.** This includes
+exactness at the middle object; preservation of monos and epis alone is not used as a substitute. -/
+theorem coindFunctor_map_shortExact (H : Subgroup G) (hH : IsClosed (H : Set G))
+    {S : ShortComplex (SmoothDiscreteTopRep R H)} (hS : S.ShortExact) :
+    (S.map (coindFunctor R H hH)).ShortExact :=
+  sorry
+
+/-- **Layer 7, explicit Shapiro in degree 0.** The forward map is evaluation at `1`; its inverse
+uses the continuous quotient section. -/
+noncomputable def explicitShapiro0 (H : Subgroup G) (hH : IsClosed (H : Set G))
+    (A : SmoothDiscreteTopRep R H) :
+    H0 G ((ofSmoothDiscrete R G).obj (coindTopRep R H hH A)).V ≃+
+      H0 H ((ofSmoothDiscrete R H).obj A).V :=
+  sorry
+
+/-- **Layer 7, explicit Shapiro in degree 1.** -/
+noncomputable def explicitShapiro1 (H : Subgroup G) (hH : IsClosed (H : Set G))
+    (A : SmoothDiscreteTopRep R H) :
+    H1 G ((ofSmoothDiscrete R G).obj (coindTopRep R H hH A)).V ≃+
+      H1 H ((ofSmoothDiscrete R H).obj A).V :=
+  sorry
+
+/-- **Layer 7, explicit Shapiro in degree 2.** -/
+noncomputable def explicitShapiro2 (H : Subgroup G) (hH : IsClosed (H : Set G))
+    (A : SmoothDiscreteTopRep R H) :
+    H2 G ((ofSmoothDiscrete R G).obj (coindTopRep R H hH A)).V ≃+
+      H2 H ((ofSmoothDiscrete R H).obj A).V :=
+  sorry
+
+/-- **Layer 7, algebraic coinduction transported into the smooth-discrete topological
+subcategory.** For open `U` this is the `Rep.coind` object from the accepted
+`RepresentationTheory/InductionRestriction` roadmap, transported through Layer 1's dictionary. -/
+noncomputable def algebraicCoindAsSmooth (U : OpenSubgroup G)
+    (A : SmoothDiscreteTopRep R U.toSubgroup) : SmoothDiscreteTopRep R G :=
+  sorry
+
+/-- **Layer 7, the topological/algebraic coinduction comparison for an open subgroup.** -/
+noncomputable def topologicalCoindIsoAlgebraic (U : OpenSubgroup G)
+    (A : SmoothDiscreteTopRep R U.toSubgroup) :
+    coindTopRep R U.toSubgroup U.isClosed A ≅ algebraicCoindAsSmooth R U A :=
+  sorry
+
+/-- **Layer 10, the chain-level Shapiro construction.** The all-degree theorem is induced from
+this isomorphism of Mathlib's actual homogeneous-cochain complexes. -/
+noncomputable def shapiroCochainIso (H : Subgroup G) (hH : IsClosed (H : Set G))
+    (A : SmoothDiscreteTopRep R H) :
+    TopRep.homogeneousCochains ((smoothDiscreteι R G).obj (coindTopRep R H hH A)) ≅
+      TopRep.homogeneousCochains ((smoothDiscreteι R H).obj A) :=
+  sorry
+
+/-- **Layer 10, Shapiro's lemma in every degree,** induced on homology by
+`shapiroCochainIso`. Closedness of `H` is what supplies the inverse chain map. -/
 noncomputable def shapiroIso (H : Subgroup G) (hH : IsClosed (H : Set G))
     (A : SmoothDiscreteTopRep R H) (n : ℕ) :
     (continuousCohomology R G n).obj ((smoothDiscreteι R G).obj (coindTopRep R H hH A)) ≅
       (continuousCohomology R H n).obj ((smoothDiscreteι R H).obj A) :=
+  sorry
+
+/-- The algebraic Shapiro isomorphism transported through the coefficient dictionary. -/
+noncomputable def algebraicShapiroIso (U : OpenSubgroup G)
+    (A : SmoothDiscreteTopRep R U.toSubgroup) (n : ℕ) :
+    (continuousCohomology R G n).obj
+        ((smoothDiscreteι R G).obj (algebraicCoindAsSmooth R U A)) ≅
+      (continuousCohomology R U.toSubgroup n).obj ((smoothDiscreteι R U.toSubgroup).obj A) :=
+  sorry
+
+/-- **Layer 7/10, compatibility of the topological/algebraic comparison with Shapiro.** -/
+theorem topologicalCoindIsoAlgebraic_shapiro (U : OpenSubgroup G)
+    (A : SmoothDiscreteTopRep R U.toSubgroup) (n : ℕ) :
+    (continuousCohomology R G n).map
+          ((smoothDiscreteι R G).map (topologicalCoindIsoAlgebraic R U A).hom) ≫
+        (algebraicShapiroIso R U A n).hom =
+      (shapiroIso R U.toSubgroup U.isClosed A n).hom :=
+  sorry
+
+/-- **Layer 10, the canonical embedding into the trivial-subgroup coinduced module.** -/
+noncomputable def coindEmbedding (hbot : IsClosed ((⊥ : Subgroup G) : Set G))
+    (X : TopRep R G) (hX : IsSmoothDiscrete R X) :
+    X ⟶ (smoothDiscreteι R G).obj
+      (coindTopRep R (⊥ : Subgroup G) hbot (resSmooth R (⊥ : Subgroup G) X hX)) :=
+  sorry
+
+/-- **Layer 10, the quotient used for dimension shifting,**
+`Coind_1^G X / coindEmbedding X`. -/
+noncomputable def dimensionShiftQuotient (hbot : IsClosed ((⊥ : Subgroup G) : Set G))
+    (X : TopRep R G) (hX : IsSmoothDiscrete R X) : SmoothDiscreteTopRep R G :=
+  sorry
+
+/-- **Layer 10, acyclicity of `Coind_1^G A` in every positive degree.** -/
+theorem coindAcyclic (hbot : IsClosed ((⊥ : Subgroup G) : Set G))
+    (A : SmoothDiscreteTopRep R (⊥ : Subgroup G)) (n : ℕ) (hn : 0 < n) :
+    CategoryTheory.Limits.IsZero ((continuousCohomology R G n).obj
+      ((smoothDiscreteι R G).obj (coindTopRep R (⊥ : Subgroup G) hbot A))) :=
+  sorry
+
+/-- **Layer 10, dimension shifting in every positive degree,** derived from the named embedding,
+quotient, long exact sequence, and `coindAcyclic`. -/
+noncomputable def dimensionShiftIso (hbot : IsClosed ((⊥ : Subgroup G) : Set G))
+    (X : TopRep R G) (hX : IsSmoothDiscrete R X) (n : ℕ) (hn : 0 < n) :
+    (continuousCohomology R G (n + 1)).obj X ≅
+      (continuousCohomology R G n).obj
+        ((smoothDiscreteι R G).obj (dimensionShiftQuotient R hbot X hX)) :=
   sorry
 
 /-- **Layer 10, milestone 1: the trace as a morphism of coefficient objects.** A morphism in
@@ -1542,6 +2041,28 @@ theorem corestriction_comp_res (U : OpenSubgroup G) (X : TopRep R G)
 
 end AllDegreeCorestriction
 
+/-- **Layer 10, corestriction commutes with the all-degree connecting map.** The coefficient
+dictionary isomorphisms appear explicitly because the restricted `G`-object and the object built
+directly for `U` are not definitionally equal. -/
+theorem delta_corestriction (G : Type u) [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+    [CompactSpace G] [TotallyDisconnectedSpace G]
+    (A : Type u) [AddCommGroup A] [TopologicalSpace A] [IsTopologicalAddGroup A]
+    [DiscreteTopology A] [DistribMulAction G A] [ContinuousSMul G A]
+    (B : Type u) [AddCommGroup B] [TopologicalSpace B] [IsTopologicalAddGroup B]
+    [DiscreteTopology B] [DistribMulAction G B] [ContinuousSMul G B]
+    (C : Type u) [AddCommGroup C] [TopologicalSpace C] [IsTopologicalAddGroup C]
+    [DiscreteTopology C] [DistribMulAction G C] [ContinuousSMul G C]
+    (S : DiscreteShortExact G A B C) (U : OpenSubgroup G)
+    [CompactSpace U.toSubgroup] [TotallyDisconnectedSpace U.toSubgroup] (n : ℕ) :
+    (continuousCohomology ℤ U.toSubgroup n).map (ofDiscreteModuleRes G C U.toSubgroup).hom ≫
+        delta U.toSubgroup A B C (S.restrict G A B C U.toSubgroup) n ≫
+        (continuousCohomology ℤ U.toSubgroup (n + 1)).map
+          (ofDiscreteModuleRes G A U.toSubgroup).inv ≫
+        corestriction ℤ U (ofDiscreteModule G A) (ofDiscreteModule_isSmoothDiscrete G A) (n + 1) =
+      corestriction ℤ U (ofDiscreteModule G C) (ofDiscreteModule_isSmoothDiscrete G C) n ≫
+        delta G A B C S n :=
+  sorry
+
 /-- **Layers 3 and 10, milestone 5: agreement of the all-degree corestriction with Layer 6's
 explicit transversal formula, in degree 0.** The degree-0 member of the three-statement family
 `explicitIso_cor0`, `explicitIso_cor`, `explicitIso_cor2`. These carry their own binders because
@@ -1551,7 +2072,8 @@ theorem explicitIso_cor0 (G : Type u) [Group G] [TopologicalSpace G] [IsTopologi
     [CompactSpace G] [TotallyDisconnectedSpace G]
     (M : Type u) [AddCommGroup M] [TopologicalSpace M] [IsTopologicalAddGroup M]
     [DiscreteTopology M] [DistribMulAction G M] [ContinuousSMul G M]
-    (U : OpenSubgroup G) [CompactSpace U.toSubgroup] [TotallyDisconnectedSpace U.toSubgroup]
+    (U : OpenSubgroup G) [Fintype (G ⧸ U.toSubgroup)]
+    [CompactSpace U.toSubgroup] [TotallyDisconnectedSpace U.toSubgroup]
     (x : H0 U.toSubgroup M) :
     (corestriction ℤ U (ofDiscreteModule G M) (ofDiscreteModule_isSmoothDiscrete G M) 0).hom
         (((continuousCohomology ℤ U.toSubgroup 0).map
@@ -1566,7 +2088,8 @@ theorem explicitIso_cor (G : Type u) [Group G] [TopologicalSpace G] [IsTopologic
     [CompactSpace G] [TotallyDisconnectedSpace G]
     (M : Type u) [AddCommGroup M] [TopologicalSpace M] [IsTopologicalAddGroup M]
     [DiscreteTopology M] [DistribMulAction G M] [ContinuousSMul G M]
-    (U : OpenSubgroup G) [CompactSpace U.toSubgroup] [TotallyDisconnectedSpace U.toSubgroup]
+    (U : OpenSubgroup G) [Fintype (G ⧸ U.toSubgroup)]
+    [CompactSpace U.toSubgroup] [TotallyDisconnectedSpace U.toSubgroup]
     (x : DiscreteH1 U.toSubgroup M) :
     (corestriction ℤ U (ofDiscreteModule G M) (ofDiscreteModule_isSmoothDiscrete G M) 1).hom
         (((continuousCohomology ℤ U.toSubgroup 1).map
@@ -1583,7 +2106,8 @@ theorem explicitIso_cor2 (G : Type u) [Group G] [TopologicalSpace G] [IsTopologi
     [CompactSpace G] [TotallyDisconnectedSpace G]
     (M : Type u) [AddCommGroup M] [TopologicalSpace M] [IsTopologicalAddGroup M]
     [DiscreteTopology M] [DistribMulAction G M] [ContinuousSMul G M]
-    (U : OpenSubgroup G) [CompactSpace U.toSubgroup] [TotallyDisconnectedSpace U.toSubgroup]
+    (U : OpenSubgroup G) [Fintype (G ⧸ U.toSubgroup)]
+    [CompactSpace U.toSubgroup] [TotallyDisconnectedSpace U.toSubgroup]
     (x : DiscreteH2 U.toSubgroup M) :
     (corestriction ℤ U (ofDiscreteModule G M) (ofDiscreteModule_isSmoothDiscrete G M) 2).hom
         (((continuousCohomology ℤ U.toSubgroup 2).map
@@ -2194,12 +2718,83 @@ noncomputable def cochainDegreeCast {m n : ℕ} (h : m = n) (X : TopRep R G) :
       ((homogeneousCochainsFunctor R G).obj X).X n :=
   fun x => h ▸ x
 
-/-- **Layer 12, milestone 3: the cochain-level product,** on the terms of the complex the carrier
-is the homology of. The Leibniz identity is a statement about this, not about classes. -/
+/-- **Layer 12, milestone 2: the Alexander--Whitney pairing on Mathlib's iterated-coinduction
+resolution.** This is the recursive construction omitted by an endpoint-only `cupCochain`. -/
+noncomputable def resolutionCupPairing {X Y Z : TopRep R G} (P : TopPairing X Y Z) (m n : ℕ) :
+    ((homogeneousCochainsFunctor R G).obj X).X m →ₗ[R]
+      ((homogeneousCochainsFunctor R G).obj Y).X n →ₗ[R]
+        ((homogeneousCochainsFunctor R G).obj Z).X (m + n) :=
+  sorry
+
+/-- The pointwise coefficient-pairing formula used at the base of the recursion. -/
+noncomputable def resolutionCupPairingZeroFormula {X Y Z : TopRep R G}
+    (P : TopPairing X Y Z) (n : ℕ) :
+    ((homogeneousCochainsFunctor R G).obj X).X 0 →ₗ[R]
+      ((homogeneousCochainsFunctor R G).obj Y).X n →ₗ[R]
+        ((homogeneousCochainsFunctor R G).obj Z).X n :=
+  sorry
+
+/-- The Alexander--Whitney head/tail formula used at the successor step. -/
+noncomputable def resolutionCupPairingSuccFormula {X Y Z : TopRep R G}
+    (P : TopPairing X Y Z) (m n : ℕ) :
+    ((homogeneousCochainsFunctor R G).obj X).X (m + 1) →ₗ[R]
+      ((homogeneousCochainsFunctor R G).obj Y).X n →ₗ[R]
+        ((homogeneousCochainsFunctor R G).obj Z).X (m + 1 + n) :=
+  sorry
+
+/-- **Layer 12, the base application equation for the resolution pairing.** The implementation
+expands this theorem to the coefficient pairing on the first iterated continuous-map coordinate. -/
+theorem resolutionCupPairing_apply_zero {X Y Z : TopRep R G} (P : TopPairing X Y Z) (n : ℕ)
+    (a : ((homogeneousCochainsFunctor R G).obj X).X 0)
+    (b : ((homogeneousCochainsFunctor R G).obj Y).X n) :
+    resolutionCupPairing P 0 n a b =
+      cochainDegreeCast (Nat.zero_add n).symm Z (resolutionCupPairingZeroFormula P n a b) :=
+  sorry
+
+/-- **Layer 12, the recursive application equation for the resolution pairing.** In the
+implementation the right side is the Alexander--Whitney head/tail recursion on the iterated
+`C(G,-)` representation; this named theorem is the rewrite interface used by Leibniz. -/
+theorem resolutionCupPairing_apply_succ {X Y Z : TopRep R G} (P : TopPairing X Y Z)
+    (m n : ℕ) (a : ((homogeneousCochainsFunctor R G).obj X).X (m + 1))
+    (b : ((homogeneousCochainsFunctor R G).obj Y).X n) :
+    resolutionCupPairing P (m + 1) n a b = resolutionCupPairingSuccFormula P m n a b :=
+  sorry
+
+/-- **Layer 12, milestone 3: the cochain-level product,** defined from the named pairing on the
+actual resolution. The Leibniz identity is a statement about this, not about classes. -/
 noncomputable def cupCochain {X Y Z : TopRep R G} (P : TopPairing X Y Z) (m n : ℕ) :
     ((homogeneousCochainsFunctor R G).obj X).X m →
       ((homogeneousCochainsFunctor R G).obj Y).X n →
         ((homogeneousCochainsFunctor R G).obj Z).X (m + n) :=
+  fun a b => resolutionCupPairing P m n a b
+
+/-- **Layer 12, the public cochain product is the resolution pairing.** -/
+theorem cupCochain_apply {X Y Z : TopRep R G} (P : TopPairing X Y Z) (m n : ℕ)
+    (a : ((homogeneousCochainsFunctor R G).obj X).X m)
+    (b : ((homogeneousCochainsFunctor R G).obj Y).X n) :
+    cupCochain P m n a b = resolutionCupPairing P m n a b :=
+  rfl
+
+/-- **Layer 12, milestone 7: the named associativity homotopy operator.** Its specification below
+states that its boundary is the difference between the two parenthesizations. -/
+noncomputable def cupAssocHomotopy {A B C D E F : TopRep R G}
+    (μ₁ : TopPairing A B D) (μ₂ : TopPairing D C E)
+    (ν₁ : TopPairing B C F) (ν₂ : TopPairing A F E)
+    (hcoeff : ∀ (a : A.V) (b : B.V) (c : C.V), μ₂.bil (μ₁.bil a b) c = ν₂.bil a (ν₁.bil b c))
+    (p q r : ℕ) :
+    ((homogeneousCochainsFunctor R G).obj A).X p →ₗ[R]
+      ((homogeneousCochainsFunctor R G).obj B).X q →ₗ[R]
+        ((homogeneousCochainsFunctor R G).obj C).X r →ₗ[R]
+          ((homogeneousCochainsFunctor R G).obj E).X (p + q + r).pred :=
+  sorry
+
+/-- **Layer 12, milestone 8: the named graded-commutativity homotopy operator.** -/
+noncomputable def cupCommHomotopy {X Y Z : TopRep R G}
+    (P : TopPairing X Y Z) (Pop : TopPairing Y X Z)
+    (hop : ∀ (x : X.V) (y : Y.V), Pop.bil y x = P.bil x y) (m n : ℕ) :
+    ((homogeneousCochainsFunctor R G).obj X).X m →ₗ[R]
+      ((homogeneousCochainsFunctor R G).obj Y).X n →ₗ[R]
+        ((homogeneousCochainsFunctor R G).obj Z).X (m + n).pred :=
   sorry
 
 /-- **Layer 12, milestone 5: the cup product in bidegree `(m, n)`.** A plain function here
@@ -2254,9 +2849,10 @@ theorem cup_one_left (P : TopPairing Y X X) (u : Y.V) (hinv : ∀ g : G, Y.ρ g 
     cup P 0 n (degreeZeroClass Y u hinv) a = degreeCast (Nat.zero_add n).symm X a :=
   sorry
 
-/-- **Layer 12, milestone 7: associativity,** for the four-pairing input of Layer 8 with its
-coefficient identity. -/
-theorem cup_assoc {A B C D E F : TopRep R G} (μ₁ : TopPairing A B D) (μ₂ : TopPairing D C E)
+/-- **Layer 12, milestone 7: specification of `cupAssocHomotopy`.** Its boundary gives the two
+parenthesizations, hence the following equality on classes. -/
+theorem cupAssocHomotopy_spec {A B C D E F : TopRep R G}
+    (μ₁ : TopPairing A B D) (μ₂ : TopPairing D C E)
     (ν₁ : TopPairing B C F) (ν₂ : TopPairing A F E)
     (hcoeff : ∀ (a : A.V) (b : B.V) (c : C.V), μ₂.bil (μ₁.bil a b) c = ν₂.bil a (ν₁.bil b c))
     (p q r : ℕ) (x : (continuousCohomology R G p).obj A)
@@ -2265,14 +2861,32 @@ theorem cup_assoc {A B C D E F : TopRep R G} (μ₁ : TopPairing A B D) (μ₂ :
       degreeCast (Nat.add_assoc p q r).symm E (cup ν₂ p (q + r) x (cup ν₁ q r y z)) :=
   sorry
 
-/-- **Layer 12, milestone 8: graded commutativity,** on classes, with the opposite pairing given
-by its defining equation. -/
-theorem cup_gradedComm (P : TopPairing X Y Z) (Pop : TopPairing Y X Z)
+/-- **Layer 12, milestone 7: associativity on classes, derived from the named homotopy.** -/
+theorem cup_assoc {A B C D E F : TopRep R G} (μ₁ : TopPairing A B D) (μ₂ : TopPairing D C E)
+    (ν₁ : TopPairing B C F) (ν₂ : TopPairing A F E)
+    (hcoeff : ∀ (a : A.V) (b : B.V) (c : C.V), μ₂.bil (μ₁.bil a b) c = ν₂.bil a (ν₁.bil b c))
+    (p q r : ℕ) (x : (continuousCohomology R G p).obj A)
+    (y : (continuousCohomology R G q).obj B) (z : (continuousCohomology R G r).obj C) :
+    cup μ₂ (p + q) r (cup μ₁ p q x y) z =
+      degreeCast (Nat.add_assoc p q r).symm E (cup ν₂ p (q + r) x (cup ν₁ q r y z)) :=
+  cupAssocHomotopy_spec μ₁ μ₂ ν₁ ν₂ hcoeff p q r x y z
+
+/-- **Layer 12, milestone 8: specification of `cupCommHomotopy`.** -/
+theorem cupCommHomotopy_spec (P : TopPairing X Y Z) (Pop : TopPairing Y X Z)
     (hop : ∀ (x : X.V) (y : Y.V), Pop.bil y x = P.bil x y) (m n : ℕ)
     (a : (continuousCohomology R G m).obj X) (b : (continuousCohomology R G n).obj Y) :
     cup P m n a b =
       ((-1 : R) ^ (m * n)) • degreeCast (Nat.add_comm n m) Z (cup Pop n m b a) :=
   sorry
+
+/-- **Layer 12, milestone 8: graded commutativity on classes, derived from the named
+homotopy.** -/
+theorem cup_gradedComm (P : TopPairing X Y Z) (Pop : TopPairing Y X Z)
+    (hop : ∀ (x : X.V) (y : Y.V), Pop.bil y x = P.bil x y) (m n : ℕ)
+    (a : (continuousCohomology R G m).obj X) (b : (continuousCohomology R G n).obj Y) :
+    cup P m n a b =
+      ((-1 : R) ^ (m * n)) • degreeCast (Nat.add_comm n m) Z (cup Pop n m b a) :=
+  cupCommHomotopy_spec P Pop hop m n a b
 
 /-- **Layer 12, milestone 9: restriction compatibility.** The restricted pairing is supplied with
 its defining equation, since restriction does not change the coefficient map. -/
@@ -2414,6 +3028,19 @@ noncomputable def explicitCup20 (μ : M →+ N →+ P)
     (hμ : Continuous fun p : M × N => μ p.1 p.2)
     (hequiv : ∀ (g : G) (m : M) (x : N), μ (g • m) (g • x) = g • μ m x) :
     H2 G M →+ H0 G N →+ H2 G P :=
+  sorry
+
+/-- **Layer 8, the low-degree projection formula.** Finite index is explicit because the left and
+right sides both use the finite transversal sum; openness alone is not enough outside the compact
+case. This `(0,1)` shape determines the normalization used by the other low-degree shapes. -/
+theorem explicitCup_projection (U : OpenSubgroup G) [Fintype (G ⧸ U.toSubgroup)]
+    (μ : M →+ N →+ P) (hμ : Continuous fun p : M × N => μ p.1 p.2)
+    (hequiv : ∀ (g : G) (m : M) (x : N), μ (g • m) (g • x) = g • μ m x)
+    (a : H0 G M) (b : H1 U.toSubgroup N) :
+    explicitCor1 G P U
+        (explicitCup01 U.toSubgroup M N P μ hμ
+          (fun g m x => hequiv (g : G) m x) (explicitRes0 G M U.toSubgroup a) b) =
+      explicitCup01 G M N P μ hμ hequiv a (explicitCor1 G N U b) :=
   sorry
 
 /-- **Layer 12, milestone 11: agreement with Layer 8's six explicit shapes** under Layer 3. The
