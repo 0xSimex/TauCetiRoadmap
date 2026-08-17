@@ -33,6 +33,7 @@ body:
         - JacobianChallenge
         - ModularForms
         - Multiquadratic
+        - NumberFieldArithmetic
         - OneParameterSemigroups
         - OptimalTransport
         - PDE

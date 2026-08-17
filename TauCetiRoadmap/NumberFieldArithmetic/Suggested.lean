@@ -1,4 +1,4 @@
-import Mathlib
+import TauCetiRoadmap.LocalFieldsRamification.Suggested
 
 /-!
 # Number fields: ramification, Frobenius, and the LMFDB invariants: target signatures
@@ -16,6 +16,8 @@ milestone:
 
 * three statements in the Layer 5.7 block are proved `by infer_instance`, because the pin
   already supplies them and the milestone is to cite them rather than to prove them;
+* the Layer 5.8 and Layer 6 supplier checks are closed applications of #189's imported
+  declarations, so namespace and type mismatches are caught by elaboration;
 
 Every carrier and every cross-subject interface in this file compiles as a named declaration.
 That includes `artinSymbol` with `artinSymbol_map_restrictNormalHom` and
@@ -26,9 +28,9 @@ That includes `artinSymbol` with `artinSymbol_map_restrictNormalHom` and
 `artinHomAwayIntegral_apply_prime`, `exists_gal_fullCycleType_eq_factorizationType`,
 `relDiscr`, `ramifiedSupport`, the three
 Layer 5 comparison maps, the global `ramificationGroup`, and the unit-certificate candidate sets
-`unitCandidates` and `cubicUnitCandidates`. The local lower filtration is not declared here:
-Layer 6 consumes `LocalFieldsRamification.lowerRamificationGroup` from the prerequisite Local
-Fields and Ramification roadmap #189.
+`unitCandidates` and `cubicUnitCandidates`. The local lower filtration is not redeclared here:
+Layer 6 imports and consumes `LocalFieldsRamification.lowerRamificationGroup` from the
+prerequisite Local Fields and Ramification roadmap #189.
 
 Conventions, recorded in `README.md`:
 
@@ -456,6 +458,19 @@ theorem complexConjugationAt_restrictNormal {L : Type*} [Field L] [NumberField L
       complexConjugationAt (K := K) (w.comap (M.val : M →+* L)) hwM hvM :=
   sorry
 
+/-- **Layer 2.7, the real branch of restriction in a normal tower.** If the induced place of
+the intermediate field is real, ordinary complex conjugation fixes its image pointwise, so the
+restricted automorphism is the identity. Together with `complexConjugationAt_restrictNormal`
+this exhausts the two tower-restriction cases. -/
+theorem complexConjugationAt_restrictNormal_eq_one_of_isReal
+    {L : Type*} [Field L] [NumberField L]
+    [Algebra K L] [IsGalois K L] (w : NumberField.InfinitePlace L) (hw : w.IsComplex)
+    (hv : (w.comap (algebraMap K L)).IsReal) (M : IntermediateField K L)
+    [NumberField M] [Normal K M] [IsGalois K M]
+    (hwM : (w.comap (M.val : M →+* L)).IsReal) :
+    (complexConjugationAt w hw hv).restrictNormal M = 1 :=
+  sorry
+
 /-! ## Layer 3: the index, Dedekind–Kummer, and Dedekind's theorem -/
 
 /-- **Layer 3.1, the carrier for the power-basis index.** ⚠ The index must not be defined by a
@@ -777,6 +792,13 @@ theorem isNonarchimedeanLocalField_adicCompletion
     IsNonarchimedeanLocalField (v.adicCompletion K) :=
   sorry
 
+/-- **Layer 5.1, the supplier-facing local instance.** This wrapper lets the imported #189
+contracts infer the canonical local-field structure rather than accepting an unrelated one. -/
+noncomputable local instance adicCompletionIsNonarchimedeanLocalField
+    (v : HeightOneSpectrum (𝓞 K)) :
+    IsNonarchimedeanLocalField (v.adicCompletion K) :=
+  isNonarchimedeanLocalField_adicCompletion v
+
 /-- **Layer 5.2, the canonical completion of an extension**, as an object. For `w ∣ v` there is
 exactly one continuous ring map `K_v → L_w` compatible with `K → L`, and this is it; every
 theorem below is about this map. -/
@@ -868,7 +890,8 @@ example {L : Type*} [Field L] [NumberField L] [Algebra K L]
     ContinuousSMul (v.adicCompletion K) (w.adicCompletion L) :=
   sorry
 
-example {L : Type*} [Field L] [NumberField L] [Algebra K L]
+noncomputable local instance completionModuleFinite
+    {L : Type*} [Field L] [NumberField L] [Algebra K L]
     (v : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 L))
     [w.asIdeal.LiesOver v.asIdeal] :
     Module.Finite (v.adicCompletion K) (w.adicCompletion L) :=
@@ -974,6 +997,16 @@ example {L : Type*} [Field L] [NumberField L] [Algebra K L] [IsGalois K L]
     Function.Bijective (decompositionHom v w) :=
   sorry
 
+/-- **Layer 5.6, the supplier-facing local Galois instance.** It is obtained from the
+decomposition-group equivalence above, and lets #189's Galois-only filtration theorem be
+applied to the canonical completion rather than to an abstract local extension. -/
+noncomputable local instance completionIsGalois
+    {L : Type*} [Field L] [NumberField L] [Algebra K L] [IsGalois K L]
+    (v : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 L))
+    [w.asIdeal.LiesOver v.asIdeal] :
+    IsGalois (v.adicCompletion K) (w.adicCompletion L) :=
+  sorry
+
 /-- **Layer 5.7, the canonical map on completed integer rings**, as a named map. The completion
 map carries `𝓞_{K_v}` into `𝓞_{L_w}`, and this is that restriction. -/
 noncomputable def completionIntegersAlgHom {L : Type*} [Field L] [NumberField L] [Algebra K L]
@@ -1060,7 +1093,8 @@ example {L : Type*} [Field L] [NumberField L] [Algebra K L]
 /-- **Layer 5.7, separability of the local fraction-field extension.** ⚠ Not an instance at the
 pin: the completions have characteristic zero, but `CharZero (v.adicCompletion K)` is itself not
 an instance there, so nothing fires. It is a milestone, not a citation. -/
-example {L : Type*} [Field L] [NumberField L] [Algebra K L]
+noncomputable local instance completionIsSeparable
+    {L : Type*} [Field L] [NumberField L] [Algebra K L]
     (v : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 L))
     [w.asIdeal.LiesOver v.asIdeal] :
     Algebra.IsSeparable (v.adicCompletion K) (w.adicCompletion L) :=
@@ -1097,7 +1131,8 @@ example {L : Type*} [Field L] [NumberField L] [Algebra K L]
     [w.asIdeal.LiesOver v.asIdeal] :
     ∃ x : w.adicCompletionIntegers L,
       Algebra.adjoin (v.adicCompletionIntegers K) {x} = ⊤ :=
-  sorry
+  LocalFieldsRamification.exists_integerRing_adjoin_eq_top
+    (v.adicCompletion K) (w.adicCompletion L)
 
 /-- **Layer 5.8, the field-level form of the imported generator.** This is the adapter used by
 global completion arguments; the ring-level supplier theorem is stronger. -/
@@ -1136,9 +1171,65 @@ This layer computes the exponents of the different and of the discriminant from 
 the Local Fields and Ramification roadmap #189. It builds no local ramification theory.
 
 Layer 6.1 imports the canonical `ℤ`-indexed
-`LocalFieldsRamification.lowerRamificationGroup`; it deliberately has no declaration in this
-standalone prototype while #189 is a separate prerequisite PR. In the combined tree, Layer 6.2's
-comparison below uses that fully qualified name at index `(i : ℤ)`. -/
+`LocalFieldsRamification.lowerRamificationGroup`. The closed checks below apply all five #189
+contracts used by this roadmap to the canonical completions, so changes to the supplier's
+namespace, hypotheses, or result types fail elaboration here. -/
+
+/-- **Layer 6.1, imported lower filtration, closed supplier check.** The negative-index
+convention is applied at the canonical completion; no local alias or duplicate group is used. -/
+example {L : Type*} [Field L] [NumberField L] [Algebra K L] [IsGalois K L]
+    (v : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 L))
+    [w.asIdeal.LiesOver v.asIdeal] :
+    LocalFieldsRamification.lowerRamificationGroup
+        (v.adicCompletion K) (w.adicCompletion L) (-1) = ⊤ :=
+  LocalFieldsRamification.lowerRamificationGroup_eq_top_of_le_neg_one
+    (v.adicCompletion K) (w.adicCompletion L) (-1) (by omega)
+
+/-- **Layer 6.1, imported Hilbert different formula, closed supplier check.** -/
+example {L : Type*} [Field L] [NumberField L] [Algebra K L] [IsGalois K L]
+    (v : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 L))
+    [w.asIdeal.LiesOver v.asIdeal] :
+    LocalFieldsRamification.differentExponent
+        (v.adicCompletion K) (w.adicCompletion L) =
+      ∑ᶠ i : ℕ, (Nat.card (LocalFieldsRamification.lowerRamificationGroup
+        (v.adicCompletion K) (w.adicCompletion L) (i : ℤ)) - 1) :=
+  LocalFieldsRamification.differentExponent_eq_finsum_lowerRamificationGroup
+    (v.adicCompletion K) (w.adicCompletion L)
+
+/-- **Layer 6.1, imported tame equality criterion, closed supplier check.** -/
+example {L : Type*} [Field L] [NumberField L] [Algebra K L]
+    (v : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 L))
+    [w.asIdeal.LiesOver v.asIdeal] :
+    LocalFieldsRamification.differentExponent
+        (v.adicCompletion K) (w.adicCompletion L) =
+        LocalFieldsRamification.ramificationIndex
+          (v.adicCompletion K) (w.adicCompletion L) - 1 ↔
+      LocalFieldsRamification.IsTamelyRamified
+        (v.adicCompletion K) (w.adicCompletion L) :=
+  LocalFieldsRamification.differentExponent_eq_ramificationIndex_sub_one_iff
+    (v.adicCompletion K) (w.adicCompletion L)
+
+/-- **Layer 6.1, imported wild bounds, closed supplier check.** -/
+example {L : Type*} [Field L] [NumberField L] [Algebra K L]
+    (v : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 L))
+    [w.asIdeal.LiesOver v.asIdeal]
+    (hwild : LocalFieldsRamification.IsWildlyRamified
+      (v.adicCompletion K) (w.adicCompletion L))
+    (he : (LocalFieldsRamification.ramificationIndex
+      (v.adicCompletion K) (w.adicCompletion L) : w.adicCompletion L) ≠ 0) :
+    LocalFieldsRamification.ramificationIndex
+          (v.adicCompletion K) (w.adicCompletion L) ≤
+        LocalFieldsRamification.differentExponent
+          (v.adicCompletion K) (w.adicCompletion L) ∧
+      LocalFieldsRamification.differentExponent
+          (v.adicCompletion K) (w.adicCompletion L) ≤
+        LocalFieldsRamification.ramificationIndex
+            (v.adicCompletion K) (w.adicCompletion L) - 1 +
+          LocalFieldsRamification.natCastValuation (w.adicCompletion L)
+            (LocalFieldsRamification.ramificationIndex
+              (v.adicCompletion K) (w.adicCompletion L)) he :=
+  LocalFieldsRamification.differentExponent_bounds_of_wild
+    (v.adicCompletion K) (w.adicCompletion L) hwild he
 
 /-- **Layer 6.2, the global lower filtration.** Indexed by `ℕ`, so `G 0` is inertia; the
 decomposition group keeps its own name and is never `G (-1)`. The definition is the easy part;
@@ -1156,11 +1247,19 @@ example {L : Type*} [Field L] [NumberField L] [Algebra K L] (Q : Ideal (𝓞 L))
     ramificationGroup (K := K) Q 0 = Q.inertia (L ≃ₐ[K] L) :=
   sorry
 
-/-! **Layer 6.2, comparison contract.** In the combined tree the target conclusion is
-`decompositionHom v w σ ∈
-LocalFieldsRamification.lowerRamificationGroup (v.adicCompletion K)
-  (w.adicCompletion L) (i : ℤ)` if and only if the underlying global automorphism lies in
-`ramificationGroup Q i`. `README.md` is normative; no temporary alias is introduced here. -/
+/-- **Layer 6.2, the global/local lower-filtration comparison.** This is the actual imported
+supplier type, not a prose placeholder: membership is transported along the named
+`decompositionHom` at the integer index `(i : ℤ)`. -/
+theorem mem_ramificationGroup_iff_mem_lowerRamificationGroup
+    {L : Type*} [Field L] [NumberField L] [Algebra K L] [IsGalois K L]
+    (v : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 L))
+    [w.asIdeal.LiesOver v.asIdeal] (i : ℕ)
+    (σ : MulAction.stabilizer (L ≃ₐ[K] L) w.asIdeal) :
+    (σ : L ≃ₐ[K] L) ∈ ramificationGroup (K := K) w.asIdeal i ↔
+      decompositionHom v w σ ∈
+        LocalFieldsRamification.lowerRamificationGroup
+          (v.adicCompletion K) (w.adicCompletion L) (i : ℤ) :=
+  sorry
 
 /-- **Layer 6.3, the different-exponent formula** `v_Q(𝔡) = Σ_{i ≥ 0} (#G_i − 1)`.
 Apply #189's Hilbert local different formula to the canonical completion, use Layer 6.2's
@@ -1186,9 +1285,22 @@ theorem multiplicity_differentIdeal_eq_ramificationIdx_sub_one_of_tame
       P.ramificationIdx (𝓞 K) - 1 :=
   sorry
 
+/-- **Layer 6.4, the missing exponent bridge.** The normalized valuation of a natural-number
+cast in the completion is the multiplicity of the global prime in the corresponding principal
+ideal. The proof uses `maximalIdeal_map_completion`, its power compatibility and contraction,
+and the DVR valuation/multiplicity characterization. -/
+theorem natCastValuation_completion_eq_multiplicity_span
+    {L : Type*} [Field L] [NumberField L] [Algebra K L]
+    (v : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 L))
+    [w.asIdeal.LiesOver v.asIdeal] (n : ℕ) (hn : (n : w.adicCompletion L) ≠ 0) :
+    LocalFieldsRamification.natCastValuation (w.adicCompletion L) n hn =
+      multiplicity w.asIdeal (Ideal.span {(n : 𝓞 L)}) :=
+  sorry
+
 /-- **Layer 6.4, the wild bounds**, restricted to number fields and imported from #189's local
 different bounds. Here `v_P(e)` is the multiplicity of `P` in the ideal generated by `e`, in the
-same normalization as `v_P(𝔡)`; Layer 5.9 supplies the transport. -/
+same normalization as `v_P(𝔡)`; the preceding natural-cast theorem supplies the exponent bridge,
+while Layer 5.9 transports the different itself. -/
 example {L : Type*} [Field L] [NumberField L] [Algebra K L]
     {p : Ideal (𝓞 K)} [p.IsMaximal] (hp : p ≠ ⊥)
     {P : Ideal (𝓞 L)} [P.IsPrime] [P.LiesOver p]
@@ -1202,9 +1314,10 @@ example {L : Type*} [Field L] [NumberField L] [Algebra K L]
 
 /-- **Layer 6.5, the permutation-action discriminant exponent formula.** Both sides are
 integers and no conductor object appears: `#(G i ⊓ H)` is the number of elements of `G i`
-fixing the base point of `G/H`, so the right-hand side is a fixed-point count for the
-permutation action. A future ArtinRepresentations roadmap may recognize this integer as an
-Artin conductor; that identification is theirs and is needed by nothing here. -/
+fixing the chosen base point of `G/H`, so each summand counts the elements of `G i` that move
+that base point. It is not the number of fixed cosets. A future ArtinRepresentations roadmap
+may recognize this integer as an Artin conductor; that identification is theirs and is needed
+by nothing here. -/
 example {L : Type*} [Field L] [NumberField L] [IsGalois ℚ L] (M : IntermediateField ℚ L)
     (Q : Ideal (𝓞 L)) [Q.IsPrime] (hQ : Q ≠ ⊥) :
     Q.ramificationIdx (𝓞 M) *
@@ -1215,6 +1328,106 @@ example {L : Type*} [Field L] [NumberField L] [IsGalois ℚ L] (M : Intermediate
   sorry
 
 /-! ## Layer 7: subfields, integral bases, monogenicity, and explicit units -/
+
+/-! ### Layer 7.1: a specified normal closure and its intrinsic permutation action -/
+
+/-- **Layer 7.1, the Galois-closure carrier.** Besides the chosen embedding `K → M`, it records
+the actual normal-closure condition: the conjugates of the embedded copy of `K` generate `M`.
+Merely assuming that `M/ℚ` is Galois would not make the permutation action faithful. -/
+structure NormalClosureData (K M : Type*) [Field K] [NumberField K]
+    [Field M] [NumberField M] [IsGalois ℚ M] where
+  embedding : K →ₐ[ℚ] M
+  adjoin_orbit_eq_top :
+    Algebra.adjoin ℚ
+      (Set.range fun p : (M ≃ₐ[ℚ] M) × K => p.1 (embedding p.2)) = ⊤
+
+/-- **Layer 7.1, the canonical finite carrier.** The Galois group acts on the `ℚ`-embeddings
+of `K` into its specified normal closure by postcomposition. -/
+noncomputable def NormalClosureData.embeddingAction
+    {K M : Type*} [Field K] [NumberField K]
+    [Field M] [NumberField M] [IsGalois ℚ M] (N : NormalClosureData K M) :
+    (M ≃ₐ[ℚ] M) →* Equiv.Perm (K →ₐ[ℚ] M) :=
+  sorry
+
+/-- **Layer 7.1, characteristic formula for the action.** -/
+theorem NormalClosureData.embeddingAction_apply
+    {K M : Type*} [Field K] [NumberField K]
+    [Field M] [NumberField M] [IsGalois ℚ M] (N : NormalClosureData K M)
+    (σ : M ≃ₐ[ℚ] M) (φ : K →ₐ[ℚ] M) :
+    N.embeddingAction σ φ = σ.toAlgHom.comp φ :=
+  sorry
+
+/-- **Layer 7.1, faithfulness.** An automorphism fixing every conjugate of `K` fixes their
+compositum, which is all of `M` by `adjoin_orbit_eq_top`. -/
+theorem NormalClosureData.embeddingAction_injective
+    {K M : Type*} [Field K] [NumberField K]
+    [Field M] [NumberField M] [IsGalois ℚ M] (N : NormalClosureData K M) :
+    Function.Injective N.embeddingAction :=
+  sorry
+
+/-- **Layer 7.1, transitivity on embeddings.** This is the intrinsic form of the transitive
+permutation representation, before choosing coordinates `Fin n`. -/
+theorem NormalClosureData.embeddingAction_isPretransitive
+    {K M : Type*} [Field K] [NumberField K]
+    [Field M] [NumberField M] [IsGalois ℚ M] (N : NormalClosureData K M)
+    (φ ψ : K →ₐ[ℚ] M) :
+    ∃ σ : M ≃ₐ[ℚ] M, N.embeddingAction σ φ = ψ :=
+  sorry
+
+/-- **Layer 7.1, the intrinsic carrier has cardinality `[K : ℚ]`.** -/
+theorem NormalClosureData.card_embeddings
+    {K M : Type*} [Field K] [NumberField K]
+    [Field M] [NumberField M] [IsGalois ℚ M] (N : NormalClosureData K M) :
+    Fintype.card (K →ₐ[ℚ] M) = Module.finrank ℚ K :=
+  sorry
+
+/-- **Layer 7.1, the subgroup fixing the chosen copy of `K`.** This is the precise carrier
+denoted `Gal(M/K)` in the prose. -/
+def NormalClosureData.fixingSubgroup
+    {K M : Type*} [Field K] [NumberField K]
+    [Field M] [NumberField M] [IsGalois ℚ M] (N : NormalClosureData K M) :
+    Subgroup (M ≃ₐ[ℚ] M) where
+  carrier := {σ | σ.toAlgHom.comp N.embedding = N.embedding}
+  one_mem' := sorry
+  mul_mem' := sorry
+  inv_mem' := sorry
+
+/-- **Layer 7.1, the subfield/subgroup-interval dictionary.** The `OrderDual` records the
+order reversal, and the subtype records exactly the interval of subgroups containing
+`Gal(M/K)`. -/
+noncomputable def NormalClosureData.subfieldEquivSubgroupInterval
+    {K M : Type*} [Field K] [NumberField K]
+    [Field M] [NumberField M] [IsGalois ℚ M] (N : NormalClosureData K M) :
+    IntermediateField ℚ K ≃o
+      OrderDual {H : Subgroup (M ≃ₐ[ℚ] M) // N.fixingSubgroup ≤ H} :=
+  sorry
+
+/-- **Layer 7.1, coordinates in `S_n`.** Only a chosen equivalence of the intrinsic embedding
+set with `Fin n` turns the canonical action into this coordinate-dependent representation. -/
+noncomputable def NormalClosureData.permutationEmbedding
+    {K M : Type*} [Field K] [NumberField K]
+    [Field M] [NumberField M] [IsGalois ℚ M] (N : NormalClosureData K M)
+    (e : (K →ₐ[ℚ] M) ≃ Fin (Module.finrank ℚ K)) :
+    (M ≃ₐ[ℚ] M) →* Equiv.Perm (Fin (Module.finrank ℚ K)) :=
+  sorry
+
+theorem NormalClosureData.permutationEmbedding_injective
+    {K M : Type*} [Field K] [NumberField K]
+    [Field M] [NumberField M] [IsGalois ℚ M] (N : NormalClosureData K M)
+    (e : (K →ₐ[ℚ] M) ≃ Fin (Module.finrank ℚ K)) :
+    Function.Injective (N.permutationEmbedding e) :=
+  sorry
+
+/-- **Layer 7.1, independence of the coordinate choice.** Replacing the identification with
+`Fin n` conjugates the image in `S_n`; it does not define a different intrinsic action. -/
+theorem NormalClosureData.permutationEmbedding_change_equiv
+    {K M : Type*} [Field K] [NumberField K]
+    [Field M] [NumberField M] [IsGalois ℚ M] (N : NormalClosureData K M)
+    (e e' : (K →ₐ[ℚ] M) ≃ Fin (Module.finrank ℚ K)) :
+    ∃ τ : Equiv.Perm (Fin (Module.finrank ℚ K)), ∀ σ : M ≃ₐ[ℚ] M,
+      N.permutationEmbedding e' σ =
+        τ * N.permutationEmbedding e σ * τ⁻¹ :=
+  sorry
 
 /-- **Layer 7.3, the monogenicity predicate.** Suggested public name and carrier:
 `NumberField.IsMonogenic K`, a property of the field; it is declared in this roadmap's own
@@ -1251,6 +1464,17 @@ but nothing upstream certifies that a *named* unit generates modulo torsion, so 
 regulator value can be asserted without this. In rank one there are exactly two infinite
 places, `w v = 1` characterizes torsion for either of them, and generation is minimality: no
 unit lies strictly between `1` and `u`. -/
+theorem logEmbedding_norm_lt_iff_at_place
+    (hrank : NumberField.Units.rank K = 1) (w : NumberField.InfinitePlace K)
+    (u v : (𝓞 K)ˣ) (hu : 1 < w ((u : 𝓞 K) : K)) :
+    ‖NumberField.Units.logEmbedding K (Additive.ofMul v)‖ <
+        ‖NumberField.Units.logEmbedding K (Additive.ofMul u)‖ ↔
+      |Real.log (w ((v : 𝓞 K) : K))| < Real.log (w ((u : 𝓞 K) : K)) :=
+  sorry
+
+/-- **Layer 7.4, explicit unit certification, the chosen-place form.** The preceding comparison
+is what turns the intrinsic log-embedding criterion into this real-place inequality; the
+multiplicity convention is already built into `NumberField.Units.logEmbedding`. -/
 example (hrank : NumberField.Units.rank K = 1) (w : NumberField.InfinitePlace K)
     (u : (𝓞 K)ˣ) (hu0 : u ∉ NumberField.Units.torsion K)
     (hu : 1 < w ((u : 𝓞 K) : K)) :
@@ -1670,9 +1894,39 @@ variable {β : 𝓞 K} (hβ : (2 : K) * (β : K) = (θ : K) ^ 2 - (θ : K))
 example : β ^ 3 - 2 * β ^ 2 + 3 * β - 10 = 0 :=
   sorry
 
+/-- The explicit intermediate order generated by `θ` and `β`. Naming it prevents the
+squarefree-discriminant argument from jumping directly to a basis of the full integer ring. -/
+def dedekindOrder : Subalgebra ℤ (𝓞 K) :=
+  Algebra.adjoin ℤ ({θ, β} : Set (𝓞 K))
+
+theorem dedekindOrder_eq_span :
+    (dedekindOrder (K := K) θ β).toSubmodule =
+      Submodule.span ℤ ({1, θ, β} : Set (𝓞 K)) :=
+  sorry
+
+/-- The basis calculation is performed in the intermediate order itself. -/
+theorem discr_dedekindOrder :
+    ∃ b : Module.Basis (Fin 3) ℤ (dedekindOrder (K := K) θ β),
+      Algebra.discr ℤ b = -503 :=
+  sorry
+
+/-- The additive index of the intermediate order in the full ring of integers. -/
+noncomputable def dedekindOrderIndex : ℕ :=
+  Nat.card ((𝓞 K) ⧸ (dedekindOrder (K := K) θ β).toSubmodule)
+
+/-- The general order-index/discriminant formula specialized to this explicit order. -/
+theorem index_dedekindOrder_sq_mul_discr :
+    (-503 : ℤ) = (dedekindOrderIndex (K := K) θ β : ℤ) ^ 2 * NumberField.discr K :=
+  sorry
+
+/-- Squarefreeness of `503` forces the intermediate order to have index one. -/
+theorem dedekindOrder_eq_ringOfIntegers :
+    dedekindOrder (K := K) θ β = ⊤ :=
+  sorry
+
 /-- The integral basis `(1, θ, β)` has squarefree discriminant `-503`; hence its order is the
-full ring of integers. This is the source of `discr K = -503` and `index θ = 2`, not a
-consequence of either assertion. -/
+full ring of integers by `dedekindOrder_eq_ringOfIntegers`. This is the source of
+`discr K = -503` and `index θ = 2`, not a consequence of either assertion. -/
 example : ∃ b : Module.Basis (Fin 3) ℤ (𝓞 K),
     b 0 = 1 ∧ b 1 = θ ∧ b 2 = β ∧ Algebra.discr ℤ b = -503 :=
   sorry
@@ -1681,8 +1935,70 @@ example : NumberField.discr K = -503 := sorry
 
 example : HasLMFDBIntrinsicLabel K 3 1 503 := sorry
 
-/-- The index-divisor caveat as a theorem: `2` splits completely even though
-`f mod 2 = x²(x+1)`, so the polynomial factorization does *not* compute the splitting here. -/
+/-- The three explicit factors of `(2)`, defined in the full ring of integers. -/
+def dedekindPrimeOne : Ideal (𝓞 K) :=
+  Ideal.span ({(2 : 𝓞 K), θ, β} : Set (𝓞 K))
+
+def dedekindPrimeTwo : Ideal (𝓞 K) :=
+  Ideal.span ({(2 : 𝓞 K), θ, β - 1} : Set (𝓞 K))
+
+def dedekindPrimeThree : Ideal (𝓞 K) :=
+  Ideal.span ({(2 : 𝓞 K), θ - 1, β - 1} : Set (𝓞 K))
+
+/-- Quotient certificates pin each displayed factor as a degree-one prime above `2`. -/
+noncomputable def dedekindPrimeOneQuotientEquiv :
+    (𝓞 K ⧸ dedekindPrimeOne (K := K) θ β) ≃+* ZMod 2 :=
+  sorry
+
+noncomputable def dedekindPrimeTwoQuotientEquiv :
+    (𝓞 K ⧸ dedekindPrimeTwo (K := K) θ β) ≃+* ZMod 2 :=
+  sorry
+
+noncomputable def dedekindPrimeThreeQuotientEquiv :
+    (𝓞 K ⧸ dedekindPrimeThree (K := K) θ β) ≃+* ZMod 2 :=
+  sorry
+
+theorem dedekindPrimeOne_isMaximal :
+    (dedekindPrimeOne (K := K) θ β).IsMaximal := sorry
+
+theorem dedekindPrimeTwo_isMaximal :
+    (dedekindPrimeTwo (K := K) θ β).IsMaximal := sorry
+
+theorem dedekindPrimeThree_isMaximal :
+    (dedekindPrimeThree (K := K) θ β).IsMaximal := sorry
+
+theorem dedekindPrimes_ne_bot :
+    dedekindPrimeOne (K := K) θ β ≠ ⊥ ∧
+      dedekindPrimeTwo (K := K) θ β ≠ ⊥ ∧
+        dedekindPrimeThree (K := K) θ β ≠ ⊥ :=
+  sorry
+
+theorem dedekindPrimes_lieOver_two :
+    (dedekindPrimeOne (K := K) θ β).LiesOver (Ideal.span {(2 : ℤ)}) ∧
+      (dedekindPrimeTwo (K := K) θ β).LiesOver (Ideal.span {(2 : ℤ)}) ∧
+        (dedekindPrimeThree (K := K) θ β).LiesOver (Ideal.span {(2 : ℤ)}) :=
+  sorry
+
+theorem dedekindPrimes_residue_card :
+    Nat.card (𝓞 K ⧸ dedekindPrimeOne (K := K) θ β) = 2 ∧
+      Nat.card (𝓞 K ⧸ dedekindPrimeTwo (K := K) θ β) = 2 ∧
+        Nat.card (𝓞 K ⧸ dedekindPrimeThree (K := K) θ β) = 2 :=
+  sorry
+
+theorem dedekindPrimes_pairwise_ne :
+    dedekindPrimeOne (K := K) θ β ≠ dedekindPrimeTwo (K := K) θ β ∧
+      dedekindPrimeOne (K := K) θ β ≠ dedekindPrimeThree (K := K) θ β ∧
+        dedekindPrimeTwo (K := K) θ β ≠ dedekindPrimeThree (K := K) θ β :=
+  sorry
+
+theorem dedekindPrimes_product :
+    dedekindPrimeOne (K := K) θ β * dedekindPrimeTwo (K := K) θ β *
+        dedekindPrimeThree (K := K) θ β = Ideal.span {(2 : 𝓞 K)} :=
+  sorry
+
+/-- The index-divisor caveat as a theorem: the three explicit maximal, pairwise-distinct,
+degree-one ideals above `2` prove complete splitting. The polynomial factorization
+`f mod 2 = x²(x+1)` does *not* compute the splitting here. -/
 example : (Ideal.primesOver (Ideal.span {(2 : ℤ)}) (𝓞 K)).ncard = 3 := sorry
 
 /-- The factorization of `(2)` computed in the full integral basis, not by reducing the
@@ -1692,7 +2008,7 @@ example :
         Ideal.span ({(2 : 𝓞 K), θ, β - 1} : Set (𝓞 K)) *
         Ideal.span ({(2 : 𝓞 K), θ - 1, β - 1} : Set (𝓞 K)) =
       Ideal.span {(2 : 𝓞 K)} :=
-  sorry
+  dedekindPrimes_product (K := K) θ β
 
 /-- `2` is a common index divisor: every integral generator has even index. -/
 example : ∀ θ' : IntegralPrimitiveElement K, 2 ∣ index θ' := sorry

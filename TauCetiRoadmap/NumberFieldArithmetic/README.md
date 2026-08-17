@@ -210,7 +210,7 @@ two places.
 | Frobenius | **Arithmetic**: `σ x ≡ x^q mod Q`, with `q = Nat.card (A ⧸ Q.under A)`. This is Mathlib's `AlgHom.IsArithFrobAt` and `IsArithFrobAt`. "Frobenius" unqualified always means arithmetic. The geometric Frobenius is its inverse and is always called geometric. |
 | Frobenius at a ramified prime | `IsArithFrobAt` is satisfiable at every prime with finite residue field. It is canonical only modulo inertia, by `IsArithFrobAt.mul_inv_mem_inertia`. "The Frobenius at `Q`" needs `Algebra.IsUnramifiedAt`. At a ramified prime only the coset `σ·I(Q)` is used. |
 | Frobenius is a finite-level notion | Every Frobenius statement here lives in a finite Galois extension, or in the quotient `D_v/I_v ≅ Gal(k̄_v/k_v)`. There is no canonical Frobenius element, and no canonical conjugacy class, in `Gal(K̄/K)`. §Explicit scope exclusions states why. |
-| Infinite places | For a selected place `w` of `L` above a real place of `K`, `complexConjugationAt w hw` is the unique nonidentity stabilizer element characterized by `ComplexEmbedding.IsConj w.embedding`. It depends on `w`, transforms covariantly under conjugation, and restricts in towers. `IsCMField.complexConj` is the CM specialization, not the generic definition. It is never called a Frobenius. |
+| Infinite places | For a selected place `w` of `L` above a real place of `K`, `complexConjugationAt w hw` is the unique nonidentity stabilizer element characterized by `ComplexEmbedding.IsConj w.embedding`. It depends on `w` and transforms covariantly under conjugation. In a normal tower its restriction is the conjugation element when the induced place remains complex and is `1` when that place is real. `IsCMField.complexConj` is the CM specialization, not the generic definition. It is never called a Frobenius. |
 | Artin symbol | `artinSymbol 𝔭 : ConjClasses (L ≃ₐ[K] L)`, for `𝔭 : Ideal (𝓞 K)` a nonzero prime that is unramified in `L`. The rational-prime form for `K = ℚ` is a corollary of it, not the definition. |
 | Ideal-theoretic Artin map | `artinHomAway S hur : J^S →* (L ≃ₐ[K] L)`, for `L/K` finite abelian and `S` an arbitrary `Finset` of primes of `𝓞 K` that contains every prime that ramifies in `L`. `idealsAway S` is the subgroup of `(FractionalIdeal (𝓞 K)⁰ K)ˣ` of fractional ideals with valuation zero at every prime of `S`, and `J^S` is short for it in prose. `S` is a parameter of the construction. Taking `S = ramifiedSupport K L` is Layer 4.3. The integral-ideal monoid homomorphism is a corollary. |
 | Decomposition group | `MulAction.stabilizer G Q`, Mathlib's spelling. There is no second named definition. |
@@ -801,8 +801,9 @@ extension there is no place-independent conjugation element. Expose the full bas
 - nontriviality, order two, and uniqueness among nonidentity elements of that stabilizer;
 - conjugacy covariance
   `complexConjugationAt (σ • w) = σ * complexConjugationAt w * σ⁻¹`;
-- restriction in a normal tower, with the restriction equal to `complexConjugationAt` at the
-  induced place whenever that place remains complex;
+- restriction in a normal tower, with both branches named: the restriction equals
+  `complexConjugationAt` at the induced place when it remains complex, and equals `1` when the
+  induced place is real;
 - the CM specialization, where the place-dependent elements all agree with
   `IsCMField.complexConj`.
 
@@ -1691,9 +1692,12 @@ LocalFieldsRamification.lowerRamificationGroup K_v L_w :
 ```
 
 This is #189's total integer-indexed filtration, including its `i ≤ -1` convention and real
-comparison API. This roadmap defines no alias and no second local carrier. The milestone here is
-only the instance adapter showing that the canonical completions of Layer 5 satisfy the
-supplier's hypotheses, so Layer 6.2 can mention that fully qualified declaration.
+comparison API. This roadmap imports #189's `Suggested.lean`, defines no alias and no second
+local carrier, and includes closed applications of the imported monogenicity, lower-filtration,
+Hilbert-different, tame-equality, and wild-bound declarations. Thus namespace, instance, and
+hypothesis drift at the supplier boundary is detected by elaboration. The milestone here is the
+instance adapter showing that the canonical completions of Layer 5 satisfy those hypotheses, so
+Layer 6.2 can use the fully qualified declaration directly.
 
 *Prerequisites:* Local Fields and Ramification #189, lower-numbering filtration; Layers 5.1,
 5.2, 5.6, and 5.7.
@@ -1718,7 +1722,9 @@ ramificationGroup Q i := {σ ∈ MulAction.stabilizer (L ≃ₐ[K] L) Q | ∀ x 
   stabilizer lies in `ramificationGroup Q i` if and only if `decompositionHom v w σ` lies in
   `LocalFieldsRamification.lowerRamificationGroup K_v L_w (i : ℤ)`. This is an equality of
   subgroups along a named map, not an abstract isomorphism, because every computation below
-  moves an element across it.
+  moves an element across it. The representative declaration
+  `mem_ramificationGroup_iff_mem_lowerRamificationGroup` is stated against the imported #189
+  carrier, rather than left in prose.
 - *Edge cases.* `i` large, where the group is trivial; `Q` ramified but tame, where `G_1 = 1`.
 - *Downstream interfaces.* Layers 6.3, 6.4, and 6.5.
 
@@ -1766,6 +1772,18 @@ different theorems. Transport their exponent through Layer 5.9 to prove:
 - `e ≤ v_P(𝔡) ≤ e − 1 + v_P(e)` when it is wildly ramified, with `v_P(e)` the multiplicity of
   `P` in `span {(e : 𝓞 L)}`.
 
+The second formula needs a separate exponent bridge, not merely localization of the different:
+
+```text
+natCastValuation_completion_eq_multiplicity_span :
+  LocalFieldsRamification.natCastValuation L_w n hn =
+    multiplicity P (Ideal.span {(n : 𝓞 L)}).
+```
+
+Prove it from `maximalIdeal_map_completion`, `maximalIdeal_pow_map_completion`, contraction of
+powers, and the normalized valuation/multiplicity characterization in a DVR. Layer 5.9 transports
+the different; this theorem transports the natural-number term in #189's upper bound.
+
 The residue extension is finite and hence separable, and the fraction fields have characteristic
 zero, so the local supplier's separability hypotheses are discharged by the number-field
 dictionary. No Dedekind-generic theorem is claimed here: the preceding layers do not provide a
@@ -1804,9 +1822,10 @@ For `L/K` Galois with group `G`, `H ≤ G`, `M = L^H`, `Q` a prime of `𝓞 L` o
 e(Q/𝔮) · v_𝔮(differentIdeal (𝓞 K) (𝓞 M)) = Σ_{i ≥ 0} (#(G i) − #(G i ⊓ H)).
 ```
 
-Both sides are integers, and no conductor object appears. The right side is a fixed-point count
-for the action of `G i` on `G/H`: `#(G i ⊓ H)` is the number of elements of `G i` that fix the
-base point.
+Both sides are integers, and no conductor object appears. Here `#(G i ⊓ H)` is the number of
+elements of `G i` that fix the chosen base point of `G/H`, so the summand is the number of
+elements of `G i` that move that base point. It is not the number of fixed cosets or a usual
+fixed-point count.
 
 Proof: transitivity of the different, from Mathlib; the subgroup compatibility `H_i = H ∩ G_i`;
 and Layer 6.3. Combined with Layer 5.10 and the enumeration of Layer 1.4, this computes
@@ -1825,14 +1844,46 @@ roadmap is the order conductor of §Pinned conventions.
 
 #### 7.1 The subfield dictionary
 
-For an arbitrary number field `K` with Galois closure `M`, package Mathlib's
-`IsGalois.intermediateFieldEquivSubgroup`:
+For an arbitrary number field `K`, first specify its normal closure rather than referring to an
+unnamed field `M`. The carrier
 
-- the lattice of subfields of `K` corresponds, order-reversing, to the subgroups between
-  `Gal(M/K)` and `Gal(M/ℚ)`;
-- the counting statements;
-- the embedding `Gal(M/ℚ) ↪ S_n` through `Polynomial.Gal.galActionHom`, with transitivity
-  equivalent to irreducibility.
+```text
+NormalClosureData K M
+```
+
+contains a chosen `embedding : K →ₐ[ℚ] M`, assumes `M/ℚ` is finite Galois, and records that the
+images `σ (embedding x)`, for `σ : M ≃ₐ[ℚ] M` and `x : K`, generate `M` as a `ℚ`-algebra. This
+last condition is what makes the permutation representation faithful.
+
+The intrinsic finite set is
+
+```text
+K →ₐ[ℚ] M,
+```
+
+not initially `Fin n`. Define `embeddingAction` by postcomposition and prove:
+
+```text
+embeddingAction_apply
+embeddingAction_injective
+embeddingAction_isPretransitive
+Fintype.card (K →ₐ[ℚ] M) = Module.finrank ℚ K.
+```
+
+Define `fixingSubgroup` to be the automorphisms `σ` satisfying
+`σ.toAlgHom.comp embedding = embedding`; this is the precise subgroup denoted `Gal(M/K)`.
+Package the order-reversing equivalence between `IntermediateField ℚ K` and the interval of
+subgroups of `Gal(M/ℚ)` containing `fixingSubgroup`.
+
+Only after choosing
+
+```text
+e : (K →ₐ[ℚ] M) ≃ Fin (Module.finrank ℚ K)
+```
+
+define `permutationEmbedding : Gal(M/ℚ) ↪ S_n`. Prove it injective and prove that replacing `e`
+conjugates the representation inside `S_n`. Thus the action on embeddings is canonical, while
+the subgroup of a particular symmetric group is canonical only up to conjugacy.
 
 Worked targets: the three subfields of `ℚ(ζ₅)`; the cubic field of discriminant `−23` has no
 proper subfield.
@@ -1844,9 +1895,9 @@ turn the two cases into `M = ⊥` and `M = ⊤`. Do not route it through an iden
 Galois closure: no milestone here supplies one, and none is needed.
 
 *Prerequisites:* Mathlib `IsGalois.intermediateFieldEquivSubgroup`,
-`IntermediateField.normalClosure`, `Polynomial.Gal.galActionHom`, `Module.finrank_mul_finrank`,
-`IntermediateField.finrank_eq_one_iff`, `IntermediateField.finrank_eq_one_iff_eq_top`;
-Layer 3.8.
+`IntermediateField.normalClosure`, `Polynomial.Gal.galActionHom`, `AlgHom`,
+`Module.finrank_mul_finrank`, `IntermediateField.finrank_eq_one_iff`,
+`IntermediateField.finrank_eq_one_iff_eq_top`; Layer 3.8.
 
 #### 7.2 Integral bases of quadratic fields
 
@@ -1921,7 +1972,17 @@ other:
 1. *The criterion.* For `u ∉ NumberField.Units.torsion K`,
    `Subgroup.closure {u} ⊔ NumberField.Units.torsion K = ⊤` if and only if no unit `v` satisfies
    `0 < ‖logEmbedding v‖ < ‖logEmbedding u‖`. The non-torsion hypothesis is normative: for a
-   torsion `u` the right side is vacuous while the left side is false.
+   torsion `u` the right side is vacuous while the left side is false. Name
+   `logEmbedding_norm_lt_iff_at_place`: at rank one, for a chosen place `w` with `1 < w u`, it
+   identifies
+
+   ```text
+   ‖logEmbedding v‖ < ‖logEmbedding u‖
+   ```
+
+   with `|Real.log (w v)| < Real.log (w u)`. Its proof uses the two-place product formula and
+   the `w.mult` convention built into Mathlib's `logEmbedding`. This is the explicit bridge from
+   the intrinsic criterion to the chosen-real-place polynomial certificate below.
 2. *The finiteness that makes the criterion checkable.* A unit with a bounded log embedding has
    bounded archimedean absolute values. Mathlib's `NumberField.Embeddings.finite_of_norm_le`
    then applies, and the candidate set is finite.
@@ -2305,9 +2366,21 @@ statement, with analytic/L-function work supplying its prerequisites.
 ```
 
 Prove integrality by the exact relation `β³ − 2β² + 3β − 10 = 0`, construct the integral basis
-`(1, θ, β)`, and compute its discriminant as `−503`. Since `503` is squarefree, the order spanned
-by this basis is maximal, proving `𝓞 K = ℤ·1 ⊕ ℤ·θ ⊕ ℤ·β`. Only after that conclusion may one
-deduce `index θ = 2` and `discr K = −503`; these are outputs, not inputs.
+`(1, θ, β)`, and compute its discriminant as `−503`. Make the noncircular intermediate object
+explicit:
+
+```text
+dedekindOrder : Subalgebra ℤ (𝓞 K)
+dedekindOrder_eq_span
+discr_dedekindOrder
+dedekindOrderIndex
+index_dedekindOrder_sq_mul_discr
+dedekindOrder_eq_ringOfIntegers.
+```
+
+The index–discriminant formula and squarefreeness of `503` force this order to have index one,
+proving `𝓞 K = ℤ·1 ⊕ ℤ·θ ⊕ ℤ·β`. Only after that conclusion may one deduce `index θ = 2` and
+`discr K = −503`; these are outputs, not inputs.
 
 *Proved here:* Use the same integral basis and the multiplication relations
 `θ² = θ + 2β`, `θβ = θ + 4`, and `β² = β + 2θ − 2` to compute
@@ -2316,8 +2389,13 @@ deduce `index θ = 2` and `discr K = −503`; these are outputs, not inputs.
 (2) = (2, θ, β) · (2, θ, β − 1) · (2, θ − 1, β − 1).
 ```
 
-Thus `2` splits completely even though `minpoly mod 2 = x²(x+1)`. It is a common index divisor,
-that is, `∀ θ' : IntegralPrimitiveElement K, 2 ∣ index θ'`; hence
+Call the three displayed factors `dedekindPrimeOne`, `dedekindPrimeTwo`, and
+`dedekindPrimeThree`. The product equality alone does not prove complete splitting. For each
+factor, construct a quotient equivalence with `ZMod 2`; record maximality, nonzeroness, and
+`LiesOver (span {(2 : ℤ)})`; prove the three ideals pairwise distinct; and derive residue-cardinality
+`2`. These certificates identify the displayed factors with three distinct degree-one primes
+above `2`, so `2` splits completely even though `minpoly mod 2 = x²(x+1)`. It is a common index
+divisor, that is, `∀ θ' : IntegralPrimitiveElement K, 2 ∣ index θ'`; hence
 `¬ NumberField.IsMonogenic K`.
 
 This example is why Layer 3.10 is hypothesized on `p ∤ f.discr` and not on "`p` unramified". Here
