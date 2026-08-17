@@ -2,7 +2,6 @@
 Copyright (c) 2026 The Tau Ceti contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
--- tauceti-discharge:v1 {"roadmap":"OrthogonalL2Bases","tauceti":"bfeffdf0846483285e26a0815c13acbd77b30af9","mathlib":"77cbcbc65f9e26f6ede0a01b24c2cb909e11cc0d","toolchain":"leanprover/lean4:v4.34.0-rc1"}
 import Mathlib
 import TauCeti.Analysis.InnerProductSpace.HilbertBasisMap
 import TauCeti.Analysis.InnerProductSpace.L2.Pi
@@ -29,10 +28,8 @@ finishes neither a layer nor the roadmap.
 
 Every milestone below is **discharged**: each target is stated exactly as the roadmap asked for
 it, and closed by the Tau Ceti declaration that realizes it, so the correspondence is checked by
-the Lean kernel rather than asserted in prose. The `tauceti-discharge:v1` header above names the
-Tau Ceti, Mathlib and toolchain revisions it elaborates against;
-`.github/scripts/check_discharged.py` re-verifies it against *those*, not against whatever the
-repository pins today, so this archived file never needs updating.
+the Lean kernel rather than asserted in prose. CI builds this file against the repository's current
+Tau Ceti pin, so it continues to check the implementation as the library moves forward.
 
 Nine targets reach their counterpart under a different name and three need the roadmap's
 hypotheses genuinely weakened rather than merely renamed, which is why a name-matching check is
@@ -52,7 +49,8 @@ Conventions: `μ : Measure ℝ` (the bridge
 evaluates `Polynomial.eval`); `weightL2Isometry` needs only `0 < w` a.e. (no finiteness — the
 `ENNReal.ofReal` density is finite); `mapₗᵢ` body `ofRepr (e.symm.trans b.repr)` (Mathlib has no
 `≃ₗᵢ`-transport); ℕ-smul Hermite derivative; `ℤ[X]` Hermite mapped to `ℝ[X]` via `hermiteℝ`; every
-basis ships a `coe_*` / `*_apply` anti-vacuity pin. Elaborates cleanly against the revisions named above.
+basis ships a `coe_*` / `*_apply` anti-vacuity pin. Elaborates cleanly against the repository's
+pinned dependencies.
 -/
 
 namespace TauCetiRoadmap.OrthogonalL2Bases

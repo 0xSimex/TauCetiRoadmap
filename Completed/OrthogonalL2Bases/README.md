@@ -19,11 +19,10 @@ eigen-equation and the Schwartz-map packaging, is under
 
 The last target landed on 2026-07-30. `Suggested.lean` beside this file is now **discharged**:
 every target it states is closed by the Tau Ceti declaration that realizes it, so that
-correspondence is checked by the Lean kernel rather than asserted in this paragraph. Its
-`tauceti-discharge:v1` header names the revisions it elaborates against, and
-`.github/scripts/check_discharged.py` re-verifies it against those rather than against whatever
-this repository pins today — so the file is frozen and reproducible at once, and never needs
-updating.
+correspondence is checked by the Lean kernel rather than asserted in this paragraph. CI builds
+the file against the repository's current Tau Ceti pin. If that library's API changes without
+changing the mathematics, the certificate is updated to keep checking the current implementation;
+git history and `lake-manifest.json` retain the dependency revision for every earlier version.
 
 Declaring this complete remains a human judgment against this README, which is the definitive
 document and which `Suggested.lean` does not exhaust. What the discharged file removes is the
