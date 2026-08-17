@@ -42,6 +42,7 @@ body:
         - PDE
         - ReductiveGroups
         - RepresentationTheory
+        - StandardDistributions
         - UniversalCovers
         - ZigzagPreprojective
     validations:
