@@ -14,18 +14,24 @@ body:
     attributes:
       label: Roadmap area
       options:
+        - AdicSpaces
+        - CFSGStatement
         - CombinatorialHeegaardFloer
         - ConformalMapping
         - ContourIntegration
+        - DGAInfinity
+        - EllipticCurves
         - Exchangeability
         - GeometricTopology
+        - GrothendieckEulerForms
         - HeegaardFloer
+        - HodgeStructures
+        - IntegralLattices
         - JacobianChallenge
         - ModularForms
         - Multiquadratic
         - OneParameterSemigroups
         - OptimalTransport
-        - OrthogonalL2Bases
         - PDE
         - ReductiveGroups
         - RepresentationTheory

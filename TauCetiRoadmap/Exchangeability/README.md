@@ -665,8 +665,9 @@ The directing-measure theorem should expose a real API, not just an existence pr
 * **a.e.** uniqueness of `ν` **among directing measures**, i.e. among witnesses of
   `ConditionallyIIDWith` (`conditionallyIID_ae_unique`: equality of probability measures a.e.
   under the base law, tested against a determining class — not pointwise). Pin its hypotheses:
-  `[IsProbabilityMeasure μ] [StandardBorelSpace α] [Nonempty α]`, measurable `X`, and two
-  explicit `ConditionallyIIDWith μ X ν` / `ConditionallyIIDWith μ X ν'` hypotheses, concluding
+  `[IsProbabilityMeasure μ] [MeasurableSpace.CountablyGenerated α]`, a.e.-measurable coordinates
+  `∀ i, AEMeasurable (X i) μ`, and two explicit `ConditionallyIIDWith μ X ν` /
+  `ConditionallyIIDWith μ X ν'` hypotheses, concluding
   `ν =ᵐ[μ] ν'`. Mere mixing
   representatives (witnesses of `MixedIIDWith`) are **not** a.e. unique when the mixing law is
   nondegenerate — an independent copy of `ν` is one — so no witness-level a.e.-equality
@@ -789,8 +790,10 @@ Build:
 * exchangeable arrays and the Aldous–Hoover representation (a substantially larger tower than
   the sequence theorem, with its own prerequisites).
 
-Mathlib extraction of the general-purpose infrastructure built along the way — reverse
-martingales, Koopman operators, product kernels — is a parallel ongoing goal.
+The general-purpose infrastructure built along the way — reverse martingales, Koopman operators,
+product kernels — is ordinary martingale and ergodic theory, with no exchangeability in its
+statements, so it belongs in general homes rather than under this roadmap's namespace. Separating
+it out is a parallel ongoing goal.
 
 ## Worked examples
 
