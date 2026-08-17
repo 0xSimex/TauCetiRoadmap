@@ -21,6 +21,7 @@ body:
         - AdicSpaces
         - AlgebraicCurves
         - CFSGStatement
+        - Chebotarev
         - CombinatorialHeegaardFloer
         - ConformalMapping
         - ContourIntegration

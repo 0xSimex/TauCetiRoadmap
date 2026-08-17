@@ -28,6 +28,11 @@ live in the namespace `NumberField.Chebotarev`.
 this document is the specification. Dated prior-art, source-revision, licence, and coordination
 records are maintained privately and are not prerequisites.
 
+The existing Dirichlet-density development in AINTLIB is prior art for the analytic formulation,
+and Mathlib's theorem on Dirichlet primes in arithmetic progressions supplies the rational
+specialization. This roadmap records those public source relationships here while keeping its
+detailed migration ledger private.
+
 ## Scope
 
 ### In scope
@@ -84,8 +89,8 @@ This roadmap consumes the analytic carriers and generic theorems under their can
 
 | Declaration | Contract used here |
 | --- | --- |
-| `primeDirichletSum` | The sum over a set of `HeightOneSpectrum (𝓞 K)`, hence over a subtype of nonzero prime ideals rather than over arbitrary ideals. |
-| `HasDirichletDensity`, `LowerDirichletDensity`, `UpperDirichletDensity` | Density is normalized by the all-prime sum. The logarithmic denominator is a theorem, not a second predicate. |
+| `primeIdealZetaSum` | The sum over a set of `HeightOneSpectrum (𝓞 K)`, hence over a subtype of nonzero prime ideals rather than over arbitrary ideals. |
+| `HasDirichletDensity`, `IsLowerDirichletDensityBound`, `IsUpperDirichletDensityBound` | Density is normalized by the all-prime sum. The epsilon-style lower and upper declarations are bounds, not junk-valued density functions. |
 | `hasDirichletDensity_of_symmDiff_finite`, `hasDirichletDensity_of_squeeze` | Finite exceptional sets may be discarded, and lower bounds for a finite partition can be squeezed to exact densities. |
 | `hasDirichletDensity_contraction` | Transfer between prime sets in `E` and `K`, including the residue-degree-one and constant-fibre hypotheses that identify norms. |
 | `IdealWeight`, `normCoeff`, `regroupByNorm`, `EulerProductData` | The generic ideal weight, norm regrouping, and Euler-product/logarithmic-derivative infrastructure. |
@@ -171,7 +176,7 @@ density and counting statements to discard it explicitly.
 
 ### Layer 3: prime sums and density normalization
 
-Specialize `primeDirichletSum` to `frobeniusPrimeSet`. Prove the dictionary between:
+Specialize `primeIdealZetaSum` to `frobeniusPrimeSet`. Prove the dictionary between:
 
 1. the ratio to the all-prime sum;
 2. the logarithmic normalization by `log((s-1)⁻¹)`;
@@ -217,7 +222,10 @@ HasDirichletDensity (frobeniusPrimeSet K F [σ]) (1 / #Gal(F/K)).
 ```
 
 Name the density theorem for a cyclotomic fibre and prove the specialization to primes
-`p ≡ a (mod m)` over `ℚ`. The specialization must send arithmetic Frobenius to `a`, not `a⁻¹`.
+`p ≡ a (mod m)` over `ℚ`, under a public corollary such as
+`hasDirichletDensity_primesCongruent`. The specialization must send arithmetic Frobenius to `a`,
+not `a⁻¹`, and should be proved by comparison with Mathlib's Dirichlet-primes-in-AP theorem rather
+than by duplicating that development.
 
 ### Layer 7: auxiliary-prime crossing data
 
