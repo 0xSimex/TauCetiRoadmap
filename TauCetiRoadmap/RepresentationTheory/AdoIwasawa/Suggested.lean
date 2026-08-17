@@ -23,6 +23,8 @@ namespace TauCetiRoadmap.RepresentationTheory.AdoIwasawa
 
 open scoped Polynomial
 
+attribute [local instance 100] LieRing.ofAssociativeRing
+
 universe u
 
 variable (K : Type u) [Field K]
