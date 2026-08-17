@@ -58,13 +58,14 @@ and nothing else is allowed:
 - **Layer n.m.** An earlier milestone of this roadmap.
 - **Roadmap, Layer n.** A named layer of another roadmap in this repository.
 
-No milestone waits on a Mathlib pull request, a future pin, or an external repository. The three
-portfolio suppliers are imported under their final namespaces:
+No milestone waits on a Mathlib pull request, a future pin, or an external repository. Some
+cross-roadmap milestones do, however, remain explicitly blocked until their accepted supplier
+publishes a compiled carrier. The three portfolio suppliers currently imported under their final namespaces are:
 `TauCetiRoadmap.AlgebraicCurves`, `TauCetiRoadmap.PolynomialGaloisGroups`, and
 `TauCetiRoadmap.ProfiniteProPGroups`. `Suggested.lean` uses their actual carriers and defines no
 replacement `fullCycleType`, transitive-group label, free profinite group, free pro-`p` group,
-`proPKernel`, or maximal pro-`p` quotient. A local interface remains only where an accepted
-non-portfolio supplier has not pinned a Lean name, and is marked with that supplier.
+`proPKernel`, or maximal pro-`p` quotient. No local interface replaces an accepted supplier that
+has not yet pinned a Lean name.
 
 ## Boundaries
 
@@ -445,10 +446,10 @@ the three portfolio suppliers have no local stand-ins here.
 | 3.2 | CharacterTheory Layer 1 | class sums and structure constants | `classSum`, `structureConstant`, `classSum_mul` |
 | 3.2 | CharacterTheory Layer 3 | the character table and column orthogonality | `characterTable`, `char_column_orthogonality` |
 | 3.2 | CharacterTheory Layer 4 | central characters, and the conversion to class sizes | `centralCharacter`, `centralCharacter_coordinate`, and the conversion of `ω_χ` on a class sum into class size times character value over degree, for which that roadmap pins **no Lean name**; local interface: `centralCharacter_eq_card_mul_div (χ) (j) : centralCharacter χ (classSum j) = (Nat.card (carrier j) : ℂ) * χ (rep j) / χ 1` |
-| 5.1, 6.2 | UniversalCovers Stage 0.2 | semilocal simple connectivity | **no Mathlib class exists**; local interface: `class SemilocallySimplyConnectedSpace (X) [TopologicalSpace X] : Prop` with the "some neighbourhood's loops are nullhomotopic in `X`" field, in `Suggested.lean` |
+| 5.1, 6.2 | UniversalCovers Stage 0.2 | semilocal simple connectivity | **unresolved supplier contract**: no Mathlib class exists and UniversalCovers has not published a compiled target; no local stand-in is exported |
 | 6.2 | UniversalCovers Stage 0.2, 0.3 | the universal cover, its covering map, and the free proper `π₁`-action | `UniversalCover x₀`, `proj`, `IsCoveringMap proj`, `SimplyConnectedSpace (UniversalCover x₀)`, `UniversalCover.isQuotientCoveringMap` |
 | 6.4 | UniversalCovers Stage 0.4, 1 | deck groups and `Deck ≅ (π₁)ᵐᵒᵖ` | `Deck`, `deckFundamentalGroupEquiv : Deck proj ≃* (FundamentalGroup X x₀)ᵐᵒᵖ` |
-| 6.3 | UniversalCovers Stage 2 | basepoint change, and the pointed/unpointed correspondence | `basepointChangeSubgroup`; for milestone 8 that roadmap pins no name, local interface: `connectedPointedCoverEquivSubgroup (x₀ : X) : Quot (ConnectedPointedCoverIso x₀) ≃ Subgroup (FundamentalGroup X x₀)` under `[PathConnectedSpace X] [LocPathConnectedSpace X] [SemilocallySimplyConnectedSpace X]`, with `ConnectedPointedCover` (carrying `PathConnectedSpace E` as a **field**) and `ConnectedPointedCoverIso` in `Suggested.lean`; unpointed, `connectedCoverEquivSubgroupOrbit : Quot ConnectedCoverIso ≃ Quotient subgroupConjSetoid`. ⚠ **Connectedness is required**: a disconnected pointed cover recovers only the subgroup of the component containing the chosen point, so adjoining an unrelated component would leave the subgroup fixed and the map would not be injective. ⚠ The subgroup side is the conjugation-**orbit** quotient, `MulAction.orbitRel (ConjAct G) (Subgroup G)`, not `ConjClasses (Subgroup _)` — `ConjClasses` is a monoid's quotient by conjugation on *itself*, and `Subgroup G` is not `G` |
+| 6.3 | UniversalCovers Stage 2 | basepoint change, and the pointed/unpointed correspondence | `basepointChangeSubgroup` is named upstream; milestone 8's equivalences are **unresolved prose-only supplier contracts** and are not exported locally. Their required carriers and exact connectedness/orbit semantics are pinned in Layer 6.3 below. |
 | 8.2 | ConformalMapping L0 | the local degree of a holomorphic map | `TauCeti.exists_localDegree`, and the holomorphic branch-root extraction beside it |
 | 8.6, 9.3, 9.4 | ModularForms Layer 10B | Riemann–Roch and Riemann–Hurwitz for compact Riemann surfaces | that roadmap pins **no Riemann-surface carrier and no Lean names**; local interfaces, all carried in `Suggested.lean`: `MerField X`, `Divisor X := X →₀ ℤ` — an `abbrev`, so `Finsupp`'s subtraction is available — `Divisor.deg : Divisor X → ℤ`, `genusAn X : ℕ`, `riemannRochSpaceAn`, `ellAn`, `canonicalDivisor`, `riemannRochAn`; and for Riemann–Hurwitz the map-derived `degreeAn f hf hne`, `ramificationIndexAn f hf hne x`, `ramifiedPointsAn f hf hne`, with contracts `ramificationIndexAn_localNormalForm`, `ramificationIndexAn_pos`, `ramificationIndexAn_eq_one_iff`, `ramificationLocus_discrete`, `mem_ramifiedPointsAn_iff`, `degreeAn_eq_fiber_sum`. ⚠ **`hf` and `hne` are arguments, not context.** Layer 8.2 defines the index only for a nonconstant holomorphic map between connected surfaces; a version taking a bare `f : X → Y` would have to return an undocumented junk value, and `ramificationIndexAn_pos` would then commit the roadmap to that junk being positive. ⚠ **The local index carries no compactness** — Layer 8.2's `e` is local. Compactness enters only for `degreeAn`, for packaging the branch locus as a `Finset`, and for the two identities. ⚠ `MerField X` is a **field for connected** Riemann surfaces — `[ConnectedSpace X]`, not `[CompactSpace X]`: on a disjoint union the meromorphic functions are a *product* of fields and have zero divisors. Compactness enters at divisors, finite polar sets, and finite-dimensional `L(D)`, and is carried on those declarations. ⚠ Riemann–Hurwitz must **not** quantify over a free `deg`, `ram` and `e`: that is not a weaker theorem but a false one, since a caller may supply any numbers. Every quantity is derived from `f`. ⚠ `genusAn` is not imported from a classification of topological surfaces — the roadmap has none and needs none. ⚠ Both identities are stated in `ℤ`, since `ℕ` subtraction truncates `ℓ(D) − ℓ(K−D)` exactly when the second exceeds the first |
 | 9.1, 9.4, 9.6 | `AlgebraicCurves` Layers 0, 1 | function fields, places, and divisors | exact declarations: `AlgebraicCurves.IsFunctionField`, Mathlib's `IsIntegrallyClosedIn`, `AlgebraicCurves.Place`, `AlgebraicCurves.Divisor` |
@@ -460,9 +461,11 @@ the three portfolio suppliers have no local stand-ins here.
 
 Every row labeled as an exact portfolio declaration is imported by `Suggested.lean`; a spelling
 or carrier change therefore breaks this roadmap instead of silently selecting a local replacement.
-The prose-only AlgebraicCurves rows are scheduling contracts, not claims that declarations already
-exist, and `Suggested.lean` intentionally does not prototype Belyi's Layers 9–11 until those
-supplier carriers can be formed.
+The prose-only UniversalCovers and AlgebraicCurves rows are scheduling contracts, not claims that
+declarations already exist. `Suggested.lean` intentionally omits the associated-cover and
+classification theorems until UniversalCovers publishes its carriers, and omits Belyi's
+Layers 9–11 until the AlgebraicCurves carriers can be formed. The algebraization, Belyi, and
+descent crossings are therefore unresolved supplier contracts rather than available exports.
 
 ## The build, in layers
 
@@ -1869,8 +1872,11 @@ The converse construction, and the place where a cover is built rather than anal
 stated **generically**, for an arbitrary discrete `π₁`-set, under the exact hypotheses the
 universal-cover supplier requires; the finite case is a corollary, not the theorem.
 
-*Standing hypotheses* for the general construction, matching UniversalCovers Stage 0.2
-exactly:
+This milestone is currently an **unresolved UniversalCovers supplier contract** and therefore has
+no public prototype in `Suggested.lean`. Once that roadmap exposes the class and universal-cover
+API, this roadmap must import them and add a closed check of the covering/deck theorem used in the
+Riemann-existence argument. The intended standing hypotheses, to be reconciled with that public
+API rather than imposed by a private class, are:
 
 ```text
 [TopologicalSpace X] [PathConnectedSpace X] [LocPathConnectedSpace X]

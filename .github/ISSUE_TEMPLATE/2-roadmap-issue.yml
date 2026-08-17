@@ -16,6 +16,7 @@ body:
       options:
         - AdicSpaces
         - AlgebraicCurves
+        - BelyiMaps
         - CFSGStatement
         - CombinatorialHeegaardFloer
         - ConformalMapping

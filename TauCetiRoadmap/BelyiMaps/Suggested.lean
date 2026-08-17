@@ -46,9 +46,10 @@ Conventions, recorded in `README.md` (§Pinned conventions):
 * A literal `PermutationTriple n` is the invariant of a **fiber-numbered** cover
   (`FiberNumberedCover` below), not of a pointed one: a chosen point of the fiber leaves
   `(n−1)!` relabelings. README Layer 6.3 classifies the three rigidifications separately.
-* `SemilocallySimplyConnectedSpace` below is a local stand-in for UniversalCovers
-  Stage 0.2's class of the same name, absent from the pinned Mathlib. Layer 6.2's
-  associated-cover theorem carries it because the universal-cover construction requires it.
+* The associated-cover and covering-classification declarations are intentionally absent here.
+  Their semilocal-simple-connectivity and universal-cover carriers are unresolved supplier
+  contracts: UniversalCovers has not yet published compiled target signatures. No local class
+  stands in for that future public interface.
 * Free profinite and free pro-`ℓ` groups, `proPKernel`, `maximalProPQuotient`, and `zHat`
   are the imported `ProfiniteProPGroups` declarations. This file defines only the marked
   peripheral elements and the Belyi-specific power theorem on those supplier carriers.
@@ -1037,43 +1038,11 @@ theorem monodromyHom_apply {E : Type u} {X : Type v} [TopologicalSpace E]
     monodromyHom hp x γ e = hp.monodromy (FundamentalGroup.toPath γ) e := by
   sorry
 
-/-- Local stand-in; supplier: UniversalCovers Stage 0.2's `SemilocallySimplyConnectedSpace`.
-⚠ Absent from the pinned Mathlib, and **not** implied by path- plus local path-connectedness:
-the Hawaiian earring satisfies those two and has no universal cover. Layer 6.2 carries it
-because the universal-cover construction it consumes requires it. -/
-class SemilocallySimplyConnectedSpace (X : Type u) [TopologicalSpace X] : Prop where
-  exists_nhds_nullhomotopic : ∀ x : X, ∃ U : Set X, IsOpen U ∧ x ∈ U ∧
-    ∀ γ : Path x x, (∀ t, γ t ∈ U) →
-      (⟦γ⟧ : Path.Homotopic.Quotient x x) = ⟦Path.refl x⟧
-
-/-- **Layer 6.2, the general construction.** For an **arbitrary discrete** `π₁`-set `S`, the
-associated cover `(Ũ × S) ⧸ π₁` exists and has monodromy the given action. Stated as the
-contract — a cover exists with prescribed monodromy — because the universal cover itself is
-UniversalCovers' object, not this roadmap's.
-
-The diagonal action is pinned in the README: with `ũ · γ` the deck action (which is a
-**right** action, because UniversalCovers milestone 5 identifies deck transformations with
-`(π₁)ᵐᵒᵖ`), it is `γ ⋆ (ũ, s) = (ũ · γ⁻¹, act γ s)`. That inverse is exactly what makes the
-conclusion below carry `act γ` rather than `act γ⁻¹`. -/
-theorem exists_cover_with_monodromy {X : Type u} [TopologicalSpace X]
-    [PathConnectedSpace X] [LocPathConnectedSpace X] [SemilocallySimplyConnectedSpace X]
-    (x : X) {S : Type u} [TopologicalSpace S] [DiscreteTopology S]
-    (act : FundamentalGroup X x →* Equiv.Perm S) :
-    ∃ (E : Type u) (_ : TopologicalSpace E) (p : E → X) (hp : IsCoveringMap p)
-      (ν : ↥(p ⁻¹' {x}) ≃ S), ∀ γ, ν.permCongr (monodromyHom hp x γ) = act γ := by
-  sorry
-
-/-- **Layer 6.2, the finite corollary.** The form Layer 6.3 consumes: a numbering of the
-fiber by `Fin n`, hence a literal `PermutationTriple n`. ⚠ The general theorem above is
-**not** the finite one specialized — the regular `π₁`-set is infinite for
-`π₁(U, b) ≃* FreeGroup (Fin 2)`, so the universal cover is an instance of the general
-construction only. -/
-theorem exists_finiteCover_with_monodromy {X : Type u} [TopologicalSpace X]
-    [PathConnectedSpace X] [LocPathConnectedSpace X] [SemilocallySimplyConnectedSpace X]
-    (x : X) {n : ℕ} (act : FundamentalGroup X x →* Equiv.Perm (Fin n)) :
-    ∃ (E : Type u) (_ : TopologicalSpace E) (p : E → X) (hp : IsCoveringMap p)
-      (ν : ↥(p ⁻¹' {x}) ≃ Fin n), ∀ γ, ν.permCongr (monodromyHom hp x γ) = act γ := by
-  sorry
+/-! **Layer 6.2 remains a prose-only supplier crossing.** The README pins the associated-cover
+construction and its monodromy equation. It becomes a public target here only after
+UniversalCovers exports its semilocal-simple-connectivity class, universal-cover carrier, deck
+action, and quotient-covering theorem. A closed `#check` against those supplier declarations is
+required at that point. -/
 
 /-- **Layer 6.1.** A cover **with a numbered fiber** — the carrier that a literal
 `PermutationTriple n` classifies. ⚠ A *pointed* cover is a different carrier: one chosen
@@ -1142,23 +1111,9 @@ conjugation **on itself**, and `Subgroup G` is not `G`. -/
 noncomputable def subgroupConjSetoid {G : Type u} [Group G] : Setoid (Subgroup G) :=
   MulAction.orbitRel (ConjAct G) (Subgroup G)
 
-/-- Local stand-in; supplier: UniversalCovers milestone 8, which pins no Lean name. Connected
-pointed covers of `(X, x₀)` up to pointed isomorphism biject with the subgroups of
-`π₁(X, x₀)`, the subgroup attached to a cover being the image of its induced map. -/
-def connectedPointedCoverEquivSubgroup {X : Type u} [TopologicalSpace X]
-    [PathConnectedSpace X] [LocPathConnectedSpace X] [SemilocallySimplyConnectedSpace X]
-    (x₀ : X) :
-    Quot (ConnectedPointedCoverIso x₀) ≃ Subgroup (FundamentalGroup X x₀) :=
-  sorry
-
-/-- Local stand-in, unpointed form: forgetting the basepoint is exactly passing to the
-conjugation orbit of the subgroup. -/
-noncomputable def connectedCoverEquivSubgroupOrbit {X : Type u} [TopologicalSpace X]
-    [PathConnectedSpace X] [LocPathConnectedSpace X] [SemilocallySimplyConnectedSpace X]
-    (x₀ : X) :
-    Quot (@ConnectedCoverIso X _) ≃
-      Quotient (@subgroupConjSetoid (FundamentalGroup X x₀) _) :=
-  sorry
+/-! The pointed and unpointed covering-classification equivalences are likewise README-only
+until UniversalCovers publishes the carrier and theorem names. The local cover carriers above are
+useful Belyi rigidifications, but they are not presented as replacements for that supplier API. -/
 
 /-! ## Layer 8: analytic Belyi pairs
 
