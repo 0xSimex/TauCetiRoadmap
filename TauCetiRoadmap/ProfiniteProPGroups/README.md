@@ -39,8 +39,8 @@ The frozen downstream surface includes:
 
 ## How to read the milestones
 
-`README.md` is normative; `Suggested.lean` pins useful Lean names and signatures;
-`PROVENANCE.md` records dated implementation and ecosystem information. In prerequisite
+`README.md` is normative; `Suggested.lean` pins useful Lean names and signatures. Dated
+implementation and ecosystem information is maintained in a private provenance ledger. In prerequisite
 annotations, `M` means Mathlib at the repository pin, `L0` through `L10` mean an earlier
 layer here, and `PC-<layer>` means an export of `ProfiniteCohomology`. No milestone depends
 on a branch, an unmerged external project, `LocalFieldsRamification`, or `ClassFieldTheory`.
@@ -1638,5 +1638,5 @@ roadmap, while this roadmap imports neither arithmetic supplier.
 
 The mathematical spine is Serre, *Galois Cohomology*; Ribes–Zalesskii, *Profinite Groups*;
 Neukirch–Schmidt–Wingberg, *Cohomology of Number Fields*; and the classification work of
-Demushkin, Labute, and Serre. Implementation and source details are in
-[`PROVENANCE.md`](PROVENANCE.md).
+Demushkin, Labute, and Serre. Implementation and source details are maintained in a private
+provenance ledger.
