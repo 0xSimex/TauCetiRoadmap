@@ -31,6 +31,7 @@ body:
         - GrothendieckEulerForms
         - HeegaardFloer
         - HodgeStructures
+        - HopfRinow
         - IntegralLattices
         - JacobianChallenge
         - ModularForms
