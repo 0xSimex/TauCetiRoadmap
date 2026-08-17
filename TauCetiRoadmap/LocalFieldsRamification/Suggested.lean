@@ -841,18 +841,66 @@ noncomputable def normGradedMap [Algebra K L] [ValuativeExtension K L]
     UnitFiltrationGraded L (psiNat K L v) →* UnitFiltrationGraded K v :=
   sorry
 
-/-- **Layer 3, the prime-degree break calculation.** At the unique break the kernel and
-cokernel of the graded norm both have order `ℓ`. -/
-theorem normGradedMap_at_break [Algebra K L] [ValuativeExtension K L]
-    [Module.Finite K L] [IsGalois K L]
-    (ℓ : ℕ) [Fact ℓ.Prime] (t : ℕ) (_hdegree : Module.finrank K L = ℓ) :
-    Nat.card (normGradedMap K L t).ker = ℓ ∧
-      Nat.card (UnitFiltrationGraded K t ⧸ (normGradedMap K L t).range) = ℓ :=
-  sorry
+/-- **Layer 3, tame ramification.** The residue characteristic does not divide `e(L/K)`. -/
+def IsTamelyRamified [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] : Prop :=
+  ¬ ringChar 𝓀[K] ∣ ramificationIndex K L
+
+/-- **Layer 3, wild ramification.** The residue characteristic divides `e(L/K)`. -/
+def IsWildlyRamified [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] : Prop :=
+  ringChar 𝓀[K] ∣ ramificationIndex K L
 
 /-- **Layer 3, predicate for an upper-numbering jump.** -/
 def UpperJump [Algebra K L] [ValuativeExtension K L]
     [Module.Finite K L] [IsGalois K L] (u : RamificationIndexDomain) : Prop :=
+  sorry
+
+/-- **Layer 3, the tame prime-degree break at zero.** In a totally ramified Galois extension
+of prime degree, the graded norm at the tame break is the `ℓ`-th power map on residue units.
+Its kernel and cokernel both have order `ℓ`; this is deliberately separate from the positive
+wild-break theorem below. -/
+theorem normGradedMap_tame_break_zero [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L]
+    (ℓ : ℕ) [Fact ℓ.Prime] (_hdegree : Module.finrank K L = ℓ)
+    (_htr : IsTotallyRamified K L) (_htame : IsTamelyRamified K L)
+    (_ht : UpperJump K L ⟨0, by norm_num⟩) :
+    Nat.card (normGradedMap K L 0).ker = ℓ ∧
+      Nat.card (UnitFiltrationGraded K 0 ⧸ (normGradedMap K L 0).range) = ℓ :=
+  sorry
+
+/-- **Layer 3, depth zero before a positive prime-degree break.** The graded norm is residue
+Frobenius and hence bijective. -/
+theorem normGradedMap_zero_before_break [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L]
+    (ℓ : ℕ) [Fact ℓ.Prime] (_hdegree : Module.finrank K L = ℓ)
+    (_htr : IsTotallyRamified K L) (t : ℕ) (_htpos : 0 < t)
+    (_ht : UpperJump K L
+      ⟨(t : ℝ), le_trans (by norm_num : (-1 : ℝ) ≤ 0) (Nat.cast_nonneg t)⟩) :
+    Function.Bijective (normGradedMap K L 0) :=
+  sorry
+
+/-- **Layer 3, a positive depth strictly before a positive prime-degree break.** The graded
+norm is additive residue Frobenius and hence bijective. -/
+theorem normGradedMap_positive_before_break [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L]
+    (ℓ : ℕ) [Fact ℓ.Prime] (_hdegree : Module.finrank K L = ℓ)
+    (_htr : IsTotallyRamified K L) (v t : ℕ) (_hvpos : 0 < v) (_hvt : v < t)
+    (_ht : UpperJump K L
+      ⟨(t : ℝ), le_trans (by norm_num : (-1 : ℝ) ≤ 0) (Nat.cast_nonneg t)⟩) :
+    Function.Bijective (normGradedMap K L v) :=
+  sorry
+
+/-- **Layer 3, the positive prime-degree break calculation.** Here `IsGalois K L` and prime
+degree supply cyclicity, while total ramification, `0 < t`, and the `UpperJump` witness exclude
+the unramified and tame counterexamples. Only in this regime do the kernel and cokernel of the
+graded norm both have order `ℓ`. -/
+theorem normGradedMap_at_break [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L]
+    (ℓ : ℕ) [Fact ℓ.Prime] (_hdegree : Module.finrank K L = ℓ)
+    (_htr : IsTotallyRamified K L) (t : ℕ) (_htpos : 0 < t)
+    (_ht : UpperJump K L
+      ⟨(t : ℝ), le_trans (by norm_num : (-1 : ℝ) ≤ 0) (Nat.cast_nonneg t)⟩) :
+    Nat.card (normGradedMap K L t).ker = ℓ ∧
+      Nat.card (UnitFiltrationGraded K t ⧸ (normGradedMap K L t).range) = ℓ :=
   sorry
 
 /-- **Layer 3, Hasse–Arf.** Every upper jump of a finite abelian Galois extension is integral. -/
@@ -932,14 +980,6 @@ theorem discriminantExponent_eq_of_algEquiv
     [Algebra K M] [ValuativeExtension K M] [Module.Finite K M] [Algebra.IsSeparable K M]
     (e : L ≃ₐ[K] M) : discriminantExponent K L = discriminantExponent K M :=
   sorry
-
-/-- **Layer 3, tame ramification.** The residue characteristic does not divide `e(L/K)`. -/
-def IsTamelyRamified [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] : Prop :=
-  ¬ ringChar 𝓀[K] ∣ ramificationIndex K L
-
-/-- **Layer 3, wild ramification.** The residue characteristic divides `e(L/K)`. -/
-def IsWildlyRamified [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] : Prop :=
-  ringChar 𝓀[K] ∣ ramificationIndex K L
 
 /-- **Layer 3, Hilbert's local different formula.** The sum is finite because the lower
 ramification groups are trivial at sufficiently large indices. -/

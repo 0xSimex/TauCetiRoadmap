@@ -765,7 +765,15 @@ pro-`p` quotient.
      and `c^{ℓ−1}` does not, because `λ^{ℓ−1} = 1` for `λ ∈ 𝔽_ℓˣ`. A version with a bare `c` would
      make the kernel depend on the choice of `σ`, which the norm map cannot see. In summary:
      `gr_v N` is bijective for `v ≠ t`, and at `v = t` its kernel and its cokernel both have order
-     `ℓ`.
+     `ℓ`. The representative declarations keep these regimes separate:
+     `normGradedMap_tame_break_zero` covers `v = t = 0`;
+     `normGradedMap_zero_before_break` covers `v = 0 < t`;
+     `normGradedMap_positive_before_break` covers `0 < v < t`; and
+     `normGradedMap_at_break` covers only `v = t > 0`. The last theorem explicitly requires
+     `IsTotallyRamified K L`, `0 < t`, and
+     `UpperJump K L ⟨(t : ℝ), _⟩`; prime-degree Galois hypotheses supply cyclicity. In particular,
+     its kernel-and-cokernel conclusion is unavailable for an unramified extension or for the tame
+     break at zero.
   5. *The consequences of item 4, for the same extensions.* `N_{L/K}(U(L, ψℕ v)) = U(K,v)` for
      every `v > t`, by successive approximation from item 4 and completeness. `[U(K,v) :
      N_{L/K}(U(L, ψℕ v)) · U(K,v+1)] = ℓ` for `v = t`, and `= 1` for `v ≠ t`. Multiplication up
@@ -782,7 +790,8 @@ pro-`p` quotient.
     *False generalization:* the unshifted inclusion in item 2, which the counterexample in the
     examples section refutes.
   - *Lean-facing exports:* `map_norm_unitFiltration_psiNat_le`, `UnitFiltrationGraded`,
-    `normGradedMap`, and `normGradedMap_at_break`.
+    `normGradedMap`, `normGradedMap_tame_break_zero`, `normGradedMap_zero_before_break`,
+    `normGradedMap_positive_before_break`, and `normGradedMap_at_break`.
 - **Hasse–Arf.** For a finite abelian Galois extension `L/K`, the jumps of the upper-numbering
   filtration are integers. The proof contract includes the induction chain, not merely the phrase
   “reduce to cyclic prime degree”:
