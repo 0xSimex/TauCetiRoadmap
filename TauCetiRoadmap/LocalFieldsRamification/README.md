@@ -85,12 +85,19 @@ pro-`p` quotient.
     - the worked values on `ℚ_2` in the examples section.
 - **Finite extensions, I: construction of the valuative structure.** Let
   `[Field L] [Algebra K L] [Module.Finite K L]`, with no valuative structure assumed on `L`. Use the
-  spectral norm to construct `finiteExtensionValuativeRel K L : ValuativeRel L`. The public
-  outputs are that structure, `ValuativeExtension K L`, and `IsValuativeTopology L` for the
-  induced topology. A particular `Valuation L ℤᵐ⁰`, together with its equivalence to the pullback
-  of `valuation K`, is a proof witness rather than a second public carrier. The `ValuativeRel`
-  structure is a definition rather than a global instance, which keeps a field already carrying
-  one free of a diamond.
+  spectral norm, but make the analytic bridge explicit first. Construct
+  `normalizedNormedField K : NormedField K` from the normalized absolute value and prove
+  `normalizedNormedField_topology_eq`, so the topology consumed by `spectralNorm` is identified
+  with the original valuative topology. Then construct
+  `finiteExtensionNormedField K L : NormedField L`, its named topology
+  `finiteExtensionNormedFieldTopology K L`, and
+  `finiteExtensionValuativeRel K L : ValuativeRel L`. The closed public chain is
+  `finiteExtension_valuativeExtension`, `finiteExtension_isValuativeTopology`, and
+  `finiteExtension_isNonarchimedeanLocalField`; none of these theorems assumes a topology or
+  valuative relation on `L`. A particular `Valuation L ℤᵐ⁰`, together with its equivalence to the
+  pullback of `valuation K`, is a proof witness rather than a second public carrier. All constructed
+  structures are named definitions rather than global instances, which keeps a field already
+  carrying compatible structures free of diamonds.
   - *Prerequisites:*
     - `Mathlib: Mathlib/RingTheory/Valuation/Extension.lean`;
     - `Mathlib: spectralNorm` and `Mathlib/Analysis/Normed/Field/Krasner.lean`;
@@ -121,9 +128,20 @@ pro-`p` quotient.
     - `Layer 0: finite extensions, II`;
     - `Mathlib: IsNonarchimedeanLocalField`.
   - *API:*
-    - the four instances;
-    - transitivity in a tower `M/L/K`;
-    - the comparison of `𝒪[L]` with the integral closure of `𝒪[K]` in `L`;
+    - `integerRingAlgebra`, `residueFieldAlgebra`, `integerRingModuleFinite`, and
+      `integerRingModuleFree`;
+    - `finiteExtensionNormedFieldTopology_eq`, comparing the construction with an already
+      topologized compatible extension;
+    - `finiteExtensionNormedFieldTopology_tower` and `finiteExtensionValuativeRel_tower` for a
+      tower `M/L/K`;
+    - `integerRing_eq_integralClosure`, comparing `𝒪[L]` with the integral closure of `𝒪[K]` in
+      `L`;
+    - the intermediate-field adapters `finiteIntermediateFieldNormedField`,
+      `finiteIntermediateFieldValuativeRel`, `finiteIntermediateFieldTopology`,
+      `finiteIntermediateField_valuativeExtension`,
+      `finiteIntermediateField_isValuativeTopology`, and
+      `finiteIntermediateField_isNonarchimedeanLocalField`, which take a finite
+      `M : IntermediateField K Ω` directly to the structures above;
     - a basis of `𝒪[L]` over `𝒪[K]` in the unramified case and in the totally ramified case, which
       Layers 2 and 3 use.
 - **`e` and `f`, intrinsically.** Define `ramificationIndex K L : ℕ` as the index of the image of
@@ -263,7 +281,15 @@ pro-`p` quotient.
     - `Layer 1: the unit filtration as an object`;
     - `Layer 0: the absolute ramification index`;
     - `Layer 0: finite extensions, III`;
-    - `Mathlib: exp` and `log` for a `p`-adic field.
+    - at the exact pin, `NormedSpace.expSeries`, `NormedSpace.exp`,
+      `NormedSpace.expSeries_hasSum_exp_of_mem_ball`, and `NormedSpace.continuousOn_exp` provide
+      the exponential-series side, while `PowerSeries.log`, `PowerSeries.coeff_log`,
+      `PowerSeries.map_log`, and `PowerSeries.HasEval` provide the formal logarithm and evaluation
+      interface. The pin does **not** provide a ready-made local-field logarithm with the sharp
+      domain or inverse theorems. Constructing `localExponential` and `localLogarithm`, proving
+      their convergence and continuity on the stated depths, and proving
+      `localLogarithm_localExponential` and `localExponential_localLogarithm` are separate named
+      submilestones, summarized by `deepUnitExpLogEquiv`.
   - *Source:* NSW (7.4.4); Neukirch ANT II §5. The hypotheses used are `char K = 0` and the
     integer inequality. At the boundary `(p − 1) * i = e`, the series `log` still converges but
     injectivity is not uniform: it fails when `U(K,i)` contains a nontrivial `p`-power root of
@@ -283,7 +309,9 @@ pro-`p` quotient.
   so the formula becomes `n · #μ_n(K)`; that case holds in either
   characteristic. In regime 2, with `K/ℚ_p` finite, the formula holds for every `n ≠ 0`, including
   `p ∣ n`; the deep-unit logarithm supplies the `p`-primary factor. Finiteness of the quotient
-  follows from the formula, and is not a separate theorem.
+  follows from the formula and is exported separately as
+  `finiteIndex_range_powMonoidHom_of_isUnit` or `finiteIndex_range_powMonoidHom`, so downstream
+  declarations can consume a `Subgroup.FiniteIndex` proof without reconstructing it.
   - *Prerequisites:*
     - `Layer 1: structure of Kˣ`;
     - `Layer 1: deep units in mixed characteristic` (regime 2 only);
@@ -292,7 +320,8 @@ pro-`p` quotient.
   - *API:*
     - the count in each regime, named `card_powerClasses_of_isUnit` and `card_powerClasses_mixed`,
       with `natCastValuation K n hnK = 0` under `IsUnit (n : 𝒪[K])` as a named lemma;
-    - finiteness of `Kˣ/(Kˣ)ⁿ`, which the formula gives and which is not a separate theorem;
+    - finiteness of `Kˣ/(Kˣ)ⁿ`, through the two named finite-index corollaries derived from the
+      cardinality formulas;
     - the two specializations at `n = 2`, which is where the dyadic factor of two appears:
       `card_squareClasses_of_isUnit`,
       which is `4` when `2` is a unit of `𝒪[K]`, and `card_squareClasses_dyadic`, which is
@@ -336,8 +365,9 @@ pro-`p` quotient.
     `(U(K,i))^n = U(K, i + natCastValuation K n hnK)`, which is open. This covers the `p`-primary case, where the
     argument of regime 1 is unavailable.
 
-  A subgroup of a topological group that contains an open subgroup is open, and is then also
-  closed and of finite index.
+  A subgroup of a topological group that contains an open subgroup is open, and is therefore
+  closed. In this application finite index is a separate consequence of
+  `card_powerClasses_of_isUnit` or `card_powerClasses_mixed`; it does not follow from openness.
   - *Prerequisites:*
     - `Layer 1: the unit filtration as an object`;
     - `Layer 1: deep units in mixed characteristic` (regime 2 only);
@@ -348,7 +378,8 @@ pro-`p` quotient.
     - the containment `U(K,1) ⊆ (Kˣ)^n` in regime 1, and
       `U(K, i + natCastValuation K n hnK)` inside the range in regime 2, as named lemmas; these are
       consumed by `ClassFieldTheory.conductorExponent` and `characterConductorExp`;
-    - closedness and finite index of the range;
+    - closedness from openness, and finite index separately through
+      `finiteIndex_range_powMonoidHom_of_isUnit` or `finiteIndex_range_powMonoidHom`;
     - the corollary that every subgroup of `Kˣ` of finite index whose exponent satisfies the
       regime hypothesis is open, which is an input to the local existence theorem accompanying
       `ClassFieldTheory.normResidue`.
@@ -639,9 +670,13 @@ pro-`p` quotient.
   `u ≥ −1`, with the usual convention that the integrand is `[G_t : G_0]` on `[−1, 0]`. Prove the
   analytic facts as milestones: `φ` is continuous, piecewise linear with an explicit finite-sum
   formula, strictly increasing and concave, `φ(0) = 0`, and `φ(u) = u` for `−1 ≤ u ≤ 0`. Define
-  `ψ_{L/K} : ℝ → ℝ` as its inverse on `[−1, ∞)`, with `φ ∘ ψ = id` and `ψ ∘ φ = id` there. Prove
-  that `ψ` carries the jumps of the upper filtration to the jumps of the lower one. The upper
-  numbering is `G^u := G_{ψ(u)}`, with the real-index groups above.
+  `RamificationIndexDomain := Set.Ici (-1 : ℝ)` and package the two functions as
+  `herbrandOrderIso : RamificationIndexDomain ≃o RamificationIndexDomain`; `herbrand` is its
+  forward map and `inverseHerbrand` its inverse. Thus `φ ∘ ψ = id` and `ψ ∘ φ = id` are typed
+  equalities on the mathematical domain, and no theorem makes an arbitrary claim below `-1`.
+  A global wrapper may be added only after its value below `-1` is fixed explicitly. Prove that
+  `ψ` carries the jumps of the upper filtration to the jumps of the lower one. The upper numbering
+  is `G^u := G_{ψ(u)}`, with the real-index groups above.
 
   State the abstract quotient theorem first. Let `M/K` be finite Galois, put
   `G = Gal(M/K)`, let `H ≤ G` be normal, and equip `G ⧸ H` with the quotient filtration. Then
@@ -660,15 +695,17 @@ pro-`p` quotient.
     - `Layer 3: the lower-numbering filtration`;
     - `Mathlib: intervalIntegral` and the API for piecewise linear monotone functions.
   - *API:*
-    - the two functions;
+    - `RamificationIndexDomain`, `herbrandOrderIso`, `herbrand`, and `inverseHerbrand`;
     - continuity, monotonicity, concavity, and the values at `0`;
     - the finite-sum formula at integers;
-    - the inverse relations;
+    - `herbrand_inverseHerbrand` and `inverseHerbrand_herbrand`;
     - the image of a jump;
-    - the upper numbering as a filtration, with normality and antitonicity;
-    - the abstract normal-quotient theorem and its field-theoretic corollary through a fixed
-      quotient/restriction equivalence;
-    - the two tower-transitivity statements with the finite-Galois and normality hypotheses above;
+    - `upperRamificationGroup` as a filtration, with normality and antitonicity;
+    - `upperRamificationGroupQuotient`, `upperRamificationGroup_quotient`, and the field-theoretic
+      `upperRamificationGroup_fixedField`, stated through Mathlib's actual
+      `IsGalois.normalAutEquivQuotient` restriction equivalence;
+    - `herbrand_tower` and `inverseHerbrand_tower`, with the finite-Galois and normality
+      hypotheses above;
     - the computation for `ℚ_2(μ_8)/ℚ_2` in the examples section.
   - *Source:* Serre LF IV §3.
 - **Herbrand values as unit depths.** `φ` takes non-integral values at integers: in `ℚ_2(μ_8)/ℚ_2`
@@ -682,12 +719,12 @@ pro-`p` quotient.
   and every `g_i` with `i ≤ t`, because the filtration is decreasing.
   - *Prerequisites:* `Layer 3: Herbrand functions and the upper numbering`.
   - *API:*
-    - the function `ψℕ`;
-    - the characterizing lemma;
+    - `psiNat`;
+    - `coe_psiNat`;
     - `ψℕ 0 = 0`;
     - monotonicity;
     - `n ≤ ψℕ n`;
-    - transitivity `ψℕ_{M/K} = ψℕ_{M/L} ∘ ψℕ_{L/K}`, under the same hypotheses as real-valued
+    - `psiNat_tower`, stating `ψℕ_{M/K} = ψℕ_{M/L} ∘ ψℕ_{L/K}`, under the same hypotheses as real-valued
       transitivity: `M/K` finite Galois and the intermediate extension `L/K` Galois, with the
       quotient/restriction equivalences fixed;
     - the closed form in the cyclic prime-degree case, which is `ψℕ v = v` for `v ≤ t` and
@@ -744,6 +781,8 @@ pro-`p` quotient.
   - *Source:* Serre LF V §2 for item 3, Serre LF V §3 for item 4, and Serre LF V §6 for item 2.
     *False generalization:* the unshifted inclusion in item 2, which the counterexample in the
     examples section refutes.
+  - *Lean-facing exports:* `map_norm_unitFiltration_psiNat_le`, `UnitFiltrationGraded`,
+    `normGradedMap`, and `normGradedMap_at_break`.
 - **Hasse–Arf.** For a finite abelian Galois extension `L/K`, the jumps of the upper-numbering
   filtration are integers. The proof contract includes the induction chain, not merely the phrase
   “reduce to cyclic prime degree”:
@@ -759,6 +798,7 @@ pro-`p` quotient.
     - `Layer 3: the norm on the unit filtration` (items 4 and 5);
     - `Layer 3: Herbrand functions and the upper numbering` (normal-quotient compatibility and
       tower transitivity);
+  - *Lean-facing exports:* `UpperJump` and `hasseArf`.
   - *Source:* Serre LF V §7. The hypothesis is that `G` is abelian. *False generalization:* for
     `G` non-abelian the jumps of the upper numbering need not be integers; the quaternion
     extension in Serre LF IV §3, exercise 3, is the standard witness.
@@ -798,16 +838,43 @@ pro-`p` quotient.
   - *Source:* Serre LF III §§3–6 for the different and the discriminant, and Serre LF IV §1 for
     the valuation formula, which needs `L/K` Galois.
 
+### Consumer contract: Counting Totally Ramified Extensions #226
+
+The ownership boundary is exact. #226 may carry temporary declarations while this supplier is
+unmerged, but they are adapters to be deleted, not milestones owned by that roadmap:
+
+| Temporary #226 name | Canonical export here |
+|---|---|
+| `ramificationIdx` | `ramificationIndex` |
+| `IsTotallyRamified` | `LocalFieldsRamification.IsTotallyRamified` |
+| `discriminantIdeal` | `localDiscriminantIdeal` |
+| `discExponent` | `discriminantExponent` |
+| `discExponent_eq_of_algEquiv` | `discriminantExponent_eq_of_algEquiv` |
+
+In particular, invariance of the discriminant exponent is not a #226 milestone. Its
+coordinate-box proof consumes `addVal_sum_eisenstein_powerBasis` directly. The carrier adapter is
+also part of this supplier: for `M : IntermediateField K (SeparableClosure K)` with
+`Module.Finite K M`, use `finiteIntermediateFieldNormedField`,
+`finiteIntermediateFieldValuativeRel`, `finiteIntermediateFieldTopology`,
+`finiteIntermediateField_valuativeExtension`, `finiteIntermediateField_isValuativeTopology`, and
+`finiteIntermediateField_isNonarchimedeanLocalField`, then the canonical integer/residue algebra
+and invariant declarations above. No already-topologized intermediate-field hypothesis may be
+inserted by the consumer. #226 must state this table and adapter identically before the joint
+boundary is accepted.
+
 ### Layer 4: the tame quotient of the absolute Galois group
 
-**Supplier status.** The exact Lean-facing Layer-4 carriers must import
+**Supplier status.** The dependency chain is **#188 → #244 → #189**. Both supplier PRs are still
+open, so neither their declarations nor the direct import are present on upstream `main`. The
+dependency begins in Layer 1, where `unitFiltration_one_isProP` must use
+`ProfiniteProPGroups.IsProP`, and continues through Layer 4. The exact Lean-facing carriers must import
 `TauCetiRoadmap.ProfiniteProPGroups.Suggested` and apply its Sylow, free-profinite, and presented
 profinite-group declarations directly. That supplier is not yet present on upstream `main`, so
-this PR cannot currently add a compiling Layer-4 section to `Suggested.lean` without bundling or
-shadowing the supplier. The Layer-4 interface request therefore remains a declared dependency,
-not a discharged type-checked contract. Once the supplier PR lands, adding that import and the
-closed applications listed below is required before Layer 4 is accepted; no `Supplied.*` or
-private replacement carrier is permitted.
+this PR cannot currently add compiling Layer-1/Layer-4 supplier applications to `Suggested.lean`
+without bundling or shadowing the supplier. Those interface requests therefore remain declared
+dependencies, not discharged type-checked contracts. Once #188 and then #244 land, adding the
+direct import, `unitFiltration_one_isProP`, and the closed applications listed below is required
+before this roadmap is accepted; no `Supplied.*` or private replacement carrier is permitted.
 
 - **The ambient model, fixed once.** Use `G_K := Field.absoluteGaloisGroup K` with the Krull
   topology, in every public statement and in every characteristic. Prove once, as a comparison
@@ -920,10 +987,10 @@ generic theorems.
 
 ## Dependency order
 
-The external abstract dependency is **Profinite and Pro-`p` Groups**. Within this roadmap the
-intended order is Layer 0 → Layer 1 → Layer 2 → Layer 3 → Layer 4. Later work may proceed against
-explicit hypotheses, but the accepted exports use the canonical objects produced by the
-preceding layers.
+The external abstract dependency order is **Continuous Cohomology of Profinite Groups #188 →
+Profinite and Pro-`p` Groups #244 → this roadmap #189**. Within this roadmap the intended order is
+Layer 0 → Layer 1 → Layer 2 → Layer 3 → Layer 4. Later work may proceed against explicit
+hypotheses, but the accepted exports use the canonical objects produced by the preceding layers.
 
 ## Material extracted from the former local-fields portfolio
 

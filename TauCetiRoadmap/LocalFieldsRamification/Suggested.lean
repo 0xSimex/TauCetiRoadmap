@@ -16,7 +16,7 @@ namespace TauCetiRoadmap.LocalFieldsRamification
 open ValuativeRel
 open scoped WithZero
 
-universe u v
+universe u v w
 
 variable (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
@@ -67,6 +67,40 @@ example (π : 𝒪[K]) (_hπ : Irreducible π) :
       ∃ n : ℤ, (γ : ValueGroupWithZero K) = valuation K (π : K) ^ n :=
   sorry
 
+/-- **Layer 0.I, bridge to the analytic API.** The normalized absolute value attached to the
+canonical valuative relation supplies the normed-field structure used by
+`spectralNorm`. This is a named value rather than a global instance, so installing it is always
+local and cannot create a topology diamond. -/
+@[implicit_reducible]
+noncomputable def normalizedNormedField : NormedField K :=
+  sorry
+
+/-- **Layer 0.I, the topology carried by `normalizedNormedField`.** Naming it separately makes
+all later comparisons explicit. -/
+@[implicit_reducible]
+noncomputable def normalizedNormedFieldTopology : TopologicalSpace K := by
+  letI := normalizedNormedField K
+  exact inferInstance
+
+/-- **Layer 0.I, compatibility of the analytic and valuative topologies on the base.** -/
+theorem normalizedNormedField_topology_eq :
+    normalizedNormedFieldTopology K = (inferInstance : TopologicalSpace K) :=
+  sorry
+
+/-- **Layer 0.I, the spectral-norm structure on a bare finite algebra.** Completeness and
+ultrametricity come from `normalizedNormedField`; no topology or valuation on `M` is assumed. -/
+@[implicit_reducible]
+noncomputable def finiteExtensionNormedField (M : Type v) [Field M] [Algebra K M]
+    [Module.Finite K M] : NormedField M :=
+  sorry
+
+/-- **Layer 0.I, the topology induced by the spectral norm.** -/
+@[implicit_reducible]
+noncomputable def finiteExtensionNormedFieldTopology (M : Type v) [Field M] [Algebra K M]
+    [Module.Finite K M] : TopologicalSpace M := by
+  letI := finiteExtensionNormedField K M
+  exact inferInstance
+
 /-- **Layer 0.I, constructing the valuative structure on a finite extension.** The spectral
 norm supplies a `ValuativeRel M`; a particular `Valuation M ℤᵐ⁰` is an implementation witness,
 not a second public carrier. This is a definition rather than a global instance, avoiding a
@@ -83,10 +117,36 @@ theorem finiteExtension_valuativeExtension (M : Type v) [Field M] [Algebra K M]
     ValuativeExtension K M :=
   sorry
 
+/-- **Layer 0.I, the constructed topology is valuative for the constructed relation.** This is
+the missing bridge from the spectral norm to the public valuative carrier. -/
+theorem finiteExtension_isValuativeTopology (M : Type v) [Field M] [Algebra K M]
+    [Module.Finite K M] :
+    @IsValuativeTopology M _ (finiteExtensionValuativeRel K M)
+      (finiteExtensionNormedFieldTopology K M) :=
+  sorry
+
+/-- **Layer 0.III, a bare finite algebra is a local field with the structures just constructed.**
+Unlike the compatibility example below, this theorem assumes no topology or valuative relation
+on `M`; it closes the construction consumed by every later layer. -/
+theorem finiteExtension_isNonarchimedeanLocalField (M : Type v) [Field M] [Algebra K M]
+    [Module.Finite K M] :
+    @IsNonarchimedeanLocalField M _ (finiteExtensionValuativeRel K M)
+      (finiteExtensionNormedFieldTopology K M) :=
+  sorry
+
+/-- **Layer 0.II, comparison with an already topologized compatible extension.** Uniqueness of
+the extended valuation identifies the spectral-norm topology with the pre-existing valuative
+topology. -/
+theorem finiteExtensionNormedFieldTopology_eq (M : Type v) [Field M] [Algebra K M]
+    [Module.Finite K M] [ValuativeRel M] [TopologicalSpace M] [IsValuativeTopology M]
+    [ValuativeExtension K M] :
+    finiteExtensionNormedFieldTopology K M = (inferInstance : TopologicalSpace M) :=
+  sorry
+
 /-- **Layer 0.II, uniqueness.** Any two valuations on a finite extension `M/K` restricting to
 the valuation class of `K` are equivalent. (Completeness of `K` is what makes this true, and
 it is part of `IsNonarchimedeanLocalField K`.) -/
-example (M : Type v) [Field M] [Algebra K M] [Module.Finite K M]
+theorem finiteExtensionValuation_isEquiv (M : Type v) [Field M] [Algebra K M] [Module.Finite K M]
     {Γ₁ Γ₂ : Type*} [LinearOrderedCommGroupWithZero Γ₁] [LinearOrderedCommGroupWithZero Γ₂]
     (w₁ : Valuation M Γ₁) (w₂ : Valuation M Γ₂)
     (_h₁ : (w₁.comap (algebraMap K M)).IsEquiv (valuation K))
@@ -94,11 +154,17 @@ example (M : Type v) [Field M] [Algebra K M] [Module.Finite K M]
     w₁.IsEquiv w₂ :=
   sorry
 
+/-- **Layer 0.II, the constructed relation agrees with any compatible existing relation.** -/
+theorem finiteExtensionValuativeRel_eq (M : Type v) [Field M] [Algebra K M]
+    [Module.Finite K M] [ValuativeRel M] [ValuativeExtension K M] :
+    finiteExtensionValuativeRel K M = (inferInstance : ValuativeRel M) :=
+  sorry
+
 /-- **Layer 0.II, corollary: Galois invariance of the valuation.** Every `K`-algebra
 automorphism of a finite extension `L/K` of local fields preserves the canonical valuation.
 This is what makes `Gal(L/K)` act on `𝒪[L]`, `𝓂[L]`, and the residue field, and Layers 2
 and 3 use it constantly. -/
-example [Algebra K L] [ValuativeExtension K L] [Module.Finite K L]
+theorem valuation_algEquiv [Algebra K L] [ValuativeExtension K L] [Module.Finite K L]
     (σ : L ≃ₐ[K] L) (x : L) :
     valuation L (σ x) = valuation L x :=
   sorry
@@ -120,10 +186,95 @@ noncomputable instance integerRingAlgebra [Algebra K L] [ValuativeExtension K L]
     Algebra 𝒪[K] 𝒪[L] :=
   sorry
 
+/-- **Layer 0.III, residue fields in an extension.** The reduction of the integer-ring algebra
+is the canonical `𝓀[K]`-algebra structure on `𝓀[L]`. -/
+noncomputable instance residueFieldAlgebra [Algebra K L] [ValuativeExtension K L] :
+    Algebra 𝓀[K] 𝓀[L] :=
+  sorry
+
 /-- **Layer 0.III, torsion-freeness of the integer-ring extension.** This is the ring-level
 hypothesis used by Mathlib's `differentIdeal`. -/
 noncomputable instance integerRingTorsionFree [Algebra K L] [ValuativeExtension K L] :
     Module.IsTorsionFree 𝒪[K] 𝒪[L] :=
+  sorry
+
+/-- **Layer 0.III, finiteness of the integer-ring extension.** -/
+noncomputable instance integerRingModuleFinite [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] : Module.Finite 𝒪[K] 𝒪[L] :=
+  sorry
+
+/-- **Layer 0.III, finite freeness of the integer-ring extension.** -/
+noncomputable instance integerRingModuleFree [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] : Module.Free 𝒪[K] 𝒪[L] :=
+  sorry
+
+/-- **Layer 0.III, comparison with integral closure.** -/
+theorem integerRing_eq_integralClosure [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] :
+    (𝒪[L] : Set L) = integralClosure 𝒪[K] L :=
+  sorry
+
+/-- **Layer 0.III, compatibility of the constructed topology in a finite tower.** -/
+theorem finiteExtensionNormedFieldTopology_tower
+    (M : Type w) [Field M] [Algebra K L] [ValuativeExtension K L] [Module.Finite K L]
+    [Algebra L M] [Module.Finite L M] [Algebra K M] [Module.Finite K M]
+    [IsScalarTower K L M] :
+    finiteExtensionNormedFieldTopology K M = finiteExtensionNormedFieldTopology L M :=
+  sorry
+
+/-- **Layer 0.III, compatibility of the constructed valuative relation in a finite tower.** -/
+theorem finiteExtensionValuativeRel_tower
+    (M : Type w) [Field M] [Algebra K L] [ValuativeExtension K L] [Module.Finite K L]
+    [Algebra L M] [Module.Finite L M] [Algebra K M] [Module.Finite K M]
+    [IsScalarTower K L M] :
+    finiteExtensionValuativeRel K M = finiteExtensionValuativeRel L M :=
+  sorry
+
+/-- **Layer 0.III, adapter for a finite intermediate-field carrier.** This is the exact entry
+point required by Counting Totally Ramified Extensions #226: its intermediate field acquires the
+spectral-norm structure without first postulating topology or valuation instances. -/
+@[implicit_reducible]
+noncomputable def finiteIntermediateFieldNormedField
+    (Ω : Type v) [Field Ω] [Algebra K Ω]
+    (M : IntermediateField K Ω) [Module.Finite K M] : NormedField M :=
+  finiteExtensionNormedField K M
+
+/-- **Layer 0.III, valuative relation on a finite intermediate-field carrier.** -/
+@[implicit_reducible]
+noncomputable def finiteIntermediateFieldValuativeRel
+    (Ω : Type v) [Field Ω] [Algebra K Ω]
+    (M : IntermediateField K Ω) [Module.Finite K M] : ValuativeRel M :=
+  finiteExtensionValuativeRel K M
+
+/-- **Layer 0.III, spectral-norm topology on a finite intermediate-field carrier.** -/
+@[implicit_reducible]
+noncomputable def finiteIntermediateFieldTopology
+    (Ω : Type v) [Field Ω] [Algebra K Ω]
+    (M : IntermediateField K Ω) [Module.Finite K M] : TopologicalSpace M :=
+  finiteExtensionNormedFieldTopology K M
+
+/-- **Layer 0.III, compatibility of the intermediate-field adapter with the base valuation.** -/
+theorem finiteIntermediateField_valuativeExtension
+    (Ω : Type v) [Field Ω] [Algebra K Ω]
+    (M : IntermediateField K Ω) [Module.Finite K M] :
+    letI := finiteIntermediateFieldValuativeRel K Ω M
+    ValuativeExtension K M :=
+  finiteExtension_valuativeExtension K M
+
+/-- **Layer 0.III, the intermediate-field adapter carries the valuative topology.** -/
+theorem finiteIntermediateField_isValuativeTopology
+    (Ω : Type v) [Field Ω] [Algebra K Ω]
+    (M : IntermediateField K Ω) [Module.Finite K M] :
+    @IsValuativeTopology M _ (finiteIntermediateFieldValuativeRel K Ω M)
+      (finiteIntermediateFieldTopology K Ω M) :=
+  finiteExtension_isValuativeTopology K M
+
+/-- **Layer 0.III, local-field theorem for a finite intermediate-field carrier.** -/
+theorem finiteIntermediateField_isNonarchimedeanLocalField
+    (Ω : Type v) [Field Ω] [Algebra K Ω]
+    (M : IntermediateField K Ω) [Module.Finite K M] :
+    @IsNonarchimedeanLocalField M _ (finiteIntermediateFieldValuativeRel K Ω M)
+      (finiteIntermediateFieldTopology K Ω M) :=
   sorry
 
 /-- **Layer 0, the ramification index**, defined without choosing a uniformizer: the positive
@@ -133,12 +284,15 @@ noncomputable def ramificationIndex [Algebra K L] [ValuativeExtension K L] [Modu
     ℕ :=
   sorry
 
-/-- **Layer 0, the residue degree.** Once Layer 0.III supplies `Algebra 𝓀[K] 𝓀[L]` this is
-`Module.finrank 𝓀[K] 𝓀[L]`; that algebra instance does not exist at the pin, so the
-definition is stated here by name and pinned down by `card_residueField` below. -/
+/-- **Layer 0, the residue degree.** This is definitionally the dimension of the residue-field
+extension supplied by `residueFieldAlgebra`. -/
 noncomputable def inertiaDegree [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] :
-    ℕ :=
-  sorry
+    ℕ := Module.finrank 𝓀[K] 𝓀[L]
+
+/-- **Layer 0, total ramification.** This is the canonical predicate consumed by #226; that
+roadmap must not keep a parallel `IsTotallyRamified`. -/
+def IsTotallyRamified [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] : Prop :=
+  ramificationIndex K L = Module.finrank K L
 
 /-- **Layer 0, the characteristic property of `e`.** The normalized valuation of `L`
 restricted along `K` is the `e`-th power of that of `K`. Stated for all `x`, so no uniformizer
@@ -269,6 +423,56 @@ example (π : 𝒪[K]) (_hπ : Irreducible π) (x : Kˣ) :
     ∃! p : ℤ × (↥𝒪[K])ˣ, (x : K) = (π : K) ^ p.1 * ((p.2 : ↥𝒪[K]) : K) :=
   sorry
 
+/-- **Layer 1, the local exponential.** At this pin the implementation starts from
+`NormedSpace.expSeries`/`NormedSpace.exp` after locally installing `normalizedNormedField`; it is
+named here because Mathlib has no ready-made `p`-adic-field exponential/logarithm equivalence. -/
+noncomputable def localExponential : K → K :=
+  sorry
+
+/-- **Layer 1, the local logarithm.** This is the evaluated series
+`PowerSeries.log = X - X²/2 + X³/3 - ⋯` on its nonarchimedean convergence domain. Constructing
+this function, its convergence theorem, and continuity is an explicit milestone. -/
+noncomputable def localLogarithm : K → K :=
+  sorry
+
+/-- **Layer 1, the sharp deep-unit exponential/logarithm equivalence.** The strict inequality is
+part of the data; at equality logarithm may converge without being injective because of torsion. -/
+noncomputable def deepUnitExpLogEquiv (p : ℕ) [Fact p.Prime] [Algebra ℚ_[p] K]
+    [ValuativeExtension ℚ_[p] K] [Module.Finite ℚ_[p] K]
+    (i : ℕ) (_hi : absoluteRamificationIndex K p < (p - 1) * i) :
+    Multiplicative ↥(𝓂[K] ^ i) ≃* unitFiltration K i :=
+  sorry
+
+/-- **Layer 1, `log (exp x) = x` on the sharp deep additive domain.** -/
+theorem localLogarithm_localExponential (p : ℕ) [Fact p.Prime] [Algebra ℚ_[p] K]
+    [ValuativeExtension ℚ_[p] K] [Module.Finite ℚ_[p] K]
+    (i : ℕ) (hi : absoluteRamificationIndex K p < (p - 1) * i)
+    (x : ↥(𝓂[K] ^ i)) :
+    localLogarithm K (localExponential K (((x : 𝒪[K]) : K))) = ((x : 𝒪[K]) : K) :=
+  sorry
+
+/-- **Layer 1, `exp (log u) = u` on the sharp deep multiplicative domain.** -/
+theorem localExponential_localLogarithm (p : ℕ) [Fact p.Prime] [Algebra ℚ_[p] K]
+    [ValuativeExtension ℚ_[p] K] [Module.Finite ℚ_[p] K]
+    (i : ℕ) (hi : absoluteRamificationIndex K p < (p - 1) * i)
+    (u : unitFiltration K i) :
+    localExponential K (localLogarithm K (((u : Kˣ) : K))) = ((u : Kˣ) : K) :=
+  sorry
+
+/-- **Layer 1, continuity of exponential on the sharp deep domain.** -/
+theorem continuous_localExponential_deep (p : ℕ) [Fact p.Prime] [Algebra ℚ_[p] K]
+    [ValuativeExtension ℚ_[p] K] [Module.Finite ℚ_[p] K]
+    (i : ℕ) (_hi : absoluteRamificationIndex K p < (p - 1) * i) :
+    Continuous (fun x : ↥(𝓂[K] ^ i) => localExponential K (((x : 𝒪[K]) : K))) :=
+  sorry
+
+/-- **Layer 1, continuity of logarithm on the sharp deep-unit domain.** -/
+theorem continuous_localLogarithm_deep (p : ℕ) [Fact p.Prime] [Algebra ℚ_[p] K]
+    [ValuativeExtension ℚ_[p] K] [Module.Finite ℚ_[p] K]
+    (i : ℕ) (_hi : absoluteRamificationIndex K p < (p - 1) * i) :
+    Continuous (fun u : unitFiltration K i => localLogarithm K (((u : Kˣ) : K))) :=
+  sorry
+
 /-- **Layer 1, power classes in the prime-to-residue-characteristic regime.** If `n` is a unit
 in the valuation ring, the count is exact and holds in either characteristic: the factor
 `q ^ natCastValuation K n` of the general formula is `1`, which is where the hypothesis is used. -/
@@ -288,6 +492,35 @@ theorem card_powerClasses_mixed (p : ℕ) [Fact p.Prime] [Algebra ℚ_[p] K]
     Nat.card (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range)
       = n * Nat.card (rootsOfUnity n K)
         * Nat.card 𝓀[K] ^ natCastValuation K n hnK :=
+  sorry
+
+/-- **Layer 1, openness of the power subgroup away from the residue characteristic.** Openness
+comes from the explicit deep subgroup contained in the range; no finite-index implication is used. -/
+theorem isOpen_range_powMonoidHom_of_isUnit (n : ℕ) (_hn : n ≠ 0)
+    (_hn' : IsUnit (n : ↥𝒪[K])) :
+    IsOpen ((powMonoidHom n : Kˣ →* Kˣ).range : Set Kˣ) :=
+  sorry
+
+/-- **Layer 1, openness of the power subgroup in mixed characteristic.** -/
+theorem isOpen_range_powMonoidHom (p : ℕ) [Fact p.Prime] [Algebra ℚ_[p] K]
+    [ValuativeExtension ℚ_[p] K] [Module.Finite ℚ_[p] K]
+    (n : ℕ) (_hn : n ≠ 0) :
+    IsOpen ((powMonoidHom n : Kˣ →* Kˣ).range : Set Kˣ) :=
+  sorry
+
+/-- **Layer 1, finite index away from the residue characteristic.** This is derived from
+`card_powerClasses_of_isUnit`, independently of the openness proof. -/
+theorem finiteIndex_range_powMonoidHom_of_isUnit (n : ℕ) (_hn : n ≠ 0)
+    (_hn' : IsUnit (n : ↥𝒪[K])) :
+    (powMonoidHom n : Kˣ →* Kˣ).range.FiniteIndex :=
+  sorry
+
+/-- **Layer 1, finite index in mixed characteristic.** This is derived from
+`card_powerClasses_mixed`, not from openness. -/
+theorem finiteIndex_range_powMonoidHom (p : ℕ) [Fact p.Prime] [Algebra ℚ_[p] K]
+    [ValuativeExtension ℚ_[p] K] [Module.Finite ℚ_[p] K]
+    (n : ℕ) (_hn : n ≠ 0) :
+    (powMonoidHom n : Kˣ →* Kˣ).range.FiniteIndex :=
   sorry
 
 /-- **Layer 1, the square classes away from residue characteristic `2`.** The specialization of
@@ -465,6 +698,169 @@ theorem lowerRamificationGroupReal_eq_of_sub_one_lt_of_le [Algebra K L]
     [ValuativeExtension K L] [Module.Finite K L] [IsGalois K L]
     (i : ℤ) (u : ℝ) (hleft : (i : ℝ) - 1 < u) (hright : u ≤ (i : ℝ)) :
     lowerRamificationGroupReal K L u = lowerRamificationGroup K L i :=
+  sorry
+
+/-- **Layer 3, the genuine domain of Herbrand theory.** Keeping `[-1,∞)` in the type prevents
+global-function equalities from making accidental claims about arbitrary values below `-1`. -/
+abbrev RamificationIndexDomain := Set.Ici (-1 : ℝ)
+
+/-- **Layer 3, Herbrand and inverse Herbrand as one order isomorphism.** Its forward map is
+`φ_{L/K}` and its inverse is `ψ_{L/K}`. -/
+noncomputable def herbrandOrderIso [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] :
+    RamificationIndexDomain ≃o RamificationIndexDomain :=
+  sorry
+
+/-- **Layer 3, the Herbrand function on its mathematical domain.** -/
+noncomputable def herbrand [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] :
+    RamificationIndexDomain → RamificationIndexDomain :=
+  herbrandOrderIso K L
+
+/-- **Layer 3, the inverse Herbrand function on its mathematical domain.** -/
+noncomputable def inverseHerbrand [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] :
+    RamificationIndexDomain → RamificationIndexDomain :=
+  (herbrandOrderIso K L).symm
+
+/-- **Layer 3, `φ (ψ u) = u`.** -/
+theorem herbrand_inverseHerbrand [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] (u : RamificationIndexDomain) :
+    herbrand K L (inverseHerbrand K L u) = u :=
+  sorry
+
+/-- **Layer 3, `ψ (φ u) = u`.** -/
+theorem inverseHerbrand_herbrand [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] (u : RamificationIndexDomain) :
+    inverseHerbrand K L (herbrand K L u) = u :=
+  sorry
+
+/-- **Layer 3, the upper-numbering filtration.** -/
+noncomputable def upperRamificationGroup [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] (u : RamificationIndexDomain) :
+    Subgroup (L ≃ₐ[K] L) :=
+  lowerRamificationGroupReal K L (inverseHerbrand K L u : ℝ)
+
+/-- **Layer 3, the quotient filtration attached to a normal subgroup.** The use of
+`QuotientGroup.mk'` pins the direction of the map. -/
+noncomputable def upperRamificationGroupQuotient [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L]
+    (H : Subgroup (L ≃ₐ[K] L)) [H.Normal] (u : RamificationIndexDomain) :
+    Subgroup ((L ≃ₐ[K] L) ⧸ H) :=
+  Subgroup.map (QuotientGroup.mk' H) (upperRamificationGroup K L u)
+
+omit [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+  [TopologicalSpace L] [IsNonarchimedeanLocalField L] in
+/-- **Layer 3, abstract quotient compatibility.** -/
+theorem upperRamificationGroup_quotient [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L]
+    (H : Subgroup (L ≃ₐ[K] L)) [H.Normal] (u : RamificationIndexDomain) :
+    Subgroup.map (QuotientGroup.mk' H) (upperRamificationGroup K L u) =
+      upperRamificationGroupQuotient K L H u :=
+  rfl
+
+/-- **Layer 3, field-theoretic quotient compatibility through Mathlib's actual restriction
+equivalence.** The fixed field and `IsGalois.normalAutEquivQuotient` are named in the type, so a
+consumer cannot silently reverse the quotient map. -/
+theorem upperRamificationGroup_fixedField [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L]
+    (H : Subgroup (L ≃ₐ[K] L)) [H.Normal]
+    [ValuativeRel (IntermediateField.fixedField H)]
+    [TopologicalSpace (IntermediateField.fixedField H)]
+    [IsNonarchimedeanLocalField (IntermediateField.fixedField H)]
+    [ValuativeExtension K (IntermediateField.fixedField H)]
+    (u : RamificationIndexDomain) :
+    Subgroup.map (IsGalois.normalAutEquivQuotient H).toMonoidHom
+        (upperRamificationGroupQuotient K L H u) =
+      upperRamificationGroup K (IntermediateField.fixedField H) u :=
+  sorry
+
+/-- **Layer 3, tower transitivity for Herbrand.** The order is
+`φ_{M/K} = φ_{L/K} ∘ φ_{M/L}`. -/
+theorem herbrand_tower
+    (M : Type w) [Field M] [ValuativeRel M] [TopologicalSpace M]
+    [IsNonarchimedeanLocalField M]
+    [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] [IsGalois K L]
+    [Algebra L M] [ValuativeExtension L M] [Module.Finite L M] [IsGalois L M]
+    [Algebra K M] [ValuativeExtension K M] [Module.Finite K M] [IsGalois K M]
+    [IsScalarTower K L M] :
+    herbrandOrderIso K M = (herbrandOrderIso L M).trans (herbrandOrderIso K L) :=
+  sorry
+
+/-- **Layer 3, tower transitivity for inverse Herbrand.** Inversion reverses the composite:
+`ψ_{M/K} = ψ_{M/L} ∘ ψ_{L/K}`. -/
+theorem inverseHerbrand_tower
+    (M : Type w) [Field M] [ValuativeRel M] [TopologicalSpace M]
+    [IsNonarchimedeanLocalField M]
+    [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] [IsGalois K L]
+    [Algebra L M] [ValuativeExtension L M] [Module.Finite L M] [IsGalois L M]
+    [Algebra K M] [ValuativeExtension K M] [Module.Finite K M] [IsGalois K M]
+    [IsScalarTower K L M] :
+    (herbrandOrderIso K M).symm =
+      (herbrandOrderIso K L).symm.trans (herbrandOrderIso L M).symm :=
+  sorry
+
+/-- **Layer 3, integral inverse-Herbrand depth.** -/
+noncomputable def psiNat [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] : ℕ → ℕ :=
+  sorry
+
+/-- **Layer 3, characterization of the integral inverse-Herbrand depth.** -/
+theorem coe_psiNat [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] (n : ℕ) :
+    (psiNat K L n : ℝ) =
+      (inverseHerbrand K L
+        ⟨(n : ℝ), le_trans (by norm_num : (-1 : ℝ) ≤ 0) (Nat.cast_nonneg n)⟩ : ℝ) :=
+  sorry
+
+/-- **Layer 3, tower transitivity for integral depths.** -/
+theorem psiNat_tower
+    (M : Type w) [Field M] [ValuativeRel M] [TopologicalSpace M]
+    [IsNonarchimedeanLocalField M]
+    [Algebra K L] [ValuativeExtension K L] [Module.Finite K L] [IsGalois K L]
+    [Algebra L M] [ValuativeExtension L M] [Module.Finite L M] [IsGalois L M]
+    [Algebra K M] [ValuativeExtension K M] [Module.Finite K M] [IsGalois K M]
+    [IsScalarTower K L M] :
+    psiNat K M = psiNat L M ∘ psiNat K L :=
+  sorry
+
+/-- **Layer 3, the Herbrand-shifted norm inclusion.** -/
+theorem map_norm_unitFiltration_psiNat_le [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] (i : ℕ) :
+    Subgroup.map (Units.map (Algebra.norm K : L →* K))
+        (unitFiltration L (psiNat K L i)) ≤ unitFiltration K i :=
+  sorry
+
+/-- **Layer 3, a graded piece of the unit filtration.** -/
+abbrev UnitFiltrationGraded (i : ℕ) :=
+  unitFiltration K i ⧸ (unitFiltration K (i + 1)).subgroupOf (unitFiltration K i)
+
+/-- **Layer 3, the norm on Herbrand-shifted graded pieces.** -/
+noncomputable def normGradedMap [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] (v : ℕ) :
+    UnitFiltrationGraded L (psiNat K L v) →* UnitFiltrationGraded K v :=
+  sorry
+
+/-- **Layer 3, the prime-degree break calculation.** At the unique break the kernel and
+cokernel of the graded norm both have order `ℓ`. -/
+theorem normGradedMap_at_break [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L]
+    (ℓ : ℕ) [Fact ℓ.Prime] (t : ℕ) (_hdegree : Module.finrank K L = ℓ) :
+    Nat.card (normGradedMap K L t).ker = ℓ ∧
+      Nat.card (UnitFiltrationGraded K t ⧸ (normGradedMap K L t).range) = ℓ :=
+  sorry
+
+/-- **Layer 3, predicate for an upper-numbering jump.** -/
+def UpperJump [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L] (u : RamificationIndexDomain) : Prop :=
+  sorry
+
+/-- **Layer 3, Hasse–Arf.** Every upper jump of a finite abelian Galois extension is integral. -/
+theorem hasseArf [Algebra K L] [ValuativeExtension K L]
+    [Module.Finite K L] [IsGalois K L]
+    (hcomm : ∀ σ τ : L ≃ₐ[K] L, σ * τ = τ * σ)
+    (u : RamificationIndexDomain) (hu : UpperJump K L u) :
+    ∃ z : ℤ, (u : ℝ) = (z : ℝ) :=
   sorry
 
 /-- **Layer 3, local monogenicity at the integer-ring level.** A finite separable extension of
