@@ -19,8 +19,8 @@ Suggested home: `TauCeti/NumberTheory/NumberField/Global/`, with subdirectories 
 `GlobalNumberFields` or in the namespace of their principal carrier.
 
 [`Suggested.lean`](Suggested.lean) gives representative declaration shapes. The markdown roadmap
-is definitive. [`PROVENANCE.md`](PROVENANCE.md) is a dated, non-normative account of the source
-material and ecosystem.
+is definitive. A dated, non-normative account of the source material and ecosystem is maintained
+in a private provenance ledger.
 
 ## Scope
 
