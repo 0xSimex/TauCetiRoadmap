@@ -24,6 +24,7 @@ body:
         - ConformalMapping
         - ContourIntegration
         - DGAInfinity
+        - DenseGraphLimits
         - EllipticCurves
         - Exchangeability
         - GeometricTopology
