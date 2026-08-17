@@ -416,7 +416,12 @@ NarrowPic O := O.properIdeals / O.narrowPrincipal.
 
 Construct extension and contraction between proper ideals prime to the conductor and maximal-order
 ideals, prove the ray-class-style congruence description, finiteness, the wide/narrow comparison,
-and specialization to the maximal order.
+and specialization to the maximal order. The wide/narrow comparison is the named canonical map
+`NumberFieldOrder.narrowToPic : NarrowPic O →* Pic O`: give its value on an ideal class, prove
+surjectivity, and identify its kernel through the exact sequence
+`Oˣ → {±1}^{r₁} → NarrowPic O → Pic O → 1`. Prove naturality for order morphisms and state the
+commuting maximal-order specialization as `narrowClassToClass`; the old existential
+`narrowPic_surjective` remains only as a corollary of the named map.
 
 Do not define `ringClassField O`. Class Field Theory consumes the congruence description and builds
 that field.

@@ -325,8 +325,82 @@ def NarrowPic (O : NumberFieldOrder K) : Type u :=
 noncomputable instance (O : NumberFieldOrder K) : CommGroup (NarrowPic O) :=
   inferInstanceAs (CommGroup (O.properIdeals ⧸ O.narrowPrincipal))
 
+/-- The canonical forget-positivity map from the narrow to the wide Picard group. -/
+noncomputable def NumberFieldOrder.narrowToPic (O : NumberFieldOrder K) :
+    NarrowPic O →* Pic O := sorry
+
+/-- Evaluation of the forget-positivity map on a proper ideal class. -/
+theorem NumberFieldOrder.narrowToPic_mk (O : NumberFieldOrder K)
+    (I : O.properIdeals) :
+    O.narrowToPic (QuotientGroup.mk I) = O.mkPic I := sorry
+
+theorem NumberFieldOrder.narrowToPic_surjective (O : NumberFieldOrder K) :
+    Function.Surjective O.narrowToPic := sorry
+
+/-- Sign vectors at the real places. The quotient by the signs of order units is the
+kernel term in the narrow-to-wide exact sequence. -/
+abbrev RealSignGroup (K : Type u) [Field K] [NumberField K] :=
+  {w : InfinitePlace K // w.IsReal} → Multiplicative (ZMod 2)
+
+noncomputable def NumberFieldOrder.unitSignMap (O : NumberFieldOrder K) :
+    O.toSubalgebraˣ →* RealSignGroup K := sorry
+
+def UnitSignQuotient (O : NumberFieldOrder K) : Type u :=
+  RealSignGroup K ⧸ O.unitSignMap.range
+
+noncomputable instance (O : NumberFieldOrder K) : CommGroup (UnitSignQuotient O) :=
+  inferInstanceAs (CommGroup (RealSignGroup K ⧸ O.unitSignMap.range))
+
+/-- The boundary map in
+`Oˣ → {±1}^{r₁} → NarrowPic O → Pic O → 1`. -/
+noncomputable def NumberFieldOrder.unitSignBoundary (O : NumberFieldOrder K) :
+    UnitSignQuotient O →* NarrowPic O := sorry
+
+theorem NumberFieldOrder.unitSignBoundary_injective (O : NumberFieldOrder K) :
+    Function.Injective O.unitSignBoundary := sorry
+
+theorem NumberFieldOrder.ker_narrowToPic (O : NumberFieldOrder K) :
+    O.narrowToPic.ker = O.unitSignBoundary.range := sorry
+
+/-- Morphisms of orders, used to state functoriality without hiding the comparison maps. -/
+structure NumberFieldOrder.Hom (O O' : NumberFieldOrder K) where
+  toAlgHom : O.toSubalgebra →ₐ[ℤ] O'.toSubalgebra
+
+noncomputable def NumberFieldOrder.Hom.mapPic {O O' : NumberFieldOrder K}
+    (f : O.Hom O') : Pic O →* Pic O' := sorry
+
+noncomputable def NumberFieldOrder.Hom.mapNarrowPic {O O' : NumberFieldOrder K}
+    (f : O.Hom O') : NarrowPic O →* NarrowPic O' := sorry
+
+theorem NumberFieldOrder.narrowToPic_natural {O O' : NumberFieldOrder K}
+    (f : O.Hom O') :
+    f.mapPic.comp O.narrowToPic = O'.narrowToPic.comp f.mapNarrowPic := sorry
+
+/-- The maximal order as a `NumberFieldOrder`, making the specialization explicit. -/
+noncomputable def maximalNumberFieldOrder
+    (K : Type u) [Field K] [NumberField K] : NumberFieldOrder K := sorry
+
+noncomputable def maximalOrderPicEquiv :
+    Pic (maximalNumberFieldOrder K) ≃* ClassGroup (𝓞 K) := sorry
+
+abbrev NarrowClassGroup (K : Type u) [Field K] [NumberField K] :=
+  NarrowPic (maximalNumberFieldOrder K)
+
+noncomputable def narrowClassToClass :
+    NarrowClassGroup K →* ClassGroup (𝓞 K) :=
+  (maximalOrderPicEquiv (K := K)).toMonoidHom.comp
+    (maximalNumberFieldOrder K).narrowToPic
+
+/-- Compatibility of the order-theoretic map with its maximal-order specialization. -/
+theorem narrowClassToClass_eq :
+    narrowClassToClass (K := K) =
+      (maximalOrderPicEquiv (K := K)).toMonoidHom.comp
+        (maximalNumberFieldOrder K).narrowToPic := rfl
+
+/-- Backwards-compatible existential corollary. -/
 theorem narrowPic_surjective (O : NumberFieldOrder K) :
-    ∃ f : NarrowPic O →* Pic O, Function.Surjective f := sorry
+    ∃ f : NarrowPic O →* Pic O, Function.Surjective f :=
+  ⟨O.narrowToPic, O.narrowToPic_surjective⟩
 
 theorem finite_pic (O : NumberFieldOrder K) : Finite (Pic O) := sorry
 
