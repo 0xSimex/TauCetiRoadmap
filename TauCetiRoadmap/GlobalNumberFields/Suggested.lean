@@ -503,7 +503,7 @@ theorem NumberFieldOrder.ProperNoninvertibleIdealExample.class_not_isUnit
 /-- The order `ℤ + 2ℤ∛2 + 2ℤ(∛2)²` and ideal
 `8ℤ + 2ℤ∛2 + 2ℤ(∛2)²` from the README instantiate this cubic regression. -/
 theorem exists_cubic_properNoninvertibleIdealExample :
-    ∃ (F : Type u) [Field F] [NumberField F],
+    ∃ (F : Type u) (_ : Field F) (_ : NumberField F),
       Module.finrank ℚ F = 3 ∧
         Nonempty (NumberFieldOrder.ProperNoninvertibleIdealExample F) := sorry
 
