@@ -40,7 +40,8 @@ in a private provenance ledger.
 - ray class characters, Hecke characters, their conductors, shifts, and unitary parts;
 - the arithmetic splitting and ramification package for cyclotomic fields;
 - continuous and algebraic infinity types;
-- orders in number fields, conductors, proper ideals, and wide and narrow Picard groups.
+- orders in number fields, conductors, invertible proper fractional ideals, their wide and narrow
+  Picard groups, and the separate ideal class monoid that also sees noninvertible ideals.
 
 ### Out of scope
 
@@ -155,7 +156,9 @@ normalized local/global absolute values. Adelic Algebraic Groups owns every cons
 ```text
 NumberFieldOrder
 NumberFieldOrder.conductor
-NumberFieldOrder.properIdeals
+NumberFieldOrder.IsProperFractionalIdeal
+NumberFieldOrder.invertibleProperFractionalIdeals
+IdealClassMonoid
 Pic
 NarrowPic
 ```
@@ -174,7 +177,11 @@ number fields. A general Dedekind domain need not have finite residue rings or f
 so ray-class finiteness and counting always carry number-field or explicit finiteness hypotheses.
 
 An order is generally not integrally closed and is therefore not inserted into the Dedekind-generic
-ray-class theory. Its invertible/proper ideal theory is built separately.
+ray-class theory. Its invertible ideal theory is built separately. A fractional ideal is **proper**
+when its multiplier ring is the order, but properness does not imply invertibility for an arbitrary
+order. The equivalence is stated only under an explicit Gorenstein hypothesis (and, in particular,
+for quadratic orders). Noninvertible ideals belong to the ideal class monoid, not either Picard
+group.
 
 ## Pinned conventions
 
@@ -194,8 +201,10 @@ ray-class theory. Its invertible/proper ideal theory is built separately.
 | Idele norm | Product of normalized local absolute values. It is `1` on principal ideles, and therefore descends to the idele class group. |
 | Hecke character | A continuous multiplicative character of the idele class group. A collection of ideal coefficients, gamma shifts, and finite characters is a presentation of one, not another carrier. |
 | Shift | The unique **real** `σ` with `|χ| = ‖·‖^σ`; allowing a complex shift destroys uniqueness up to unitary norm twists. |
-| Proper ideal of an order | A fractional ideal `I` with multiplier ring `{x | xI ⊆ I}` equal to the order. Over a nonmaximal order this is stronger than merely being fractional. |
-| Narrow Picard group | Proper ideals modulo principal proper ideals with a totally positive generator (equivalently positive norm in the quadratic cases where that dictionary is used). It is a quotient of `properIdeals`, not all fractional ideals. |
+| Proper ideal of an order | A fractional ideal `I` with multiplier ring `{x | xI ⊆ I}` equal to the order. This is necessary but, for a general non-Gorenstein order, not sufficient for invertibility. |
+| Picard group of an order | The group of **invertible proper fractional ideals** modulo nonzero principal fractional ideals. It is not the ideal class monoid of all fractional ideals. |
+| Narrow Picard group | The same invertible carrier modulo principal fractional ideals with a totally positive generator (equivalently positive norm only in the quadratic cases where that dictionary is used). |
+| Ideal class monoid | Homothety classes of nonzero fractional ideals, including noninvertible classes. Its group of units recovers `Pic O`; the whole monoid is not forced into a group. |
 
 ## The build, in twelve layers
 
@@ -407,16 +416,29 @@ Define `NumberFieldOrder K` as a `ℤ`-subalgebra finite over `ℤ` and spanning
 the fraction-field instance. Define `NumberFieldOrder.conductor` as the largest `𝓞_K`-ideal inside
 the order and prove the annihilator, index, and discriminant descriptions.
 
-Define `NumberFieldOrder.properIdeals`, prove equivalence with invertibility, and define `Pic O`.
-Define `NumberFieldOrder.narrowPrincipal` as a subgroup of `O.properIdeals` and
+Define the multiplier-ring predicate `NumberFieldOrder.IsProperFractionalIdeal`. Define
+`NumberFieldOrder.invertibleProperFractionalIdeals` as the group of units in the fractional-ideal
+monoid and prove that every such ideal is proper. Define `Pic O` as this invertible carrier modulo
+nonzero principal fractional ideals. Define `NumberFieldOrder.narrowPrincipal` as a subgroup of
+the same invertible carrier and
 
 ```text
-NarrowPic O := O.properIdeals / O.narrowPrincipal.
+NarrowPic O := O.invertibleProperFractionalIdeals / O.narrowPrincipal.
 ```
 
-Construct extension and contraction between proper ideals prime to the conductor and maximal-order
-ideals, prove the ray-class-style congruence description, finiteness, the wide/narrow comparison,
-and specialization to the maximal order. The wide/narrow comparison is the named canonical map
+Do **not** assert that every proper ideal is invertible. State that equivalence only for a
+Gorenstein order, with the quadratic-order result as a named specialization. Define the separate
+`IdealClassMonoid O` from homothety classes of nonzero fractional ideals so that noninvertible
+proper ideals have a home without being assigned inverses.
+
+Construct extension and contraction between **invertible** ideals prime to the conductor and
+maximal-order ideals prime to the conductor. Put both restrictions in the carrier types of the
+maps, and prove they are inverse equivalences there. Likewise, the prime correspondence is only
+between primes away from the conductor. Prove the ray-class-style congruence description and
+finiteness for the invertible Picard carrier; do not use noninvertible ideal classes in a
+group-valued statement. The unrestricted maximal-order comparison is valid only after specializing
+to the maximal order, where every nonzero fractional ideal is invertible. The wide/narrow
+comparison is the named canonical map
 `NumberFieldOrder.narrowToPic : NarrowPic O →* Pic O`: give its value on an ideal class, prove
 surjectivity, and identify its kernel through the exact sequence
 `Oˣ → {±1}^{r₁} → NarrowPic O → Pic O → 1`. Prove naturality for order morphisms and state the
@@ -425,6 +447,12 @@ commuting maximal-order specialization as `narrowClassToClass`; the old existent
 
 Do not define `ringClassField O`. Class Field Theory consumes the congruence description and builds
 that field.
+
+Include the following regression example (and its named target): let
+`K = ℚ(∛2)`, `α = ∛2`, `O = ℤ + 2ℤα + 2ℤα²`, and
+`A = 8ℤ + 2ℤα + 2ℤα²`. Then the multiplier ring of `A` is `O`, while `A` is not
+invertible. Thus `A` gives a proper noninvertible ideal in a non-Gorenstein cubic order and must
+produce a nonunit class in `IdealClassMonoid O`, never an element of `Pic O`.
 
 ## Acceptance tests and nearby false statements
 
@@ -448,8 +476,15 @@ that field.
 12. A complex shift in the unitary decomposition is rejected because uniqueness fails.
 13. `ℚ(ζ₆)` is unramified at `2`; “ramified exactly at primes dividing `n`” is rejected without
     conductor normalization.
-14. `NarrowPic` quotients proper ideals, not all fractional ideals.
-15. No declaration named `ringClassField`, `globalArtinMap`, or `reciprocity` is introduced here.
+14. A proper ideal in a general order need not be invertible. The cubic regression ideal
+    `8ℤ + 2ℤ∛2 + 2ℤ(∛2)²` is proper but noninvertible and belongs only to the ideal class
+    monoid.
+15. `Pic` and `NarrowPic` use invertible proper fractional ideals; neither quotients all proper
+    ideals into a group.
+16. Extension/contraction and prime correspondence are stated on invertible ideals or primes away
+    from the conductor. The maximal-order comparison does not erase these hypotheses before the
+    actual maximal-order specialization.
+17. No declaration named `ringClassField`, `globalArtinMap`, or `reciprocity` is introduced here.
 
 ## Ordering and parallelism
 
@@ -470,4 +505,9 @@ Integral Lattices consume this roadmap after these contracts stabilize.
 - S. Lang, *Algebraic Number Theory*, Chapters V, VII, and XV.
 - J. Tate, “Fourier analysis in number fields and Hecke's zeta-functions,” for the adelic carrier
   conventions (not as an instruction to use Tate's thesis analytically here).
-- D. A. Cox, *Primes of the Form x² + ny²*, §7, for orders and proper ideals.
+- G. S. Kopp and J. C. Lagarias, *Class Field Theory for Orders of Number Fields*, §2, for
+  invertible fractional ideals, conductor-prime restrictions, ideal class monoids, and the explicit
+  cubic proper-noninvertible example.
+- D. A. Cox, *Primes of the Form x² + ny²*, §7, only for the specialization to **quadratic**
+  orders, where proper fractional ideals are invertible; it is not a source for that equivalence for
+  arbitrary number-field orders.

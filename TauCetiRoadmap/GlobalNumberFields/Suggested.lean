@@ -300,38 +300,77 @@ noncomputable instance (O : NumberFieldOrder K) : IsFractionRing O.toSubalgebra 
 
 noncomputable def NumberFieldOrder.conductor (O : NumberFieldOrder K) : Ideal (𝓞 K) := sorry
 
-noncomputable def NumberFieldOrder.properIdeals (O : NumberFieldOrder K) :
-    Subgroup (FractionalIdeal (O.toSubalgebra)⁰ K)ˣ := sorry
+/-- A fractional ideal is proper when its multiplier ring is exactly the given order. This
+predicate does not include invertibility. -/
+def NumberFieldOrder.IsProperFractionalIdeal (O : NumberFieldOrder K)
+    (I : FractionalIdeal (O.toSubalgebra)⁰ K) : Prop := sorry
+
+/-- The group-valued carrier used by `Pic` and `NarrowPic`: invertible fractional ideals.
+Every member is proper, but the converse requires an additional hypothesis on the order. -/
+abbrev NumberFieldOrder.invertibleProperFractionalIdeals (O : NumberFieldOrder K) :=
+  (FractionalIdeal (O.toSubalgebra)⁰ K)ˣ
+
+theorem NumberFieldOrder.invertible_isProper (O : NumberFieldOrder K)
+    (I : O.invertibleProperFractionalIdeals) :
+    O.IsProperFractionalIdeal (I : FractionalIdeal (O.toSubalgebra)⁰ K) := sorry
+
+/-- Raw proper fractional ideals, including possible noninvertible ideals. This is not a group. -/
+def NumberFieldOrder.properFractionalIdeals (O : NumberFieldOrder K) :=
+  {I : FractionalIdeal (O.toSubalgebra)⁰ K // O.IsProperFractionalIdeal I}
+
+/-- The explicit hypothesis under which properness and invertibility agree. -/
+def NumberFieldOrder.IsGorenstein (O : NumberFieldOrder K) : Prop := sorry
+
+theorem NumberFieldOrder.isProper_iff_isUnit_of_isGorenstein (O : NumberFieldOrder K)
+    (hO : O.IsGorenstein) (I : FractionalIdeal (O.toSubalgebra)⁰ K) :
+    O.IsProperFractionalIdeal I ↔ IsUnit I := sorry
+
+/-- Cox's proper-ideal equivalence is used only for quadratic orders. -/
+theorem NumberFieldOrder.isProper_iff_isUnit_of_finrank_eq_two (O : NumberFieldOrder K)
+    (hK : Module.finrank ℚ K = 2) (I : FractionalIdeal (O.toSubalgebra)⁰ K) :
+    O.IsProperFractionalIdeal I ↔ IsUnit I := sorry
+
+/-- Homothety classes of all nonzero fractional ideals form a monoid, not in general a group. -/
+noncomputable def IdealClassMonoid (O : NumberFieldOrder K) : Type u := sorry
+
+noncomputable instance (O : NumberFieldOrder K) : CommMonoid (IdealClassMonoid O) := sorry
+
+noncomputable def NumberFieldOrder.mkIdealClassMonoid (O : NumberFieldOrder K)
+    (I : O.properFractionalIdeals) : IdealClassMonoid O := sorry
 
 noncomputable def Pic (O : NumberFieldOrder K) : Type u := ClassGroup O.toSubalgebra
 
 noncomputable instance (O : NumberFieldOrder K) : CommGroup (Pic O) :=
   inferInstanceAs (CommGroup (ClassGroup O.toSubalgebra))
 
-noncomputable def NumberFieldOrder.mkPic (O : NumberFieldOrder K) (I : O.properIdeals) : Pic O :=
-  sorry
+noncomputable def NumberFieldOrder.mkPic (O : NumberFieldOrder K)
+    (I : O.invertibleProperFractionalIdeals) : Pic O := sorry
+
+/-- The units in the ideal class monoid are exactly the invertible ideal classes. -/
+noncomputable def picEquivUnitsIdealClassMonoid (O : NumberFieldOrder K) :
+    Pic O ≃* (IdealClassMonoid O)ˣ := sorry
 
 theorem NumberFieldOrder.mkPic_surjective (O : NumberFieldOrder K) :
     Function.Surjective O.mkPic := sorry
 
-/-- Principal **proper** ideals with a totally positive generator. -/
+/-- Principal invertible proper ideals with a totally positive generator. -/
 noncomputable def NumberFieldOrder.narrowPrincipal (O : NumberFieldOrder K) :
-    Subgroup O.properIdeals := sorry
+    Subgroup O.invertibleProperFractionalIdeals := sorry
 
-/-- The narrow quotient uses `properIdeals`, not all fractional ideals. -/
+/-- The narrow quotient uses the same invertible carrier as `Pic`. -/
 def NarrowPic (O : NumberFieldOrder K) : Type u :=
-  O.properIdeals ⧸ O.narrowPrincipal
+  O.invertibleProperFractionalIdeals ⧸ O.narrowPrincipal
 
 noncomputable instance (O : NumberFieldOrder K) : CommGroup (NarrowPic O) :=
-  inferInstanceAs (CommGroup (O.properIdeals ⧸ O.narrowPrincipal))
+  inferInstanceAs (CommGroup (O.invertibleProperFractionalIdeals ⧸ O.narrowPrincipal))
 
 /-- The canonical forget-positivity map from the narrow to the wide Picard group. -/
 noncomputable def NumberFieldOrder.narrowToPic (O : NumberFieldOrder K) :
     NarrowPic O →* Pic O := sorry
 
-/-- Evaluation of the forget-positivity map on a proper ideal class. -/
+/-- Evaluation of the forget-positivity map on an invertible proper ideal class. -/
 theorem NumberFieldOrder.narrowToPic_mk (O : NumberFieldOrder K)
-    (I : O.properIdeals) :
+    (I : O.invertibleProperFractionalIdeals) :
     O.narrowToPic (QuotientGroup.mk I) = O.mkPic I := sorry
 
 theorem NumberFieldOrder.narrowToPic_surjective (O : NumberFieldOrder K) :
@@ -376,6 +415,47 @@ theorem NumberFieldOrder.narrowToPic_natural {O O' : NumberFieldOrder K}
     (f : O.Hom O') :
     f.mapPic.comp O.narrowToPic = O'.narrowToPic.comp f.mapNarrowPic := sorry
 
+/-! Extension and contraction are group equivalences only after restricting to invertible ideals
+prime to the conductor. The restrictions are part of the carrier types, not side conditions erased
+from the public API. -/
+
+def NumberFieldOrder.IsPrimeAwayFromConductor (O : NumberFieldOrder K)
+    (p : Ideal O.toSubalgebra) : Prop := sorry
+
+def NumberFieldOrder.primesAwayFromConductor (O : NumberFieldOrder K) :=
+  {p : Ideal O.toSubalgebra // O.IsPrimeAwayFromConductor p}
+
+def NumberFieldOrder.maximalPrimesAwayFromConductor (O : NumberFieldOrder K) :=
+  {p : Ideal (𝓞 K) // p.IsPrime ∧ ¬ O.conductor ≤ p}
+
+/-- Extension and contraction give the prime correspondence only away from the conductor. -/
+noncomputable def NumberFieldOrder.primeExtensionContractionEquiv (O : NumberFieldOrder K) :
+    O.primesAwayFromConductor ≃ O.maximalPrimesAwayFromConductor := sorry
+
+noncomputable def NumberFieldOrder.invertibleProperIdealsPrimeToConductor
+    (O : NumberFieldOrder K) : Subgroup O.invertibleProperFractionalIdeals := sorry
+
+noncomputable def NumberFieldOrder.maximalIdealsPrimeToConductor
+    (O : NumberFieldOrder K) : Subgroup (FractionalIdeal (𝓞 K)⁰ K)ˣ := sorry
+
+noncomputable def NumberFieldOrder.extendPrimeToConductor (O : NumberFieldOrder K) :
+    O.invertibleProperIdealsPrimeToConductor →*
+      O.maximalIdealsPrimeToConductor := sorry
+
+noncomputable def NumberFieldOrder.contractPrimeToConductor (O : NumberFieldOrder K) :
+    O.maximalIdealsPrimeToConductor →*
+      O.invertibleProperIdealsPrimeToConductor := sorry
+
+theorem NumberFieldOrder.contract_extendPrimeToConductor (O : NumberFieldOrder K) :
+    O.contractPrimeToConductor.comp O.extendPrimeToConductor = MonoidHom.id _ := sorry
+
+theorem NumberFieldOrder.extend_contractPrimeToConductor (O : NumberFieldOrder K) :
+    O.extendPrimeToConductor.comp O.contractPrimeToConductor = MonoidHom.id _ := sorry
+
+noncomputable def NumberFieldOrder.extensionContractionEquiv (O : NumberFieldOrder K) :
+    O.invertibleProperIdealsPrimeToConductor ≃*
+      O.maximalIdealsPrimeToConductor := sorry
+
 /-- The maximal order as a `NumberFieldOrder`, making the specialization explicit. -/
 noncomputable def maximalNumberFieldOrder
     (K : Type u) [Field K] [NumberField K] : NumberFieldOrder K := sorry
@@ -405,5 +485,26 @@ theorem narrowPic_surjective (O : NumberFieldOrder K) :
 theorem finite_pic (O : NumberFieldOrder K) : Finite (Pic O) := sorry
 
 theorem finite_narrowPic (O : NumberFieldOrder K) : Finite (NarrowPic O) := sorry
+
+/-- A regression carrier for the cubic example in the normative README. -/
+structure NumberFieldOrder.ProperNoninvertibleIdealExample
+    (K : Type u) [Field K] [NumberField K] where
+  order : NumberFieldOrder K
+  ideal : FractionalIdeal (order.toSubalgebra)⁰ K
+  proper : order.IsProperFractionalIdeal ideal
+  not_invertible : ¬ IsUnit ideal
+  not_gorenstein : ¬ order.IsGorenstein
+
+/-- The regression ideal remains a nonunit after passing to the ideal class monoid. -/
+theorem NumberFieldOrder.ProperNoninvertibleIdealExample.class_not_isUnit
+    (E : NumberFieldOrder.ProperNoninvertibleIdealExample K) :
+    ¬ IsUnit (E.order.mkIdealClassMonoid ⟨E.ideal, E.proper⟩) := sorry
+
+/-- The order `ℤ + 2ℤ∛2 + 2ℤ(∛2)²` and ideal
+`8ℤ + 2ℤ∛2 + 2ℤ(∛2)²` from the README instantiate this cubic regression. -/
+theorem exists_cubic_properNoninvertibleIdealExample :
+    ∃ (F : Type u) [Field F] [NumberField F],
+      Module.finrank ℚ F = 3 ∧
+        Nonempty (NumberFieldOrder.ProperNoninvertibleIdealExample F) := sorry
 
 end TauCetiRoadmap.GlobalNumberFields
