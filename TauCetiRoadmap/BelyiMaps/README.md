@@ -7,7 +7,7 @@ Riemann surfaces with a holomorphic map to the sphere), they are algebraic curve
 fields (Belyi's theorem), and the absolute Galois group of `ℚ` acts on them faithfully. The
 [LMFDB's Belyi section](https://www.lmfdb.org/Belyi/) displays all four faces of each object.
 
-This roadmap builds the subject from the combinatorics up:
+The full programme is recorded below, from the combinatorics up:
 
 - permutation triples, their relabeling classes, passports, and dessins as finite bipartite
   ribbon graphs, with executable enumeration and character-theoretic counts;
@@ -32,7 +32,8 @@ mod-`n` and `ℓ`-adic cyclotomic characters are present (`modularCyclotomicChar
 `cyclotomicCharacter`). What Mathlib does not have: dessins, ribbon graphs, triangle groups,
 Riemann surfaces (the pin's only nontrivial complex manifold is `ℍ`), Seifert–van Kampen, the
 classification of covering spaces as an equivalence, étale fundamental groups, or any outer
-automorphism carrier. Those are built here or consumed from the named sibling roadmaps.
+automorphism carrier. The current declarations use only the available substrate; the staged
+successors consume the missing pieces from their named owning roadmaps.
 
 Suggested homes, mirroring the Mathlib directories that own each notion. The directories are
 suggested homes for the code, not extra layers of this roadmap:
@@ -41,12 +42,43 @@ suggested homes for the code, not extra layers of this roadmap:
 TauCeti/Combinatorics/PermutationTriple/   -- Layers 0, 1, 3
 TauCeti/Combinatorics/RibbonGraph/         -- Layer 2
 TauCeti/GroupTheory/TriangleGroup/         -- Layer 4
-TauCeti/GroupTheory/Profinite/             -- the generic profinite sublayers of Layers 12, 13
+TauCeti/GroupTheory/Profinite/             -- generic suppliers owned by ProfiniteProPGroups
 TauCeti/AlgebraicTopology/ThreePuncturedSphere/  -- Layers 5, 6
 TauCeti/Geometry/RiemannSurface/           -- Layers 7, 8
 TauCeti/AlgebraicGeometry/Belyi/           -- Layers 9, 10, 11
 TauCeti/NumberTheory/Belyi/                -- Layers 12, 13, 14
 ```
+
+## Merge boundary and staged successors
+
+This PR now has a deliberately narrow declaration boundary. Its compiled `Suggested.lean`
+exports the self-contained Belyi vocabulary: permutation triples and relabeling, connectedness,
+orders and branch-point operations; the ribbon-graph carrier; triangle groups; the
+thrice-punctured sphere and monodromy; and the three distinct public cover carriers
+`FiberNumberedCover`, `ConnectedPointedCover`, and `ConnectedCover`.
+
+The following parts of the programme are retained below as a dependency specification for
+successor PRs, but are **not declarations or completion claims of this PR**:
+
+- passport, cycle-partition, and reference transitive-group results, until #243 publishes and
+  lands its exact `fullCycleType` and transitive-group API;
+- associated covers and covering classification, until UniversalCovers publishes compiled
+  semilocal-connectivity, universal-cover, deck-action, and classification carriers;
+- compactification, compact Riemann surfaces, ramification, and analytic cohomology, until their
+  topology/analytic owners publish one checked carrier and the Riemann–Roch/Riemann–Hurwitz API;
+- algebraic Belyi pairs, analytic–algebraic comparison, Belyi's theorem, and descent, until
+  AlgebraicCurves publishes its curve/function-field anti-equivalence and extension-ramification
+  carriers; and
+- profinite integers as a ring, profinite exponentiation, and continuous outer automorphisms,
+  which are generic constructions owned by #244 and must land there before a Belyi arithmetic
+  successor consumes them.
+
+Thus an unresolved supplier contract is a scheduling block, not a theorem with a prose caveat.
+No unmerged supplier branch is imported and no Belyi-local stand-in is exported. The successor
+order is #243 and #244 first, the topology/analytic and AlgebraicCurves carriers next, and only
+then the corresponding Belyi comparison and arithmetic PRs. This implements the review's
+recommended combinatorial/analytic/arithmetic split without pretending the later endpoints are
+already typeable.
 
 ## Prerequisites
 
@@ -58,22 +90,19 @@ and nothing else is allowed:
 - **Layer n.m.** An earlier milestone of this roadmap.
 - **Roadmap, Layer n.** A named layer of another roadmap in this repository.
 
-No milestone waits on a Mathlib pull request, a future pin, or an external repository. Some
-cross-roadmap milestones do, however, remain explicitly blocked until their accepted supplier
-publishes a compiled carrier. The three portfolio suppliers currently imported under their final namespaces are:
-`TauCetiRoadmap.AlgebraicCurves`, `TauCetiRoadmap.PolynomialGaloisGroups`, and
-`TauCetiRoadmap.ProfiniteProPGroups`. `Suggested.lean` uses their actual carriers and defines no
-replacement `fullCycleType`, transitive-group label, free profinite group, free pro-`p` group,
-`proPKernel`, or maximal pro-`p` quotient. No local interface replaces an accepted supplier that
-has not yet pinned a Lean name.
+The compiled slice of this PR waits on no unmerged roadmap. Later milestones are activated only
+after their named supplier lands on `main`, at which point the successor must import and `#check`
+the exact declarations. In particular this PR defines no replacement `fullCycleType`,
+transitive-group label, universal-cover class, compact-Riemann-surface API, free profinite group,
+profinite exponent ring, or outer-automorphism carrier.
 
 ## Boundaries
 
 Seven roadmaps supply material to this one. The boundaries are stated once here.
 
 There is no dependency on `LocalGaloisGroups`, `ClassFieldTheory`, or a proposed
-`PeripheralActions` roadmap. The branch-cycle theorem and generic pro-`ℓ` peripheral-power
-theorem are Belyi milestones below; their abstract free-group carriers come from
+`PeripheralActions` roadmap. The future branch-cycle and pro-`ℓ` peripheral-power applications
+are Belyi-specific; their generic groups, powers, and outer-automorphism carriers come from
 `ProfiniteProPGroups`.
 
 **Character theory.** Class functions, irreducible characters, the character table, both
@@ -121,13 +150,12 @@ eight occurs anywhere in it.
 **Modular forms.** The compact-Riemann-surface cohomology chain — structure sheaf, sheaves of
 a divisor, finiteness of `H¹`, analytic Riemann–Roch, Serre duality by residues,
 Riemann–Hurwitz for finite holomorphic maps, and the existence of nonzero meromorphic sections
-of line bundles — is built inside [ModularForms](../ModularForms/README.md) Layer 10B, stated
-there for general compact Riemann surfaces. Layers 8 and 9 here consume that chain and rebuild
-none of it. What ModularForms does not pin is a Lean carrier for "compact Riemann surface";
-**this roadmap owns the carrier conventions** (the hypothesis stack of Layer 8.1, and the
-Riemann sphere instance on `OnePoint ℂ`), chosen so that 10B's statements can be stated
-against them. `X(Γ)`, modular curves, and everything `q`-expansion-flavoured stay in
-ModularForms; nothing here mentions `ℍ`.
+of line bundles — is planned inside [ModularForms](../ModularForms/README.md) Layer 10B for
+general compact Riemann surfaces. The Belyi analytic successor does not begin until that owner
+publishes a compiled compact-Riemann-surface carrier, the sphere instance, and exact
+Riemann–Roch/Riemann–Hurwitz declarations. This PR no longer exports a parallel hypothesis-stack
+interface. `X(Γ)`, modular curves, and everything `q`-expansion-flavoured stay in ModularForms;
+nothing here mentions `ℍ`.
 
 **Algebraic curves.** Function fields of one variable, places, divisors, Riemann–Roch,
 extensions with ramification and the different, Riemann–Hurwitz, and the regular-projective
@@ -135,8 +163,8 @@ model with the curve/function-field anti-equivalence belong to the AlgebraicCurv
 cited as AlgebraicCurves Layers 0–8 and 12; that roadmap's own contract table names this
 roadmap as the consumer of exactly those layers. Layer 9 here consumes them for the algebraic side of the comparison. The analytic
 comparison over `ℂ` — a compact Riemann surface with a Belyi function versus the regular
-projective model of its function field — is excluded there by name and **owned here**
-(Layers 9.4–9.7).
+projective model of its function field — is excluded there by name and belongs to the staged
+Belyi algebraic successor (Layers 9.4–9.7).
 
 **Polynomial Galois groups.** The full cycle type `fullCycleType`, the transitive-group
 reference data `TransitiveGroupIndex`, `referenceSubgroup`, `numTransitiveGroups`, and the
@@ -152,19 +180,11 @@ as there.
 universal property and the characteristicity of its kernel under continuous automorphisms,
 the free pro-`p` group `freeProP`, and the identification
   `maximalProPQuotient_zHat_equiv_padicInt` belong to the
-ProfiniteProPGroups roadmap (its
-Layers 3 and 4). Layers 12 and 13 consume them. ⚠ **What that roadmap supplies is the
-profinite completion of the infinite cyclic *group*, and Layers 12–13 need a *ring*.** There
-is no multiplication of two profinite exponents there, no `ẑˣ`, and no `ℓ`-adic component
-map — yet `(x ^ᶻ a) ^ᶻ b = x ^ᶻ (a·b)`, the cyclotomic character `Gal(ℚ̄/ℚ) →* ẑˣ`, and the
-pro-`ℓ` comparison all need them. So this roadmap owns, in the generic
-`TauCeti/GroupTheory/Profinite/` home and exported for reuse: the **profinite integers as a
-topological commutative ring** with their finite and `ℓ`-adic projections and unit group
-(Layer 12.1); the **profinite exponentiation calculus** — `x ^ᶻ a` for `a ∈ ẑ` in an
-arbitrary profinite group, its laws, its `ℤ_ℓ`-specialization on pro-`ℓ` groups, and the
-comparison between the two (Layers 12.2, 12.3), that roadmap's exponentiation stopping at
-abelian pro-`p` groups; and the **continuous-outer-automorphism carrier** (Layer 12.7), which
-no roadmap and no Mathlib file owns.
+ProfiniteProPGroups roadmap (its Layers 3 and 4). The generic ring structure on `ẑ`, profinite
+exponentiation and its `ℤ_ℓ` comparison, and the continuous outer-automorphism carrier are also
+supplier obligations of #244 (or a generic successor to it). They are not owned or exported by
+the Belyi namespace. A later Belyi arithmetic PR will consume their exact public names for the
+cyclotomic and peripheral applications.
 
 AlgebraicCurves, PolynomialGaloisGroups and ProfiniteProPGroups live at
 `../AlgebraicCurves/README.md`, `../PolynomialGaloisGroups/README.md` and
@@ -176,15 +196,10 @@ What this roadmap supplies to other subjects:
   subject that counts covers or factorizations in finite groups;
 - finite bipartite ribbon graphs (Layer 2), reusable for maps and hypermaps on surfaces;
 - triangle groups (Layer 4);
-- the compact-Riemann-surface carrier conventions, the Riemann sphere, ramification API, and
-  the analytic/algebraic comparison for curves with a nonconstant meromorphic function
-  (Layers 8, 9) — the GAGA-sized bridge that AlgebraicCurves excludes and ModularForms's 10B
-  stops short of;
-- the profinite exponentiation calculus and the continuous outer-automorphism carrier
-  (Layers 12, 13), generic group theory placed in generic namespaces;
+- in a successor, the Belyi-specific analytic/algebraic comparison, after the compact-surface
+  and AlgebraicCurves carriers land;
 - the branch-cycle theorem and the pro-`ℓ` peripheral-power theorem (Layers 12, 13), the
-  reusable arithmetic core for any consumer of the Galois action on covers of
-  `ℙ¹ ∖ {0,1,∞}`.
+  later Belyi-specific arithmetic application of #244's generic infrastructure.
 
 ## Internal boundaries
 
@@ -194,10 +209,13 @@ Each contract lists what the section exports and what it imports; nothing crosse
 except through these lists.
 
 **A. Finite combinatorics — Layers 0–4.**
-*Exports:* `PermutationTriple` with its relabeling action, `IsoClass`, `ConnectedTriple`;
-`monodromyGroup`, `automorphismGroup`; full cycle data, `eulerChar`, `genus`, `orderTriple`,
-`GeometryType`; `PassportSpec` with `HasPassport`, `passportOf`, `passportSize`; blocks,
-quotient triples, primitivity; `BipartiteRibbonGraph` and the dessin/triple equivalence; the
+*Current exports:* `PermutationTriple` with its relabeling action, `IsoClass`, and
+`ConnectedTriple`;
+`monodromyGroup`, `automorphismGroup`, `orderTriple`, `GeometryType`;
+`BipartiteRibbonGraph`, the branch-point operations, and `TriangleGroup`.
+*Exports added by the #243 successor:* full cycle data, `eulerChar`, `genus`;
+`PassportSpec` with `HasPassport`, `passportOf`, `passportSize`; blocks,
+quotient triples and supplier-backed primitivity refinements; the dessin/triple equivalence; the
 branch-point `S₃`-action on `IsoClass n` and on ordered passports; the executable
 enumeration and the small complete tables; the Frobenius product-one formula, generating
 counts and the normalizer counting formula; `TriangleGroup` with its trichotomy.
@@ -205,7 +223,7 @@ counts and the normalizer counting formula; `TriangleGroup` with its trichotomy.
 PolynomialGaloisGroups' `fullCycleType` and transitive-group data; CharacterTheory's class
 sums, structure constants, character table and central characters. **Nothing topological.**
 
-**B. Topology and geometry — Layers 5–11.**
+**B. Topology and geometry — Layers 5–11 (successor design after the merge boundary).**
 *Exports:* `U` with its two-set cover, peripheral loops and `π₁(U, b) ≃* FreeGroup (Fin 2)`;
 the van Kampen theorem for a simply connected intersection; the three cover carriers
 (`FiberNumberedCover`, pointed, unnumbered) and their three classifications; `FilledCover`
@@ -228,9 +246,10 @@ AlgebraicCurves. ⚠ `4.6` belongs on this list: Layer 6.5 classifies regular co
 normality of the point stabilizer, which is Layer 4.6's criterion, so section B is not
 independent of Layer 4.
 
-**C. Arithmetic and database semantics — Layers 12–14.**
-*Exports:* `ProfiniteInt` as a topological ring, the profinite exponentiation calculus and
-its pro-`ℓ` comparison; `ContinuousOut`; `π₁ᵍᵉᵒ` and the comparison isomorphism with its
+**C. Arithmetic and database semantics — Layers 12–14 (successor design).**
+*Consumes from #244:* the profinite integers as a topological ring, the profinite
+exponentiation calculus and its pro-`ℓ` comparison, and continuous outer automorphisms.
+*Belyi-specific exports:* `π₁ᵍᵉᵒ` and the comparison isomorphism with its
 orientation; the arithmetic exact sequence and outer action; peripheral inertia; the
 `ẑ`-cyclotomic character; the branch-cycle theorem and its finite Nielsen-class corollary;
 the pro-`ℓ` peripheral-power theorem and its dyadic instance; faithfulness; the LMFDB
@@ -451,21 +470,19 @@ the three portfolio suppliers have no local stand-ins here.
 | 6.4 | UniversalCovers Stage 0.4, 1 | deck groups and `Deck ≅ (π₁)ᵐᵒᵖ` | `Deck`, `deckFundamentalGroupEquiv : Deck proj ≃* (FundamentalGroup X x₀)ᵐᵒᵖ` |
 | 6.3 | UniversalCovers Stage 2 | basepoint change, and the pointed/unpointed correspondence | `basepointChangeSubgroup` is named upstream; milestone 8's equivalences are **unresolved prose-only supplier contracts** and are not exported locally. Their required carriers and exact connectedness/orbit semantics are pinned in Layer 6.3 below. |
 | 8.2 | ConformalMapping L0 | the local degree of a holomorphic map | `TauCeti.exists_localDegree`, and the holomorphic branch-root extraction beside it |
-| 8.6, 9.3, 9.4 | ModularForms Layer 10B | Riemann–Roch and Riemann–Hurwitz for compact Riemann surfaces | that roadmap pins **no Riemann-surface carrier and no Lean names**; local interfaces, all carried in `Suggested.lean`: `MerField X`, `Divisor X := X →₀ ℤ` — an `abbrev`, so `Finsupp`'s subtraction is available — `Divisor.deg : Divisor X → ℤ`, `genusAn X : ℕ`, `riemannRochSpaceAn`, `ellAn`, `canonicalDivisor`, `riemannRochAn`; and for Riemann–Hurwitz the map-derived `degreeAn f hf hne`, `ramificationIndexAn f hf hne x`, `ramifiedPointsAn f hf hne`, with contracts `ramificationIndexAn_localNormalForm`, `ramificationIndexAn_pos`, `ramificationIndexAn_eq_one_iff`, `ramificationLocus_discrete`, `mem_ramifiedPointsAn_iff`, `degreeAn_eq_fiber_sum`. ⚠ **`hf` and `hne` are arguments, not context.** Layer 8.2 defines the index only for a nonconstant holomorphic map between connected surfaces; a version taking a bare `f : X → Y` would have to return an undocumented junk value, and `ramificationIndexAn_pos` would then commit the roadmap to that junk being positive. ⚠ **The local index carries no compactness** — Layer 8.2's `e` is local. Compactness enters only for `degreeAn`, for packaging the branch locus as a `Finset`, and for the two identities. ⚠ `MerField X` is a **field for connected** Riemann surfaces — `[ConnectedSpace X]`, not `[CompactSpace X]`: on a disjoint union the meromorphic functions are a *product* of fields and have zero divisors. Compactness enters at divisors, finite polar sets, and finite-dimensional `L(D)`, and is carried on those declarations. ⚠ Riemann–Hurwitz must **not** quantify over a free `deg`, `ram` and `e`: that is not a weaker theorem but a false one, since a caller may supply any numbers. Every quantity is derived from `f`. ⚠ `genusAn` is not imported from a classification of topological surfaces — the roadmap has none and needs none. ⚠ Both identities are stated in `ℤ`, since `ℕ` subtraction truncates `ℓ(D) − ℓ(K−D)` exactly when the second exceeds the first |
+| 8.1–9.4 | ModularForms Layer 10B / compact-surface owner | compact Riemann-surface carrier, sphere instance, meromorphic functions, Riemann–Roch and Riemann–Hurwitz | **unresolved supplier contract**: no compiled carrier or theorem names are published, so this PR exports no local hypothesis-stack, meromorphic-field, divisor, degree, ramification, or cohomology stand-in. The successor must import and `#check` the supplier's map-derived invariants. |
 | 9.1, 9.4, 9.6 | `AlgebraicCurves` Layers 0, 1 | function fields, places, and divisors | exact declarations: `AlgebraicCurves.IsFunctionField`, Mathlib's `IsIntegrallyClosedIn`, `AlgebraicCurves.Place`, `AlgebraicCurves.Divisor` |
 | 9.1, 9.4, 9.6 | `AlgebraicCurves` Layer 6 | ramification index, residue degree, and the fundamental identity | **prose-only supplier milestones; no Lean declarations are pinned yet** |
 | 9.5, 10.7, 11.4 | `AlgebraicCurves` Layer 5 | Riemann–Roch and genus | exact declarations: `AlgebraicCurves.riemannRochSpace`, `AlgebraicCurves.genus` |
 | 10.7, 11.4 | `AlgebraicCurves` Layer 8 | constant-field extension in characteristic zero | **prose-only supplier milestone; no full-faithfulness declaration is pinned yet** |
 | 9.1, 9.5 | `AlgebraicCurves` Layer 12 | the regular projective model and the anti-equivalence | **prose-only supplier milestones; no Lean declarations are pinned yet**. The reserved roadmap names are `regularModel`, `functionFieldEquiv`, and `regularModel_functionField`; **this roadmap never analytifies a scheme** — Layer 9.6 works with places, so only the place set and its `(e,f)` data are consumed, never a scheme-theoretic fiber |
-| 12.1, 12.3, 13.1 | `ProfiniteProPGroups` Layers 0, 3, 4 | free profinite group, maximal pro-`p` quotient, `zHat` **as a group** | `ProfiniteProPGroups.freeProfiniteGroup`, `ProfiniteProPGroups.freeProfiniteGroup.of`, `ProfiniteProPGroups.freeProfiniteGroup.lift`, `ProfiniteProPGroups.proPKernel`, `ProfiniteProPGroups.maximalProPQuotient`, `ProfiniteProPGroups.freeProP`, `ProfiniteProPGroups.freeProP.of`, `ProfiniteProPGroups.zHat`, `ProfiniteProPGroups.maximalProPQuotient_zHat_equiv_padicInt` |
+| 12.1–12.3, 12.7, 13.1 | #244 `ProfiniteProPGroups` | free profinite/pro-`p` groups, `zHat` as a ring, profinite and `ℤ_ℓ` powers, continuous outer automorphisms | **unmerged supplier contract**: the Belyi successor must import and `#check` the final #244 declarations; this PR exports no aliases or stand-ins. |
 
-Every row labeled as an exact portfolio declaration is imported by `Suggested.lean`; a spelling
-or carrier change therefore breaks this roadmap instead of silently selecting a local replacement.
-The prose-only UniversalCovers and AlgebraicCurves rows are scheduling contracts, not claims that
-declarations already exist. `Suggested.lean` intentionally omits the associated-cover and
-classification theorems until UniversalCovers publishes its carriers, and omits Belyi's
-Layers 9–11 until the AlgebraicCurves carriers can be formed. The algebraization, Belyi, and
-descent crossings are therefore unresolved supplier contracts rather than available exports.
+An exact portfolio row is imported only by the successor that consumes it, after the supplier
+lands on `main`; that successor must fail on a spelling or carrier change rather than selecting a
+local replacement. The UniversalCovers, compact-surface, AlgebraicCurves, #243, and #244 rows are
+scheduling contracts, not claims that declarations already exist. `Suggested.lean` intentionally
+omits their consumers.
 
 ## The build, in layers
 
@@ -1868,6 +1885,10 @@ one bridge.
 
 #### 6.2 The associated cover of a `π₁`-set
 
+> **Successor boundary.** Layers 6.2–14 are dependency and normalization specifications for
+> follow-up PRs, not declarations or completion criteria of this PR. Each follow-up begins only
+> after its owning supplier has landed and exposes the exact carriers named at the merge boundary.
+
 The converse construction, and the place where a cover is built rather than analysed. It is
 stated **generically**, for an arbitrary discrete `π₁`-set, under the exact hypotheses the
 universal-cover supplier requires; the finite case is a corollary, not the theorem.
@@ -2555,9 +2576,15 @@ circle in the `z`-chart.
 
 ### Layer 9: algebraic Belyi pairs and algebraization
 
+This whole layer is staged for the algebraic successor. In particular there is currently no
+public `AlgebraicBelyiPair`, compactification, meromorphic-function-field comparison, or
+algebraization theorem. The successor must make compactification, passage to the meromorphic
+function field, the AlgebraicCurves anti-equivalence, and ramification compatibility visible in
+its typed declaration chain before stating the comparison endpoint.
+
 This layer crosses from analysis to algebra. AlgebraicCurves supplies the algebraic side and
-ModularForms Layer 10B the analytic cohomology; what is built here is the comparison, which
-neither roadmap owns and which AlgebraicCurves excludes by name.
+ModularForms Layer 10B the analytic cohomology; the staged Belyi successor supplies the
+comparison, which neither supplier owns and which AlgebraicCurves excludes by name.
 
 #### 9.1 The algebraic carrier
 
@@ -2965,7 +2992,11 @@ function field with three marked places — carry the same invariants.
 
 ### Layer 10: Belyi's theorem
 
-The classical statement is an equivalence, and this roadmap builds both directions
+This layer is likewise a successor specification, not a theorem exported by this PR. Its final
+declaration may be added only after the typed Layer-9 chain visibly supplies compactification,
+the meromorphic function field, algebraization, and descent to `ℚ̄`.
+
+The classical statement is an equivalence, and the staged successor builds both directions
 separately, because they have nothing in common: one is an explicit construction of rational
 functions, the other a descent argument.
 
@@ -3366,6 +3397,11 @@ level, so the certificate is finite data.
 be several, incomparable ones — and "the" field of definition is never written in this
 roadmap.
 
+⚠ **Signature requirement for the successor:** no theorem concluding that the field of moduli
+is a field of definition may omit its effective descent input. It must expose either an actual
+descent datum with its cocycle condition, or the explicit automorphism hypothesis used in 11.6
+to construct that datum. Mere invariance of the isomorphism class is not a descent hypothesis.
+
 *Prerequisites:* Layers 9.1, 11.3.
 
 #### 11.6 Rigidity, and the gap between moduli and definition
@@ -3441,11 +3477,10 @@ separate from `trueOrbitSize` for exactly this reason.
 
 ### Layer 12: profinite powers, the fundamental group, and the branch-cycle theorem
 
-The layer opens with three milestones of generic profinite algebra — the profinite integers
-as a **ring**, the exponentiation calculus that every later statement is phrased with, and
-its pro-`ℓ` specialization. They come first because 12.10 and 12.11 both consume them, so
-that the layer's prerequisites run strictly backwards, and they depend on nothing else in
-this roadmap.
+The future Belyi arithmetic layer consumes three milestones of generic profinite algebra — the
+profinite integers as a **ring**, the exponentiation calculus, and its pro-`ℓ` specialization.
+Those milestones are owned by #244 (or a generic successor to it), not by this roadmap. They must
+land there before the Belyi-specific declarations in 12.4 onward are opened.
 
 The fundamental group's carrier is field-theoretic: the Galois theory of the maximal
 extension of `ℚ̄(t)` unramified outside the three marked places. Every object is then Mathlib Galois theory plus
@@ -3456,16 +3491,16 @@ shortens one, but it is not the definition.
 
 #### 12.1 The profinite integers as a topological ring
 
-⚠ **The supplier provides a group, and this layer needs a ring.** ProfiniteProPGroups supplies the
+⚠ **Supplier milestone, not a Belyi declaration.** ProfiniteProPGroups supplies the
 profinite completion of the infinite cyclic **group** and its maximal pro-`p` quotients.
 That gives no multiplication of two profinite exponents, no unit group, and no compatible
 projections to finite rings — yet 12.2's law `(x ^ᶻ a) ^ᶻ b = x ^ᶻ (a·b)`, 12.10's character
 `χ : Gal(ℚ̄/ℚ) →* ẑˣ` and 12.3's `ℓ`-adic component all need exactly those. This milestone
-builds them, in the generic `TauCeti/GroupTheory/Profinite/` home, and everything below
-consumes it.
+#244 must build them in the generic `TauCeti/GroupTheory/Profinite/` home; the Belyi arithmetic
+successor only consumes its exact exported API.
 
-**New object: `ProfiniteInt`.** Constructed here as `lim (ZMod n)` over the divisibility
-order. The roadmap cites the name and the API, not the construction. Required:
+**Supplier object: `ProfiniteInt`.** Constructed in #244 as `lim (ZMod n)` over the divisibility
+order. The Belyi successor cites the name and API, not the construction. Required:
 
 - *Carrier and instances.* A topological commutative ring structure: `CommRing ProfiniteInt`,
   `TopologicalSpace`, `IsTopologicalRing`, compactness, total disconnectedness, and
@@ -3493,9 +3528,8 @@ rings; ProfiniteProPGroups Layers 0, 4 for `zHat` and its group API.
 
 #### 12.2 The profinite exponentiation calculus
 
-Owned here, in the generic profinite namespace, and exported for reuse; ProfiniteProPGroups stops at
-abelian pro-`p` groups and gains no dependency on this roadmap. Neither this milestone nor
-the next mentions Belyi maps.
+Owned with 12.1 by #244 (or its generic successor) and exported from the generic profinite
+namespace. Neither this supplier milestone nor the next mentions Belyi maps.
 
 Carrier: `ẑ := ProfiniteInt` of 12.1, whose underlying procyclic group is ProfiniteProPGroups' `zHat`
 by 12.1's comparison. For a profinite group `G` and `x : G`, define `x ^ᶻ a` for `a : ẑ` as
@@ -3696,10 +3730,10 @@ its adjunction.
 
 #### 12.7 Continuous outer automorphisms
 
-The generic carrier, owned here because neither Mathlib nor any sibling roadmap has one,
-and placed in the generic profinite namespace so that it is reusable.
+Another generic #244 supplier milestone, placed in the generic profinite namespace so that it is
+reusable. The Belyi successor consumes it for the outer action and defines no namesake carrier.
 
-**New object: `ContinuousOut`.** For a profinite group `G`: the group of continuous
+**Supplier object: `ContinuousOut`.** For a profinite group `G`: the group of continuous
 automorphisms — `ContinuousMulEquiv G G` under composition — the inner homomorphism
 `G →* ContinuousAut G`, normality of its range, and the quotient `ContinuousOut G`. Basic
 API:
@@ -4396,10 +4430,9 @@ to a prerequisite line that contradicts this section makes the section wrong.
 
   ⚠ Track B is therefore **not** independent of Layer 4: 6.5 consumes 4.6's normality
   criterion for regular covers.
-- **The summit:** Layer 12 consumes both tracks (6.3, 7.1, 9–11), except for its opening
-  milestones 12.1, 12.2 and 12.3 — the profinite integers as a ring, the exponentiation
-  calculus, and its pro-`ℓ` comparison — which are generic profinite algebra depending on
-  nothing else in this roadmap and startable at any time. Layer 13 follows Layer 12. Layer
+- **The summit:** the Belyi-specific part of Layer 12 consumes both tracks (6.3, 7.1, 9–11)
+  and #244's generic milestones 12.1–12.3 (the profinite integers as a ring, exponentiation,
+  and its pro-`ℓ` comparison). Layer 13 follows Layer 12. Layer
   14's finite milestones (14.1 partially, 14.5) need only Track A; its orbit milestones need
   Layer 11.
 

@@ -1,7 +1,4 @@
 import Mathlib
-import TauCetiRoadmap.AlgebraicCurves.Suggested
-import TauCetiRoadmap.PolynomialGaloisGroups.Suggested
-import TauCetiRoadmap.ProfiniteProPGroups.Suggested
 
 /-!
 # Belyi maps, dessins d'enfants, and three-point covers: target signatures
@@ -37,12 +34,13 @@ Conventions, recorded in `README.md` (§Pinned conventions):
 * Peripheral elements: `P`, `T` are the images of the free generators, `C := (T * P)⁻¹`,
   so `C * T * P = 1` — the same display order as the triple relation. A source writing
   `P·T·C = 1` names a conjugate of this `C`; see README §Pinned conventions.
-* The two sorried `instance`s on `OnePoint ℂ` (charted space, manifold) are the Layer 8.1
-  milestones; they are declared as instances so that the analytic carriers below can be
-  stated, and they are implemented by the Riemann-sphere milestone, not by consumers.
-* Layers 9–11 (algebraic Belyi pairs, Belyi's theorem, fields of moduli) have no Lean
-  prototypes here: their statements need the AlgebraicCurves carriers, and the honest-`sorry`
-  rule keeps milestones whose *statements* cannot yet be formed out of this file.
+* The former local `OnePoint ℂ` chart/manifold instances are disabled with the rest of the
+  compact-Riemann-surface stand-ins. Their owner must publish the sphere carrier before the
+  analytic Belyi successor states consumers.
+* Supplier-dependent passport declarations, compact-Riemann-surface declarations, Layers 9–11,
+  and the profinite layers have no Lean prototypes here. They become successor targets only after
+  their owning roadmaps publish compiled carriers. In particular this file neither imports an
+  unmerged roadmap branch nor recreates its API locally.
 * A literal `PermutationTriple n` is the invariant of a **fiber-numbered** cover
   (`FiberNumberedCover` below), not of a pointed one: a chosen point of the fiber leaves
   `(n−1)!` relabelings. README Layer 6.3 classifies the three rigidifications separately.
@@ -50,9 +48,8 @@ Conventions, recorded in `README.md` (§Pinned conventions):
   Their semilocal-simple-connectivity and universal-cover carriers are unresolved supplier
   contracts: UniversalCovers has not yet published compiled target signatures. No local class
   stands in for that future public interface.
-* Free profinite and free pro-`ℓ` groups, `proPKernel`, `maximalProPQuotient`, and `zHat`
-  are the imported `ProfiniteProPGroups` declarations. This file defines only the marked
-  peripheral elements and the Belyi-specific power theorem on those supplier carriers.
+* The profinite integers as a ring, profinite exponentiation, and continuous outer
+  automorphisms are generic group theory owned by `ProfiniteProPGroups`, not by Belyi maps.
 -/
 
 open scoped Manifold ContDiff Topology Pointwise
@@ -249,10 +246,13 @@ theorem card_automorphismGroup_dvd (t : PermutationTriple n) (ht : t.IsConnected
     Nat.card (automorphismGroup t) ∣ n := by
   sorry
 
-/-! ### Layer 0.5: cycle data
+/-! ### Deferred supplier crossing: cycle data and genus
 
-The carrier is `PolynomialGaloisGroups.fullCycleType`, imported above. This roadmap adds the
-lemmas about it needed for passports and branch cycles, but defines no second cycle type. -/
+The full-cycle carrier and transitive-group labels are owned by `PolynomialGaloisGroups` (#243).
+Until that roadmap lands, this file deliberately exports neither a substitute carrier nor the
+passport/genus declarations that consume it. The exact downstream contracts remain in the README. -/
+
+/-
 
 /-- **Layer 0.5.** The number of cycles, fixed points included. -/
 noncomputable def cycleCount {α : Type u} [Fintype α] (σ : Equiv.Perm α) : ℕ :=
@@ -331,6 +331,7 @@ noncomputable def genus (t : PermutationTriple n) : ℕ :=
 theorem two_sub_two_mul_genus (t : PermutationTriple n) (ht : t.IsConnected) :
     2 - 2 * (t.genus : ℤ) = t.eulerChar := by
   sorry
+-/
 
 /-! ### Layer 0.7: orders and geometry type -/
 
@@ -368,9 +369,6 @@ def s3Triple : PermutationTriple 3 := ofTwo (finRotate 3) (Equiv.swap 0 1)
 example : torusTriple.σinf = (finRotate 4 ^ 2)⁻¹ := by simp [torusTriple, sq]
 
 theorem cyclicTriple_isConnected (n : ℕ) (hn : n ≠ 0) : (cyclicTriple n).IsConnected := by
-  sorry
-
-theorem genus_torusTriple : torusTriple.genus = 1 := by
   sorry
 
 /-! ### Layer 2.6: the branch-point action
@@ -434,6 +432,7 @@ example : swap1Inf (swap1Inf s3Triple) ≠ s3Triple.σ1 • s3Triple := by decid
 set_option maxRecDepth 8000 in
 example : s3Triple.σinf ^ 5 * s3Triple.σ1 ^ 5 * s3Triple.σ0 ^ 5 ≠ 1 := by decide
 
+/-
 /-- **Layer 12.12, the class-by-class ingredients.** What survives the counterexample above
 is a statement about **conjugacy classes**, one slot at a time, and passport invariance
 follows from these two finite facts alone. Powering by a unit modulo the order preserves the
@@ -443,6 +442,7 @@ theorem fullCycleType_pow_of_coprime {α : Type u} [Fintype α] [DecidableEq α]
     PolynomialGaloisGroups.fullCycleType (σ ^ u) =
       PolynomialGaloisGroups.fullCycleType σ := by
   sorry
+-/
 
 /-- ...and it does not change the generated subgroup, which is why the monodromy group is a
 Galois invariant. -/
@@ -482,6 +482,7 @@ instance : MulAction (Equiv.Perm (Fin n)) (ConnectedTriple n) where
 
 end ConnectedTriple
 
+/-
 open PermutationTriple in
 /-- **Layer 1.1.** A passport specification: a reference transitive subgroup (up to the
 conjugacy stated in `HasPassport`) and the three full cycle partitions. -/
@@ -547,6 +548,7 @@ theorem hasPassport_passportOf (t : ConnectedTriple n) :
   sorry
 
 end ConnectedTriple
+-/
 
 namespace PermutationTriple
 
@@ -555,6 +557,13 @@ variable {n : ℕ}
 /-- **Layer 1.4.** Primitivity of the monodromy action, Mathlib's notion. -/
 def IsPrimitive (t : PermutationTriple n) : Prop :=
   MulAction.IsPreprimitive (monodromyGroup t) (Fin n)
+
+/-! **Layer 3.1 is deferred with the full-cycle supplier contract.**
+
+The executable passport enumeration is restored after #243 lands and its exact cycle and
+transitive-group carriers can be imported. -/
+
+/-
 
 /-! **Layer 3.1, continued: the executable enumeration.**
 
@@ -785,6 +794,7 @@ computed rather than assumed. -/
 example : computedPassportSize 3 (computedPassportOf s3Triple) = 1 := by decide
 
 end AcceptanceCounts
+-/
 
 end PermutationTriple
 
@@ -833,9 +843,11 @@ theorem facePerm_mul : Γ.facePerm * Γ.rotW * Γ.rotB = 1 := by
 def IsConnected : Prop :=
   Nonempty Γ.E ∧ MulAction.IsPretransitive (Subgroup.closure {Γ.rotB, Γ.rotW}) Γ.E
 
+/-
 /-- **Layer 2.1.** The Euler characteristic: vertices minus edges plus faces. -/
 noncomputable def eulerChar : ℤ :=
   Nat.card Γ.B + Nat.card Γ.W + PermutationTriple.cycleCount Γ.facePerm - Nat.card Γ.E
+-/
 
 /-- **Layer 2.3.** The triple of a dessin, along a numbering of the edges. Changing the
 numbering relabels the triple (README, Layer 2.3). -/
@@ -951,7 +963,8 @@ noncomputable def periphInf : FundamentalGroup ThricePuncturedSphere basePt :=
 
 /-- The pinned relation, in the same display order as the triple relation. -/
 theorem periphInf_mul_periph1_mul_periph0 : periphInf * periph1 * periph0 = 1 := by
-  simp [periphInf, mul_assoc]
+  rw [mul_assoc]
+  exact inv_mul_cancel (periph1 * periph0)
 
 /-- **Layer 5.5.** The **canonical** map out of the free product: the `Monoid.Coprod.lift`
 of the two inclusion-induced homomorphisms. Van Kampen is the statement that *this* map is
@@ -1114,6 +1127,15 @@ noncomputable def subgroupConjSetoid {G : Type u} [Group G] : Setoid (Subgroup G
 /-! The pointed and unpointed covering-classification equivalences are likewise README-only
 until UniversalCovers publishes the carrier and theorem names. The local cover carriers above are
 useful Belyi rigidifications, but they are not presented as replacements for that supplier API. -/
+
+/-! ## Deferred compact-Riemann-surface crossing
+
+The analytic carrier, ramification API, and Riemann–Roch/Riemann–Hurwitz interfaces are not
+prototyped until the compact-Riemann-surface owner publishes a compiled carrier and theorem
+names. The former local interfaces are intentionally disabled rather than presented as supplier
+declarations. -/
+
+/-
 
 /-! ## Layer 8: analytic Belyi pairs
 
@@ -1339,13 +1361,18 @@ theorem riemannHurwitzAn (f : X → Y) (hf : MDifferentiable 𝓘(ℂ) 𝓘(ℂ)
   sorry
 
 end CompactInvariants
-
-/-! ## Layers 12, 13: profinite peripheral objects
-
-The carriers in this section are imported from `ProfiniteProPGroups`. The marked peripheral
-elements, profinite exponent ring, branch-cycle application, and generic pro-`ℓ` peripheral
-theorem are owned here. Layers 9–11 have no prototypes here (see the header).
 -/
+
+/-! ## Deferred profinite crossing
+
+The generic profinite integers, exponentiation calculus, and continuous outer-automorphism
+carrier belong to `ProfiniteProPGroups` (#244). Belyi-specific peripheral declarations are
+added only after that supplier lands; no generic construction is exported from this namespace. -/
+
+/-
+
+/-! Historical draft signatures below are disabled. Generic profinite carriers and operations
+belong to #244; their eventual Belyi consumers are added in a successor after that API lands. -/
 
 /-- **Layer 12.6 / §Pinned conventions.** The peripheral element `P`. -/
 noncomputable def periphP : ProfiniteProPGroups.freeProfiniteGroup (Fin 2) :=
@@ -1359,6 +1386,7 @@ noncomputable def periphT : ProfiniteProPGroups.freeProfiniteGroup (Fin 2) :=
 of the Layer 5.2 relation, in the pinned display order. -/
 noncomputable def periphC : ProfiniteProPGroups.freeProfiniteGroup (Fin 2) :=
   (periphT * periphP)⁻¹
+-/
 
 /-- **§Pinned conventions, P0.2.** The opposite-convention third peripheral element is the
 conjugate `P · C · P⁻¹`, **not** `P⁻¹ · C · P`. Stated on an abstract group, since it is a
@@ -1366,6 +1394,7 @@ word identity. -/
 theorem opposite_third_peripheral {G : Type u} [Group G] (P T : G) :
     (P * T)⁻¹ = P * ((T * P)⁻¹) * P⁻¹ := by group
 
+/-
 theorem periphC_mul_periphT_mul_periphP : periphC * periphT * periphP = 1 := by
   simp [periphC, mul_assoc]
 
@@ -1492,6 +1521,7 @@ theorem exists_peripheralPowerAutomorphism (ℓ : ℕ) [Fact ℓ.Prime] (u : ℤ
       φ (periphTL ℓ) = cT⁻¹ * padicPow (periphTL ℓ) u * cT ∧
       φ (periphCL ℓ) = cC⁻¹ * padicPow (periphCL ℓ) u * cC := by
   sorry
+-/
 
 /-- **Layer 13.3, the conjugation-transfer lemma.** The conjugator for a conjugate element
 is **computed**, not guessed: `d := q * c * (φ q)⁻¹`. ⚠ It involves `φ q`, and is not
