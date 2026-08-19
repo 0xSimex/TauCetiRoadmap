@@ -40,7 +40,7 @@ body:
         - OneParameterSemigroups
         - OptimalTransport
         - PDE
-        - PolynomialGaloisGroups
+        - ProfiniteCohomology
         - ReductiveGroups
         - RepresentationTheory
         - StandardDistributions
