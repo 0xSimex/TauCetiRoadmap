@@ -36,7 +36,7 @@ body:
         - OneParameterSemigroups
         - OptimalTransport
         - PDE
-        - ProfiniteProPGroups
+        - ProfiniteCohomology
         - ReductiveGroups
         - RepresentationTheory
         - StandardDistributions
