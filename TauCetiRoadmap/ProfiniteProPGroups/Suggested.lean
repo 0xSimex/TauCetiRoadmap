@@ -353,15 +353,14 @@ scoped instance {p : ℕ} : ContinuousSMul (ZMod p) (ULift.{u} (ZMod p)) :=
 /-- The trivial `G`-representation on `𝔽_p`, as an object of the category `TopRep (ZMod p) G`
 that the imported cohomology is a functor out of. -/
 noncomputable def trivialFp (p : ℕ) (G : Type u) [Group G] [TopologicalSpace G]
-    [IsTopologicalGroup G] : ProfiniteCohomology.TopRep (ZMod p) G where
-  V := TopModuleCat.of (ZMod p) (ULift.{u} (ZMod p))
-  ρ := 1
+    [IsTopologicalGroup G] : ProfiniteCohomology.TopRep (ZMod p) G :=
+  TopRep.of (ContRepresentation.trivial (ZMod p) G (ULift.{u} (ZMod p)))
 
 /-- **`Hⁿ(G, 𝔽_p)`**, against the imported carrier. Every dimension count below is about this
 object. -/
 noncomputable abbrev cohomFp (p : ℕ) (G : Type u) [Group G] [TopologicalSpace G]
     [IsTopologicalGroup G] (n : ℕ) : TopModuleCat.{u} (ZMod p) :=
-  (continuousCohomology (ZMod p) G n).obj (trivialFp p G)
+  _root_.continuousCohomology n (trivialFp p G)
 
 /-- **The multiplication pairing on `𝔽_p`**, as a `TopPairing` of the trivial representation
 with itself. This is the coefficient input of the imported cup product: `cup (fpPairing p G) 1 1`
@@ -1977,7 +1976,7 @@ theorem cd_p_le_iff_elementaryAbelian_of_isProP (G : Type u) [Group G] [Topologi
       ∀ (M : Type u) [AddCommGroup M] [TopologicalSpace M] [IsTopologicalAddGroup M]
         [DiscreteTopology M] [DistribMulAction G M] [ContinuousSMul G M] [Finite M],
         (∀ m : M, p • m = 0) → (∀ (g : G) (m : M), g • m = m) →
-          Limits.IsZero ((continuousCohomology ℤ G (n + 1)).obj
+          Limits.IsZero (_root_.continuousCohomology (n + 1)
             (ProfiniteCohomology.ofDiscreteModule G M)) :=
   sorry
 
