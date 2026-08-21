@@ -1122,15 +1122,28 @@ example {L : Type*} [Field L] [NumberField L] [Algebra K L]
     Module.Finite (v.adicCompletionIntegers K) (w.adicCompletionIntegers L) :=
   sorry
 
+/-- **Layer 5.8, the two spellings of the local integer ring.** `adicCompletionIntegers` is
+Mathlib's valuation subring of an adic completion; `(ValuativeRel.valuation _).integer` is the
+one #189 states its local theorems about. They are the same subring, but not definitionally, so
+the identification is a milestone of this roadmap — it is the global-to-local dictionary, and
+#189 cannot state it. ⚠ Every completion-facing adapter below goes through it; do not restate a
+supplier theorem in the other spelling instead. -/
+theorem adicCompletionIntegers_eq_valuationInteger {L : Type*} [Field L] [NumberField L]
+    (w : HeightOneSpectrum (𝓞 L)) :
+    (w.adicCompletionIntegers L).toSubring =
+      (ValuativeRel.valuation (w.adicCompletion L)).integer :=
+  sorry
+
 /-- **Layer 5.8, the completion-facing local-monogenicity adapter.** Apply #189's
 `LocalFieldsRamification.exists_integerRing_adjoin_eq_top` after Layers 5.1, 5.2, and 5.7
 discharge its hypotheses for the canonical completion. This roadmap does not reprove the local
-theorem. -/
+theorem; it is stated in the supplier's own spelling of the integer ring, and
+`adicCompletionIntegers_eq_valuationInteger` is what transports it to Mathlib's. -/
 example {L : Type*} [Field L] [NumberField L] [Algebra K L]
     (v : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 L))
     [w.asIdeal.LiesOver v.asIdeal] :
-    ∃ x : w.adicCompletionIntegers L,
-      Algebra.adjoin (v.adicCompletionIntegers K) {x} = ⊤ :=
+    ∃ x : (ValuativeRel.valuation (w.adicCompletion L)).integer,
+      Algebra.adjoin ((ValuativeRel.valuation (v.adicCompletion K)).integer) {x} = ⊤ :=
   LocalFieldsRamification.exists_integerRing_adjoin_eq_top
     (v.adicCompletion K) (w.adicCompletion L)
 
@@ -1458,12 +1471,16 @@ example {θ : 𝓞 K} {d : ℤ} (hd : Squarefree d) (hd4 : d % 4 = 1)
     (Ideal.primesOver (Ideal.span {(2 : ℤ)}) (𝓞 K)).ncard = 2 ↔ d % 8 = 1 :=
   sorry
 
+open scoped Classical in
 /-- **Layer 7.4, explicit unit certification, the criterion.** Mathlib's Dirichlet theorem gives
 *a* fundamental system and `regOfFamily_div_regulator` gives the index of a candidate family,
 but nothing upstream certifies that a *named* unit generates modulo torsion, so no exact
 regulator value can be asserted without this. In rank one there are exactly two infinite
 places, `w v = 1` characterizes torsion for either of them, and generation is minimality: no
-unit lies strictly between `1` and `u`. -/
+unit lies strictly between `1` and `u`.
+⚠ `Classical` is opened for the norm: `logSpace K` is `{w : InfinitePlace K // w ≠ w₀} → ℝ`, and
+its `Norm` instance needs the subtype to be a `Fintype`, hence `DecidablePred (· ≠ w₀)`. Mathlib
+opens it for the same reason at `unitLattice_inter_ball_finite`. -/
 theorem logEmbedding_norm_lt_iff_at_place
     (hrank : NumberField.Units.rank K = 1) (w : NumberField.InfinitePlace K)
     (u v : (𝓞 K)ˣ) (hu : 1 < w ((u : 𝓞 K) : K)) :
@@ -1900,28 +1917,28 @@ def dedekindOrder : Subalgebra ℤ (𝓞 K) :=
   Algebra.adjoin ℤ ({θ, β} : Set (𝓞 K))
 
 theorem dedekindOrder_eq_span :
-    (dedekindOrder (K := K) θ β).toSubmodule =
+    (dedekindOrder (K := K) (θ := θ) (β := β)).toSubmodule =
       Submodule.span ℤ ({1, θ, β} : Set (𝓞 K)) :=
   sorry
 
 /-- The basis calculation is performed in the intermediate order itself. -/
 theorem discr_dedekindOrder :
-    ∃ b : Module.Basis (Fin 3) ℤ (dedekindOrder (K := K) θ β),
+    ∃ b : Module.Basis (Fin 3) ℤ (dedekindOrder (K := K) (θ := θ) (β := β)),
       Algebra.discr ℤ b = -503 :=
   sorry
 
 /-- The additive index of the intermediate order in the full ring of integers. -/
 noncomputable def dedekindOrderIndex : ℕ :=
-  Nat.card ((𝓞 K) ⧸ (dedekindOrder (K := K) θ β).toSubmodule)
+  Nat.card ((𝓞 K) ⧸ (dedekindOrder (K := K) (θ := θ) (β := β)).toSubmodule)
 
 /-- The general order-index/discriminant formula specialized to this explicit order. -/
 theorem index_dedekindOrder_sq_mul_discr :
-    (-503 : ℤ) = (dedekindOrderIndex (K := K) θ β : ℤ) ^ 2 * NumberField.discr K :=
+    (-503 : ℤ) = (dedekindOrderIndex (K := K) (θ := θ) (β := β) : ℤ) ^ 2 * NumberField.discr K :=
   sorry
 
 /-- Squarefreeness of `503` forces the intermediate order to have index one. -/
 theorem dedekindOrder_eq_ringOfIntegers :
-    dedekindOrder (K := K) θ β = ⊤ :=
+    dedekindOrder (K := K) (θ := θ) (β := β) = ⊤ :=
   sorry
 
 /-- The integral basis `(1, θ, β)` has squarefree discriminant `-503`; hence its order is the
@@ -1947,53 +1964,53 @@ def dedekindPrimeThree : Ideal (𝓞 K) :=
 
 /-- Quotient certificates pin each displayed factor as a degree-one prime above `2`. -/
 noncomputable def dedekindPrimeOneQuotientEquiv :
-    (𝓞 K ⧸ dedekindPrimeOne (K := K) θ β) ≃+* ZMod 2 :=
+    (𝓞 K ⧸ dedekindPrimeOne (K := K) (θ := θ) (β := β)) ≃+* ZMod 2 :=
   sorry
 
 noncomputable def dedekindPrimeTwoQuotientEquiv :
-    (𝓞 K ⧸ dedekindPrimeTwo (K := K) θ β) ≃+* ZMod 2 :=
+    (𝓞 K ⧸ dedekindPrimeTwo (K := K) (θ := θ) (β := β)) ≃+* ZMod 2 :=
   sorry
 
 noncomputable def dedekindPrimeThreeQuotientEquiv :
-    (𝓞 K ⧸ dedekindPrimeThree (K := K) θ β) ≃+* ZMod 2 :=
+    (𝓞 K ⧸ dedekindPrimeThree (K := K) (θ := θ) (β := β)) ≃+* ZMod 2 :=
   sorry
 
 theorem dedekindPrimeOne_isMaximal :
-    (dedekindPrimeOne (K := K) θ β).IsMaximal := sorry
+    (dedekindPrimeOne (K := K) (θ := θ) (β := β)).IsMaximal := sorry
 
 theorem dedekindPrimeTwo_isMaximal :
-    (dedekindPrimeTwo (K := K) θ β).IsMaximal := sorry
+    (dedekindPrimeTwo (K := K) (θ := θ) (β := β)).IsMaximal := sorry
 
 theorem dedekindPrimeThree_isMaximal :
-    (dedekindPrimeThree (K := K) θ β).IsMaximal := sorry
+    (dedekindPrimeThree (K := K) (θ := θ) (β := β)).IsMaximal := sorry
 
 theorem dedekindPrimes_ne_bot :
-    dedekindPrimeOne (K := K) θ β ≠ ⊥ ∧
-      dedekindPrimeTwo (K := K) θ β ≠ ⊥ ∧
-        dedekindPrimeThree (K := K) θ β ≠ ⊥ :=
+    dedekindPrimeOne (K := K) (θ := θ) (β := β) ≠ ⊥ ∧
+      dedekindPrimeTwo (K := K) (θ := θ) (β := β) ≠ ⊥ ∧
+        dedekindPrimeThree (K := K) (θ := θ) (β := β) ≠ ⊥ :=
   sorry
 
 theorem dedekindPrimes_lieOver_two :
-    (dedekindPrimeOne (K := K) θ β).LiesOver (Ideal.span {(2 : ℤ)}) ∧
-      (dedekindPrimeTwo (K := K) θ β).LiesOver (Ideal.span {(2 : ℤ)}) ∧
-        (dedekindPrimeThree (K := K) θ β).LiesOver (Ideal.span {(2 : ℤ)}) :=
+    (dedekindPrimeOne (K := K) (θ := θ) (β := β)).LiesOver (Ideal.span {(2 : ℤ)}) ∧
+      (dedekindPrimeTwo (K := K) (θ := θ) (β := β)).LiesOver (Ideal.span {(2 : ℤ)}) ∧
+        (dedekindPrimeThree (K := K) (θ := θ) (β := β)).LiesOver (Ideal.span {(2 : ℤ)}) :=
   sorry
 
 theorem dedekindPrimes_residue_card :
-    Nat.card (𝓞 K ⧸ dedekindPrimeOne (K := K) θ β) = 2 ∧
-      Nat.card (𝓞 K ⧸ dedekindPrimeTwo (K := K) θ β) = 2 ∧
-        Nat.card (𝓞 K ⧸ dedekindPrimeThree (K := K) θ β) = 2 :=
+    Nat.card (𝓞 K ⧸ dedekindPrimeOne (K := K) (θ := θ) (β := β)) = 2 ∧
+      Nat.card (𝓞 K ⧸ dedekindPrimeTwo (K := K) (θ := θ) (β := β)) = 2 ∧
+        Nat.card (𝓞 K ⧸ dedekindPrimeThree (K := K) (θ := θ) (β := β)) = 2 :=
   sorry
 
 theorem dedekindPrimes_pairwise_ne :
-    dedekindPrimeOne (K := K) θ β ≠ dedekindPrimeTwo (K := K) θ β ∧
-      dedekindPrimeOne (K := K) θ β ≠ dedekindPrimeThree (K := K) θ β ∧
-        dedekindPrimeTwo (K := K) θ β ≠ dedekindPrimeThree (K := K) θ β :=
+    dedekindPrimeOne (K := K) (θ := θ) (β := β) ≠ dedekindPrimeTwo (K := K) (θ := θ) (β := β) ∧
+      dedekindPrimeOne (K := K) (θ := θ) (β := β) ≠ dedekindPrimeThree (K := K) (θ := θ) (β := β) ∧
+        dedekindPrimeTwo (K := K) (θ := θ) (β := β) ≠ dedekindPrimeThree (K := K) (θ := θ) (β := β) :=
   sorry
 
 theorem dedekindPrimes_product :
-    dedekindPrimeOne (K := K) θ β * dedekindPrimeTwo (K := K) θ β *
-        dedekindPrimeThree (K := K) θ β = Ideal.span {(2 : 𝓞 K)} :=
+    dedekindPrimeOne (K := K) (θ := θ) (β := β) * dedekindPrimeTwo (K := K) (θ := θ) (β := β) *
+        dedekindPrimeThree (K := K) (θ := θ) (β := β) = Ideal.span {(2 : 𝓞 K)} :=
   sorry
 
 /-- The index-divisor caveat as a theorem: the three explicit maximal, pairwise-distinct,
@@ -2007,8 +2024,9 @@ example :
     Ideal.span ({(2 : 𝓞 K), θ, β} : Set (𝓞 K)) *
         Ideal.span ({(2 : 𝓞 K), θ, β - 1} : Set (𝓞 K)) *
         Ideal.span ({(2 : 𝓞 K), θ - 1, β - 1} : Set (𝓞 K)) =
-      Ideal.span {(2 : 𝓞 K)} :=
-  dedekindPrimes_product (K := K) θ β
+      Ideal.span {(2 : 𝓞 K)} := by
+  simpa [dedekindPrimeOne, dedekindPrimeTwo, dedekindPrimeThree] using
+    dedekindPrimes_product (K := K) (θ := θ) (β := β) hmin hgen
 
 /-- `2` is a common index divisor: every integral generator has even index. -/
 example : ∀ θ' : IntegralPrimitiveElement K, 2 ∣ index θ' := sorry
