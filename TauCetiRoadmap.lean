@@ -3,7 +3,6 @@
 -- The per-topic `README.md` files are the definitive roadmaps. The Lean `Suggested.lean`
 -- files suggest declaration forms for particular milestones (with `sorry`, which is
 -- allowed here); they are not exhaustive, and discharging one does not finish its roadmap.
-import TauCetiRoadmap.AlgebraicCodingTheory.Suggested
 import TauCetiRoadmap.RepresentationTheory.SemisimpleAlgebras.Suggested
 import TauCetiRoadmap.RepresentationTheory.CharacterTheory.Suggested
 import TauCetiRoadmap.RepresentationTheory.InductionRestriction.Suggested
