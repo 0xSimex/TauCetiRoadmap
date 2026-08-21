@@ -16,6 +16,18 @@ the free-profinite and presented-profinite universal properties to identify the 
 Those arithmetic identifications belong there; the reusable Sylow and presentation carriers and
 theorems belong here.
 
+Three generic constructions that downstream roadmaps ask for are **deliberately not owned
+here**, and have one exact owner: a focused successor roadmap, **`ProfiniteArithmetic`**. They
+are the profinite integers as a topological commutative *ring*; the profinite power `x ^ᶻ a`
+with a `ℤ̂` exponent on an arbitrary profinite group, together with its comparison against the
+`ℤ_ℓ`-power on a maximal pro-`ℓ` quotient; and the continuous automorphism and outer-automorphism
+groups of a profinite group, with the quotient topology on the latter. What stays here is
+strictly less: `zHat` as a profinite *group* (Layer 4), the identification of its maximal pro-`p`
+quotient with `ℤ_p`, and the `ℤ_p`-module structure of an abelian pro-`p` group (Layer 4) — the
+three facts this roadmap's own Sylow, free-object and rank milestones consume. `BelyiMaps`
+Layers 12–13 are the first consumer of the deferred three; they import them from
+`ProfiniteArithmetic`, not from here and not from a Belyi-local copy.
+
 ## Scope and exported contract
 
 The roadmap exports canonical carriers and universal properties for free profinite and free

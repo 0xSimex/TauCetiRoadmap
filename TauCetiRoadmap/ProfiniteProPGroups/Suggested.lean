@@ -31,6 +31,13 @@ and Labute's relation module, the closed-subgroup theory of `ℤ₂ˣ`, and the 
 worked examples, including the abstract group `D₀ = ⟨A, S, Y ∣ A²S⁴(S,Y)⟩` with its marked
 generators and standard orientation.
 
+Three generic constructions are deliberately **absent**, with their own exact owner — the
+successor roadmap `ProfiniteArithmetic` (README, opening section): the profinite integers as a
+topological commutative *ring*, the profinite power with a `ℤ̂` exponent on an arbitrary
+profinite group together with its `ℤ_ℓ` comparison, and the continuous automorphism and
+outer-automorphism groups. `zHat` below is the profinite *group*, which is all this roadmap's
+own milestones use.
+
 The `def`s in the Prototypes section pin suggested *forms* for the objects the examples
 mention (each is also a design decision recorded in `README.md`); they are prototypes, not
 proved-out API.
@@ -282,7 +289,10 @@ abbrev topAbelianization (G : Type u) [Group G] [TopologicalSpace G] [IsTopologi
     Type u :=
   G ⧸ (commutator G).topologicalClosure
 
-/-- `ℤ̂`, the profinite completion of `ℤ` (a stress-test object for Layers 0–2). -/
+/-- `ℤ̂`, the profinite completion of `ℤ` (a stress-test object for Layers 0–2).
+⚠ This is the profinite **group** only. The commutative ring structure on `ℤ̂`, the profinite
+power `x ^ᶻ a` it makes sense of, and the `ℤ_ℓ` comparison of that power are owned by the
+successor roadmap `ProfiniteArithmetic`, not by this one; no milestone here uses them. -/
 noncomputable abbrev zHat : Type :=
   ProfiniteGrp.profiniteCompletion.obj (GrpCat.of (Multiplicative ℤ))
 
