@@ -49,7 +49,9 @@ Conventions, recorded in `README.md` (§Pinned conventions):
   contracts: UniversalCovers has not yet published compiled target signatures. No local class
   stands in for that future public interface.
 * The profinite integers as a ring, profinite exponentiation, and continuous outer
-  automorphisms are generic group theory owned by `ProfiniteProPGroups`, not by Belyi maps.
+  automorphisms are generic group theory owned by `ProfiniteArithmetic`, the generic successor
+  to `ProfiniteProPGroups` (#244), not by Belyi maps. Free profinite and free pro-`p` groups and
+  the maximal pro-`p` quotient come from `ProfiniteProPGroups` itself.
 -/
 
 open scoped Manifold ContDiff Topology Pointwise
@@ -1366,13 +1368,16 @@ end CompactInvariants
 /-! ## Deferred profinite crossing
 
 The generic profinite integers, exponentiation calculus, and continuous outer-automorphism
-carrier belong to `ProfiniteProPGroups` (#244). Belyi-specific peripheral declarations are
-added only after that supplier lands; no generic construction is exported from this namespace. -/
+carrier belong to `ProfiniteArithmetic`, the generic successor to `ProfiniteProPGroups` (#244);
+free profinite and free pro-`p` groups belong to #244 itself. The Belyi-specific peripheral
+declarations are added in the successor roadmap `BelyiArithmeticActions`, after those suppliers
+land; no generic construction is exported from this namespace. -/
 
 /-
 
 /-! Historical draft signatures below are disabled. Generic profinite carriers and operations
-belong to #244; their eventual Belyi consumers are added in a successor after that API lands. -/
+belong to `ProfiniteProPGroups` (#244) and to its generic successor `ProfiniteArithmetic`; their
+eventual Belyi consumers are added in `BelyiArithmeticActions` after that API lands. -/
 
 /-- **Layer 12.6 / §Pinned conventions.** The peripheral element `P`. -/
 noncomputable def periphP : ProfiniteProPGroups.freeProfiniteGroup (Fin 2) :=
