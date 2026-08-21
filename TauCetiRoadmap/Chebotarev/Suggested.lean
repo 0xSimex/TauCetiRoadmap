@@ -95,16 +95,19 @@ variable (K F : Type*) [Field K] [NumberField K] [Field F] [NumberField F]
   [Algebra K F] [IsGalois K F]
 
 /-- **Layer 4**, the canonical cyclotomic weight. Its bad-prime value is fixed to zero; it is not
-an arbitrary weight constrained only at unramified primes. -/
+an arbitrary weight constrained only at unramified primes.
+⚠ The supplier's carrier is `MultiplicativeIdealWeight`; the accepted #192 has no `IdealWeight`,
+and naming one here would be a Chebotarev-local stand-in for a merged declaration. -/
 noncomputable def cyclotomicCharacterWeight (χ : (F ≃ₐ[K] F) →* ℂˣ) :
-    TauCetiRoadmap.ArithmeticDirichletSeries.IdealWeight K := sorry
+    TauCetiRoadmap.ArithmeticDirichletSeries.MultiplicativeIdealWeight K := sorry
 
-/-- **Layer 4**, the weight vanishes at ramified primes. -/
+/-- **Layer 4**, the weight vanishes at ramified primes. Applied through the supplier's `CoeFun`,
+not through a projection name. -/
 theorem cyclotomicCharacterWeight_eq_zero (χ : (F ≃ₐ[K] F) →* ℂˣ)
     {𝔭 : HeightOneSpectrum (𝓞 K)}
     (h𝔭 : ¬ ∀ (Q : Ideal (𝓞 F)) [Q.IsPrime] [Q.LiesOver 𝔭.asIdeal],
       Algebra.IsUnramifiedAt (𝓞 K) Q) :
-    (cyclotomicCharacterWeight K F χ).toFun 𝔭.asIdeal = 0 := sorry
+    cyclotomicCharacterWeight K F χ 𝔭.asIdeal = 0 := sorry
 
 /-- **Layer 5**, the continued cyclotomic character series. Its construction factors through the
 consumed ray-class character and uses ray-class ideal counting, not total ideal counting. -/

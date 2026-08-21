@@ -93,7 +93,7 @@ This roadmap consumes the analytic carriers and generic theorems under their can
 | `HasDirichletDensity`, `IsLowerDirichletDensityBound`, `IsUpperDirichletDensityBound` | Density is normalized by the all-prime sum. The epsilon-style lower and upper declarations are bounds, not junk-valued density functions. |
 | `hasDirichletDensity_of_symmDiff_finite`, `hasDirichletDensity_of_squeeze` | Finite exceptional sets may be discarded, and lower bounds for a finite partition can be squeezed to exact densities. |
 | `hasDirichletDensity_contraction` | Transfer between prime sets in `E` and `K`, including the residue-degree-one and constant-fibre hypotheses that identify norms. |
-| `IdealWeight`, `normCoeff`, `regroupByNorm`, `EulerProductData` | The generic ideal weight, norm regrouping, and Euler-product/logarithmic-derivative infrastructure. |
+| `MultiplicativeIdealWeight`, `normCoeff`, `regroupByNorm`, `EulerProductData` | The generic ideal weight, norm regrouping, and Euler-product/logarithmic-derivative infrastructure. |
 | `abelSummation`, `landau`, `wienerIkehara` | The generic summation, positivity, nonvanishing, and Tauberian theorems, including summability and a separately named continuous boundary function. |
 | `primeTheta`, `primeCount` | The canonical prime-weight and prime-count carriers. Chebotarev defines only their Frobenius-restricted specializations. |
 
