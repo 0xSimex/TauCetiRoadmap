@@ -1,4 +1,5 @@
 import Mathlib
+import TauCetiRoadmap.ProfiniteProPGroups.Suggested
 
 set_option autoImplicit false
 
@@ -9,6 +10,16 @@ The normative roadmap is `README.md`. This companion file pins representative Le
 signatures for the local-field and ramification layers only. Class field theory, local
 reciprocity, Tate duality, and the arithmetic structure of `G_K(p)` are owned by their new
 supplier roadmaps and do not appear here.
+
+The abstract profinite group theory this roadmap consumes is **imported, not restated**: the
+Layer 1 and Layer 4 statements below use `TauCetiRoadmap.ProfiniteProPGroups`' `IsProP`, its four
+profinite-Sylow theorems, its free profinite group with `of` and `lift`, and
+`presentedProfiniteGroup`, by name. Two of those uses are closed proofs — the Sylow uniqueness of
+wild inertia and the universal property behind the Iwasawa presentation — so a change of name,
+carrier or hypothesis in the supplier breaks this build rather than being absorbed silently. No
+`Supplied.*` alias and no local replacement carrier exists for any of them. What this roadmap does
+**not** consume is the maximal pro-`p` quotient, the free pro-`p` group, or the generator-rank
+declarations: `G_K(p)`, its rank and its Demushkin presentation belong to `LocalGaloisGroups`.
 -/
 
 namespace TauCetiRoadmap.LocalFieldsRamification
@@ -1049,5 +1060,153 @@ example :
     Module.finrank ℚ_[2]
       (IntermediateField.adjoin ℚ_[2] {x : AlgebraicClosure ℚ_[2] | x ^ 8 = 1}) = 4 :=
   sorry
+
+/-! ## Layer 4: the absolute Galois group, wild inertia, and the tame quotient
+
+⚠ Profinite Sylow theory, free profinite groups and profinite presentations are **not** restated
+here in Galois vocabulary. They are imported from `ProfiniteProPGroups`; what this roadmap owns is
+the identification of the abstract objects with the Galois-theoretic ones. -/
+
+section Layer4
+
+/- The supplier's `normal_topologicalClosure` is a **scoped** instance, so the presented
+profinite group of the Iwasawa milestone has no group structure without this line. Opening the
+supplier's scope is itself part of the imported contract. -/
+open scoped TauCetiRoadmap.ProfiniteProPGroups
+
+variable (p : ℕ) [Fact p.Prime]
+
+/-- **Layer 1, `U(K,1)` is pro-`p`**, stated in exactly the supplier's quotient form: every
+continuous finite quotient of the depth-one unit group is a `p`-group. ⚠ This is the same
+statement as "`U(K,1)` is the inverse limit of the `p`-groups `U(K,1)/U(K,i)`", not a rephrasing
+of it, which is why it is stated against `ProfiniteProPGroups.IsProP` and not against a local
+predicate. `p` is the residue characteristic. -/
+theorem unitFiltration_one_isProP (hp : ringChar 𝓀[K] = p) :
+    ProfiniteProPGroups.IsProP p (unitFiltration K 1) :=
+  sorry
+
+/-- **Layer 4, the maximal unramified extension** `K^ur = ⋃ K_n`, as an intermediate field of the
+fixed ambient algebraic closure. Layer 2's finite unramified extensions are its finite
+subextensions. -/
+noncomputable def maximalUnramified : IntermediateField K (AlgebraicClosure K) :=
+  sorry
+
+/-- **Layer 4, the maximal tamely ramified extension** `K^t = ⋃_{p ∤ m} K^ur(π^{1/m})`. -/
+noncomputable def maximalTame : IntermediateField K (AlgebraicClosure K) :=
+  sorry
+
+/-- **Layer 4, inertia** `I_K = Gal(K^al/K^ur)`, the fixing subgroup of `maximalUnramified`. The
+milestone is that identification together with closedness and normality, so the subgroup is named
+rather than unfolded: `Field.absoluteGaloisGroup` is a `def`, and instance search does not see
+through it to `IntermediateField.fixingSubgroup`. -/
+noncomputable def inertia : Subgroup (Field.absoluteGaloisGroup K) :=
+  sorry
+
+/-- **Layer 4, wild inertia** `P_K = Gal(K^al/K^t)`, the fixing subgroup of `maximalTame`. -/
+noncomputable def wildInertia : Subgroup (Field.absoluteGaloisGroup K) :=
+  sorry
+
+/-- **Layer 4.** Wild inertia sits inside inertia, because `K^ur ⊆ K^t`. -/
+theorem wildInertia_le_inertia : wildInertia K ≤ inertia K :=
+  sorry
+
+/-- **Layer 4.** `I_K` is a closed subgroup, hence profinite; the two instances below are its
+profiniteness in the form the supplier's Sylow theorems ask for. -/
+theorem inertia_isClosed : IsClosed (inertia K : Set (Field.absoluteGaloisGroup K)) :=
+  sorry
+
+/-- **Layer 4.** `I_K` is compact, as a closed subgroup of the compact group `G_K`. -/
+theorem inertia_compactSpace : CompactSpace (inertia K) :=
+  sorry
+
+/-- **Layer 4.** `I_K` is totally disconnected, as a subspace of `G_K`. -/
+theorem inertia_totallyDisconnectedSpace : TotallyDisconnectedSpace (inertia K) :=
+  sorry
+
+/-- **Layer 4.** `P_K` is normal in `I_K` — it is even normal in `G_K`, since `K^t/K` is Galois.
+Normality inside `I_K` is what the supplier's uniqueness theorem consumes. -/
+theorem wildInertia_subgroupOf_normal : ((wildInertia K).subgroupOf (inertia K)).Normal :=
+  sorry
+
+/-- **Layer 4, the Sylow identification.** `P_K` is *the* pro-`p` Sylow subgroup of `I_K`, with `p`
+the residue characteristic. This is the one theorem of the layer that is about wild inertia rather
+than about profinite groups; conjugacy, existence and the containment theorem are the supplier's
+(`exists_isProPSylow`, `IsProP.exists_le_isProPSylow`, `IsProPSylow.map_of_surjective`) and are not
+restated. -/
+theorem wildInertia_isProPSylow (hp : ringChar 𝓀[K] = p) :
+    ProfiniteProPGroups.IsProPSylow p ((wildInertia K).subgroupOf (inertia K)) :=
+  sorry
+
+/-- **Layer 4, acceptance: the uniqueness of `P_K` is the supplier's theorem, applied.** A closed
+proof, so the contract is type-checked rather than promised: any pro-`p` Sylow subgroup of `I_K`
+equals wild inertia. If `IsProPSylow.eq_of_normal` changes its name, argument order or hypotheses,
+this breaks. -/
+example (hp : ringChar 𝓀[K] = p) (Q : Subgroup (inertia K))
+    (hQ : ProfiniteProPGroups.IsProPSylow p Q) :
+    (wildInertia K).subgroupOf (inertia K) = Q := by
+  have := inertia_compactSpace K
+  have := inertia_totallyDisconnectedSpace K
+  exact ProfiniteProPGroups.IsProPSylow.eq_of_normal p _ _ _
+    (wildInertia_isProPSylow K p hp) hQ (wildInertia_subgroupOf_normal K)
+
+/-- **Layer 4.** `P_K` is normal in `G_K`, so the tame quotient below is a group. -/
+instance wildInertia_normal : (wildInertia K).Normal :=
+  sorry
+
+/-- **Layer 4, the tame quotient** `G_K^t = G_K / P_K`. -/
+abbrev tameQuotient : Type u :=
+  Field.absoluteGaloisGroup K ⧸ wildInertia K
+
+/-- **Layer 4, the tame quotient as a bundled profinite group, with its marked generators.**
+The bundling is a milestone, not bookkeeping: the supplier's universal property is stated for
+`ProfiniteGrp`, so the presentation below cannot be phrased without it. The two generators are a
+Frobenius lift `σ` at index `0` and a compatible tame inertia generator `τ` at index `1`; both
+depend on choices — a Frobenius lift and a compatible system of roots — so they are fields of a
+package rather than canonical maps.
+⚠ The index type is `ULift (Fin 2)`, not `Fin 2`: `freeProfiniteGroup X` lives in `X`'s universe
+and `G_K^t` lives in `K`'s. -/
+structure TameQuotientPackage where
+  /-- The bundled profinite carrier. -/
+  carrier : ProfiniteGrp.{u}
+  /-- It is the tame quotient. -/
+  equiv : carrier ≃ₜ* tameQuotient K
+  /-- The marked Frobenius lift and tame generator. -/
+  gens : ULift.{u} (Fin 2) → carrier
+
+/-- **Layer 4.** The tame quotient is profinite and carries the two marked generators. -/
+theorem nonempty_tameQuotientPackage : Nonempty (TameQuotientPackage K) :=
+  sorry
+
+/-- **Layer 4, acceptance: the presentation rests on the supplier's universal property, applied.**
+A closed proof. Every continuous homomorphism out of the free profinite group on two generators is
+determined by the images of the generators, so the Iwasawa presentation is a statement about the
+kernel of one specific such map and not about an unspecified surjection. -/
+example (P : TameQuotientPackage K) :
+    ∃! φ : ProfiniteProPGroups.freeProfiniteGroup (ULift.{u} (Fin 2)) ⟶ P.carrier,
+      ∀ x : ULift.{u} (Fin 2),
+        φ (ProfiniteProPGroups.freeProfiniteGroup.of x) = P.gens x :=
+  ProfiniteProPGroups.freeProfiniteGroup.lift _ _ _
+
+/-- **Layer 4, the Iwasawa relator** `σ τ σ⁻¹ τ^{−q}` in the free profinite group on two
+generators, with `q = #𝓀[K]`. ⚠ The exponent is an integer power: `τ^{−q}` is not `(τ^q)⁻¹`
+written differently only up to the group's own inverse, and writing the relator as `σ τ σ⁻¹ τ^q`
+would present a different group. -/
+noncomputable def iwasawaRelator :
+    ProfiniteProPGroups.freeProfiniteGroup (ULift.{u} (Fin 2)) :=
+  ProfiniteProPGroups.freeProfiniteGroup.of (ULift.up 0) *
+      ProfiniteProPGroups.freeProfiniteGroup.of (ULift.up 1) *
+      (ProfiniteProPGroups.freeProfiniteGroup.of (ULift.up 0))⁻¹ *
+    (ProfiniteProPGroups.freeProfiniteGroup.of (ULift.up 1)) ^ (-(Nat.card 𝓀[K] : ℤ))
+
+/-- **Layer 4, the Iwasawa presentation.** `G_K^t` is the **profinite** group presented by two
+generators and the single relator `σ τ σ⁻¹ τ^{−q}`, that is, the quotient of the free profinite
+group by the *closed* normal closure of that relator. ⚠ `presentedProP` of the same shape is a
+different group: it forgets the prime-to-`p` tame inertia this presentation is about. -/
+theorem tameQuotient_equiv_presented :
+    Nonempty (tameQuotient K ≃ₜ*
+      ProfiniteProPGroups.presentedProfiniteGroup (ULift.{u} (Fin 2)) {iwasawaRelator K}) :=
+  sorry
+
+end Layer4
 
 end TauCetiRoadmap.LocalFieldsRamification

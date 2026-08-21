@@ -9,8 +9,9 @@ The boundary is deliberate. The **Class Field Theory** roadmap consumes these ob
 finite-group Tate cohomology, class formations, local reciprocity, and duality. The **Local
 Galois Groups** roadmap consumes them, together with abstract pro-`p` group theory, to determine
 `G_K(p)` and its Demushkin presentation. This roadmap in turn depends on **Profinite and
-Pro-`p` Groups** for abstract profinite Sylow theory, free profinite groups, and profinite
-presentations. It does not redeclare any of those group-theoretic suppliers.
+Pro-`p` Groups** (#244) for abstract profinite Sylow theory, free profinite groups, and profinite
+presentations, and imports its `Suggested.lean` directly. It does not redeclare any of those
+group-theoretic suppliers.
 
 ## Scope and exported contract
 
@@ -909,17 +910,35 @@ temporary arithmetic declarations with the canonical exports above.
 
 ### Layer 4: the tame quotient of the absolute Galois group
 
-**Supplier status.** The dependency chain is **#188 → #244 → #189**. Both supplier PRs are still
-open, so neither their declarations nor the direct import are present on upstream `main`. The
-dependency begins in Layer 1, where `unitFiltration_one_isProP` must use
-`ProfiniteProPGroups.IsProP`, and continues through Layer 4. The exact Lean-facing carriers must import
-`TauCetiRoadmap.ProfiniteProPGroups.Suggested` and apply its Sylow, free-profinite, and presented
-profinite-group declarations directly. That supplier is not yet present on upstream `main`, so
-this PR cannot currently add compiling Layer-1/Layer-4 supplier applications to `Suggested.lean`
-without bundling or shadowing the supplier. Those interface requests therefore remain declared
-dependencies, not discharged type-checked contracts. Once #188 and then #244 land, adding the
-direct import, `unitFiltration_one_isProP`, and the closed applications listed below is required
-before this roadmap is accepted; no `Supplied.*` or private replacement carrier is permitted.
+**Supplier status.** The dependency chain is **#188 → #244 → #189**. #188 *Continuous cohomology
+of profinite groups* is **merged**. #244 *Profinite and pro-`p` groups* is still open, so this
+branch carries it stacked: `Suggested.lean` here begins with
+`import TauCetiRoadmap.ProfiniteProPGroups.Suggested`, and until #244 lands this pull request's
+diff also shows that roadmap's two files. Nothing is duplicated or shadowed — there is no
+`Supplied.*` alias and no private replacement carrier for any supplied declaration.
+
+The dependency is **type-checked, not promised**. Layer 1's `unitFiltration_one_isProP` is stated
+against `ProfiniteProPGroups.IsProP` — the same statement as the inverse-limit description, not a
+rephrasing of it — and Layer 4 consumes the supplier twice with **closed** proofs: the uniqueness
+of wild inertia as the pro-`p` Sylow subgroup of inertia is `IsProPSylow.eq_of_normal` applied,
+and the universal property behind the Iwasawa presentation is `freeProfiniteGroup.lift` applied.
+A rename, a carrier change or a changed hypothesis in the supplier breaks this build rather than
+being absorbed silently.
+
+**Contract audit.** The declarations of #244 that this roadmap consumes are exactly these, and no
+others:
+
+| Used in | Declaration |
+| --- | --- |
+| Layer 1, and inside `IsProPSylow` | `ProfiniteProPGroups.IsProP` |
+| Layer 4, wild inertia | `ProfiniteProPGroups.exists_isProPSylow`, `ProfiniteProPGroups.IsProP.exists_le_isProPSylow`, `ProfiniteProPGroups.IsProPSylow.eq_of_normal`, `ProfiniteProPGroups.IsProPSylow.map_of_surjective` |
+| Layer 4, the Iwasawa presentation | `ProfiniteProPGroups.freeProfiniteGroup`, `ProfiniteProPGroups.freeProfiniteGroup.of`, `ProfiniteProPGroups.freeProfiniteGroup.lift`, `ProfiniteProPGroups.presentedProfiniteGroup` |
+
+This roadmap consumes **no** maximal pro-`p` quotient, **no** free pro-`p` group, and **no**
+generator-rank declaration. `G_K(p)`, its rank and its Demushkin presentation are
+`LocalGaloisGroups`', and the generic constructions #244 defers to `ProfiniteArithmetic` — the
+profinite integers as a ring, profinite exponentiation and continuous outer automorphisms — are
+used by no milestone here.
 
 - **The ambient model, fixed once.** Use `G_K := Field.absoluteGaloisGroup K` with the Krull
   topology, in every public statement and in every characteristic. Prove once, as a comparison
@@ -1032,8 +1051,9 @@ generic theorems.
 
 ## Dependency order
 
-The external abstract dependency order is **Continuous Cohomology of Profinite Groups #188 →
-Profinite and Pro-`p` Groups #244 → this roadmap #189**. Within this roadmap the intended order is
+The external abstract dependency order is **Continuous Cohomology of Profinite Groups #188
+(merged) → Profinite and Pro-`p` Groups #244 (open, and a direct `import` of `Suggested.lean`
+here) → this roadmap #189**. Within this roadmap the intended order is
 Layer 0 → Layer 1 → Layer 2 → Layer 3 → Layer 4. Later work may proceed against explicit
 hypotheses, but the accepted exports use the canonical objects produced by the preceding layers.
 
