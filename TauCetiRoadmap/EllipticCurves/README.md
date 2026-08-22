@@ -166,7 +166,9 @@ type** — proving one is not attempted, and nothing below is conditional on one
 Szpiro's conjecture and the modified Szpiro conjecture, and proves the implications a formalised
 Frey curve makes available. Everything else — through
 Mordell–Weil, Selmer/Sha, the global minimal model, and the **selected `ℚ`-specific database
-adapters required by the current downstream consumers** — is in.
+adapters** of §Layer 8: the minimal-pair model and its height, the abc quality, the Szpiro ratio,
+the named Szpiro and abc statements with the implications between them, and bounded
+integral-point search — is in.
 
 Suggested home: `TauCeti/AlgebraicGeometry/EllipticCurve/` (mirroring Mathlib's layout).
 
@@ -318,8 +320,8 @@ predicates**, the **minimal discriminant ideal**, the **Weierstrass class** and
 constructions they feed (Layer 4.5b), the **quadratic twist** and the
 split-multiplicative-reduction theorem (Layer 5), the **Mordell–Weil theorem**
 `AddGroup.FG (E K)` (Layer 6), and the **canonical minimal-pair short equation** with its existence,
-uniqueness and height, together with the selected `ℚ`-specific adapters required by current
-downstream consumers (Layer 8).
+uniqueness and height, together with the remaining selected `ℚ`-specific adapters — abc quality,
+the Szpiro ratio, the named conjecture statements, and bounded integral-point search (Layer 8).
 The layers whose central objects are new *types* — the places of
 the function field (Layer 0), the hom-group, dual isogeny, and formal group (Layer 1), the
 Kodaira type (Layer 4), and the Selmer/Sha groups (Layer 7) — are specified in the narrative
@@ -639,10 +641,20 @@ being distributed as bookkeeping. Its milestones:
 - **The Frobenius trace.** `frobeniusTrace E = #F + 1 − #E(F)` for elliptic `E` over a finite
   field `F`, named and stated in `Suggested.lean` rather than left inline, because three separate strands quantify
   over it: the Hasse bound below, the trace sequence of the zeta strand, and Layer 1's theorem
-  that `End(E)` of an ordinary curve is an order in `ℚ(π_q)`. ⚠ It carries `[E.IsElliptic]`.
-  The bare point-count defect `#F + 1 − #W(F)` of an arbitrary Weierstrass cubic is a different
-  quantity and does not get this name, since what makes the defect a *trace* is the Layer-1
-  identity `deg(1 − π_q) = #E(𝔽_q)`, which is an elliptic-curve theorem.
+  that `End(E)` of an ordinary curve is an order in `ℚ(π_q)`. ⚠ It carries `[E.IsElliptic]`, but
+  the *formula* is not elliptic-specific and the reason is worth recording, because the obvious
+  objection to dropping the hypothesis is wrong in an instructive way. On a singular Weierstrass
+  cubic `#F + 1 − #W(F)` returns exactly the classical local invariant — `1`, `−1` and `0` at
+  split multiplicative, nonsplit multiplicative and additive reduction — **provided the count
+  runs over all points of the model, the singular point included**. Counting only the
+  nonsingular locus omits that one rational point and shifts every value by one, returning
+  `2`, `0`, `1` instead. Mathlib's `WeierstrassCurve.Affine.Point` is presently the nonsingular
+  locus, which is why the trace is stated here for elliptic `E` only; should the planned
+  upstream split into all points and a separate `NonsingularPoint` land, the right move is to
+  restate the definition on the full point count for an arbitrary Weierstrass cubic, with
+  `frobeniusTrace` its `[E.IsElliptic]` specialisation, rather than to keep a hypothesis the
+  definition does not need. What remains genuinely elliptic-specific is not the definition but
+  the theorem making the defect a *trace*: the Layer-1 identity `deg(1 − π_q) = #E(𝔽_q)`.
 - **The ordinary/supersingular dichotomy, defined geometrically.** For elliptic `E` over **any**
   field `K` of characteristic `p > 0`, `E` is **supersingular** when `E[p](Kˢᵉᵖ) = O` and
   **ordinary** otherwise (`IsSupersingular`, `IsOrdinary`; AEC V.3.1(i)). ⚠ The
@@ -896,7 +908,10 @@ The layer is about elliptic curves and says so in its hypotheses.
   `fᵥ = (v(Δ W) − v(Δ_min,ᵥ))/12` of an integral model — nonnegative integers, the
   divisibility by `12` being a theorem about admissible changes of variable rather than a
   convention — the integral defect ideal `𝔍_W = ∏ᵥ 𝔭ᵥ ^ fᵥ`, and its class
-  `[𝔍_W] ∈ ClassGroup O`. Milestones: the ideal identity
+  `[𝔍_W] ∈ ClassGroup O`, which is the declaration `weierstrassDefectClass O W` of
+  `Suggested.lean`. ⚠ Three different objects share the word *defect* and are not
+  interchangeable: the exponents `fᵥ` are natural numbers, `𝔍_W` is an ideal, and the invariant
+  the global-minimality theorem tests is the *class* of that ideal. Milestones: the ideal identity
   **`(Δ W) = 𝔇_{E/K} · 𝔍_W^{12}`** — the defect is what an integral model carries *above* the
   minimal discriminant, so it multiplies the minimal ideal up to the principal one, and the
   identity is *not* to be written the other way round; independence of the class from the chosen
@@ -986,7 +1001,11 @@ route needs anyway.
      `a₁ ≡ 0 (mod 3)`, then **recompute** each local `a₃` for
      that fixed global `a₁` so that `(a₁, a₃)` is a `HasKrausTwoWitness`, before combining the
      `a₃` residues modulo `v ^ v(2)`. The order is load-bearing: `a₃` is not independent of the
-     chosen lift of `a₁`;
+     chosen lift of `a₁`. ⚠ The patch must also deliver **`b₂ ≡ a₁² (mod 4)`** at the primes
+     above `2`, alongside the chosen `b₂` residue at the primes above `3`: step 6 produces
+     `a₂ = (b₂ − a₁²)/4`, so without that congruence the transformed equation has a
+     nonintegral `a₂` and the construction fails at exactly the primes Kraus's criterion is
+     about;
   5. own the exact finite-approximation lemma in
      `TauCeti/NumberTheory/DedekindDomain/FiniteApproximation.lean`: for a finite family of
      pairwise-comaximal prime powers, the map
@@ -994,9 +1013,17 @@ route needs anyway.
      these quotients with the corresponding localization quotients. Apply it with the powers in
      step 4;
   6. with the resulting integral `a₁, b₂, a₃`, set
-     `s = a₁/2`, `r = b₂/3 − s²`, and
-     `t = s(b₂ − a₁²)/3 + a₃/2`. Prove that this single `(r, s, t)` transforms
-     `[0, 0, 0, −c₄/48, −c₆/864]` to an integral global equation;
+     **`s = a₁/2`, `r = b₂/12`, `t = a₃/2`**. Prove that this single `(r, s, t)` transforms
+     `[0, 0, 0, −c₄/48, −c₆/864]` to an integral global equation. ⚠ These parameters are forced,
+     and no other triple will do. The source model has `a₁ = a₂ = a₃ = 0`, hence `b₂ = 0`, and
+     it already carries the target `c₄` and `c₆`, so the change of variables has `u = 1`.
+     Against Mathlib's action — `(C • W).a₁ = u⁻¹(a₁ + 2s)`, `(C • W).a₃ = u⁻¹³(a₃ + r·a₁ + 2t)`,
+     `(C • W).b₂ = u⁻¹²(b₂ + 12r)` — the transform therefore returns `2s`, `2t` and `12r` in
+     those three coordinates, so reproducing the chosen `a₁`, `a₃` and `b₂` fixes `s`, `t` and
+     `r` as above; the remaining coordinate then comes out right for free, since
+     `a₂ = 3r − s² = (b₂ − a₁²)/4`. ⚠ The `(a₁²/12, a₁/2, a₃/2)`-transform named in step 2 is
+     the `a₂ = 0` case of this prescription — at `b₂ = a₁²` the two agree — and not a competing
+     one;
   7. define `KrausGlobalCondition c₄ c₆ := ∀ v, KrausLocalCondition c₄ c₆ v` and prove
      `krausGlobalCondition_iff_exists_integralModel` by the construction above; and
   8. in each application, separately verify local minimality and compute every
@@ -1216,7 +1243,7 @@ scheme-facing roadmap. This layer deliberately does not conflate the two.
   part is not isogeny-invariant, so it would gut Cassels' theorem — with
   the real period of the **global minimal** Weierstrass equation. Two prerequisites, each an
   explicit milestone:
-  **(i) the global minimal model over `ℚ`** — §Layer 4.5a supplies the positive-defect identity
+  **(i) the global minimal model over `ℚ`** — §Layer 4.5a supplies the defect-ideal identity
   `(Δ W) = 𝔇_{E/K}·𝔍_W^{12}` and the reduced-minimal predicate; §Layer 4.5b supplies
   the patched global equation and the unique reduced minimal equation over `ℚ`, globally
   minimal over `ℤ`. That reduced equation carries the distinguished equation-level differential
@@ -1287,8 +1314,10 @@ scheme-facing roadmap. This layer deliberately does not conflate the two.
 
 ### Layer 8: selected `ℚ`-specific database adapters
 
-A thin layer, and deliberately so: the **selected adapters required by the current downstream
-consumers**, not every quantity a table of curves over `ℚ` might record. Everything genuinely
+A thin layer, and deliberately so. It owns the **minimal-pair model and its height**, the **abc
+quality**, the **Szpiro ratio** together with the named **Szpiro, modified-Szpiro and abc
+statements** and the implications between them, and **bounded integral-point search** — not every
+quantity a table of curves over `ℚ` might record. Everything genuinely
 structural has a home above — the Frobenius trace and the ordinary/supersingular dichotomy in
 §Layer 3, potential good reduction and good ordinary/supersingular reduction in §Layer 4, and
 minimal-model invariants and equation construction in §Layers 4.5a–b. It exists so the selected
@@ -1297,7 +1326,7 @@ meaningful carry their hypotheses rather than a junk value. Its base is `ℚ` th
 here is claimed over a general number field.
 
 ⚠ **It supplies selected adapters, not every field of a database record.** A record also carries
-a Faltings height, a Szpiro ratio, a modular degree, a Manin constant, analytic `Ш` data and
+a Faltings height, a modular degree, a Manin constant, analytic `Ш` data and
 Galois-image data, none of which are targets here, and each of which belongs elsewhere: the
 Faltings height to a complex/Arakelov roadmap; the modular degree and Manin constant to a
 modular-curves roadmap; complete integral-point lists to a Diophantine-approximation roadmap
@@ -1383,9 +1412,11 @@ boundary is the point: this layer is useful without pretending to be exhaustive.
   exponent `3/2`**, by the Frey-curve estimate `|Δ| ≍ (abc)²`, `N ≍ rad(abc)` — the exponent is
   the elementary one, not the best known, and the roadmap does not claim `3/2` is optimal; and
   **abc ⟹ modified Szpiro**, which is a *milestone of its own and not a corollary*: on paper one
-  applies abc to `c₆² + 1728Δ = c₄³`, but formalising it needs the valuation bookkeeping
+  applies abc to `c₆² + 1728Δ = c₄³`, and the textbook derivation runs to about a page, but
+  formalising it needs the valuation bookkeeping
   controlling common factors against the conductor support, the normalisation of the abc-triple,
-  and separate handling at `2` and `3`.
+  and separate handling at `2` and `3`. The milestone is sized by that bookkeeping, not by the
+  length of the argument on paper.
 - **Asymptotic Fermat from Szpiro.** With the Frey curve of §Worked examples — semistable, with
   minimal discriminant `(abc)^{2p}/2⁸` and conductor `rad(abc)` — Szpiro's inequality gives
   `2⁻⁸|abc|^{2p} ≪_ε rad(abc)^{6+ε}`, contradiction for all sufficiently large `p`. ⚠ That is
@@ -1547,8 +1578,9 @@ cross-cutting Layer 0.5 starts early because Layers 1, 2, 4, and 5 all use it. T
 9. **Cassels and the conditional BSD statement** — stretch, after lanes 3, 4, 5, 7, 8.
 10. **Selected `ℚ`-specific database adapters** — Layer 8, on lane 5 for the canonical long
     model and on its own minimal-pair-model construction for the height.
-   Thin by construction: it owns only the vocabulary required by current downstream consumers,
-   not an exhaustive database schema.
+   Thin by construction: it owns the minimal-pair model and height, the abc quality, the Szpiro
+   ratio with the named conjecture statements and their implications, and bounded integral-point
+   search — not an exhaustive database schema.
 
 ## References
 

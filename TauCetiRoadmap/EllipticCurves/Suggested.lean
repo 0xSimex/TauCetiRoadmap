@@ -973,8 +973,9 @@ that API once it exists. -/
 
 /-! ## Layer 8: selected `ℚ`-specific database adapters
 
-The selected adapters required by the roadmap's current downstream consumers; this is not an
-exhaustive schema for a table of curves. Everything structural has a home in Layers 3, 4 and 4.5.
+This layer owns the minimal-pair model and its height, the abc quality, the Szpiro ratio with the
+named Szpiro and abc statements and the implications between them, and bounded integral-point
+search; it is not an exhaustive schema for a table of curves. Everything structural has a home in Layers 3, 4 and 4.5.
 What is pinned here is the **convention**; the API is specified in `README.md` §Layer 8. The
 entries that are not unconditionally meaningful carry their hypotheses rather than a junk value. -/
 
@@ -984,8 +985,10 @@ what upgrades this to an invariant of the curve. The carrier is the whole conten
 model over `ℚ` the expression is not an invariant at all, since `x = u²x'`, `y = u³y'` sends
 `(a₄, a₆)` to `(a₄/u⁴, a₆/u⁶)` and the height to `H/|u|¹²`, so one curve has short rational
 models of arbitrarily small height and bounded-height finiteness is false. ⚠ It does not take
-the name `naiveHeight`: that is the naïve `x`-height on *points* of §Layer 6, which Mathlib
-reserves. -/
+the name `naiveHeight`: that name belongs to the curve-level invariant below, the height of the
+minimal-pair model. The naïve `x`-height on *points* of §Layer 6 is a different quantity on a
+different type, `WeierstrassCurve.Affine.Point.naiveHeight`; the namespace is what keeps the two
+apart, and neither name is reserved against the other. -/
 def shortEquationHeight (W : WeierstrassCurve ℤ) [W.IsShortNF] : ℕ :=
   max (4 * W.a₄.natAbs ^ 3) (27 * W.a₆.natAbs ^ 2)
 
