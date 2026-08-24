@@ -386,17 +386,58 @@ theorem finite_point {K : Type*} [Field K] [Finite K] (W : WeierstrassCurve K) [
     Finite W.toAffine.Point :=
   sorry
 
-/-- **The Frobenius trace** `a_q = #F + 1 − #E(F)` for an elliptic curve over a finite field.
-Mathlib's vocabulary suffices, so this is **defined outright**: a convention to pin, not a
-milestone. The Hasse bound above, the trace sequence of the zeta strand, and Layer 1's
-ordinary-endomorphism-ring theorem all quantify over it, which is why it is named rather than
-left inline. `Nat.card W.toAffine.Point` includes the point at infinity. ⚠ `[E.IsElliptic]` is
-required: the bare point-count defect of an arbitrary Weierstrass cubic is a different quantity
-and does not get this name, since what makes the defect a *trace* is the Layer-1 identity
-`deg(1 − π_q) = #E(𝔽_q)`. -/
-noncomputable def frobeniusTrace {F : Type*} [Field F] [Finite F] (E : WeierstrassCurve F)
-    [E.IsElliptic] : ℤ :=
-  (Nat.card F : ℤ) + 1 - Nat.card E.toAffine.Point
+/-- **The number of `F`-points of the projective Weierstrass model**, the singular point included
+if there is one: the affine solutions of the equation, singular or not, together with the unique
+point at infinity. That `[0 : 1 : 0]` is the only point on `z = 0` is `equation_of_Z_eq_zero`, so
+the `+ 1` is exactly the line at infinity's contribution.
+
+This is the count the trace below is taken against, and it is why that definition needs no
+hypothesis. ⚠ It is *not* `Nat.card W.toAffine.Point`: Mathlib's `Point` is the nonsingular locus
+together with the point at infinity, so on a singular model the two differ by exactly one. -/
+noncomputable def pointCount {F : Type*} [Field F] (W : WeierstrassCurve F) : ℕ :=
+  Nat.card {p : F × F // W.toAffine.Equation p.1 p.2} + 1
+
+/-- **A Weierstrass model has at most one singular point.** The cubic is irreducible — no line
+divides it, since `z` is not a factor and `x − cz` never is either — so two singular points would
+force a linear component through both. Being unique, that point is fixed by `Gal(Fˢᵉᵖ/F)` and so
+is `F`-rational. This is the fact that makes `pointCount` recoverable from Mathlib's nonsingular
+`Point` today, rather than only after the planned upstream split. -/
+theorem subsingleton_singular {F : Type*} [Field F] (W : WeierstrassCurve F)
+    (p q : F × F) (hp : W.toAffine.Equation p.1 p.2) (hp' : ¬ W.toAffine.Nonsingular p.1 p.2)
+    (hq : W.toAffine.Equation q.1 q.2) (hq' : ¬ W.toAffine.Nonsingular q.1 q.2) : p = q :=
+  sorry
+
+/-- The comparison with Mathlib's nonsingular `Point`: on a singular model the projective count
+is one greater, by `subsingleton_singular`. -/
+theorem pointCount_eq_card_point_add_one_of_singular {F : Type*} [Field F] [Finite F]
+    (W : WeierstrassCurve F) (hW : W.Δ = 0) :
+    pointCount W = Nat.card W.toAffine.Point + 1 :=
+  sorry
+
+/-- …and on an elliptic model the two agree, so the convention below is a strict generalisation
+of the classical `a_q` and changes nothing at good reduction. -/
+theorem pointCount_eq_card_point {F : Type*} [Field F] [Finite F] (W : WeierstrassCurve F)
+    [W.IsElliptic] : pointCount W = Nat.card W.toAffine.Point :=
+  sorry
+
+/-- **The Frobenius trace** `a_q = #F + 1 − #W(F)`, on the projective point count, for **any**
+Weierstrass model over a finite field. Mathlib's vocabulary suffices, so this is **defined
+outright**: a convention to pin, not a milestone. The Hasse bound above, the trace sequence of
+the zeta strand, and Layer 1's ordinary-endomorphism-ring theorem all quantify over it, which is
+why it is named rather than left inline.
+
+⚠ **The point count is the whole content of the convention, and the reason there is no
+`[IsElliptic]` hypothesis.** Taken against `pointCount` this formula returns the classical local
+invariant at *every* model: `a_q` at an elliptic one, and `1`, `−1`, `0` at split multiplicative,
+nonsplit multiplicative and additive reduction (the trichotomy is a milestone stated in
+`README.md` §Layer 3, since naming the three types needs the tangent-cone vocabulary). Taken
+instead against the nonsingular locus it would omit the one singular rational point and return
+`2`, `0`, `1` at those three, which is no classical invariant at all. ⚠ What is
+elliptic-specific is not the definition but the *trace* interpretation: the Layer-1 identity
+`deg(1 − π_q) = #E(𝔽_q)` is where the name is earned, and every theorem about `a_q` as a trace
+carries `[E.IsElliptic]` accordingly. -/
+noncomputable def frobeniusTrace {F : Type*} [Field F] [Finite F] (W : WeierstrassCurve F) : ℤ :=
+  (Nat.card F : ℤ) + 1 - pointCount W
 
 section Supersingular
 

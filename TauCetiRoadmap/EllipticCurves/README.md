@@ -641,20 +641,30 @@ being distributed as bookkeeping. Its milestones:
 - **The Frobenius trace.** `frobeniusTrace E = #F + 1 − #E(F)` for elliptic `E` over a finite
   field `F`, named and stated in `Suggested.lean` rather than left inline, because three separate strands quantify
   over it: the Hasse bound below, the trace sequence of the zeta strand, and Layer 1's theorem
-  that `End(E)` of an ordinary curve is an order in `ℚ(π_q)`. ⚠ It carries `[E.IsElliptic]`, but
-  the *formula* is not elliptic-specific and the reason is worth recording, because the obvious
-  objection to dropping the hypothesis is wrong in an instructive way. On a singular Weierstrass
-  cubic `#F + 1 − #W(F)` returns exactly the classical local invariant — `1`, `−1` and `0` at
-  split multiplicative, nonsplit multiplicative and additive reduction — **provided the count
-  runs over all points of the model, the singular point included**. Counting only the
-  nonsingular locus omits that one rational point and shifts every value by one, returning
-  `2`, `0`, `1` instead. Mathlib's `WeierstrassCurve.Affine.Point` is presently the nonsingular
-  locus, which is why the trace is stated here for elliptic `E` only; should the planned
-  upstream split into all points and a separate `NonsingularPoint` land, the right move is to
-  restate the definition on the full point count for an arbitrary Weierstrass cubic, with
-  `frobeniusTrace` its `[E.IsElliptic]` specialisation, rather than to keep a hypothesis the
-  definition does not need. What remains genuinely elliptic-specific is not the definition but
-  the theorem making the defect a *trace*: the Layer-1 identity `deg(1 − π_q) = #E(𝔽_q)`.
+  that `End(E)` of an ordinary curve is an order in `ℚ(π_q)`. ⚠ **The point count is the whole
+  content of the convention, and it is chosen to be the one that is right in every case.** The
+  count is `pointCount W`: all `F`-points of the projective model, the singular point included
+  when there is one. Against that count the formula returns the classical local invariant at
+  *every* Weierstrass model — `a_q` at an elliptic one, and `1`, `−1`, `0` at split
+  multiplicative, nonsplit multiplicative and additive reduction. Against the nonsingular locus
+  instead it would omit the single singular rational point and shift each of those by one,
+  returning `2`, `0`, `1`, which is no classical invariant at all. So `frobeniusTrace` carries
+  **no `[IsElliptic]` hypothesis**: there is no junk value to avoid, and restricting it would
+  buy nothing.
+  ⚠ **This does not wait on Mathlib.** `WeierstrassCurve.Affine.Point` is presently the
+  nonsingular locus, but the two counts are related by a theorem this layer owns, because a
+  Weierstrass cubic has **at most one singular point** and it is automatically `F`-rational: the
+  cubic is irreducible (neither `z` nor any `x − cz` divides it, since `[0 : 1 : 0]` is its only
+  point on `z = 0`), so a second singular point would force a linear component, and a unique
+  singular point is Galois-stable. Hence `pointCount W = #W.Point + 1` when `Δ W = 0` and
+  `= #W.Point` otherwise — both milestones — and when the planned upstream split into all points
+  and a separate `NonsingularPoint` lands, these become the deduplication lemmas rather than a
+  reason to have waited.
+  ⚠ What is genuinely elliptic-specific is not the definition but the theorem making the defect
+  a *trace*: the Layer-1 identity `deg(1 − π_q) = #E(𝔽_q)`, which is where the name is earned.
+  Every theorem treating `a_q` **as a trace** — Hasse, the zeta strand, the
+  ordinary-endomorphism-ring theorem — carries `[E.IsElliptic]` accordingly, and the
+  bad-reduction trichotomy above is a separate milestone about the same formula.
 - **The ordinary/supersingular dichotomy, defined geometrically.** For elliptic `E` over **any**
   field `K` of characteristic `p > 0`, `E` is **supersingular** when `E[p](Kˢᵉᵖ) = O` and
   **ordinary** otherwise (`IsSupersingular`, `IsOrdinary`; AEC V.3.1(i)). ⚠ The
