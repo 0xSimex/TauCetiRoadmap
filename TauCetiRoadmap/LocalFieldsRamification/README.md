@@ -910,20 +910,20 @@ temporary arithmetic declarations with the canonical exports above.
 
 ### Layer 4: the tame quotient of the absolute Galois group
 
-**Supplier status.** The dependency chain is **#188 → #244 → #189**. #188 *Continuous cohomology
-of profinite groups* is **merged**. #244 *Profinite and pro-`p` groups* is still open, so this
-branch carries it stacked: `Suggested.lean` here begins with
-`import TauCetiRoadmap.ProfiniteProPGroups.Suggested`, and until #244 lands this pull request's
-diff also shows that roadmap's two files. Nothing is duplicated or shadowed — there is no
-`Supplied.*` alias and no private replacement carrier for any supplied declaration.
+**Supplier status.** The dependency chain is **#188 → #244 → #189**; #188 is merged and #244 is
+open. `Suggested.lean` imports `TauCetiRoadmap.ProfiniteProPGroups.Suggested` directly, so this
+branch's build is red until #244 lands and it is updated from `main` — which is the merge order
+the review asks for, now enforced mechanically rather than by convention. Nothing is duplicated
+or shadowed: there is no `Supplied.*` alias and no private replacement carrier for any supplied
+declaration.
 
 The dependency is **type-checked, not promised**. Layer 1's `unitFiltration_one_isProP` is stated
 against `ProfiniteProPGroups.IsProP` — the same statement as the inverse-limit description, not a
 rephrasing of it — and Layer 4 consumes the supplier twice with **closed** proofs: the uniqueness
 of wild inertia as the pro-`p` Sylow subgroup of inertia is `IsProPSylow.eq_of_normal` applied,
-and the universal property behind the Iwasawa presentation is `freeProfiniteGroup.lift` applied.
-A rename, a carrier change or a changed hypothesis in the supplier breaks this build rather than
-being absorbed silently.
+and the universal property behind the Iwasawa presentation is
+`freeProfiniteGroup.existsUnique_lift` applied. A rename, a carrier change or a changed hypothesis
+in the supplier breaks this build rather than being absorbed silently.
 
 **Contract audit.** The declarations of #244 that this roadmap consumes are exactly these, and no
 others:
