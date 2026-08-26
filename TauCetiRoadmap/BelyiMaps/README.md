@@ -54,9 +54,13 @@ TauCeti/NumberTheory/Belyi/                -- Layers 12, 13, 14
 
 This PR now has a deliberately narrow declaration boundary. Its compiled `Suggested.lean`
 exports the self-contained Belyi vocabulary: permutation triples and relabeling, connectedness,
-orders and branch-point operations; the ribbon-graph carrier; triangle groups; the
-thrice-punctured sphere and monodromy; and the three distinct public cover carriers
-`FiberNumberedCover`, `ConnectedPointedCover`, and `ConnectedCover`.
+orders and all six branch-point operations; the ribbon-graph carrier; triangle groups; the
+thrice-punctured sphere with its anharmonic self-homeomorphisms and monodromy; the three
+distinct public cover carriers `ConnectedFiberNumberedCover`, `ConnectedPointedCover` and
+`ConnectedCover`, each with its isomorphism relation, its quotient carrier
+(`ConnectedFiberNumberedCoverClass`, `ConnectedPointedCoverClass`, `ConnectedCoverClass`) and
+the forgetful maps between them; and the three combinatorial carriers `ConnectedTriple`,
+`ConnectedIsoClass` and `MarkedIsoClass` those quotients are classified by.
 
 The rest of the programme is retained below as a dependency specification, and is **not a
 declaration or a completion claim of this PR**. Every excluded summit has exactly one owner:
@@ -64,7 +68,8 @@ declaration or a completion claim of this PR**. Every excluded summit has exactl
 | Excluded material | Layers | Exact owner | Activated once |
 | --- | --- | --- | --- |
 | passports, cycle partitions, and the reference transitive-group results | 1, 3 | **this roadmap**, in a follow-up PR | #243 `PolynomialGaloisGroups` lands its exact `fullCycleType` and transitive-group API |
-| associated covers and the covering classification | 6.2, and the classification half of 6.3 | **this roadmap**, in a follow-up PR | UniversalCovers publishes compiled semilocal-connectivity, universal-cover, deck-action and classification carriers |
+| the two-open Seifert–van Kampen theorem | 5.5 | roadmap **`UniversalCovers`** | — it is general algebraic topology, owned there and only consumed here |
+| associated covers, and the subgroup half of the covering classification | 6.2, and the subgroup statement inside 6.3 | **this roadmap** for 6.2, in a follow-up PR; `UniversalCovers` milestone 8 for the subgroup statement | UniversalCovers publishes compiled semilocal-connectivity, universal-cover, deck-action and classification carriers |
 | compactification, compact Riemann surfaces, ramification, analytic cohomology, and analytic Riemann existence | 7, 8 | successor roadmap **`BelyiAnalyticCovers`** | a compact-surface owner (ModularForms Layer 10B) publishes one checked carrier and the Riemann–Roch/Riemann–Hurwitz API |
 | algebraic Belyi pairs, the analytic–algebraic comparison, Belyi's theorem, fields of moduli and of definition, and Weil descent | 9, 10, 11 | successor roadmap **`BelyiAlgebraicAndDescent`** | AlgebraicCurves publishes its curve/function-field anti-equivalence and extension-ramification carriers, and `BelyiAnalyticCovers` lands |
 | the arithmetic exact sequence and outer action, peripheral inertia, the branch-cycle theorem, the pro-`ℓ` peripheral-power theorem, faithfulness, and LMFDB record semantics | 12, 13, 14 | successor roadmap **`BelyiArithmeticActions`** | #244 `ProfiniteProPGroups` and its generic successor `ProfiniteArithmetic` land, and `BelyiAlgebraicAndDescent` lands |
@@ -78,9 +83,9 @@ successor. Their exact owner is **`ProfiniteArithmetic`**, the generic successor
 Thus an unresolved supplier contract is a scheduling block, not a theorem with a prose caveat.
 No unmerged supplier branch is imported and no Belyi-local stand-in is exported. The order is
 #243 and #244 first, then UniversalCovers, the compact-surface owner, AlgebraicCurves and
-`ProfiniteArithmetic`, and only then the follow-up PRs and the three Belyi successors above. This
-implements the review's recommended combinatorial/analytic/arithmetic split without pretending the
-later endpoints are already typeable.
+`ProfiniteArithmetic`, and only then the follow-up PRs and the three Belyi successors above. The
+split is combinatorial / analytic / arithmetic, and it is drawn where the carriers actually
+become typeable rather than where the mathematics changes subject.
 
 ## Prerequisites
 
@@ -117,9 +122,10 @@ of them. It consumes, by name: `ClassFunction` (Layer 0), `classSum`, `structure
 roadmap; **this roadmap owns it** (Layer 3.2), together with the inverse-class operation on
 `ConjClasses` it needs.
 
-**Universal covers.** The covering-space classification, deck transformation groups, and the
-`N(H)/H` deck-group theorem belong to
-[UniversalCovers](../UniversalCovers/README.md) (milestones 4, 5, 7, 8 there). This roadmap
+**Universal covers.** The covering-space classification, deck transformation groups, the
+`N(H)/H` deck-group theorem, and the two-open Seifert–van Kampen theorem belong to
+[UniversalCovers](../UniversalCovers/README.md) (milestones 4, 5, 7, 8 there, together with the
+van Kampen declarations whose exact required signatures Layer 5.5 below pins). This roadmap
 consumes them and builds no universal cover. Two conventions from that roadmap bind here: deck
 groups are identified with `(π₁)ᵐᵒᵖ` (its milestone 5), and basepoint change acts on recovered
 subgroups by conjugation (its milestone 7). The constructive direction this roadmap needs — a
@@ -132,12 +138,14 @@ of it. It says nothing about the projection `assocCover S → X`, which is the m
 roadmap actually needs to be a covering; that is Layer 6.2's own equivariant sheet
 computation, and the two maps have different groups in play.
 
-The pin has no Seifert–van Kampen theorem in any form, and this roadmap does not build a
-general one. Layer 5.5 builds the single case the fundamental-group computation needs — two
-open sets with simply connected intersection — from the subdivision infrastructure the pin
-does supply (`exists_monotone_Icc_subset_open_cover_unitInterval` and its square analogue,
-with `Mathlib/Topology/Subpath.lean`'s `Path.subpath`/`Path.concat`/`concatSubpath`). That
-theorem is generic and is stated for reuse.
+**Seifert–van Kampen.** The pin has it in no form, and this roadmap builds none of it. The
+case the fundamental-group computation needs — two open sets with simply connected
+intersection — is general algebraic topology, reusable far beyond three-point covers, so it
+belongs to [UniversalCovers](../UniversalCovers/README.md) with the rest of the fundamental-group
+machinery. Layer 5.5 below records exactly which declarations that roadmap supplies and under
+which hypotheses; Layer 5.6 **instantiates** them at the two-set cover of Layer 5.1 and reads
+off the values on the canonical generators, and that instantiation is what this roadmap owns.
+No Belyi-local copy, alias or stand-in for the theorem is exported.
 
 **Conformal mapping.** The local theory of holomorphic maps — Rouché, Hurwitz, the local
 degree `TauCeti.exists_localDegree`, holomorphic branch roots — belongs to
@@ -145,9 +153,9 @@ degree `TauCeti.exists_localDegree`, holomorphic branch roots — belongs to
 local normal form. Nothing here uses the Riemann mapping theorem, Montel, or the boundary
 correspondence. The `ℍ/Γ(2) ≅ ℂ∖{0,1}` λ-uniformization is that roadmap family's material
 (recorded there as belonging to ModularForms); no layer here consumes or supplies it — the
-route to the fundamental group of the thrice-punctured sphere is the two-open van Kampen
-theorem of Layer 5.5, applied to the cover of Layer 5.1, and no retraction onto a figure
-eight occurs anywhere in it.
+route to the fundamental group of the thrice-punctured sphere is UniversalCovers' two-open van
+Kampen theorem, applied to the cover of Layer 5.1, and no retraction onto a figure eight
+occurs anywhere in it.
 
 **Modular forms.** The compact-Riemann-surface cohomology chain — structure sheaf, sheaves of
 a divisor, finiteness of `H¹`, analytic Riemann–Roch, Serre duality by residues,
@@ -213,26 +221,30 @@ Each contract lists what the section exports and what it imports; nothing crosse
 except through these lists.
 
 **A. Finite combinatorics — Layers 0–4.**
-*Current exports:* `PermutationTriple` with its relabeling action, `IsoClass`, and
-`ConnectedTriple`;
-`monodromyGroup`, `automorphismGroup`, `orderTriple`, `GeometryType`;
-`BipartiteRibbonGraph`, the branch-point operations, and `TriangleGroup`.
+*Current exports:* `PermutationTriple` with its relabeling action, `IsoClass`,
+`ConnectedTriple` and `ConnectedIsoClass`;
+`monodromyGroup`, `automorphismGroup` with `automorphismGroup_smul`, `orderTriple`,
+`GeometryType`; `BipartiteRibbonGraph`; all six branch-point operations `swap01`, `swap1Inf`,
+`swap0Inf`, `rot`, `rotInv` with their composite identities and their preservation of
+connectedness; and `TriangleGroup`.
 *Exports added by the #243 successor:* full cycle data, `eulerChar`, `genus`;
 `PassportSpec` with `HasPassport`, `passportOf`, `passportSize`; blocks,
 quotient triples and supplier-backed primitivity refinements; the dessin/triple equivalence; the
-branch-point `S₃`-action on `IsoClass n` and on ordered passports; the executable
+branch-point `S₃`-action on ordered passports; the executable
 enumeration and the small complete tables; the Frobenius product-one formula, generating
 counts and the normalizer counting formula; `TriangleGroup` with its trichotomy.
 *Imports:* Mathlib permutations, group actions, free and presented groups;
 PolynomialGaloisGroups' `fullCycleType` and transitive-group data; CharacterTheory's class
 sums, structure constants, character table and central characters. **Nothing topological.**
 
-**B. Topology and geometry — Layers 5–11.** Layers 5, 6.1 and the carrier half of 6.3 are
-current; 6.2 and the classification half of 6.3 are a follow-up PR here; Layers 7–8 are
-`BelyiAnalyticCovers` and Layers 9–11 are `BelyiAlgebraicAndDescent`.
-*Exports:* `U` with its two-set cover, peripheral loops and `π₁(U, b) ≃* FreeGroup (Fin 2)`;
-the van Kampen theorem for a simply connected intersection; the three cover carriers
-(`FiberNumberedCover`, pointed, unnumbered) and their three classifications; `FilledCover`
+**B. Topology and geometry — Layers 5–11.** Layers 5, 6.1 and 6.3 are current; 6.2 is a
+follow-up PR here; Layers 7–8 are `BelyiAnalyticCovers` and Layers 9–11 are
+`BelyiAlgebraicAndDescent`.
+*Exports:* `U` with its two-set cover, its six anharmonic self-homeomorphisms, peripheral loops
+and `π₁(U, b) ≃* FreeGroup (Fin 2)`; the three cover carriers (`ConnectedFiberNumberedCover`,
+`ConnectedPointedCover`, `ConnectedCover`), their quotient carriers, the forgetful maps between
+them, `MarkedIsoClass` and their three classifications; the pullback action realizing the
+branch-point `S₃`-action topologically; `FilledCover`
 and `TopBranchedCover`; the compact-Riemann-surface hypothesis stack, the Riemann sphere,
 `ramificationIndex`, `AnalyticBelyiPair`; `M(X)` with the points-to-places bijection;
 `AlgebraicBelyiPair` with its local `(e,f)` data; the local algebraic-to-analytic comparison
@@ -476,6 +488,7 @@ the three portfolio suppliers have no local stand-ins here.
 | 3.2 | CharacterTheory Layer 3 | the character table and column orthogonality | `characterTable`, `char_column_orthogonality` |
 | 3.2 | CharacterTheory Layer 4 | central characters, and the conversion to class sizes | `centralCharacter`, `centralCharacter_coordinate`, and the conversion of `ω_χ` on a class sum into class size times character value over degree, for which that roadmap pins **no Lean name**; local interface: `centralCharacter_eq_card_mul_div (χ) (j) : centralCharacter χ (classSum j) = (Nat.card (carrier j) : ℂ) * χ (rep j) / χ 1` |
 | 5.1, 6.2 | UniversalCovers Stage 0.2 | semilocal simple connectivity | **unresolved supplier contract**: no Mathlib class exists and UniversalCovers has not published a compiled target; no local stand-in is exported |
+| 5.6 | UniversalCovers, the two-open van Kampen milestone | Seifert–van Kampen for two open sets with simply connected intersection | **unresolved supplier contract**: the required declarations are `vanKampenLift`, `vanKampenLift_bijective`, `vanKampenEquiv` and `vanKampenEquiv_toMonoidHom`, with the signatures and hypotheses pinned verbatim in Layer 5.5 below. This roadmap exports no copy: Layer 5.6 is the instantiation, not the theorem. |
 | 6.2 | UniversalCovers Stage 0.2, 0.3 | the universal cover, its covering map, and the free proper `π₁`-action | `UniversalCover x₀`, `proj`, `IsCoveringMap proj`, `SimplyConnectedSpace (UniversalCover x₀)`, `UniversalCover.isQuotientCoveringMap` |
 | 6.4 | UniversalCovers Stage 0.4, 1 | deck groups and `Deck ≅ (π₁)ᵐᵒᵖ` | `Deck`, `deckFundamentalGroupEquiv : Deck proj ≃* (FundamentalGroup X x₀)ᵐᵒᵖ` |
 | 6.3 | UniversalCovers Stage 2 | basepoint change, and the pointed/unpointed correspondence | `basepointChangeSubgroup` is named upstream; milestone 8's equivalences are **unresolved prose-only supplier contracts** and are not exported locally. Their required carriers and exact connectedness/orbit semantics are pinned in Layer 6.3 below. |
@@ -924,28 +937,44 @@ naive color swap — does **not** preserve the relation: it yields `a⁻¹ c a²
 `a⁻¹a⁻¹b⁻¹a²b`, not `1`. `Suggested.lean` carries a `decide`-checked counterexample on
 `s3Triple`.
 
-The six operations, with `s = swap01` and `t = swap1Inf`, written out rather than schematized:
+**The six operations, each with the branch-point permutation it is named after, written out
+rather than schematized.** With `s = swap01` and `t = swap1Inf`, and with `ρ` the permutation
+of `{0, 1, ∞}` such that the new `σ_i` is the old `σ_{ρ i}` up to conjugacy:
 
 ```text
-id        (a, b, c)
-s         (b, a, b⁻¹ · c · b)
-t         (a, b⁻¹ · c · b, b)
-t ∘ s     (b, c, a)
-s ∘ t     (b⁻¹ · c · b, a, a · b · a⁻¹)
-s ∘ t ∘ s (c, b, b · a · b⁻¹)
+operation   Lean name    ρ           formula
+id          id           ()          (a, b, c)
+s           swap01       (0 1)       (b, a, b⁻¹ · c · b)
+t           swap1Inf     (1 ∞)       (a, b⁻¹ · c · b, b)
+s ∘ t ∘ s   swap0Inf     (0 ∞)       (c, b, b · a · b⁻¹)
+t ∘ s       rot          (0 1 ∞)     (b, c, a)
+s ∘ t       rotInv       (0 ∞ 1)     (b⁻¹ · c · b, a, a · b · a⁻¹)
 ```
 
 The last three are simplifications of the composites using `c · b · a = 1`; they are proved
-in Lean, not asserted as rewriting folklore. In particular `t ∘ s` is the cyclic rotation
-`(a,b,c) ↦ (b,c,a)`, which is what makes the `S₃`-action visible.
+in Lean (`swap0Inf_eq`, `rot_eq`, `rotInv_eq`), not asserted as rewriting folklore. In
+particular `rot` is the cyclic rotation `(a,b,c) ↦ (b,c,a)`, with **no conjugator at all**,
+which is what makes the `S₃`-action visible.
+
+⚠ **Reindexing is contravariant, so this is a *right* action.** Writing `Op ρ` for the
+operation in the table, `Op ρ ∘ Op ρ' = Op (ρ' · ρ)` in Mathlib's multiplication, where
+`(ρ' · ρ) i = ρ' (ρ i)`: the labels multiply in the **reverse** of the order in which the
+operations are applied. The two generator instances are `rot_eq` and `rotInv_eq`. Applying
+`swap01` first and then `swap1Inf` gives `rot`, whose label is `(0 1 ∞)`, and indeed
+`ρ_s · ρ_t = (0 1)·(1 ∞) = (0 1 ∞)`; multiplying the labels in the same order as the
+operations would give `ρ_t · ρ_s = (1 ∞)·(0 1) = (0 ∞ 1)`, which is `rotInv`'s label and the
+wrong answer. Naming a single operation "the `S₃`-action" without fixing this is ambiguous by
+exactly that inversion, which is why the table lists `ρ` per row rather than leaving it to be
+inferred.
 
 **New object: the branch-point action.** Basic API:
 
-- *Constructors.* The two generators as maps `PermutationTriple n → PermutationTriple n`,
-  each carrying its proof of the relation; the six named composites.
-- *Comparison lemmas.* `swap01` is an involution **on the nose**. `swap1Inf ∘ swap1Inf` is
-  **not** the identity on triples — it is simultaneous conjugation by **`a`** — which is why
-  the `S₃`-action is stated on isomorphism classes:
+- *Constructors.* All six operations as maps `PermutationTriple n → PermutationTriple n`,
+  each carrying its proof of the relation, and the three composite identities above.
+- *Comparison lemmas.* `swap01` is an involution **on the nose** and `rot` has order `3`
+  **on the nose** (`rot_rot_rot`). `swap1Inf ∘ swap1Inf` is **not** the identity on
+  triples — it is simultaneous conjugation by **`a`** — which is why the `S₃`-action is
+  stated on isomorphism classes:
 
   ```text
   t² (a, b, c) = (a, a · b · a⁻¹, a · c · a⁻¹) = a • (a, b, c)
@@ -956,15 +985,58 @@ in Lean, not asserted as rewriting folklore. In particular `t ∘ s` is the cycl
   `a = (c · b)⁻¹ = b⁻¹ · c⁻¹` — that rewrites those entries as conjugates by `a`. Conjugating
   by `b` or `b⁻¹` instead moves the first component, which `t²` fixes; `Suggested.lean`
   carries all three as `decide`-checked witnesses on `s3Triple`.
-- *Functoriality.* Each operation commutes with relabeling, hence descends to `IsoClass n`.
+
+  The same phenomenon for the rotations is `rotInv_rot : rotInv (rot t) = b • t` — the
+  conjugator there is **`b`**, not `a`, so `rotInv` is not the inverse of `rot` on triples
+  even though `rot³` is the identity.
+- *Functoriality.* Each operation commutes with relabeling, hence descends to `IsoClass n`;
+  each preserves connectedness (`isConnected_swap01`, `isConnected_swap1Inf`), hence restricts
+  to `ConnectedTriple n` and descends to `ConnectedIsoClass n`.
 - *The action.* On `IsoClass n` the induced maps satisfy the Coxeter relations `s² = 1`,
-  `t² = 1`, `(st)³ = 1`, and therefore define an `S₃`-action. Prove the three relations
-  separately; the third is where the cyclic rotation above is used.
+  `t² = 1`, `(st)³ = 1`, and therefore define an `S₃`-action, right-acting as above. Prove
+  the three relations separately; the third is `rot_rot_rot` and the braid relation is
+  `braid_on_isoClass`.
 - *Preservation.* Connectedness, genus, and the monodromy subgroup up to conjugacy are
   preserved; the three cycle partitions are permuted by the corresponding element of `S₃` —
   `s` exchanges the partitions at `0` and `1`, `t` those at `1` and `∞`.
-- *Dessins.* Under Layer 2.4, `s` exchanges black and white vertices, and `t` is the
-  classical duality exchanging white vertices with faces.
+- *Dessins, and the ribbon orientation.* Under Layer 2.4, `s` exchanges black and white
+  vertices, and `t` is the classical duality exchanging white vertices with faces. On the
+  ribbon-graph carrier of 2.1 the formulas are, with `facePerm := (rotW · rotB)⁻¹`,
+
+  ```text
+  s : (rotB, rotW) ↦ (rotW, rotB)
+  t : (rotB, rotW) ↦ (rotB, rotW⁻¹ · facePerm · rotW)
+  ```
+
+  ⚠ **All six preserve the ribbon orientation**, and this is worth stating because the
+  opposite is easy to assume: `s` leaves the rotation system pointwise alone and only renames
+  which colour class is black, and every one of the six is induced by a *holomorphic*
+  automorphism of `ℙ¹ ∖ {0, 1, ∞}` (Layer 5.1), so no element of the `S₃`-action is the
+  mirror operation. The orientation-reversing operation on dessins is complex conjugation
+  `z ↦ z̄`, which is **not** in this group and is not part of this milestone.
+
+**The three actions agree.** The same six formulas describe three a priori different actions,
+and the milestone is that they are one:
+
+- *combinatorial*, on `IsoClass n` and on `ConnectedIsoClass n`, as above;
+- *topological*, by pulling covers back along the six anharmonic self-homeomorphisms of Layer
+  5.1 — Layer 6.3's `isoClass_pullback_mob01` and `isoClass_pullback_mob1Inf`, which identify
+  the pullback along `z ↦ 1 − z` with `swap01` and along `z ↦ z/(z − 1)` with `swap1Inf`, and
+  hence the four composites with the four composite operations. Equivalently, on the free
+  group of 5.6 the same six formulas describe the induced automorphisms of
+  `FreeGroup (Fin 2)`, with `x = of 0 ↦ periph0`, `y = of 1 ↦ periph1`, `z = (y · x)⁻¹`; the
+  triple action is *precomposition* with those automorphisms, which is where the
+  contravariance above comes from;
+- *algebraic*, by postcomposing an algebraic Belyi pair `β` with an anharmonic Möbius
+  transformation of `ℙ¹` — Layer 9.1's `S₃`-action, owned by `BelyiAlgebraicAndDescent`.
+  ⚠ Postcomposition inverts: the map whose puncture permutation is `ρ` realizes the operation
+  labelled `ρ⁻¹`, so `rot` is realized by `t ↦ (t − 1)/t` and not by `t ↦ 1/(1 − t)`. Layer 9.1
+  carries the table.
+
+⚠ Only `id` and `s` act on level-1 data (literal triples and fiber-numbered covers); their
+Möbius transformations are the two that fix the basepoint `b = 1/2` (Layer 5.1). The other
+four act only on isomorphism classes, and the failure to act on the nose is measured by
+`swap1Inf_sq` and `rotInv_rot`.
 
 **The induced action on passports, and the three objects that must not be confused.** The
 passport of Layer 1.1 is **ordered** by `(0, 1, ∞)` and stays so; the branch-point action
@@ -1465,19 +1537,14 @@ the modular group — material belonging to the modular-forms family that nothin
 needs. The route below computes the fundamental group directly instead, and Layer 5.6's
 result is the same isomorphism.
 
-**The route is pinned, because the pin lacks a Seifert–van Kampen theorem and this
-roadmap does not build a general one.** Instead it builds the one case it needs — two
-open sets with simply connected intersection — from the subdivision infrastructure the
-pin does have: `exists_monotone_Icc_subset_open_cover_unitInterval` and its square
-analogue `..._prod_self` refine any open cover of `[0,1]` (respectively of `[0,1]²`) into
-a monotone partition subordinate to it, and `Path.subpath`, `Path.concat`,
-`Path.Homotopy.concatSubpath` and `Path.Homotopy.subpathTransSubpath`
-(`Mathlib/Topology/Subpath.lean`) reassemble the pieces. Those five declarations are the
-whole engine: 5.5 is a Lebesgue subdivision in one variable for the generation half and in
-two variables for the relation half. The base case `π₁(ℂ ∖ {0}) ≅ ℤ` is not proved by hand
-either — it is read off the pin's `Complex.isAddQuotientCoveringMap_exp`, which presents
-`exp : ℂ → ℂ ∖ {0}` as the quotient of the (convex, hence simply connected) plane by
-`AddSubgroup.zmultiples (2 * π * I)`.
+**The route is pinned, and its one general input comes from UniversalCovers.** The pin has
+no Seifert–van Kampen theorem in any form, and Seifert–van Kampen for two open sets with
+simply connected intersection is general algebraic topology rather than Belyi mathematics:
+5.5 records the exact declarations UniversalCovers supplies, and 5.6 instantiates them at
+5.1's two-set cover. Everything else in this layer is Belyi's own. The base case
+`π₁(ℂ ∖ {0}) ≅ ℤ` is not proved by hand either — it is read off the pin's
+`Complex.isAddQuotientCoveringMap_exp`, which presents `exp : ℂ → ℂ ∖ {0}` as the quotient of
+the (convex, hence simply connected) plane by `AddSubgroup.zmultiples (2 * π * I)`.
 
 #### 5.1 The base space and its standard two-set cover
 
@@ -1526,13 +1593,31 @@ Prove the four facts the rest of the layer runs on, each an explicit computation
   Prove each is an open subset of `U`, that they are pairwise disjoint, and that each is
   the image of a punctured disc under a chart of `OnePoint ℂ` centred at its puncture —
   for `D∞*` this is the chart `w = 1/z`, in which it is `{w | 0 < |w| < 1/2}`.
-- *Comparison lemmas.* The three self-homeomorphisms of `U` permuting the punctures in
-  the affine chart (`z ↦ 1 − z` swaps `0, 1` and fixes `∞`; `z ↦ 1/z` swaps `0, ∞`;
-  `z ↦ z/(z−1)` swaps `1, ∞`). ⚠ **Only `z ↦ 1 − z` fixes the basepoint**: the orbit of
-  `b = 1/2` under the anharmonic group is `{1/2, 2, −1}`, so the other five operations move
-  `b` and act on `π₁(U, b)` only after a choice of connecting path. That is the topological
-  source of Layer 2.6's finding that the `S₃`-action lives on isomorphism classes, and
-  Layer 6.3 is where the two are matched.
+- *Comparison lemmas.* The **six** anharmonic self-homeomorphisms of `U`, each named and each
+  proved to be a self-homeomorphism (that `U` is closed under the map is one non-vanishing
+  computation per puncture), with the puncture permutation it induces on `{0, 1, ∞}`:
+
+  ```text
+  mobId     z ↦ z                 ()          fixes b
+  mob01     z ↦ 1 − z             (0 1)       fixes b
+  mob1Inf   z ↦ z/(z − 1)         (1 ∞)       b ↦ −1
+  mob0Inf   z ↦ 1/z               (0 ∞)       b ↦ 2
+  mobRot    z ↦ 1/(1 − z)         (0 1 ∞)     b ↦ 2
+  mobRotInv z ↦ (z − 1)/z         (0 ∞ 1)     b ↦ −1
+  ```
+
+  `mob01` and `mob1Inf` generate, and `Suggested.lean` pins those two as `≃ₜ`; the other four
+  are their composites, `mobRot = mob01 ∘ mob1Inf`, `mobRotInv = mob1Inf ∘ mob01` and
+  `mob0Inf = mob01 ∘ mob1Inf ∘ mob01`. ⚠ Pulling covers back is **contravariant** in the map,
+  so the composite of two Möbius transformations induces the *reverse* composite of branch-point
+  operations — `mobRot` induces `rot = swap1Inf ∘ swap01` — which is the same inversion as in
+  Layer 2.6's table and must not be introduced a second time by mismatching the two.
+  ⚠ **Only `mob01` fixes the basepoint**: the orbit of `b = 1/2` under
+  the anharmonic group is `{1/2, 2, −1}`, so the other five operations move `b` and act on
+  `π₁(U, b)` only after a choice of connecting path. That is the topological source of Layer
+  2.6's finding that the `S₃`-action lives on isomorphism classes, and Layer 6.3 is where the
+  two are matched. The value lemmas that make the action on the *chosen* generators — and not
+  merely on their conjugacy classes — computable are stated with the loops, in 5.2.
 - *Edge cases.* `A` and `B` are each connected but neither is simply connected; `A ∩ B` is
   simply connected but is **not** all of `U`.
 - *Downstream interfaces.* Layers 6, 7, 8, and the analytic side of 12.4.
@@ -1560,8 +1645,8 @@ both punctures, since `|γ0 t| = 1/2` and `|γ1 t − 1| = 1/2`; and their image
 lie in `A` and `B` respectively. The two circles are externally tangent — the distance
 between their centres is `1 = 1/2 + 1/2` — so they meet exactly at `b`. ⚠ That makes the
 picture a figure eight rather than two crossing circles, and nothing more: **no milestone
-retracts `U` onto `C₀ ∪ C₁`**, and the fundamental group is computed by the two-open van
-Kampen theorem of 5.5 instead.
+retracts `U` onto `C₀ ∪ C₁`**, and the fundamental group is computed by UniversalCovers'
+two-open van Kampen theorem (5.5) instead.
 
 Define the peripheral elements of `FundamentalGroup U b`:
 
@@ -1580,9 +1665,19 @@ geometric identification of `periphInf` as a loop around `∞`, which is Layer 5
 the fundamental-group computation first. This milestone owns only the definitions and the
 two facts that make them well posed: the images `C₀ ⊆ A` and `C₁ ⊆ B`, and the tangency.
 
-Also prove here the two `Path` identities that Layer 5.8 and Layer 6.3 both use:
-`(1 − ·) ∘ γ0 = γ1` and `(1 − ·) ∘ γ1 = γ0` on the nose, where `z ↦ 1 − z` is 5.1's
-basepoint-fixing self-homeomorphism.
+Also prove here the two identities that Layer 5.8 and Layer 6.3 both use, where `mob01` is
+5.1's basepoint-fixing self-homeomorphism `z ↦ 1 − z`:
+
+```text
+mob01_basePt :  mob01 b = b
+mob01_γ0     :  mob01 (γ0 s) = γ1 s          mob01_γ1 :  mob01 (γ1 s) = γ0 s
+```
+
+⚠ State the last two **pointwise in `s`**, on the nose. Both are immediate from
+`1 − (1 − w) = w`, and the pointwise form is what avoids transporting a `Path`, or a class in
+`FundamentalGroup U (mob01 b)`, along `mob01_basePt`. They are what Layer 6.3 turns into the
+level-1 statement of the branch-point action; the other five operations of 2.6 admit no such
+lemma, because their Möbius maps move `b`.
 
 ⚠ *Nearby false statement:* "the loop around `∞` is counterclockwise" is meaningless
 without naming the chart. The transition `w = 1/z` reverses the apparent orientation, so
@@ -1678,83 +1773,52 @@ about the puncture) is doing real work.
 `IsQuotientCoveringMap`, `Convex`, `ContinuousMap.Homotopy`, the winding-number/index API;
 UniversalCovers milestones 4, 5.
 
-#### 5.5 Van Kampen with a simply connected intersection
+#### 5.5 Van Kampen with a simply connected intersection: the UniversalCovers input
 
-The one general topological theorem this roadmap owns. For a space `X`, open `A, B` with
-`A ∪ B = X`, a basepoint `x ∈ A ∩ B`, with `A`, `B`, `A ∩ B` path-connected and `A ∩ B`
-simply connected, **the canonical map**
+**Not a milestone of this roadmap.** Seifert–van Kampen for two open sets with simply
+connected intersection is general algebraic topology, reusable by anything that computes a
+fundamental group, and it is owned by [UniversalCovers](../UniversalCovers/README.md). This
+section exists to state the contract exactly, so that the instantiation in 5.6 has something
+to `apply` and so that no second copy is written anywhere.
+
+For a space `X`, open `A, B` with `A ∪ B = X`, a basepoint `x ∈ A ∩ B`, with `A`, `B`,
+`A ∩ B` path-connected and `A ∩ B` simply connected, the declarations consumed are **the
+canonical map**
 
 ```text
 vanKampenLift : FundamentalGroup A x ∗ FundamentalGroup B x  →*  FundamentalGroup X x
 vanKampenLift := Monoid.Coprod.lift (π₁ of the inclusion A ↪ X) (π₁ of the inclusion B ↪ X)
 ```
 
-is bijective, and the milestone is the named
+its bijectivity `vanKampenLift_bijective`, the named
 
 ```text
 vanKampenEquiv : FundamentalGroup A x ∗ FundamentalGroup B x  ≃*  FundamentalGroup X x
 ```
 
-**together with `vanKampenEquiv.toMonoidHom = vanKampenLift`**. ⚠ A bare
-`Nonempty (… ≃* …)` is too weak to be used: 5.6 reads the *values* of this isomorphism on
-`periph0` and `periph1` off the inclusions, and an unnamed abstract isomorphism supports no
-such computation.
+**and `vanKampenEquiv.toMonoidHom = vanKampenLift`**. ⚠ A bare `Nonempty (… ≃* …)` is too
+weak to be consumed: 5.6 reads the *values* of this isomorphism on `periph0` and `periph1`
+off the inclusions, and an unnamed abstract isomorphism supports no such computation. This
+roadmap therefore needs the canonical map named, not merely the existence of some
+isomorphism, and needs `MulEquiv.ofBijective`'s defeq recorded as the fourth declaration.
 
-Basic API: the two value lemmas `vanKampenEquiv (inl u) = ι_A u` and
-`vanKampenEquiv (inr v) = ι_B v`; naturality in maps of triads `(X, A, B) → (X', A', B')`
-(a continuous `f` with `f '' A ⊆ A'`, `f '' B ⊆ B'`, `f x = x'` makes the evident square
-commute); the corollary that `X` is simply connected when `A` and `B` are; and injectivity
-and surjectivity of `vanKampenLift` as separately usable statements.
+⚠ Path-connectedness of `A ∩ B` is not optional even when the intersection is simply
+connected in the naive sense: a two-component intersection makes the theorem false (`S¹`
+decomposes into two arcs meeting in two contractible pieces, and `π₁(S¹) = ℤ` is not the free
+product of two trivial groups). The instantiation in 5.6 discharges it from convexity of the
+strip, so the hypothesis must be present in the supplier's statement.
 
-The proof plan, as the lemmas it needs — this is the roadmap's largest single topological
-target and it is not one theorem:
+*Source:* Hatcher, *Algebraic Topology*, Theorem 1.20 (van Kampen), specialized to two sets
+with simply connected intersection, where the amalgamating subgroup is trivial and the
+pushout is the free product.
 
-1. **Subordinate subdivision of a path.** For a loop `γ` at `x`, applying
-   `exists_monotone_Icc_subset_open_cover_unitInterval` to the cover `{γ⁻¹' A, γ⁻¹' B}`
-   gives a monotone partition `t₀ = 0 ≤ … ≤ t_m = 1` with each `γ '' [tᵢ, tᵢ₊₁]` inside `A`
-   or inside `B`, and with consecutive pieces of the same type merged, so that each interior
-   division point lies in `A ∩ B`.
-2. **Extraction of a word.** Choosing for each division point a path in `A ∩ B` from `x` to
-   it (path-connectedness), `Path.Homotopy.concatSubpath` rewrites `γ` as the concatenation
-   of its subpaths, and inserting the chosen paths and their reverses turns each subpath
-   into a loop at `x` inside `A` or inside `B`. This produces an element of the free
-   product mapping to `⟦γ⟧`, hence **surjectivity**.
-3. **Independence of the choices.** The word's image is unchanged under refining the
-   partition and under replacing a connecting path by another path in `A ∩ B` — the latter
-   because `A ∩ B` is simply connected, so any two such paths are homotopic rel endpoints.
-4. **Grid subdivision of a homotopy.** For a null-homotopy `H : [0,1]² → X` of a word,
-   `exists_monotone_Icc_subset_open_cover_unitInterval_prod_self` gives a grid of closed
-   subsquares each mapping into `A` or into `B`.
-5. **The relation contributed by one cell.** Crossing a single grid cell changes the
-   extracted word by one free-product relation — either a merge of two adjacent letters of
-   the same factor, or an insertion of a letter and its inverse.
-6. **Induction over the grid.** Traversing the cells row by row (or column by column)
-   composes those single-cell moves into a chain of free-product relations from the word at
-   the bottom edge to the word at the top edge.
-7. **The free-product conclusion.** The bottom word is the given one and the top word is
-   trivial, so the given word is trivial in the free product, hence **injectivity**.
-
-Steps 3 and 5 are where simple connectivity of `A ∩ B` is consumed; step 4 is the only
-two-variable subdivision anywhere in this roadmap.
-
-*Source:* Hatcher, *Algebraic Topology*, Theorem 1.20 (van Kampen), specialized to two
-sets with simply connected intersection, where the amalgamating subgroup is trivial and
-the pushout is the free product.
-
-*Hypotheses:* `A`, `B` open; `A ∪ B = X`; `A ∩ B` path-connected, simply connected, and
-containing the basepoint. ⚠ Path-connectedness of `A ∩ B` is not optional even when the
-intersection is simply connected in the naive sense: a two-component intersection makes
-the theorem false (`S¹` decomposes into two arcs meeting in two contractible pieces, and
-`π₁(S¹) = ℤ` is not the free product of two trivial groups).
-
-*Prerequisites:* Mathlib `exists_monotone_Icc_subset_open_cover_unitInterval`,
-`exists_monotone_Icc_subset_open_cover_unitInterval_prod_self`, `Path.subpath`,
-`Path.concat`, `Path.Homotopy.concatSubpath`, `Path.Homotopy.subpathTransSubpath`,
-`Monoid.Coprod`, `Monoid.Coprod.lift`, `SimplyConnectedSpace`.
+*Prerequisites:* Roadmap UniversalCovers, its two-open van Kampen milestone. Nothing in this
+layer is discharged by a Belyi-local proof of it.
 
 #### 5.6 The fundamental group of the thrice-punctured sphere
 
-Apply 5.5 to the cover of 5.1 and 5.4's computation of the two factors:
+Apply 5.5's supplier declarations to the cover of 5.1 and 5.4's computation of the two
+factors:
 
 ```text
 FundamentalGroup U b  ≃*  ℤ ∗ ℤ  ≃*  FreeGroup (Fin 2) ,
@@ -1773,8 +1837,8 @@ satisfy the one relation of 5.2, and any two of them freely generate while all t
 not. Statements about "the three generators" always mean the ordered triple with its
 relation, never a free basis of rank three.
 
-*Prerequisites:* Layers 5.1, 5.2, 5.4, 5.5; Mathlib `FreeGroup`, `Monoid.Coprod`,
-`FreeGroup.lift`.
+*Prerequisites:* Layers 5.1, 5.2, 5.4; Roadmap UniversalCovers, its two-open van Kampen
+milestone (Layer 5.5 above); Mathlib `FreeGroup`, `Monoid.Coprod`, `FreeGroup.lift`.
 
 #### 5.7 Basepoint change
 
@@ -1843,21 +1907,34 @@ the fiber with `Fin n`; the relabelings fixing that point survive. The three car
 therefore separated here, once, and Layer 6.3 classifies each of them by its own
 combinatorial object.
 
+⚠ **All three carry connectedness as a field, and the degree as an index.** A literal
+*transitive* triple corresponds to a *connected* numbered cover: drop path-connectedness of
+`E` and the monodromy action on the fiber need not be transitive, so 6.3(1) is simply false.
+The two consistent packages are *connected numbered covers ↔ connected triples* and
+*arbitrary numbered covers ↔ arbitrary product-one triples*; this roadmap pins the first, and
+puts connectedness in the type rather than as a side hypothesis on the theorems. Likewise the
+degree `n` is a parameter of all three carriers, not something recovered afterwards, so that
+each carrier is the exact domain of one classification.
+
 ```text
-FiberNumberedCover n := a covering map p : E → U, an equivalence ν : p ⁻¹' {b} ≃ Fin n
-PointedCover         := a covering map p : E → U together with e : p ⁻¹' {b}
-Cover                := a covering map p : E → U
+ConnectedFiberNumberedCover b n
+  := p : E → U covering, PathConnectedSpace E, ν : p ⁻¹' {b} ≃ Fin n
+ConnectedPointedCover b n
+  := p : E → U covering, PathConnectedSpace E, e : p ⁻¹' {b}, Nonempty (p ⁻¹' {b} ≃ Fin n)
+ConnectedCover b n
+  := p : E → U covering, PathConnectedSpace E,               Nonempty (p ⁻¹' {b} ≃ Fin n)
 ```
 
 with, in each case, the exact notion of isomorphism, all three being homeomorphisms over
 `U` — that is, `f : E ≃ₜ E'` with `p' ∘ f = p`:
 
-- **numbered:** additionally `ν' ∘ f|_{fiber} = ν`, so an isomorphism preserves the label of
-  every point of the fiber;
-- **pointed:** additionally `f e = e'`, which constrains one point only;
-- **unnumbered:** no further condition.
+- **numbered** (`ConnectedFiberNumberedCoverIso`): additionally `f (ν.symm i) = ν'.symm i`
+  for every label `i`, so an isomorphism preserves the label of every point of the fiber;
+- **pointed** (`ConnectedPointedCoverIso`): additionally `f e = e'`, which constrains one
+  point only;
+- **unnumbered** (`ConnectedCoverIso`): no further condition.
 
-For a `FiberNumberedCover n` the triple is
+For a `ConnectedFiberNumberedCover b n` the triple is
 
 ```text
 σ_i := ν.permCongr (monodromyHom p periph_i)   for i = 0, 1, ∞ ,
@@ -1868,12 +1945,15 @@ is a relation on the nose because 5.3 gives a homomorphism.
 
 Prove: `E` is path-connected iff the triple is connected (path lifting identifies the
 monodromy orbits on the fiber with the path components of `E`, and `n ≠ 0` matches
-`Nonempty E`); the degree is well-defined (the fiber cardinality is locally constant on
-the connected base, hence constant); the triple is **unchanged** by an isomorphism of
-fiber-numbered covers; changing `ν` by `τ` relabels the triple by `τ` (Layer 0.2);
-changing the basepoint along a path conjugates it (5.7). Consequently the triple itself is
-an invariant of the fiber-numbered cover, and its **isomorphism class** is an invariant of
-the underlying cover alone.
+`Nonempty E`) — with connectedness in the carrier this is the one-directional
+`ConnectedFiberNumberedCover.triple_isConnected`, and its converse is what makes 6.3(1)
+surjective; the degree is well-defined (the fiber cardinality is locally constant on the
+connected base, hence constant, which is `ConnectedCover.nonempty_ν_of` and is what lets the
+degree be pinned at `b` without loss); the triple is **unchanged** by an isomorphism of
+fiber-numbered covers (`connectedTriple_congr`); changing `ν` by `τ` relabels the triple by
+`τ` (Layer 0.2); changing the basepoint along a path conjugates it (5.7). Consequently the
+triple itself is an invariant of the fiber-numbered cover, and its **isomorphism class** is
+an invariant of the underlying cover alone.
 
 ⚠ *Nearby false statement:* connectedness of `E` is transitivity of the monodromy group on
 the fiber, not transitivity of the image of any one peripheral element, and not
@@ -1964,9 +2044,12 @@ The milestone owns these statements, each named:
    `act γ⁻¹` here, which is why the formula above is displayed rather than described.
 
 **The finite corollary.** For `S` finite of cardinality `n`, `assocCover S` has finite
-fibers of cardinality `n`, and composing with a numbering `S ≃ Fin n` makes it a
-`FiberNumberedCover n` whose triple is the triple of the action. This is the form Layer 6.3
-consumes.
+fibers of cardinality `n`, and composing with a numbering `S ≃ Fin n` makes it a numbered
+cover whose triple is the triple of the action. ⚠ It is a `ConnectedFiberNumberedCover b n`
+exactly when the action is **transitive**: the connectedness field of that carrier is
+discharged here, from transitivity, and for a non-transitive `S` the construction lands only
+in a bare numbered cover, which this roadmap does not carry. This is the form Layer 6.3
+consumes, and it supplies the inverse of `ConnectedFiberNumberedCoverClass.triple`.
 
 **New object: `assocCover`.** Basic API:
 
@@ -1988,39 +2071,54 @@ consumes.
 
 #### 6.3 The classification, at three levels of rigidification
 
-**Three statements, not one.** Each is an equivalence with a named map in each direction,
-between the carrier of 6.1 and its combinatorial counterpart:
+**"Covers up to isomorphism" is a type, not a `Prop`.** Each of the three isomorphism
+relations of 6.1 is proved to be an equivalence relation, packaged as a `Setoid`, and the
+objects the three statements below are about are the **quotients**
 
-1. **Fiber-numbered covers ↔ literal triples.** Isomorphism classes of connected
-   `FiberNumberedCover n` correspond to connected `PermutationTriple n` **on the nose**:
-   6.1 one way, 6.2's finite corollary the other, with uniqueness of the comparison map
-   from the pin's lifting criterion
-   `IsCoveringMap.existsUnique_continuousMap_lifts_of_range_le`. This is the only level at
-   which a literal triple is the classifying datum.
-2. **Unnumbered covers ↔ isomorphism classes of triples.** Connected covers up to
-   isomorphism over `U` correspond to `IsoClass n`, Layer 0.2's quotient by simultaneous
-   conjugation: forgetting the numbering on one side is exactly passing to the relabeling
-   orbit on the other.
-3. **Connected pointed covers ↔ subgroups, equivalently triples with a marked label.**
+```text
+ConnectedFiberNumberedCoverClass b n := Quotient (setoid of ConnectedFiberNumberedCoverIso)
+ConnectedPointedCoverClass       b n := Quotient (setoid of ConnectedPointedCoverIso)
+ConnectedCoverClass              b n := Quotient (setoid of ConnectedCoverIso)
+```
+
+together with the three combinatorial carriers they are matched with: `ConnectedTriple n`,
+`MarkedIsoClass n := (ConnectedTriple n × Fin n) ⧸ Equiv.Perm (Fin n)` under the **diagonal**
+action `τ • (t, i) := (τ • t, τ i)`, and
+`ConnectedIsoClass n := ConnectedTriple n ⧸ Equiv.Perm (Fin n)`. Each classification is stated
+as a **named canonical map, its bijectivity, and the `Equiv.ofBijective` built from the two** —
+never as a bare `Nonempty (… ≃ …)`, for the same reason as in 5.5.
+
+**Three statements, not one.** Each is an equivalence between one quotient of 6.1 and its
+combinatorial counterpart:
+
+1. **Fiber-numbered covers ↔ literal triples.** `ConnectedFiberNumberedCoverClass b n`
+   corresponds to `ConnectedTriple n` **on the nose**, by the canonical map
+   `ConnectedFiberNumberedCoverClass.triple` descended from 6.1's `connectedTriple`, whose
+   inverse is 6.2's finite corollary, with uniqueness of the comparison map from the pin's
+   lifting criterion `IsCoveringMap.existsUnique_continuousMap_lifts_of_range_le`. This is
+   the only level at which a literal triple is the classifying datum.
+2. **Unnumbered covers ↔ isomorphism classes of triples.** `ConnectedCoverClass b n`
+   corresponds to `ConnectedIsoClass n` by `ConnectedCoverClass.isoClass`: choose any
+   numbering and pass to the relabeling orbit. Forgetting the numbering on one side is
+   exactly passing to the relabeling orbit on the other, which is the content of
+   `isoClass_forgetNumbering`, and it is why the chosen numbering does not matter.
+3. **Connected pointed covers ↔ triples with a marked label, equivalently subgroups.**
    ⚠ **Connected** throughout: the carrier is `ConnectedPointedCover`, carrying
    path-connectedness of the total space as a field. A disconnected pointed cover recovers
    only the subgroup of the component containing the chosen point, so adjoining an unrelated
    component would leave the subgroup fixed and the correspondence would not be injective.
-   Connected pointed covers of `(U, b)` up to pointed isomorphism correspond to transitive
-   `π₁`-sets with a distinguished point, equivalently to subgroups of `π₁(U, b)` of index
-   `n` (UniversalCovers milestone 8), equivalently to the quotient
+   The milestone owned here is `ConnectedPointedCoverClass.markedClass_bijective`:
+   `ConnectedPointedCoverClass b n ≃ MarkedIsoClass n`, the marked label moving with the
+   relabeling.
 
-   ```text
-   (ConnectedTriple n × Fin n) ⧸ Equiv.Perm (Fin n),   τ • (t, i) := (τ • t, τ i)
-   ```
-
-   by the **diagonal** action — the marked label moves with the relabeling. The subgroup
-   attached to `(t, i)` is the stabilizer of `i` under the monodromy action, and this is
-   the milestone: that map is a bijection onto the index-`n` subgroups.
-
-   Forgetting the basepoint is passing to the conjugation **orbit** of the subgroup:
-   `connectedCoverEquivSubgroupOrbit : Quot ConnectedCoverIso ≃ Quotient subgroupConjSetoid`,
-   with `subgroupConjSetoid := MulAction.orbitRel (ConjAct G) (Subgroup G)`.
+   The further identification with **subgroups of `π₁(U, b)` of index `n`** — pointed
+   connected covers ↔ subgroups, and unpointed ↔ conjugacy classes of subgroups — is
+   UniversalCovers milestone 8 and is **not restated here**; this roadmap composes with it
+   rather than reproving it. Under that composite the subgroup attached to `(t, i)` is the
+   stabilizer of `i` under the monodromy action, forgetting the basepoint is passing to the
+   conjugation **orbit** of the subgroup, and the orbit relation is
+   `subgroupConjSetoid := MulAction.orbitRel (ConjAct G) (Subgroup G)`, which this roadmap
+   pins because `ConjClasses (Subgroup G)` is a different and wrong object.
 
    Equivalently, fix the marked label once and take
 
@@ -2054,18 +2152,42 @@ All three are compatible with the free-group description of 5.6: transitive
 the action homomorphism at the two generators, and the three levels above correspond to the
 three standard levels there (numbered set, set up to isomorphism, pointed set).
 
-Prove that the correspondences match degree with fiber cardinality, that they are natural in
-maps of covers, and that the forgetful maps between the three levels commute with the
-corresponding forgetful maps on the combinatorial side.
+**The forgetful maps descend, and the square commutes.** Forgetting the numbering, marking a
+label, and forgetting the marked point are defined on the carriers and descend to the
+quotients — `ConnectedFiberNumberedCoverClass.forgetNumbering`, `…​.markLabel i`,
+`ConnectedPointedCoverClass.forgetPoint` — with `forgetPoint_markLabel` recording that the
+triangle commutes. Prove that each commutes with the corresponding combinatorial forgetful
+map: `isoClass_forgetNumbering` (numbered → unnumbered is triple → relabeling orbit) and
+`isoClass_forgetPoint` (pointed → unnumbered is marked triple → its underlying class,
+`MarkedIsoClass.forget`). Prove also that the correspondences match degree with fiber
+cardinality and are natural in maps of covers.
 
-**Compatibility with the branch-point action.** The self-homeomorphism `h : z ↦ 1 − z` of
-5.1 fixes `b`, so pulling back along it acts on all three carriers; prove that on level 1
-it induces exactly Layer 2.6's `swap01`, using 5.2's path identities
-`h ∘ γ0 = γ1`, `h ∘ γ1 = γ0`, which give `h_*(periph0) = periph1`, `h_*(periph1) = periph0`
-and hence `h_*(periphInf) = periph1⁻¹ · periphInf · periph1`. ⚠ The other five operations of
-2.6 are **not** induced on the nose: their Möbius transformations move `b` (5.1), so they
-act only after a choice of connecting path and therefore only on level 2. That is the
-geometric reason Layer 2.6's `S₃`-action is stated on `IsoClass n`.
+**Automorphism groups.** The automorphism group of a cover is UniversalCovers' `Deck p`, not
+a Belyi object; what descends through the quotients is that isomorphic covers have isomorphic
+deck groups, and the Belyi content is 6.4's identification of `Deck p` with Layer 0.4's
+`automorphismGroup` of the triple. On the combinatorial side the corresponding descent is
+`automorphismGroup_smul`: relabeling conjugates `automorphismGroup`, so it is an invariant of
+a `ConnectedIsoClass n` as a subgroup **up to conjugacy** and not on the nose.
+
+**Compatibility with the branch-point action.** Pulling a cover back along an anharmonic
+self-homeomorphism of 5.1 is the topological `S₃`-action, `ConnectedCoverClass.pullback`, and
+the milestone is that it *is* Layer 2.6's combinatorial action:
+
+```text
+isoClass_pullback_mob01   : (c.pullback mob01).isoClass   = ⟦swap01   c.triple⟧
+isoClass_pullback_mob1Inf : (c.pullback mob1Inf).isoClass = ⟦swap1Inf c.triple⟧
+```
+
+and hence the same for the four composites. For `mob01` the computation is transport-free:
+`mob01` fixes `b` (5.1) and 5.2's pointwise identities `mob01 ∘ γ0 = γ1`, `mob01 ∘ γ1 = γ0`
+give `h_*(periph0) = periph1`, `h_*(periph1) = periph0` and hence
+`h_*(periphInf) = periph1⁻¹ · periphInf · periph1`, which is exactly `swap01`'s third
+component. ⚠ The other five operations of 2.6 are **not** induced on the nose: their Möbius
+transformations move `b` (5.1), so they act only after a choice of connecting path, the two
+choices differ by an inner automorphism, and the statement survives only on the level-2
+quotient. That is the geometric reason Layer 2.6's `S₃`-action is stated on isomorphism
+classes, and it is the same phenomenon as `swap1Inf_sq` and `rotInv_rot` on the combinatorial
+side.
 
 *Source:* Girondo–González-Diez **Theorem 2.61**: two morphisms of the same degree with the
 same branch-value set are isomorphic coverings if and only if their monodromies are
@@ -2074,12 +2196,13 @@ statement is false without that, and the analogue here is that the three marked 
 fixed once and for all. ⚠ That statement is this milestone's level 2, phrased with
 conjugacy on the combinatorial side; it is not level 1 and not level 3.
 
-*Prerequisites:* Layers 0.2, 2.6, 5.1, 5.2, 5.6, 6.1, 6.2; UniversalCovers milestone 8;
-Mathlib `existsUnique_continuousMap_lifts_of_range_le`.
+*Prerequisites:* Layers 0.2, 2.6, 5.1, 5.2, 5.6, 6.1, 6.2; UniversalCovers milestone 8 for
+the subgroup identification only; Mathlib `existsUnique_continuousMap_lifts_of_range_le`,
+`Setoid`, `Quotient.lift`, `Equiv.ofBijective`.
 
 #### 6.4 Deck transformations
 
-For a connected `FiberNumberedCover n` with triple `t`, the deck group is isomorphic to
+For a `ConnectedFiberNumberedCover b n` with triple `t`, the deck group is isomorphic to
 `automorphismGroup t` of Layer 0.4, **as a subgroup of `Equiv.Perm (Fin n)`**: a deck
 transformation is sent to the permutation it induces on the numbered fiber. The numbering is
 what makes the target a concrete subgroup rather than an abstract group; changing `ν` by `τ`
@@ -2691,7 +2814,36 @@ definition is containment, and the degree-`2` example above is a Belyi pair unra
 `0`. A roadmap milestone or a database record that assumes equality excludes genuine Belyi
 maps.
 
-*Prerequisites:* AlgebraicCurves Layers 0, 1, 6, 12; Mathlib `CharZero`, `IsAlgClosed`.
+**The branch-point `S₃`-action, algebraically.** The six anharmonic Möbius transformations of
+Layer 5.1 are defined over the prime field, so **postcomposition** `β ↦ m ∘ β` carries an
+algebraic Belyi pair to an algebraic Belyi pair over the same `k`, with the same curve and the
+same degree: on the function-field side it is precomposition of the embedding `k(t) ↪ F` with
+the `k`-automorphism of `k(t)` sending `t` to `m(t)`. The six formulas, written as *which
+Möbius map to postcompose with* to realize each operation of Layer 2.6's table:
+
+```text
+id        t              swap01    1 − t            swap1Inf   t/(t − 1)
+swap0Inf  1/t            rot       (t − 1)/t        rotInv     1/(1 − t)
+```
+
+⚠ **The last two are crossed, and this is not a typo.** Postcomposition with `m` replaces the
+fiber over a marked point `q` by the fiber of `β` over `m⁻¹(q)`, so postcomposing with the map
+whose puncture permutation is `ρ` realizes the operation labelled `ρ⁻¹`. The four involutions
+are insensitive to this; the two three-cycles are not, so `rot` — labelled `(0 1 ∞)` — is
+realized by `(t − 1)/t`, whose puncture permutation is `(0 ∞ 1)`. Getting this backwards is
+the single easiest error in the whole `S₃` story, and it is invisible on every example whose
+`S₃`-orbit has fewer than six elements.
+
+Milestones: each of the six is a Belyi pair again; the operation permutes the three marked
+places by the `ρ` of Layer 2.6's table and permutes the local `(e, f)` data accordingly; the
+composition law is the same right action; and — the agreement statement — **under the
+analytic/algebraic comparison of 9.5–9.8 and the classification of 6.3, the algebraic action
+corresponds to the topological one and hence to the combinatorial one.** That is the third leg
+of Layer 2.6's "the three actions agree", and it is what makes an `S₃`-orbit of passports
+(Layer 2.6) an invariant of the algebraic object rather than of a presentation of it.
+
+*Prerequisites:* AlgebraicCurves Layers 0, 1, 6, 12; Layers 2.6, 5.1, 6.3; Mathlib `CharZero`,
+`IsAlgClosed`, the `GL(2)` Möbius action.
 
 #### 9.2 The meromorphic function field
 
@@ -4433,7 +4585,9 @@ None of the following is part of this roadmap, at any layer, and none is "deferr
   surface (every surface here arrives carrying its map; the general existence theorem is
   the Dirichlet-problem analysis this roadmap never needs);
 - uniformization, the `λ`-function, and Picard-type applications;
-- a general Seifert–van Kampen theorem, and topological surface classification or
+- Seifert–van Kampen in any form, general or two-open: the two-open case with simply
+  connected intersection is UniversalCovers' (Layer 5.5 records the contract), and the general
+  pushout theorem is on no roadmap here; also topological surface classification and
   orientation theory;
 - the étale fundamental group of a scheme, and the comparison of Layer 12's field-theoretic
   carrier with any scheme-theoretic one;

@@ -41,13 +41,19 @@ Conventions, recorded in `README.md` (§Pinned conventions):
   and the profinite layers have no Lean prototypes here. They become successor targets only after
   their owning roadmaps publish compiled carriers. In particular this file neither imports an
   unmerged roadmap branch nor recreates its API locally.
-* A literal `PermutationTriple n` is the invariant of a **fiber-numbered** cover
-  (`FiberNumberedCover` below), not of a pointed one: a chosen point of the fiber leaves
-  `(n−1)!` relabelings. README Layer 6.3 classifies the three rigidifications separately.
-* The associated-cover and covering-classification declarations are intentionally absent here.
-  Their semilocal-simple-connectivity and universal-cover carriers are unresolved supplier
-  contracts: UniversalCovers has not yet published compiled target signatures. No local class
-  stands in for that future public interface.
+* A literal `PermutationTriple n` is the invariant of a **connected, fiber-numbered** cover
+  (`ConnectedFiberNumberedCover` below), not of a pointed one: a chosen point of the fiber
+  leaves `(n−1)!` relabelings. Connectedness is a field of all three carriers, because a
+  transitive triple classifies a connected cover and nothing weaker. "Covers up to
+  isomorphism" is a quotient type here, never a `Prop`: README Layer 6.3 classifies the
+  three rigidifications separately and the three quotient carriers are
+  `ConnectedFiberNumberedCoverClass`, `ConnectedPointedCoverClass`, `ConnectedCoverClass`.
+* The two-open Seifert–van Kampen theorem is general algebraic topology and is owned by
+  UniversalCovers, not here; this file instantiates it (Layer 5.6) and exports no copy.
+* The associated-cover construction and the subgroup half of the covering classification are
+  intentionally absent here. Their semilocal-simple-connectivity and universal-cover carriers
+  are unresolved supplier contracts: UniversalCovers has not yet published compiled target
+  signatures. No local class stands in for that future public interface.
 * The profinite integers as a ring, profinite exponentiation, and continuous outer
   automorphisms are generic group theory owned by `ProfiniteArithmetic`, the generic successor
   to `ProfiniteProPGroups` (#244), not by Belyi maps. Free profinite and free pro-`p` groups and
@@ -375,8 +381,13 @@ theorem cyclicTriple_isConnected (n : ℕ) (hn : n ≠ 0) : (cyclicTriple n).IsC
 
 /-! ### Layer 2.6: the branch-point action
 
-The two adjacent transpositions, with the conjugators that make them preserve the pinned
-relation, and a `decide`-checked witness that the naive color swap does not. -/
+All six reindexings of `(0, 1, ∞)`, written out rather than schematized, with the
+conjugators that make them preserve the pinned relation, and a `decide`-checked witness that
+the naive color swap does not.
+
+The operation named after a permutation `ρ` of `{0, 1, ∞}` is the one whose `σ_i` is the old
+`σ_{ρ i}` up to conjugacy; reindexing is contravariant, so `Op ρ ∘ Op ρ' = Op (ρ' * ρ)` and
+the six operations form a **right** `S₃`-action (README, Layer 2.6). -/
 
 /-- **Layer 2.6.** Swap the roles of `0` and `1`. An involution on the nose. -/
 def swap01 (t : PermutationTriple n) : PermutationTriple n where
@@ -392,6 +403,75 @@ def swap1Inf (t : PermutationTriple n) : PermutationTriple n where
   σ1 := t.σ1⁻¹ * t.σinf * t.σ1
   σinf := t.σ1
   product_eq_one := by rw [t.σinf_eq]; group
+
+/-- **Layer 2.6.** Swap the roles of `0` and `∞`. That it is the composite
+`swap01 ∘ swap1Inf ∘ swap01` is `swap0Inf_eq`; the simplification of the third component
+consumes the pinned relation and is proved, not asserted. -/
+def swap0Inf (t : PermutationTriple n) : PermutationTriple n where
+  σ0 := t.σinf
+  σ1 := t.σ1
+  σinf := t.σ1 * t.σ0 * t.σ1⁻¹
+  product_eq_one := by rw [t.σinf_eq]; group
+
+/-- **Layer 2.6.** The rotation `0 ↦ 1 ↦ ∞ ↦ 0` of the branch points: it replaces `σ0` by
+`σ1`, `σ1` by `σinf` and `σinf` by `σ0`, with **no conjugator at all**. That it is the
+composite `swap1Inf ∘ swap01` is `rot_eq`. -/
+def rot (t : PermutationTriple n) : PermutationTriple n where
+  σ0 := t.σ1
+  σ1 := t.σinf
+  σinf := t.σ0
+  product_eq_one := by rw [t.σinf_eq]; group
+
+/-- **Layer 2.6.** The rotation `0 ↦ ∞ ↦ 1 ↦ 0`, the composite `swap01 ∘ swap1Inf`
+(`rotInv_eq`). ⚠ It is **not** the inverse of `rot` on triples: `rotInv_rot` says the two
+composites differ by simultaneous conjugation by `σ1`, and they agree only on `IsoClass n`. -/
+def rotInv (t : PermutationTriple n) : PermutationTriple n where
+  σ0 := t.σ1⁻¹ * t.σinf * t.σ1
+  σ1 := t.σ0
+  σinf := t.σ0 * t.σ1 * t.σ0⁻¹
+  product_eq_one := by rw [t.σinf_eq]; group
+
+/-- **Layer 2.6.** `rot` is the composite `swap1Inf ∘ swap01`. -/
+theorem rot_eq (t : PermutationTriple n) : rot t = swap1Inf (swap01 t) := by
+  refine ext_of_two rfl ?_
+  show t.σinf = t.σ0⁻¹ * (t.σ1⁻¹ * t.σinf * t.σ1) * t.σ0
+  rw [t.σinf_eq]; group
+
+/-- **Layer 2.6.** `rotInv` is the composite `swap01 ∘ swap1Inf`. -/
+theorem rotInv_eq (t : PermutationTriple n) : rotInv t = swap01 (swap1Inf t) :=
+  ext_of_two rfl rfl
+
+/-- **Layer 2.6.** `swap0Inf` is the composite `swap01 ∘ swap1Inf ∘ swap01`. -/
+theorem swap0Inf_eq (t : PermutationTriple n) :
+    swap0Inf t = swap01 (swap1Inf (swap01 t)) := by
+  refine ext_of_two ?_ rfl
+  show t.σinf = t.σ0⁻¹ * (t.σ1⁻¹ * t.σinf * t.σ1) * t.σ0
+  rw [t.σinf_eq]; group
+
+/-- **Layer 2.6, the Coxeter relation `(st)³ = 1`, on the nose.** Unlike `swap1Inf`, the
+rotation has its expected order without any relabeling; this is the statement that makes the
+`S₃`-action visible. -/
+theorem rot_rot_rot (t : PermutationTriple n) : rot (rot (rot t)) = t :=
+  ext_of_two rfl rfl
+
+/-- **Layer 2.6.** `rotInv ∘ rot` is simultaneous conjugation by **`σ1`**, not the identity —
+the counterpart for the rotations of `swap1Inf_sq`, and the second reason the `S₃`-action is
+stated on `IsoClass n`. -/
+theorem rotInv_rot (t : PermutationTriple n) : rotInv (rot t) = t.σ1 • t := by
+  refine ext_of_two ?_ ?_
+  · show t.σinf⁻¹ * t.σ0 * t.σinf = t.σ1 * t.σ0 * t.σ1⁻¹
+    rw [t.σinf_eq]; group
+  · show t.σ1 = t.σ1 * t.σ1 * t.σ1⁻¹
+    group
+
+/-- **Layer 2.6, the order witness.** `rot` is `swap1Inf ∘ swap01`, not `swap01 ∘ swap1Inf`:
+the two composites are genuinely different operations on triples, so the order in `rot_eq` is
+not a presentational choice. -/
+example : rot s3Triple ≠ swap01 (swap1Inf s3Triple) := by decide
+
+/-- **Layer 2.6, the witness for `rotInv_rot`.** The relabeling in `rotInv_rot` is not
+removable: on `s3Triple` the composite really does move the triple. -/
+example : rotInv (rot s3Triple) ≠ s3Triple := by decide
 
 /-- **Layer 2.6, the counterexample.** The naive color swap `(a,b,c) ↦ (b,a,a⁻¹ca)` does
 **not** preserve the relation: on `s3Triple` the would-be product is not `1`. -/
@@ -459,6 +539,26 @@ theorem braid_on_isoClass (t : PermutationTriple n) :
     Equivalent (swap01 (swap1Inf (swap01 (swap1Inf (swap01 (swap1Inf t)))))) t := by
   sorry
 
+/-- **Layer 2.6.** The branch-point operations preserve connectedness: each new pair of
+generators generates the same subgroup (`⟨b, a⟩ = ⟨a, b⟩` for `swap01`, and
+`⟨a, b⁻¹ · c · b⟩ = ⟨a, b⁻¹ · a⁻¹⟩ = ⟨a, b⟩` for `swap1Inf`), so `monodromyGroup` is
+unchanged, pretransitivity transfers, and `n` is untouched. -/
+theorem isConnected_swap01 {t : PermutationTriple n} (ht : t.IsConnected) :
+    (swap01 t).IsConnected := by
+  sorry
+
+theorem isConnected_swap1Inf {t : PermutationTriple n} (ht : t.IsConnected) :
+    (swap1Inf t).IsConnected := by
+  sorry
+
+/-- **Layer 0.4, 0.2.** Relabeling conjugates the automorphism group — the statement that
+makes the automorphism group a well-defined invariant of an `IsoClass n`, as a subgroup up
+to conjugacy rather than on the nose. -/
+theorem automorphismGroup_smul (τ : Equiv.Perm (Fin n)) (t : PermutationTriple n) :
+    automorphismGroup (τ • t) = Subgroup.map (MulAut.conj τ).toMonoidHom
+      (automorphismGroup t) := by
+  sorry
+
 end PermutationTriple
 
 /-! ## Layer 1: passports
@@ -481,6 +581,16 @@ instance : SMul (Equiv.Perm (Fin n)) (ConnectedTriple n) where
 instance : MulAction (Equiv.Perm (Fin n)) (ConnectedTriple n) where
   one_smul _ := Subtype.ext (one_smul _ _)
   mul_smul _ _ _ := Subtype.ext (mul_smul _ _ _)
+
+/-- **Layer 2.6.** The two generating branch-point operations restricted to connected
+triples, where Layer 6.3 needs them. The remaining four are their composites, by
+`PermutationTriple.rot_eq`, `rotInv_eq` and `swap0Inf_eq`. -/
+def swap01 (t : ConnectedTriple n) : ConnectedTriple n :=
+  ⟨PermutationTriple.swap01 t.1, PermutationTriple.isConnected_swap01 t.2⟩
+
+/-- **Layer 2.6.** Swap the roles of `1` and `∞`, on connected triples. -/
+def swap1Inf (t : ConnectedTriple n) : ConnectedTriple n :=
+  ⟨PermutationTriple.swap1Inf t.1, PermutationTriple.isConnected_swap1Inf t.2⟩
 
 end ConnectedTriple
 
@@ -968,61 +1078,18 @@ theorem periphInf_mul_periph1_mul_periph0 : periphInf * periph1 * periph0 = 1 :=
   rw [mul_assoc]
   exact inv_mul_cancel (periph1 * periph0)
 
-/-- **Layer 5.5.** The **canonical** map out of the free product: the `Monoid.Coprod.lift`
-of the two inclusion-induced homomorphisms. Van Kampen is the statement that *this* map is
-an isomorphism; a bare `Nonempty (… ≃* …)` would not let Layer 5.6 read off the values on
-`periph0` and `periph1`. -/
-noncomputable def vanKampenLift {X : Type u} [TopologicalSpace X] (A B : Set X)
-    {x : X} (hxA : x ∈ A) (hxB : x ∈ B) :
-    Monoid.Coprod (FundamentalGroup ↥A ⟨x, hxA⟩) (FundamentalGroup ↥B ⟨x, hxB⟩) →*
-      FundamentalGroup X x :=
-  Monoid.Coprod.lift
-    (FundamentalGroup.map ⟨Subtype.val, continuous_subtype_val⟩ (⟨x, hxA⟩ : ↥A))
-    (FundamentalGroup.map ⟨Subtype.val, continuous_subtype_val⟩ (⟨x, hxB⟩ : ↥B))
+/-! **Layer 5.5 is a UniversalCovers supplier crossing, not a declaration of this roadmap.**
+Van Kampen for two open sets with simply connected intersection is general algebraic
+topology, reusable far beyond three-point covers, and the pin has it in no form. Its exact
+owner is the UniversalCovers roadmap, which must publish `vanKampenLift`,
+`vanKampenLift_bijective`, `vanKampenEquiv` and `vanKampenEquiv_toMonoidHom` with the
+signatures pinned in README §5.5. This roadmap exports no local copy, alias or stand-in; it
+**instantiates** the supplier's theorem at the two-set cover of Layer 5.1 and reads off the
+values on the canonical generators, which is Layer 5.6 below. -/
 
-/-- **Layer 5.5.** Van Kampen for two open sets with simply connected intersection — the
-one general topological theorem this roadmap owns, and the reason no figure-eight
-retraction is needed. The pin has no Seifert–van Kampen theorem in any form; this case is
-built from `exists_monotone_Icc_subset_open_cover_unitInterval` (generation) and its square
-analogue `..._prod_self` (relations), with `Path.subpath`, `Path.concat` and
-`Path.Homotopy.concatSubpath` reassembling the pieces.
-
-⚠ `IsPathConnected (A ∩ B)` is not implied by simple connectivity of the intersection and is
-not optional: a two-component intersection makes the conclusion false. -/
-theorem vanKampenLift_bijective {X : Type u} [TopologicalSpace X]
-    {A B : Set X} (_hA : IsOpen A) (_hB : IsOpen B) (_hAB : A ∪ B = Set.univ)
-    (_hApc : IsPathConnected A) (_hBpc : IsPathConnected B)
-    (_hIpc : IsPathConnected (A ∩ B)) [SimplyConnectedSpace ↥(A ∩ B)]
-    {x : X} (hxA : x ∈ A) (hxB : x ∈ B) :
-    Function.Bijective (vanKampenLift A B hxA hxB) := by
-  sorry
-
-/-- **Layer 5.5.** The van Kampen isomorphism, as a named `MulEquiv` whose underlying
-homomorphism is `vanKampenLift` by construction — which is what
-`MulEquiv.ofBijective` delivers and what `vanKampenEquiv_toMonoidHom` records. -/
-noncomputable def vanKampenEquiv {X : Type u} [TopologicalSpace X]
-    {A B : Set X} (hA : IsOpen A) (hB : IsOpen B) (hAB : A ∪ B = Set.univ)
-    (hApc : IsPathConnected A) (hBpc : IsPathConnected B)
-    (hIpc : IsPathConnected (A ∩ B)) [SimplyConnectedSpace ↥(A ∩ B)]
-    {x : X} (hxA : x ∈ A) (hxB : x ∈ B) :
-    Monoid.Coprod (FundamentalGroup ↥A ⟨x, hxA⟩) (FundamentalGroup ↥B ⟨x, hxB⟩)
-      ≃* FundamentalGroup X x :=
-  MulEquiv.ofBijective _
-    (vanKampenLift_bijective hA hB hAB hApc hBpc hIpc hxA hxB)
-
-theorem vanKampenEquiv_toMonoidHom {X : Type u} [TopologicalSpace X]
-    {A B : Set X} (hA : IsOpen A) (hB : IsOpen B) (hAB : A ∪ B = Set.univ)
-    (hApc : IsPathConnected A) (hBpc : IsPathConnected B)
-    (hIpc : IsPathConnected (A ∩ B)) [SimplyConnectedSpace ↥(A ∩ B)]
-    {x : X} (hxA : x ∈ A) (hxB : x ∈ B) :
-    (vanKampenEquiv hA hB hAB hApc hBpc hIpc hxA hxB).toMonoidHom
-      = vanKampenLift A B hxA hxB :=
-  rfl
-
-/-- **Layer 5.6.** The fundamental group is free on the two peripheral generators.
-Route: the two-set cover of 5.1, `π₁` of a punctured convex domain (5.4), and the
-simply-connected-intersection van Kampen theorem of 5.5, which this roadmap owns and
-builds from the pin's subdivision lemmas. -/
+/-- **Layer 5.6.** The fundamental group is free on the two peripheral generators — the
+instantiation this roadmap owns. Route: the two-set cover of 5.1, `π₁` of a punctured convex
+domain (5.4), and UniversalCovers' two-open van Kampen theorem applied to them. -/
 noncomputable def freeGroupEquiv :
     FreeGroup (Fin 2) ≃* FundamentalGroup ThricePuncturedSphere basePt := by
   sorry
@@ -1031,6 +1098,66 @@ theorem freeGroupEquiv_of0 : freeGroupEquiv (FreeGroup.of 0) = periph0 := by
   sorry
 
 theorem freeGroupEquiv_of1 : freeGroupEquiv (FreeGroup.of 1) = periph1 := by
+  sorry
+
+/-- **Layer 5.1 (milestone, stated as an instance).** `U` is path-connected, being an open
+connected subset of `ℂ`; Layer 6.1's degree statement and Layer 6.3's pullback action are
+stated over a path-connected base. -/
+instance : PathConnectedSpace ThricePuncturedSphere := by
+  sorry
+
+/-! ### Layer 5.1, 2.6: the anharmonic self-homeomorphisms
+
+The six Möbius transformations permuting `{0, 1, ∞}` restrict to self-homeomorphisms of `U`.
+The two generators are pinned here; the other four are their composites, with the formulas
+listed in README §5.1. ⚠ **Only `mob01` fixes the basepoint** `b = 1/2`: the orbit of `b`
+under the anharmonic group is `{1/2, 2, −1}`, which is why the induced `S₃`-action lives on
+isomorphism classes of covers and not on literal triples. -/
+
+/-- **Layer 5.1.** `z ↦ 1 − z`: the involution exchanging the punctures `0` and `1` and
+fixing `∞`, the one anharmonic operation that fixes `b = 1/2`. -/
+noncomputable def mob01 : ThricePuncturedSphere ≃ₜ ThricePuncturedSphere where
+  toFun z := ⟨1 - z.1, by intro h; exact z.2.2 (by linear_combination -h),
+    by intro h; exact z.2.1 (by linear_combination -h)⟩
+  invFun z := ⟨1 - z.1, by intro h; exact z.2.2 (by linear_combination -h),
+    by intro h; exact z.2.1 (by linear_combination -h)⟩
+  left_inv := by sorry
+  right_inv := by sorry
+  continuous_toFun := by sorry
+  continuous_invFun := by sorry
+
+/-- **Layer 5.1.** `z ↦ z/(z − 1)`: the involution exchanging the punctures `1` and `∞` and
+fixing `0`. It moves the basepoint: `mob1Inf b = −1`. -/
+noncomputable def mob1Inf : ThricePuncturedSphere ≃ₜ ThricePuncturedSphere where
+  toFun z := ⟨z.1 / (z.1 - 1), div_ne_zero z.2.1 (sub_ne_zero_of_ne z.2.2),
+    by
+      intro h
+      exact one_ne_zero
+        (sub_eq_self.mp ((div_eq_one_iff_eq (sub_ne_zero_of_ne z.2.2)).mp h).symm)⟩
+  invFun z := ⟨z.1 / (z.1 - 1), div_ne_zero z.2.1 (sub_ne_zero_of_ne z.2.2),
+    by
+      intro h
+      exact one_ne_zero
+        (sub_eq_self.mp ((div_eq_one_iff_eq (sub_ne_zero_of_ne z.2.2)).mp h).symm)⟩
+  left_inv := by sorry
+  right_inv := by sorry
+  continuous_toFun := by sorry
+  continuous_invFun := by sorry
+
+/-- **Layer 5.1.** `mob01` fixes the basepoint, which is what lets it act on `π₁(U, b)` with
+no choice of connecting path. -/
+theorem mob01_basePt : mob01 basePt = basePt := by
+  sorry
+
+/-- **Layer 5.2, 2.6, the value pin.** `mob01` carries the peripheral loop at `0` to the
+peripheral loop at `1` **on the nose**, pointwise on the interval — the transport-free form
+of `h_*(periph0) = periph1`. -/
+theorem mob01_γ0 (s : unitInterval) : mob01 (γ0 s) = γ1 s := by
+  sorry
+
+/-- ...and back, so `mob01` exchanges the two chosen generators rather than merely
+permuting their conjugacy classes. -/
+theorem mob01_γ1 (s : unitInterval) : mob01 (γ1 s) = γ0 s := by
   sorry
 
 end ThricePuncturedSphere
@@ -1059,76 +1186,442 @@ UniversalCovers exports its semilocal-simple-connectivity class, universal-cover
 action, and quotient-covering theorem. A closed `#check` against those supplier declarations is
 required at that point. -/
 
-/-- **Layer 6.1.** A cover **with a numbered fiber** — the carrier that a literal
-`PermutationTriple n` classifies. ⚠ A *pointed* cover is a different carrier: one chosen
-point of the fiber leaves `(n−1)!` relabelings, and Layer 6.3 classifies pointed covers by
-subgroups of `π₁`, never by literal triples. -/
-structure FiberNumberedCover {X : Type u} [TopologicalSpace X] (x : X) (n : ℕ) where
+/-! ### Layer 6.3: the three combinatorial carriers
+
+Each of the three rigidifications of a cover is classified by an honest **type**, not by a
+`Prop`-valued relation: literal connected triples, their simultaneous-conjugacy quotient, and
+the quotient of marked triples by the diagonal relabeling action. -/
+
+/-- **Layer 6.3.** Simultaneous-conjugacy classes of connected triples. -/
+def ConnectedIsoClass (n : ℕ) : Type :=
+  MulAction.orbitRel.Quotient (Equiv.Perm (Fin n)) (ConnectedTriple n)
+
+/-- The class of a connected triple. -/
+def ConnectedIsoClass.mk {n : ℕ} (t : ConnectedTriple n) : ConnectedIsoClass n :=
+  Quotient.mk (MulAction.orbitRel (Equiv.Perm (Fin n)) (ConnectedTriple n)) t
+
+/-- **Layer 6.3.** Connected triples carrying a **marked label**, modulo the **diagonal**
+relabeling action `τ • (t, i) = (τ • t, τ i)` — the combinatorial carrier that classifies
+connected *pointed* covers. ⚠ Quotienting pairs by the stabilizer of `i` instead is a
+different and useless object: it never identifies pairs with different marked labels, and at
+`n = 3` it has `39` elements against `26` triples (README, Layer 6.3). -/
+def MarkedIsoClass (n : ℕ) : Type :=
+  MulAction.orbitRel.Quotient (Equiv.Perm (Fin n)) (ConnectedTriple n × Fin n)
+
+/-- The class of a marked connected triple. -/
+def MarkedIsoClass.mk {n : ℕ} (t : ConnectedTriple n) (i : Fin n) : MarkedIsoClass n :=
+  Quotient.mk (MulAction.orbitRel (Equiv.Perm (Fin n)) (ConnectedTriple n × Fin n)) (t, i)
+
+/-- **Layer 6.3.** Forgetting the marked label — the combinatorial counterpart of forgetting
+the basepoint of a pointed cover. -/
+def MarkedIsoClass.forget {n : ℕ} : MarkedIsoClass n → ConnectedIsoClass n :=
+  Quotient.lift (fun ti => ConnectedIsoClass.mk ti.1) (by
+    rintro ⟨t, i⟩ ⟨t', i'⟩ ⟨g, hg⟩
+    exact Quotient.sound ⟨g, congrArg Prod.fst hg⟩)
+
+/-- **Layer 6.1.** A **connected** cover with a numbered fiber — the carrier that a literal
+`PermutationTriple n` classifies.
+
+⚠ **Connectedness is a field, not a convenience.** A literal transitive triple on `Fin n` is
+the invariant of a *connected* numbered cover: without path-connectedness of `E` the monodromy
+action on the fiber need not be transitive, and Layer 6.3's correspondence with connected
+triples is false. The two consistent packages are *connected numbered covers ↔ connected
+triples* and *arbitrary numbered covers ↔ arbitrary triples*; this roadmap pins the first, in
+the type.
+
+⚠ A *pointed* cover is a different carrier: one chosen point of the fiber leaves `(n−1)!`
+relabelings, and Layer 6.3 classifies pointed covers by subgroups of `π₁`, never by literal
+triples. -/
+structure ConnectedFiberNumberedCover {X : Type u} [TopologicalSpace X] (x : X) (n : ℕ) where
   E : Type u
   [topE : TopologicalSpace E]
+  [pathConnectedE : PathConnectedSpace E]
   p : E → X
   isCoveringMap : IsCoveringMap p
   ν : ↥(p ⁻¹' {x}) ≃ Fin n
 
-attribute [instance] FiberNumberedCover.topE
+attribute [instance] ConnectedFiberNumberedCover.topE
+  ConnectedFiberNumberedCover.pathConnectedE
 
-open ThricePuncturedSphere in
-/-- **Layer 6.1.** The monodromy triple of a fiber-numbered cover of the thrice-punctured
-sphere. The third component automatically computes the monodromy of `periphInf` (README,
-Layer 6.1). -/
-noncomputable def FiberNumberedCover.triple {n : ℕ}
-    (c : FiberNumberedCover basePt n) : PermutationTriple n :=
-  PermutationTriple.ofTwo
-    (c.ν.permCongr (monodromyHom c.isCoveringMap basePt periph0))
-    (c.ν.permCongr (monodromyHom c.isCoveringMap basePt periph1))
-
-/-- **Layer 6.1.** A **connected** cover with one chosen point of the fiber. The carrier
-Layer 6.3 classifies by subgroups.
+/-- **Layer 6.1.** A **connected** cover with one chosen point of the fiber, of degree `n`.
+The carrier Layer 6.3 classifies by marked triples, equivalently — by UniversalCovers
+milestone 8, which owns that half — by the index-`n` subgroups of `π₁`.
 
 ⚠ Connectedness is a field, not a convenience. A disconnected pointed cover recovers only the
 subgroup of the component containing the chosen point, so adjoining any unrelated cover as a
 second component leaves the subgroup unchanged and the classification below would not be
 injective. -/
-structure ConnectedPointedCover {X : Type u} [TopologicalSpace X] (x : X) where
+structure ConnectedPointedCover {X : Type u} [TopologicalSpace X] (x : X) (n : ℕ) where
   E : Type u
   [topE : TopologicalSpace E]
   [pathConnectedE : PathConnectedSpace E]
   p : E → X
   isCoveringMap : IsCoveringMap p
   e : ↥(p ⁻¹' {x})
+  nonempty_ν : Nonempty (↥(p ⁻¹' {x}) ≃ Fin n)
 
 attribute [instance] ConnectedPointedCover.topE ConnectedPointedCover.pathConnectedE
 
-/-- **Layer 6.1.** A connected cover with no chosen point — the unpointed carrier. -/
-structure ConnectedCover {X : Type u} [TopologicalSpace X] where
+/-- **Layer 6.1.** A connected cover of degree `n` with no chosen point — the unpointed
+carrier. The degree is carried as the existence of *some* numbering of the fiber, which is
+also what makes the fiber finite; which numbering is chosen is exactly the data the other two
+carriers add. -/
+structure ConnectedCover {X : Type u} [TopologicalSpace X] (x : X) (n : ℕ) where
   E : Type u
   [topE : TopologicalSpace E]
   [pathConnectedE : PathConnectedSpace E]
   p : E → X
   isCoveringMap : IsCoveringMap p
+  nonempty_ν : Nonempty (↥(p ⁻¹' {x}) ≃ Fin n)
 
 attribute [instance] ConnectedCover.topE ConnectedCover.pathConnectedE
 
+/-- **Layer 6.3.** Isomorphism of connected fiber-numbered covers: a homeomorphism over `X`
+preserving the label of **every** point of the fiber. -/
+def ConnectedFiberNumberedCoverIso {X : Type u} [TopologicalSpace X] {x : X} {n : ℕ}
+    (c c' : ConnectedFiberNumberedCover x n) : Prop :=
+  ∃ f : c.E ≃ₜ c'.E, (∀ y, c'.p (f y) = c.p y) ∧
+    ∀ i : Fin n, f (c.ν.symm i).1 = (c'.ν.symm i).1
+
 /-- **Layer 6.3.** Isomorphism of connected pointed covers: a homeomorphism over `X` carrying
-the chosen point to the chosen point. -/
-def ConnectedPointedCoverIso {X : Type u} [TopologicalSpace X] (x : X) :
-    ConnectedPointedCover x → ConnectedPointedCover x → Prop :=
-  fun c c' => ∃ f : c.E ≃ₜ c'.E, (∀ y, c'.p (f y) = c.p y) ∧ f c.e.1 = c'.e.1
+the chosen point to the chosen point — one point only. -/
+def ConnectedPointedCoverIso {X : Type u} [TopologicalSpace X] {x : X} {n : ℕ}
+    (c c' : ConnectedPointedCover x n) : Prop :=
+  ∃ f : c.E ≃ₜ c'.E, (∀ y, c'.p (f y) = c.p y) ∧ f c.e.1 = c'.e.1
 
 /-- **Layer 6.3.** Isomorphism of connected covers: a homeomorphism over `X`. -/
-def ConnectedCoverIso {X : Type u} [TopologicalSpace X] :
-    @ConnectedCover X _ → @ConnectedCover X _ → Prop :=
-  fun c c' => ∃ f : c.E ≃ₜ c'.E, ∀ y, c'.p (f y) = c.p y
+def ConnectedCoverIso {X : Type u} [TopologicalSpace X] {x : X} {n : ℕ}
+    (c c' : ConnectedCover x n) : Prop :=
+  ∃ f : c.E ≃ₜ c'.E, ∀ y, c'.p (f y) = c.p y
+
+/-! ### Layer 6.3: isomorphism classes as quotient carriers
+
+⚠ "Covers up to isomorphism" is **not** a `Prop`. The three relations above are equivalence
+relations, and the objects Layer 6.3 puts in bijection with triples, marked triples and their
+conjugacy classes are the **quotients** below; the forgetful maps between the three
+rigidifications descend through them. -/
+
+instance connectedFiberNumberedCoverSetoid {X : Type u} [TopologicalSpace X] (x : X) (n : ℕ) :
+    Setoid (ConnectedFiberNumberedCover x n) where
+  r := ConnectedFiberNumberedCoverIso
+  iseqv :=
+    { refl := fun c => ⟨Homeomorph.refl c.E, fun _ => rfl, fun _ => rfl⟩
+      symm := fun {c c'} h => by
+        obtain ⟨f, hf, hν⟩ := h
+        refine ⟨f.symm, fun y => ?_, fun i => ?_⟩
+        · simpa using (hf (f.symm y)).symm
+        · rw [← hν i]; simp
+      trans := fun {c c' c''} h h' => by
+        obtain ⟨f, hf, hν⟩ := h
+        obtain ⟨g, hg, hν'⟩ := h'
+        exact ⟨f.trans g, fun y => (hg (f y)).trans (hf y),
+          fun i => by simpa [hν i] using hν' i⟩ }
+
+instance connectedPointedCoverSetoid {X : Type u} [TopologicalSpace X] (x : X) (n : ℕ) :
+    Setoid (ConnectedPointedCover x n) where
+  r := ConnectedPointedCoverIso
+  iseqv :=
+    { refl := fun c => ⟨Homeomorph.refl c.E, fun _ => rfl, rfl⟩
+      symm := fun {c c'} h => by
+        obtain ⟨f, hf, he⟩ := h
+        refine ⟨f.symm, fun y => ?_, ?_⟩
+        · simpa using (hf (f.symm y)).symm
+        · rw [← he]; simp
+      trans := fun {c c' c''} h h' => by
+        obtain ⟨f, hf, he⟩ := h
+        obtain ⟨g, hg, he'⟩ := h'
+        exact ⟨f.trans g, fun y => (hg (f y)).trans (hf y), by simpa [he] using he'⟩ }
+
+instance connectedCoverSetoid {X : Type u} [TopologicalSpace X] (x : X) (n : ℕ) :
+    Setoid (ConnectedCover x n) where
+  r := ConnectedCoverIso
+  iseqv :=
+    { refl := fun c => ⟨Homeomorph.refl c.E, fun _ => rfl⟩
+      symm := fun {c c'} h => by
+        obtain ⟨f, hf⟩ := h
+        exact ⟨f.symm, fun y => by simpa using (hf (f.symm y)).symm⟩
+      trans := fun {c c' c''} h h' => by
+        obtain ⟨f, hf⟩ := h
+        obtain ⟨g, hg⟩ := h'
+        exact ⟨f.trans g, fun y => (hg (f y)).trans (hf y)⟩ }
+
+/-- **Layer 6.3.** Fiber-numbered covers up to isomorphism. -/
+def ConnectedFiberNumberedCoverClass {X : Type u} [TopologicalSpace X] (x : X) (n : ℕ) :
+    Type (u + 1) :=
+  Quotient (connectedFiberNumberedCoverSetoid x n)
+
+/-- **Layer 6.3.** Pointed covers up to pointed isomorphism. -/
+def ConnectedPointedCoverClass {X : Type u} [TopologicalSpace X] (x : X) (n : ℕ) :
+    Type (u + 1) :=
+  Quotient (connectedPointedCoverSetoid x n)
+
+/-- **Layer 6.3.** Covers up to isomorphism over `X`. -/
+def ConnectedCoverClass {X : Type u} [TopologicalSpace X] (x : X) (n : ℕ) : Type (u + 1) :=
+  Quotient (connectedCoverSetoid x n)
+
+section Forget
+
+variable {X : Type u} [TopologicalSpace X] {x : X} {n : ℕ}
+
+/-- **Layer 6.1.** Forgetting the numbering. -/
+def ConnectedFiberNumberedCover.forgetNumbering (c : ConnectedFiberNumberedCover x n) :
+    ConnectedCover x n where
+  E := c.E
+  p := c.p
+  isCoveringMap := c.isCoveringMap
+  nonempty_ν := ⟨c.ν⟩
+
+/-- **Layer 6.1.** Keeping only the point with a chosen label: the numbered-to-pointed
+forgetful map, one for each label. -/
+def ConnectedFiberNumberedCover.markLabel (c : ConnectedFiberNumberedCover x n) (i : Fin n) :
+    ConnectedPointedCover x n where
+  E := c.E
+  p := c.p
+  isCoveringMap := c.isCoveringMap
+  e := c.ν.symm i
+  nonempty_ν := ⟨c.ν⟩
+
+/-- **Layer 6.1.** Forgetting the chosen point. -/
+def ConnectedPointedCover.forgetPoint (c : ConnectedPointedCover x n) : ConnectedCover x n where
+  E := c.E
+  p := c.p
+  isCoveringMap := c.isCoveringMap
+  nonempty_ν := c.nonempty_ν
+
+/-- **Layer 6.3.** Forgetting the numbering, on isomorphism classes. -/
+def ConnectedFiberNumberedCoverClass.forgetNumbering :
+    ConnectedFiberNumberedCoverClass x n → ConnectedCoverClass x n :=
+  Quotient.map ConnectedFiberNumberedCover.forgetNumbering
+    (fun _ _ h => by obtain ⟨f, hf, _⟩ := h; exact ⟨f, hf⟩)
+
+/-- **Layer 6.3.** Marking a label, on isomorphism classes: a numbered isomorphism preserves
+every label, so in particular it preserves the marked point. -/
+def ConnectedFiberNumberedCoverClass.markLabel (i : Fin n) :
+    ConnectedFiberNumberedCoverClass x n → ConnectedPointedCoverClass x n :=
+  Quotient.map (fun c => c.markLabel i)
+    (fun _ _ h => by obtain ⟨f, hf, hν⟩ := h; exact ⟨f, hf, hν i⟩)
+
+/-- **Layer 6.3.** Forgetting the point, on isomorphism classes. -/
+def ConnectedPointedCoverClass.forgetPoint :
+    ConnectedPointedCoverClass x n → ConnectedCoverClass x n :=
+  Quotient.map ConnectedPointedCover.forgetPoint
+    (fun _ _ h => by obtain ⟨f, hf, _⟩ := h; exact ⟨f, hf⟩)
+
+/-- **Layer 6.3.** The forgetful triangle commutes: marking a label and then forgetting it is
+forgetting the whole numbering. -/
+theorem ConnectedFiberNumberedCoverClass.forgetPoint_markLabel (i : Fin n)
+    (C : ConnectedFiberNumberedCoverClass x n) :
+    (C.markLabel i).forgetPoint = C.forgetNumbering :=
+  Quotient.inductionOn C fun _ => rfl
+
+/-- **Layer 6.1.** A numbering of the fiber, chosen once. Which one is chosen is immaterial
+to everything stated on the quotients below. -/
+noncomputable def ConnectedCover.numbering (c : ConnectedCover x n) :
+    ConnectedFiberNumberedCover x n where
+  E := c.E
+  p := c.p
+  isCoveringMap := c.isCoveringMap
+  ν := c.nonempty_ν.some
+
+/-- **Layer 6.1.** The same, for a pointed cover; the marked label is `ν e`. -/
+noncomputable def ConnectedPointedCover.numbering (c : ConnectedPointedCover x n) :
+    ConnectedFiberNumberedCover x n where
+  E := c.E
+  p := c.p
+  isCoveringMap := c.isCoveringMap
+  ν := c.nonempty_ν.some
+
+/-- **Layer 6.1.** The degree of a connected cover does not depend on the point: the fiber
+cardinality is locally constant, hence constant on a path-connected base. -/
+theorem ConnectedCover.nonempty_ν_of [PathConnectedSpace X] (c : ConnectedCover x n) (y : X) :
+    Nonempty (↥(c.p ⁻¹' {y}) ≃ Fin n) := by
+  sorry
+
+end Forget
+
+section Classification
+
+open ThricePuncturedSphere
+
+variable {n : ℕ}
+
+/-- **Layer 6.1.** The monodromy triple of a connected fiber-numbered cover of the
+thrice-punctured sphere. The third component automatically computes the monodromy of
+`periphInf` (README, Layer 6.1). -/
+noncomputable def ConnectedFiberNumberedCover.triple
+    (c : ConnectedFiberNumberedCover basePt n) : PermutationTriple n :=
+  PermutationTriple.ofTwo
+    (c.ν.permCongr (monodromyHom c.isCoveringMap basePt periph0))
+    (c.ν.permCongr (monodromyHom c.isCoveringMap basePt periph1))
+
+/-- **Layer 6.1.** The triple of a **connected** numbered cover is connected: path lifting
+identifies the monodromy orbits on the fiber with the path components of `E`, and `n ≠ 0`
+matches `Nonempty E`. This is the theorem that the connectedness field of the carrier buys,
+and without that field it is false. -/
+theorem ConnectedFiberNumberedCover.triple_isConnected
+    (c : ConnectedFiberNumberedCover basePt n) : c.triple.IsConnected := by
+  sorry
+
+/-- **Layer 6.1.** The triple, as a `ConnectedTriple n`. -/
+noncomputable def ConnectedFiberNumberedCover.connectedTriple
+    (c : ConnectedFiberNumberedCover basePt n) : ConnectedTriple n :=
+  ⟨c.triple, c.triple_isConnected⟩
+
+/-- **Layer 6.1.** The triple is unchanged by an isomorphism of fiber-numbered covers. -/
+theorem ConnectedFiberNumberedCover.connectedTriple_congr
+    {c c' : ConnectedFiberNumberedCover basePt n} (h : ConnectedFiberNumberedCoverIso c c') :
+    c.connectedTriple = c'.connectedTriple := by
+  sorry
+
+/-- **Layer 6.3(1).** The classifying map at the numbered level, descended to isomorphism
+classes. -/
+noncomputable def ConnectedFiberNumberedCoverClass.triple :
+    ConnectedFiberNumberedCoverClass basePt n → ConnectedTriple n :=
+  Quotient.lift ConnectedFiberNumberedCover.connectedTriple
+    fun _ _ h => ConnectedFiberNumberedCover.connectedTriple_congr h
+
+/-- **Layer 6.3(1), the milestone.** Isomorphism classes of connected fiber-numbered covers
+correspond to connected triples **on the nose**: 6.1 one way, 6.2's finite corollary the
+other, with uniqueness from the pin's lifting criterion
+`IsCoveringMap.existsUnique_continuousMap_lifts_of_range_le`. This is the only level at which
+a literal triple is the classifying datum. -/
+theorem ConnectedFiberNumberedCoverClass.triple_bijective :
+    Function.Bijective (ConnectedFiberNumberedCoverClass.triple (n := n)) := by
+  sorry
+
+/-- **Layer 6.3(1).** The classification, as an equivalence of the two carriers. -/
+noncomputable def numberedCoverClassEquivTriple :
+    ConnectedFiberNumberedCoverClass basePt n ≃ ConnectedTriple n :=
+  Equiv.ofBijective _ ConnectedFiberNumberedCoverClass.triple_bijective
+
+/-- **Layer 6.3(2).** The isomorphism class of the triple of a connected cover: choose any
+numbering and pass to the relabeling orbit. -/
+noncomputable def ConnectedCover.isoClass (c : ConnectedCover basePt n) :
+    ConnectedIsoClass n :=
+  ConnectedIsoClass.mk c.numbering.connectedTriple
+
+theorem ConnectedCover.isoClass_congr {c c' : ConnectedCover basePt n}
+    (h : ConnectedCoverIso c c') : c.isoClass = c'.isoClass := by
+  sorry
+
+/-- **Layer 6.3(2).** The classifying map at the unnumbered level. -/
+noncomputable def ConnectedCoverClass.isoClass :
+    ConnectedCoverClass basePt n → ConnectedIsoClass n :=
+  Quotient.lift ConnectedCover.isoClass fun _ _ h => ConnectedCover.isoClass_congr h
+
+/-- **Layer 6.3(2), the milestone.** Connected covers up to isomorphism over `U` correspond
+to simultaneous-conjugacy classes of connected triples: forgetting the numbering on one side
+is exactly passing to the relabeling orbit on the other. -/
+theorem ConnectedCoverClass.isoClass_bijective :
+    Function.Bijective (ConnectedCoverClass.isoClass (n := n)) := by
+  sorry
+
+/-- **Layer 6.3(2).** The classification, as an equivalence of the two carriers. -/
+noncomputable def coverClassEquivIsoClass :
+    ConnectedCoverClass basePt n ≃ ConnectedIsoClass n :=
+  Equiv.ofBijective _ ConnectedCoverClass.isoClass_bijective
+
+/-- **Layer 6.3(3).** The marked class of a connected pointed cover: choose a numbering, and
+mark the label of the chosen point. -/
+noncomputable def ConnectedPointedCover.markedClass (c : ConnectedPointedCover basePt n) :
+    MarkedIsoClass n :=
+  MarkedIsoClass.mk c.numbering.connectedTriple (c.numbering.ν c.e)
+
+theorem ConnectedPointedCover.markedClass_congr {c c' : ConnectedPointedCover basePt n}
+    (h : ConnectedPointedCoverIso c c') : c.markedClass = c'.markedClass := by
+  sorry
+
+/-- **Layer 6.3(3).** The classifying map at the pointed level. -/
+noncomputable def ConnectedPointedCoverClass.markedClass :
+    ConnectedPointedCoverClass basePt n → MarkedIsoClass n :=
+  Quotient.lift ConnectedPointedCover.markedClass
+    fun _ _ h => ConnectedPointedCover.markedClass_congr h
+
+/-- **Layer 6.3(3), the milestone.** Connected pointed covers of `(U, b)` up to pointed
+isomorphism correspond to connected triples with a marked label, modulo the diagonal
+relabeling action. ⚠ The composite with UniversalCovers milestone 8's pointed correspondence
+identifies this carrier with the index-`n` subgroups of `π₁(U, b)`; that half is the
+supplier's theorem and is not restated here. Hall's numbers `1, 3, 13, 71, 461` are the
+acceptance check on the count. -/
+theorem ConnectedPointedCoverClass.markedClass_bijective :
+    Function.Bijective (ConnectedPointedCoverClass.markedClass (n := n)) := by
+  sorry
+
+/-- **Layer 6.3(3).** The classification, as an equivalence of the two carriers. -/
+noncomputable def pointedCoverClassEquivMarkedIsoClass :
+    ConnectedPointedCoverClass basePt n ≃ MarkedIsoClass n :=
+  Equiv.ofBijective _ ConnectedPointedCoverClass.markedClass_bijective
+
+/-- **Layer 6.3.** The forgetful maps commute with the classifications: forgetting the
+numbering of a cover is passing to the relabeling orbit of its triple. -/
+theorem ConnectedFiberNumberedCoverClass.isoClass_forgetNumbering
+    (C : ConnectedFiberNumberedCoverClass basePt n) :
+    C.forgetNumbering.isoClass = ConnectedIsoClass.mk C.triple := by
+  sorry
+
+/-- **Layer 6.3.** ...and forgetting the chosen point is forgetting the marked label. -/
+theorem ConnectedPointedCoverClass.isoClass_forgetPoint
+    (C : ConnectedPointedCoverClass basePt n) :
+    C.forgetPoint.isoClass = C.markedClass.forget := by
+  sorry
 
 /-- **Layer 6.3.** The conjugation action of a group on its subgroups, and the orbit relation
-it induces. ⚠ **Not** `ConjClasses (Subgroup G)`: `ConjClasses` is a monoid's quotient by
-conjugation **on itself**, and `Subgroup G` is not `G`. -/
+it induces — the shape in which UniversalCovers milestone 8 states the unpointed half, and the
+target of the composite of `coverClassEquivIsoClass` with that milestone. ⚠ **Not**
+`ConjClasses (Subgroup G)`: `ConjClasses` is a monoid's quotient by conjugation **on itself**,
+and `Subgroup G` is not `G`. -/
 noncomputable def subgroupConjSetoid {G : Type u} [Group G] : Setoid (Subgroup G) :=
   MulAction.orbitRel (ConjAct G) (Subgroup G)
 
-/-! The pointed and unpointed covering-classification equivalences are likewise README-only
-until UniversalCovers publishes the carrier and theorem names. The local cover carriers above are
-useful Belyi rigidifications, but they are not presented as replacements for that supplier API. -/
+/-! ### Layers 2.6, 6.3: the topological branch-point action
+
+Pulling a cover back along an anharmonic self-homeomorphism of `U` is the topological
+`S₃`-action; the two theorems below say it is the combinatorial one of Layer 2.6, on the
+nose, for the two generators. That is what makes "the expected `S₃` action" unambiguous
+about inversions and order. -/
+
+/-- **Layer 6.3.** The pullback of a cover along a self-homeomorphism of the base. -/
+noncomputable def ConnectedCover.pullback {X : Type u} [TopologicalSpace X]
+    [PathConnectedSpace X] {x : X} (h : X ≃ₜ X) (c : ConnectedCover x n) :
+    ConnectedCover x n where
+  E := {q : X × c.E // h q.1 = c.p q.2}
+  pathConnectedE := by sorry
+  p := fun q => q.1.1
+  isCoveringMap := by sorry
+  nonempty_ν := by sorry
+
+theorem ConnectedCover.pullback_congr {X : Type u} [TopologicalSpace X]
+    [PathConnectedSpace X] {x : X} (h : X ≃ₜ X) {c c' : ConnectedCover x n}
+    (hcc : ConnectedCoverIso c c') :
+    ConnectedCoverIso (c.pullback h) (c'.pullback h) := by
+  sorry
+
+/-- **Layer 6.3.** The pullback action on isomorphism classes. -/
+noncomputable def ConnectedCoverClass.pullback {X : Type u} [TopologicalSpace X]
+    [PathConnectedSpace X] {x : X} (h : X ≃ₜ X) :
+    ConnectedCoverClass x n → ConnectedCoverClass x n :=
+  Quotient.map (ConnectedCover.pullback h) fun _ _ hcc => ConnectedCover.pullback_congr h hcc
+
+/-- **Layer 2.6, 6.3, the agreement theorem, generator one.** Pulling back along
+`z ↦ 1 − z` replaces the triple of a cover by `swap01` of it. Because `mob01` fixes the
+basepoint, this holds with no choice of connecting path, and it is what pins the conjugator
+`b⁻¹ · c · b` in `swap01` against the topology rather than against a convention. -/
+theorem ConnectedCover.isoClass_pullback_mob01 (c : ConnectedCover basePt n) :
+    (c.pullback mob01).isoClass
+      = ConnectedIsoClass.mk (ConnectedTriple.swap01 c.numbering.connectedTriple) := by
+  sorry
+
+/-- **Layer 2.6, 6.3, the agreement theorem, generator two.** Pulling back along
+`z ↦ z/(z − 1)` replaces the triple by `swap1Inf` of it. ⚠ Here the statement is genuinely
+one about **classes**: `mob1Inf b = −1 ≠ b`, so the induced map on `π₁(U, b)` exists only
+after a choice of connecting path, and the two choices differ by the inner automorphism that
+`swap1Inf_sq` records. -/
+theorem ConnectedCover.isoClass_pullback_mob1Inf (c : ConnectedCover basePt n) :
+    (c.pullback mob1Inf).isoClass
+      = ConnectedIsoClass.mk (ConnectedTriple.swap1Inf c.numbering.connectedTriple) := by
+  sorry
+
+end Classification
 
 /-! ## Deferred compact-Riemann-surface crossing
 
