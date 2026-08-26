@@ -1435,9 +1435,16 @@ theorem isDemushkin_marked_of_q_ne_two (hG : IsDemushkin p G) (hq : demushkinQ h
 
 /-- **Layer 9, the marked classification at `q = 2` with `n` odd.** Here `p = 2`, the relator is
 `x₁²x₂^{2^f}(x₂,x₃)⋯`, and the character values are `χ(x₁) = -1`, `χ(x₃)(1 - 2^f) = 1`, and `1`
-elsewhere. The standard abstract group `D₀` is the case `n = 3`, `f = 2`. -/
+elsewhere. The standard abstract group `D₀` is the case `n = 3`, `f = 2`.
+⚠ `f` is an **invariant of `G`**, not a free parameter, and `hfG` is what says so: it asserts
+that the character value the conclusion pins is attained. Without it the statement reads "for
+every `f ≥ 2` there is a marked isomorphism onto the presented group with that `f`", and those
+presented groups are pairwise non-isomorphic, so all but one instance is false. The same trap
+applies to the even case below, and to any later theorem that lets a normal-form parameter float
+free of the group it classifies. -/
 theorem isDemushkin_marked_of_q_two_odd (hp : p = 2) (hG : IsDemushkin p G)
     (hq : demushkinQ hG = 2) (hodd : Odd (demushkinRank hG)) (f : ℕ) (hf : 2 ≤ f)
+    (hfG : ∃ x : G, (demushkinCharacter hG x : ℤ_[p]) * (1 - 2 ^ f) = 1)
     [TotallyDisconnectedSpace (presentedProP p (Fin (demushkinRank hG))
       {demushkinWordTwoOdd f (demushkinRank hG) (freeProPGen p (demushkinRank hG))})] :
     ∃ e : G ≃ₜ* presentedProP p (Fin (demushkinRank hG))
@@ -1452,10 +1459,14 @@ theorem isDemushkin_marked_of_q_two_odd (hp : p = 2) (hG : IsDemushkin p G)
 /-- **Layer 9, the marked classification at `q = 2` with `n` even.** The relator is
 `x₁^{2+α}(x₁,x₂)x₃^{2^f}(x₃,x₄)⋯`, and the character values are `χ(x₂)(1 + α) = -1`,
 `χ(x₄)(1 - 2^f) = 1`, and `1` elsewhere. The image is `{±1} × U^(f)` when `v₂(α) ≥ f`, and
-`U^[v₂(α)]` otherwise, which is the table of Layer 7. -/
+`U^[v₂(α)]` otherwise, which is the table of Layer 7.
+⚠ As in the odd case, `a` and `f` are invariants of `G` and `haG`/`hfG` are what pin them; with
+both parameters free the statement is false for every pair but one. -/
 theorem isDemushkin_marked_of_q_two_even (hp : p = 2) (hG : IsDemushkin p G)
     (hq : demushkinQ hG = 2) (heven : Even (demushkinRank hG)) (a f : ℕ) (hf : 2 ≤ f)
     (ha : 4 ∣ a)
+    (haG : ∃ x : G, (demushkinCharacter hG x : ℤ_[p]) * (1 + (a : ℤ_[p])) = -1)
+    (hfG : ∃ x : G, (demushkinCharacter hG x : ℤ_[p]) * (1 - 2 ^ f) = 1)
     [TotallyDisconnectedSpace (presentedProP p (Fin (demushkinRank hG))
       {demushkinWordTwoEven a f (demushkinRank hG) (freeProPGen p (demushkinRank hG))})] :
     ∃ e : G ≃ₜ* presentedProP p (Fin (demushkinRank hG))
@@ -2427,12 +2438,21 @@ example {p : ℕ} [Fact p.Prime] {n : ℕ} (hn : n ≠ 0) (U : OpenSubgroup (fre
 subgroup is one of `U^(f)`, `{±1} × U^(f)`, `{±1}`, or Labute's `U^[f]`. Uniqueness of the
 case and of `f` is the companion statement; the indices and the values of `(A : A²)` are the
 numbers Layer 9's existence theorem quotes. -/
-example (A : Subgroup ℤ_[2]ˣ) (hA : IsClosed (A : Set ℤ_[2]ˣ)) (hA1 : A ≠ ⊥) :
+theorem closedSubgroup_units_two_trichotomy (A : Subgroup ℤ_[2]ˣ)
+    (hA : IsClosed (A : Set ℤ_[2]ˣ)) (hA1 : A ≠ ⊥) :
     (∃ f : ℕ, 2 ≤ f ∧ A = unitsPrincipal f) ∨
       (∃ f : ℕ, 2 ≤ f ∧ A = unitsPlusMinus f) ∨
       A = Subgroup.closure {(-1 : ℤ_[2]ˣ)} ∨
       (∃ (f : ℕ) (u : ℤ_[2]ˣ),
         2 ≤ f ∧ (u : ℤ_[2]) = -1 + 2 ^ f ∧ A = procyclicClosure u) :=
+  sorry
+
+/-- **Layer 7, uniqueness of the case and of the level.** The four families of the trichotomy are
+pairwise disjoint, and `f` is determined within each. ⚠ This is what a consumer needs in order to
+speak of *the* level of an orientation image: `LocalGaloisGroups` computes the image of the
+cyclotomic character and then reads `f` off it, which is only well defined given this. -/
+theorem closedSubgroup_units_two_level_unique {f f' : ℕ} (hf : 2 ≤ f) (hf' : 2 ≤ f')
+    (h : unitsPrincipal f = unitsPrincipal f') : f = f' :=
   sorry
 
 /-- **Layer 7, the even part of `U^[f]`.** For `u = -1 + 2^f` with `f ≥ 2`, the square
