@@ -600,6 +600,44 @@ theorem not_unitFiltration_le_range_powMonoidHom_two [Algebra ℚ_[2] K]
       ≤ (powMonoidHom 2 : Kˣ →* Kˣ).range :=
   sorry
 
+/-! ### The dyadic statements, indexed uniformly
+
+⚠ The three theorems above are stated for a finite extension of `ℚ_2`, because
+`absoluteRamificationIndex K 2` is reserved for that case — its signature demands
+`[Algebra ℚ_[2] K]`. That makes them **unusable in odd residue characteristic**, where the
+intended reading of `e = v_K(2)` is simply `0`: a consumer splitting on `e = 0` versus `e ≠ 0`
+cannot even write the hypothesis, and `QuadraticFormInvariants` had to restate all three
+locally. The uniform forms below are indexed by `natCastValuation K 2`, which is defined for
+every nonarchimedean local field in which `2` is nonzero and vanishes exactly when the residue
+characteristic is odd. In mixed characteristic `2` the two agree, by
+`absoluteRamificationIndex_eq_natCastValuation`, so these are generalizations rather than a
+second convention. -/
+
+/-- **Layer 1, the local square theorem, uniformly indexed** (O'Meara 63:1). -/
+theorem unitFiltration_natCastValuation_le_range_powMonoidHom_two
+    (h2 : ((2 : ℕ) : K) ≠ 0) :
+    unitFiltration K (2 * natCastValuation K 2 h2 + 1)
+      ≤ (powMonoidHom 2 : Kˣ →* Kˣ).range :=
+  sorry
+
+/-- **Layer 1, sharpness, uniformly indexed.** ⚠ In odd residue characteristic the exponent is
+`0`, and the statement says that `U(K,0) = 𝒪[K]ˣ` is not contained in the squares — which is
+true, and is the odd-residue-characteristic content that the `ℚ_2`-indexed version cannot
+express at all. -/
+theorem not_unitFiltration_natCastValuation_le_range_powMonoidHom_two
+    (h2 : ((2 : ℕ) : K) ≠ 0) :
+    ¬ unitFiltration K (2 * natCastValuation K 2 h2)
+      ≤ (powMonoidHom 2 : Kˣ →* Kˣ).range :=
+  sorry
+
+/-- **Layer 1, the square-class count, uniformly indexed**: `#(Kˣ/(Kˣ)²) = 4 · q^{v_K(2)}`.
+At odd residue characteristic the exponent is `0` and this is the familiar `4`; over a finite
+extension of `ℚ_2` of degree `N` it is `2^{N+2}`. One statement, both branches. -/
+theorem card_squareClasses_natCastValuation (h2 : ((2 : ℕ) : K) ≠ 0) :
+    Nat.card (Kˣ ⧸ (powMonoidHom 2 : Kˣ →* Kˣ).range)
+      = 4 * Nat.card 𝓀[K] ^ natCastValuation K 2 h2 :=
+  sorry
+
 /-- **Layer 1, worked example: the dyadic deep-square bound.** Units of `ℤ_2` congruent to
 `1 mod 8` are squares (`U(K, 2e+1) ⊆ (Kˣ)²` at `K = ℚ_2`, `e = 1`), and `1 + 4ℤ_2` are not, so
 the threshold is sharp there. -/
