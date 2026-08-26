@@ -55,8 +55,11 @@ The following subjects are outside this roadmap. They are not later milestones o
 - The realization of `Aₙ` over `ℚ` for general `n`. Serre derives it from Hilbert
   irreducibility.
 - Completeness of the classification of transitive subgroups in degrees 6 to 11.
-- Stored database exports, precomputed transitive-group tables, and Galois-group certificates.
-  Those may be appropriate for a computational database such as Hex, but not for this roadmap.
+- Stored database exports, precomputed transitive-group tables, and stored collections of
+  Galois-group certificates. Those may be appropriate for a computational database such as Hex,
+  but not for this roadmap. The certificate *type* of Layer 6 and its soundness theorem are
+  mathematics and are owned here; what is outside is storing certificates, searching for one,
+  and any claim that a search succeeds or terminates.
 - Chebotarev density.
 - Ramification theory of number fields: the different, the relative discriminant ideal,
   decomposition fields, and inertia fields. It is Number Field Arithmetic that owns them, and
@@ -246,8 +249,20 @@ does under this one.
 
 The discriminant is Mathlib's `Polynomial.discr`, in
 `Mathlib/RingTheory/Polynomial/Resultant/Basic.lean`. It is the resultant of `f` and `f'`,
-divided by the leading coefficient and multiplied by a sign. This roadmap adopts it and builds
-the missing theory around it, starting with the root-product formula in Layer 3.
+divided by the leading coefficient and multiplied by a sign. The sign is pinned by that
+definition, as `discr f = det (sylvesterDeriv f) · (−1)^(n(n−1)/2)` with `n = natDegree f`,
+normalized so that a real polynomial with all roots real has non-negative discriminant. Every
+statement below, including the root-product formula and the identity between a quartic and its
+resolvent cubic, is written with that sign; no second normalization appears. This roadmap adopts
+the definition and builds the missing theory around it, starting with the root-product formula
+in Layer 3.
+
+Two readings of the discriminant are kept apart, because they have different hypotheses. The
+root-product formula and base change are universal polynomial identities and hold over any
+commutative ring. The criterion `discr f ≠ 0 ↔ f.Separable` is a statement about a **field**:
+over `ℤ` it is false, and `X² − 1` is the witness, with discriminant `4` and no coprimality
+between `X² − 1` and `2X` in `ℤ[X]`. Over a domain the correct statement passes to the fraction
+field, and that is the form every use over `ℤ` takes.
 
 The discriminant test `IsSquare (discr f) ↔ Gal f ≤ Aₙ` is **false in characteristic 2**. When
 `−1 = 1`, the product `∏_{i<j} (rᵢ − rⱼ)` is symmetric, so its square root is always in the base
@@ -259,6 +274,35 @@ In Mathlib, `resolvent` is the resolvent of spectral theory, in
 `Mathlib/Algebra/Algebra/Spectrum/Basic.lean`. This roadmap therefore uses the names
 `galResolvent` for a general orbit resolvent, `resolventCubic` for the cubic attached to a
 quartic, and `resolventSextic` for the sextic attached to a quintic.
+
+### Resolvents: universal data, and specialization
+
+Four conventions, fixed here because an implementor who chooses differently gets a different
+object with the same name.
+
+- **The action is on the left, through `MvPolynomial.rename`.** For `σ : Equiv.Perm (Fin n)`,
+  `σ · Φ` means `MvPolynomial.rename σ Φ`. Mathlib's `Equiv.Perm` multiplication is
+  `(σ * τ) x = σ (τ x)` and `rename` composes the same way, so this is a left action, and
+  `stabilizer` below is the stabilizer for it. A right-action reading conjugates every
+  stabilizer, which would move the label attached to each invariant.
+- **The orbit is a set, and carries no numbering.** The orbit of `Φ` is the set of its distinct
+  renamings, and the resolvent is the product of `X − Ψ` over that set. No enumeration of the
+  orbit is chosen, and no statement mentions the *i*-th orbit element. What identifies a
+  registered invariant is its exact stabilizer, not a position in a list. This is also why the
+  degree of an orbit resolvent is `[Sₙ : H]` unconditionally: it is a product over that many
+  distinct polynomials, and the values are what can collide.
+- **Universal data is integral; specialization is a base change.** An invariant is a
+  `MvPolynomial (Fin n) ℤ`, the orbit product is descended to an integral polynomial in the
+  elementary symmetric polynomials, and specializing at a polynomial `f` over a ring `R` is
+  substitution of the coefficients of `f`. The resolvent over `ℚ` is therefore the image of the
+  resolvent over `ℤ`, and the resolvent over `ZMod p` is its reduction. Orbits are always taken
+  over `ℤ`, before any base change: over a ring where two integral renamings become equal, the
+  orbit computed after the change is smaller and is not the specialization of the universal
+  object.
+- **Separation is about values, not about polynomials.** Distinct orbit elements are distinct
+  polynomials by construction. Whether their *values* at the roots of a particular `f` stay
+  distinct is a property of that `f`, called separation evidence below, and the theorems that
+  read a subgroup off a resolvent require it.
 
 ### Two senses of "solvable"
 
@@ -276,10 +320,15 @@ Mathlib and is not a milestone here. No statement below is an equivalence that m
 `solvableByRad`.
 
 ### Names
-The roadmap introduces these names: `fullCycleType`, `factorDegrees`, `numTransitiveGroups`,
-`TransitiveGroupIndex`, `referenceSubgroup`, `TransitiveGroupLabel`, `HasGaloisLabel`,
-`HasFullSymmetricGaloisGroup`, `coordPermAut`, `WreathProduct`, `ResolventSpec`,
-`galResolvent`, `resolventCubic`, and `resolventSextic`. `Suggested.lean` fixes their forms.
+The roadmap introduces these names: `fullCycleType`, `factorDegrees`, `IsGoodPrime`,
+`numTransitiveGroups`, `TransitiveGroupIndex`, `referenceSubgroup`, `TransitiveGroupLabel`,
+`HasGaloisLabel`, `HasFullSymmetricGaloisGroup`, `coordPermAut`, `WreathProduct`, and, for the
+resolvent layer, `universalResolvent`, `esymmSubst`, `vietaHom`, `ResolventSpec` with
+`ResolventSpec.specialize` and `ResolventSpec.IsGoodPrime`, `IsRootEnumeration`,
+`ResolventSeparationEvidence`, `galResolvent`, `resolventCubic`, `resolventSextic`,
+`tschirnhausPolynomial`, and `TschirnhausAdmissible`; and, for the certificates of Layer 6,
+`HasFactorDegrees`, `HasSexticRoot`, `HasSecondRootInRootField`, and `QuinticCertificate` with
+its `label`, `Verifies` and `check`. `Suggested.lean` fixes their forms.
 
 ## What Mathlib provides
 
@@ -342,6 +391,14 @@ Each item was checked in the pinned Mathlib.
   `RingTheory/Discriminant.lean` has `Algebra.discr`, the discriminant of a basis for the trace
   form, with `discr_powerBasis_eq_prod''` in the form `∏ (σᵢ x − σⱼ x)²`, and
   `discr_powerBasis_eq_norm`.
+- **Symmetric polynomials and Vieta, for Layer 4.**
+  `RingTheory/MvPolynomial/Symmetric/Defs.lean` has `MvPolynomial.esymm`, `IsSymmetric`, and the
+  symmetric subalgebra. `Symmetric/FundamentalTheorem.lean` has `esymmAlgHom`, with
+  `esymmAlgHom_fin_injective` and `esymmAlgHom_fin_bijective`: this is the fundamental theorem of
+  symmetric polynomials, and the descent of Layer 4 rests on it and on nothing else.
+  `RingTheory/Polynomial/Vieta.lean` has `Polynomial.coeff_eq_esymm_roots_of_card` and
+  `coeff_eq_esymm_roots_of_splits`, which are the Vieta step. `MvPolynomial.rename` with its
+  functoriality carries the permutation action on invariants.
 - **Finite fields, for Layer 5.** `FieldTheory/Finite/` has the finite fields, the cyclicity of
   their Galois groups, and the minimal polynomial over them. That is the whole of what Layer 5
   takes from Mathlib. The ramification input that Dedekind's theorem needs —
@@ -663,7 +720,14 @@ Let `p` be irreducible and separable over `F`, with a root `α` in `L = p.Splitt
   - the product formula for `discr (f*g)`, with its cross term `resultant f g`;
   - base change `(f.map φ).discr = φ f.discr` for a ring morphism `φ`, in the degree-preserving
     case, which is what Layer 5 uses for `ℤ → ZMod p`;
-  - `f.discr ≠ 0 ↔ f.Separable`, for monic `f`;
+  - `f.discr ≠ 0 ↔ f.Separable`, for monic `f` **over a field**, together with the version over
+    a domain that passes to the fraction field, `f.discr ≠ 0 ↔ (f.map (algebraMap R K)).Separable`.
+    The second is the one every use over `ℤ` takes, including the separability of a reduction in
+    Layer 5 and the separation evidence of Layer 6;
+  - the ⚠ that pins the field hypothesis: over `ℤ`, `X² − 1` has `discr = 4 ≠ 0` and is not
+    `Polynomial.Separable`, since a coprimality witness for `X² − 1` and `2X` would give `2 ∣ 1`
+    on evaluating at `1`. The universal polynomial identities above live over any commutative
+    ring; the separability reading does not;
   - the two comparison lemmas that keep the several discriminant APIs consistent:
     `Cubic.discr P = (P.toPoly).discr` after normalization to monic, and, for a power basis,
     `Algebra.discr` of the basis equal to `(minpoly).discr`, through `discr_powerBasis_eq_norm`.
@@ -715,11 +779,16 @@ Let `p` be irreducible and separable over `F`, with a root `α` in `L = p.Splitt
 A resolvent converts a constraint on the subgroup into a statement about a factorization. The
 root-side meaning and coefficient-side computation are kept distinct throughout.
 
-- **Static resolvent specifications, with their API.** A `ResolventSpec n` is library data,
-  written and proved once. It has three fields: a subgroup `H ≤ Equiv.Perm (Fin n)`, an invariant
-  `Φ : MvPolynomial (Fin n) ℤ`, and a proof that the stabilizer of `Φ` under
-  `MvPolynomial.rename` is exactly `H`. "Exactly" is the point. A containment would not let the
-  factorization of the resolvent detect the subgroup. The API:
+- **Static resolvent specifications, with their API.** A `ResolventSpec n` is **universal**
+  library data, written and proved once. It mentions no polynomial and no coefficient ring. It
+  has four fields: a subgroup `H ≤ Equiv.Perm (Fin n)`, an invariant `Φ : MvPolynomial (Fin n) ℤ`
+  in the formal roots, a proof that the stabilizer of `Φ` under `MvPolynomial.rename` is exactly
+  `H`, and an integral symmetric expression for the orbit product, that is, the universal
+  resolvent rewritten in the elementary symmetric polynomials. "Exactly" is the point in the
+  third field. A containment would not let the factorization of the resolvent detect the
+  subgroup. The fourth field is *determined and not chosen*: the substitution `xᵢ ↦ eᵢ₊₁` is
+  injective, so at most one polynomial satisfies its defining equation, and the fundamental
+  theorem of symmetric polynomials says one does. The API:
 
   - *Constructors:* one for each registered specification, with its stabilizer theorem proved.
   - *Examples:* the `D₄` specification of the quartic and the `F₂₀` specification of the quintic,
@@ -730,36 +799,107 @@ root-side meaning and coefficient-side computation are kept distinct throughout.
     `σ H σ⁻¹`.
   - *Edge cases:* `H = ⊤`, where the orbit is a single element and the resolvent is linear;
     `H = ⊥`, where the orbit has `n!` elements.
-  - *The coefficient-side resolvent:* a field `specialize : ℤ[X] → ℚ[X]`, an executable
-    function of the coefficients of `f`, together with a theorem that its image in a splitting
-    field is the root-side orbit resolvent below. The root product says what the resolvent
-    means; `specialize` says how to obtain it.
+  - *Uniqueness:* the integral expression for the orbit product is unique, which is what makes
+    two implementations of the same specification the same object.
 
   Three specifications are registered: the quartic `D₄` invariant, the quintic `F₂₀` invariant,
-  and the quintic pair sum. `resolventSextic` is the `specialize` of the second. Each exact
-  stabilizer theorem identifies the stabilizer with the reference subgroup of a label, and not
-  only with a group of the right order: the quartic invariant with `referenceSubgroup 4 2`, the
-  label `4T3`, and the quintic invariant with `referenceSubgroup 5 2`, the label `5T3`.
+  and the quintic pair sum. Each exact stabilizer theorem identifies the stabilizer with a named
+  group and not only with a group of the right order: the quartic invariant with
+  `referenceSubgroup 4 2`, the label `4T3`; the quintic `F₂₀` invariant with
+  `referenceSubgroup 5 2`, the label `5T3`; and the pair sum with the intransitive
+  `S_{{0,1}} × S_{{2,3,4}}` of order 12, which is no label's reference and is pinned by
+  generators.
 
   *Needs:* `MvPolynomial.rename` (Mathlib); `MulAction.stabilizer` (Mathlib);
-  `Subgroup.index` (Mathlib).
+  `Subgroup.index` (Mathlib); `MvPolynomial.esymm` with `esymmAlgHom_fin_bijective` (Mathlib).
+
+- **The symmetric-polynomial descent, in five milestones.** This is what makes a coefficient-side
+  resolvent exist. Galois invariance alone does **not** put the coefficients of the orbit product
+  in the base field, and without these five steps "compute the coefficient-side resolvent" would
+  hide the algebra behind a choice of splitting field. Each step is a named theorem.
+
+  1. *Invariance.* The universal resolvent `∏_{Ψ ∈ orbit of Φ} (X − Ψ)`, a polynomial over
+     `MvPolynomial (Fin n) ℤ`, is fixed by renaming along every `σ ∈ Sₙ`, because renaming
+     permutes the orbit.
+  2. *Symmetry of the coefficients.* Coefficientwise, each coefficient is a symmetric polynomial
+     in the formal roots.
+  3. *The fundamental theorem of symmetric polynomials.* Each coefficient is an **integral**
+     polynomial in the elementary symmetric polynomials, and in exactly one way. In Mathlib this
+     is `MvPolynomial.esymmAlgHom_fin_bijective`, with `esymmAlgHom_fin_injective` for the
+     uniqueness half. Integrality of the coefficient side comes from here and from nowhere else.
+  4. *Vieta.* For a monic `g` of degree `n` over a domain, listed with multiplicity by
+     `x : Fin n → L`, the `(k+1)`-st elementary symmetric polynomial at `x` is
+     `(−1)^(k+1) · g.coeff (n − (k+1))`. This is the milestone that uses monicity and the degree,
+     and it is why every theorem that reads `specialize` as a resolvent carries them.
+  5. *Agreement.* In a field where `f` splits, the specialization maps to the root-side orbit
+     product at any root enumeration.
+
+  *Needs:* `MvPolynomial.IsSymmetric`, `MvPolynomial.esymm`, `esymmAlgHom_fin_bijective`
+  (Mathlib); `Polynomial.coeff_eq_esymm_roots_of_card` (Mathlib); the resolvent specification
+  above (Layer 4); the degree bookkeeping (Layer 0).
+
+- **Specialization at a polynomial, over any coefficient ring.** `ResolventSpec.specialize R f`
+  substitutes the coefficients of `f` for the elementary symmetric polynomials in the integral
+  orbit product. It is not a field of the specification: the same universal invariant serves
+  every polynomial and every coefficient ring. The API:
+
+  - *Base change.* `(specialize R f).map φ = specialize S (f.map φ)` for every ring morphism
+    `φ : R →+* S`. This needs no hypothesis on `f`: `specialize` reads coefficients, and
+    `Polynomial.map` commutes with that. The hypotheses live in the interpretation, not here.
+  - *Coefficient integrality.* The case `ℤ → ℚ` of base change: the resolvent of an integral
+    polynomial over `ℚ` is the image of an integral one. `resolventSextic f` is therefore a monic
+    polynomial over `ℤ`, and by the rational root theorem any rational root of it is an integer.
+  - *Reduction.* The case `ℤ → ZMod p` of base change. ⚠ The identity is unconditional; reading
+    the reduced resolvent as a resolvent of the reduced polynomial is not. That needs `p` good
+    for `f` **and** good for the specialized resolvent, which is an independent condition; Layer
+    5 names it.
+  - *Degree and monicity.* `specialize R f` is monic of degree `[Sₙ : H]`, over every nonzero
+    ring and for every `f`, because it is the image of a monic polynomial of that degree.
+    **Degree is therefore never what a specialization destroys**, and no theorem below takes the
+    full orbit degree as a hypothesis.
+  - *Closed forms.* That the resolvent cubic below is `specialize` of the quartic specification
+    at a depressed quartic is a theorem about the universal object, not a definition.
+  - *Downstream interfaces:* the quartic and quintic tables below, and the certificates of
+    Layer 6.
+
+  *Needs:* the descent above (Layer 4); `Polynomial.map` and `Polynomial.Monic.map` (Mathlib).
 
 - **The orbit resolvent, with its API.** For a specification with invariant `Φ` and a root vector
   `x`, define `galResolvent Φ x := ∏_{Ψ ∈ orbit of Φ} (X − C (Ψ(x)))`, the product over the
-  rename-orbit of `Φ`. The API:
+  rename-orbit of `Φ` taken **in `MvPolynomial (Fin n) ℤ`**, with each `Ψ` evaluated at `x`. The
+  API:
 
-  - *Constructor:* the product formula, and the fact that the orbit is finite of size
-    `[Sₙ : H]`.
-  - *Descent:* evaluated at the roots of a monic `f`, the coefficients are symmetric functions of
-    the roots, so the polynomial descends to `F[X]`.
+  - *Constructor:* the product formula, and the fact that the orbit is finite of size `[Sₙ : H]`.
+  - *Degree:* the degree is `[Sₙ : H]`, unconditionally. It is a product of that many monic
+    linear factors, whatever the values do.
   - *Independence:* the value does not depend on the numbering of the roots, because the product
     is over the whole orbit.
-  - *Degree:* the degree is `[Sₙ : H]` provided the values on the orbit stay distinct.
-  - *Edge cases:* two orbit values that agree, which is the degenerate case below.
+  - *Comparison:* it is the image of the universal resolvent under evaluation at `x`, and for a
+    root enumeration of a monic `f` it is the image of `specialize`.
+  - *Edge cases:* two orbit values that agree. This is where a specialization degenerates, and it
+    is the degenerate case below; it costs separability, never degree.
   - *Downstream interfaces:* the quartic and quintic tables below.
 
-  *Needs:* the resolvent specification above (Layer 4); `MvPolynomial.IsSymmetric` and the
-  fundamental theorem of symmetric polynomials (Mathlib); the degree bookkeeping (Layer 0).
+  ⚠ The orbit is taken over `ℤ` and the values are the images of those integral polynomials.
+  Taking the orbit after mapping the coefficients into the base ring would be a different
+  object: over a ring where two integral renamings of `Φ` become equal, that orbit is smaller,
+  and the product over it is not the specialization of the universal resolvent.
+
+  *Needs:* the resolvent specification and the descent above (Layer 4); the degree bookkeeping
+  (Layer 0).
+
+- **The root data that a resolvent statement assumes.** A root enumeration `x : Fin n → L` of `f`
+  is a listing of the roots with multiplicity. Two milestones make its content explicit, because
+  both are quietly assumed wherever roots are indexed by a finite set.
+
+  - Splitting: if `f.natDegree = n` and `x` enumerates the roots, then `f` splits in `L`. The
+    finite indexing is not available before this.
+  - Separability: `x` is **injective** if and only if the mapped polynomial is separable. Without
+    separability the enumeration repeats a root, the action is on too few points, and the
+    stabilizer reading of the resolvent's roots is false.
+
+  *Needs:* `Polynomial.Splits` and `Polynomial.roots` (Mathlib); the degree bookkeeping
+  (Layer 0).
 
 - **The factorization theorem.** Assume the specialized resolvent is separable. Then the Galois
   action on the orbit of `Φ` agrees with the action on the coset space `Sₙ/H` transported by the
@@ -785,6 +925,17 @@ root-side meaning and coefficient-side computation are kept distinct throughout.
     the separation hypothesis, and only then.
 
   A rational root therefore proves the containment only when separation evidence is present.
+
+  ⚠ The failure is not hypothetical, and separability of `f` does not prevent it. Take
+  `f = x⁵ − x`, which is separable with `disc f = 256`. Its roots are `0, ±1, ±i`, and the six
+  orbit values of the `F₂₀`-invariant collapse to three: the resolvent sextic is
+  `(X − 2)⁴ (X² + 16)`. It has the rational root `2`. But the Galois group of `x⁵ − x` is
+  generated by the transposition of `i` and `−i`, and `F₂₀ = AGL(1,5)` contains no transposition
+  — its elements have cycle types `(1,1,1,1,1)`, `(1,2,2)`, `(1,4)` and `(5)` — so the image is
+  **not** conjugate into `F₂₀`. A milestone states this instance, so that the hypothesis cannot
+  quietly be dropped. It is also the standing witness that collisions cost separability and not
+  degree: the sextic is still a sextic.
+
   *Needs:* the factorization theorem above (Layer 4).
 
 - **Tschirnhaus transforms, as coefficient-side objects.** When the specialized resolvent is not
@@ -798,8 +949,10 @@ root-side meaning and coefficient-side computation are kept distinct throughout.
     sets correspond; the splitting fields agree up to an `AlgEquiv`; and the Galois images are
     conjugate. The last of these is what carries an upper bound back to `f`.
 
-  If the transform is admissible and the transformed resolvent has full orbit degree and is
-  separable, then the subgroup upper bound transports back to `f`.
+  If the transform is admissible and the transformed resolvent is separable, then the subgroup
+  upper bound transports back to `f`. Separability is the whole of the extra condition: the
+  transformed resolvent has the full orbit degree for the same reason every specialization
+  does.
 
   - *Not a milestone:* the classical claim that such a transform always exists over an infinite
     field. That claim needs the finitely many bad coincidences to define proper algebraic subsets.
@@ -816,9 +969,20 @@ root-side meaning and coefficient-side computation are kept distinct throughout.
   - *The specification.* The `D₄`-invariant is `x₀x₂ + x₁x₃`. Its stabilizer in
     `Equiv.Perm (Fin 4)` has order 8, and its orbit
     `{x₀x₂+x₁x₃, x₀x₁+x₂x₃, x₀x₃+x₁x₂}` has three elements. The resolvent is therefore a cubic.
-  - *The closed form.* `resolventCubic f = X³ − pX² − 4rX + (4pr − q²)`. That this cubic is the
-    orbit resolvent of the specification above is a theorem to prove, not a definition.
-  - *Discriminants agree.* `f.discr = (resolventCubic f).discr`.
+    Which of the three is taken as *the* invariant is not arbitrary. `x₀x₂ + x₁x₃` is the one
+    whose stabilizer is the reference subgroup `⟨(0 1 2 3),(0 2)⟩` of `4T3` on the nose, since
+    that group permutes the pairing `{{0,2},{1,3}}`. Taking `x₀x₁ + x₂x₃` instead gives a
+    conjugate subgroup, and breaks the exact stabilizer statement, while leaving the resolvent
+    cubic unchanged, because that is a product over the whole orbit.
+  - *The closed form.* `resolventCubic f = X³ − pX² − 4rX + (4pr − q²)`. That this cubic is
+    `specialize` of the specification above is a theorem to prove, not a definition. It is the
+    `a = 0` case of the classical resolvent cubic `X³ − bX² + (ac − 4d)X − (a²d + c² − 4bd)` of a
+    general quartic `X⁴ + aX³ + bX² + cX + d`, in the same convention.
+  - *Discriminants agree.* `f.discr = (resolventCubic f).discr`, with the sign convention of
+    `Polynomial.discr` on both sides. One consequence is worth stating as its own lemma: a
+    separable quartic has a **separable** resolvent cubic, automatically, so the quartic decision
+    table needs no separation evidence. The quintic has no such identity, which is why the sextic
+    keeps its evidence hypothesis.
   - *The decision table*, for `f` irreducible and separable. Each row is a named theorem.
 
     | Resolvent cubic | `f.discr` | Galois group |
@@ -846,10 +1010,22 @@ root-side meaning and coefficient-side computation are kept distinct throughout.
     `x_a² x_b x_c`. Its stabilizer in `Equiv.Perm (Fin 5)` is exactly the Frobenius group
     `F₂₀ = AGL(1,5)` of order 20, and its `S₅`-orbit has six elements. The orbit resolvent is
     therefore a sextic. Both facts belong to the `ResolventSpec` and are proved. The roadmap
-    defines `resolventSextic` as this orbit resolvent, so the definition needs no external table.
-    Dummit gives a closed coefficient formula for the classical resolvent sextic of a depressed
-    quintic. Evaluation of `resolventSextic` through such a formula is a question of computation.
-    This roadmap does not use one.
+    defines `resolventSextic f` as the specialization of that specification **over `ℤ`**, so the
+    definition needs no external table and the sextic is monic with integer coefficients. This
+    invariant is Dummit's, in *Solving solvable quintics* §1: writing his `x₁, …, x₅` for
+    `x₀, …, x₄`, his ten monomials `x₁²x₂x₅ + x₁²x₃x₄ + ⋯` are the ten written above. Dummit also
+    gives a closed coefficient formula for the resolvent sextic of a depressed quintic; the
+    definition here does not use it, and no milestone transcribes it. The definition applies to
+    any monic quintic, depressed or not.
+  - *The acceptance test against the source.* Dummit's formula (2′) for `x⁵ + ax + b`,
+    `f₂₀(x) = x⁶ + 8ax⁵ + 40a²x⁴ + 160a³x³ + 400a⁴x² + (512a⁵ − 3125b⁴)x + (256a⁶ − 9375ab⁴)`,
+    is a milestone as an *identity to check* against the orbit-product definition, not as the
+    definition. It pins the convention against the literature: a disagreement between the two
+    sides is a defect in the specification, in the descent, or in the Vieta substitution. Three
+    instances the roadmap uses fall out of it. `x⁵ − 2` gives `X⁶ − 50000X`, whose rational root
+    is `0`. `x⁵ − 5x − 12` gives
+    `X⁶ − 40X⁵ + 1000X⁴ − 20000X³ + 250000X² − 66400000X + 976000000`, whose rational root is
+    `40`. And `x⁵ − x` gives `(X − 2)⁴ (X² + 16)`, the collision witness above.
   - *The criterion.* For an irreducible separable quintic, `IsSolvable f.Gal` holds if and only
     if the image is conjugate into `F₂₀`. Combined with the factorization theorem: under
     separation evidence, `IsSolvable f.Gal` holds if and only if `resolventSextic f` has a root
@@ -861,6 +1037,10 @@ root-side meaning and coefficient-side computation are kept distinct throughout.
     - *False generalization:* the criterion is about the group. It is not a statement about
       `solvableByRad`. The implication from a solvable Galois group to a radical expression is
       absent from Mathlib and is not a milestone here.
+    - *What the sextic does not do:* it separates the solvable labels from `A₅` and `S₅`, and,
+      with the discriminant, it separates `5T3` from `5T1` and `5T2`. It does **not** separate
+      `5T1` from `5T2`. Layer 6 states that limitation with its witnesses, and no milestone here
+      or there claims a decision procedure from the discriminant and the sextic alone.
 
   *Needs:* the resolvent specification and the factorization theorem (Layer 4).
 
@@ -908,6 +1088,23 @@ membership statement to which every downstream recognition theorem is applied.
   *Needs:* `UniqueFactorizationMonoid.normalizedFactors` over a finite field (Mathlib);
   `Polynomial.map` along `ℤ → ZMod p` (Mathlib); base change of `discr` and the criterion
   `discr ≠ 0 ↔ Separable`, for the multiplicity-one lemma (Layer 3).
+
+- **Good primes, for a polynomial and for a resolvent.** `IsGoodPrime f p` is `p ∤ disc f`. It
+  is the hypothesis of everything below, and it is a hypothesis about `f` alone.
+
+  Reducing a **resolvent** modulo `p` is a second and independent condition. The identity
+  `(specialize ℤ f).map (ZMod p) = specialize (ZMod p) (f mod p)` is unconditional base change,
+  proved in Layer 4. Reading the reduced resolvent as a resolvent of the reduced polynomial is
+  not: it needs the reduced resolvent to stay separable, that is `p ∤ disc (specialize ℤ f)`. A
+  prime can be good for `f` and bad for the resolvent, and then no factorization statement about
+  the reduced resolvent is available. `ResolventSpec.IsGoodPrime spec f p` names the conjunction,
+  and every milestone that reduces a resolvent carries it rather than `IsGoodPrime`.
+
+  - *Hypotheses:* `f` monic over `ℤ`, `p` prime.
+  - *Edge case:* `p` good for `f` but dividing `disc (specialize ℤ f)`. Nothing is claimed there.
+
+  *Needs:* base change and the degree of a specialization (Layer 4); the criterion
+  `discr ≠ 0 ↔ Separable` over a domain (Layer 3).
 
 - **Factor degrees are Frobenius orbit sizes.** Let `g` be a squarefree monic polynomial over a
   finite field `𝔽_q`. Let the map `x ↦ x^q` act on the roots of `g` in an algebraic closure. The
@@ -1098,21 +1295,93 @@ displays as `nT(j+1)`.
   *Needs:* the classification in degree 5 (Layer 6); the sextic criterion (Layer 4);
   `IsSolvable` (Mathlib).
 
-- **The decision procedures, integrated.** This is where the generic theory of Layers 3, 4, and 5
-  becomes a label. Each is a named theorem that ends in `HasGaloisLabel f j`.
+Three different things meet here, and the roadmap keeps them apart, because conflating them is
+how a false claim gets made. A **classification theorem from a package of data** says what the
+discriminant and the registered resolvents determine on their own. A **certificate** is a finite
+package of evidence, which may additionally carry good-prime factorizations, together with a
+soundness theorem. A **search** for such evidence is neither of those, and is not here.
+
+- **Classification from the discriminant and the resolvents.** Each is a named theorem that ends
+  in `HasGaloisLabel f j`, with the data it reads in its hypotheses.
 
   - *Degree 3.* An irreducible separable cubic over `F` with `ringChar F ≠ 2` has label `3T1` if
-    `f.discr` is a square, and `3T2` if it is not.
+    `f.discr` is a square, and `3T2` if it is not. The discriminant decides, by itself.
   - *Degree 4.* An irreducible separable quartic with `ringChar F ≠ 2` has a label read off the
     decision table of Layer 4: `4T5`, `4T4`, `4T2`, or, in the last row, `4T1` or `4T3` according
-    to whether `f` becomes reducible over `F(√disc f)`.
-  - *Degree 5.* An irreducible separable quintic with `ringChar F ∉ {2,5}` has a label determined
-    by the discriminant, a rational root of the sextic resolvent under separation evidence, and
-    the factorization types of Layer 5, through the order-recognition theorems above.
+    to whether `f` becomes reducible over `F(√disc f)`. The four rows are exhaustive, and no
+    separation evidence is needed, because a separable quartic has a separable resolvent cubic.
+    The table decides, given the ability to test irreducibility over the quadratic extension.
+  - *Degree 5, what the package gives.* For an irreducible separable quintic with
+    `ringChar F ∉ {2,5}`, four named theorems, of which the fourth is not a decision:
+    - non-square discriminant and no rational root of the sextic give `5T5`;
+    - square discriminant and no rational root give `5T4`;
+    - non-square discriminant, separation evidence, and a rational root give `5T3`;
+    - square discriminant, separation evidence, and a rational root give `5T1` **or** `5T2`, and
+      nothing in these data says which.
+
+    The first two need no separation evidence: they use only the direction that a containment
+    produces a rational root, which is unconditional.
+
+  ⚠ The fourth branch is genuinely undetermined, and no reading of the discriminant and the
+  sextic resolvent will close it. `x⁵ + x⁴ − 4x³ − 3x² + 3x + 1`, which defines `ℚ(ζ₁₁)⁺` and has
+  label `5T1`, and `x⁵ − 5x − 12`, which has label `5T2`, both have square discriminant — `11⁴`
+  and `8000²` — and both have a separable resolvent sextic with a rational root, at `−16` and at
+  `40` respectively. The two sextics even have the same factorization type, `1 + 5`. A milestone
+  states this pair, so that no later revision reintroduces a "quintic decision procedure" from
+  those two data. Separating `5T1` from `5T2` takes a further datum, and the certificate below
+  carries one: a good-prime factorization of type `(1,2,2)`, or a second root of `f` in
+  `ℚ[X]/(f)`.
 
   *Needs:* the classification and order recognition above (Layer 6); the discriminant test and
-  the quadratic extension (Layer 3); the quartic and quintic resolvents (Layer 4); the
-  membership statement (Layer 5).
+  the quadratic extension (Layer 3); the quartic and quintic resolvents with their separation
+  evidence (Layer 4); the membership statement (Layer 5).
+
+- **The degree-five certificate, and its soundness theorem.** `QuinticCertificate` is a finite
+  package of evidence about a monic `f : ℤ[X]` of degree 5, with one constructor per sound route
+  to a label. `Verifies` lists the conditions its data must satisfy, `check` is the Boolean
+  decision of those conditions, and the public theorem is
+
+  ```
+  cert.check f = true → HasGaloisLabel (f over ℚ) cert.label
+  ```
+
+  and nothing else. The five routes, each of which begins with a prime `p` at which `f` is
+  irreducible, since that is what supplies transitivity:
+
+  | route | further evidence | label |
+  |---|---|---|
+  | cyclic | a second root of `f` in `ℚ[X]/(f)` | `5T1` |
+  | dihedral | `disc f = s²`, a root of a separable sextic, a prime of type `(1,2,2)` | `5T2` |
+  | Frobenius | `disc f` not a square, a root of a separable sextic | `5T3` |
+  | alternating | `disc f = s²`, a prime of type `(1,1,3)` | `5T4` |
+  | symmetric | a prime of type `(2,3)` | `5T5` |
+
+  Every clause is finite: an equation between integers, a divisibility of integers, an equation
+  in `ℚ[X]`, or the factorization of `f` over the finite field `ZMod p`. The sextic is monic over
+  `ℤ`, by coefficient integrality in Layer 4, so a rational root of it is an integer and "has a
+  rational root" is a condition on integers. The cyclic route works because the point stabilizer
+  of a transitive subgroup of `S₅` fixes exactly one point unless the group is `C₅`; the dihedral
+  route works because `C₅` has no element of order 2 while `D₅` does.
+
+  - *Hypotheses:* `f` monic over `ℤ` of degree 5.
+  - *Soundness only:* there is no converse. No theorem says a certificate exists, and none is a
+    milestone.
+  - *Edge cases:* a certificate whose data do not verify, which proves nothing; and an `f` for
+    which the route's evidence is unavailable, for which the roadmap claims nothing.
+  - *Acceptance instances:* the five worked quintics below, each with its certificate written
+    out.
+
+  *Needs:* the classification and the package theorems above (Layer 6); the membership statement
+  and good primes (Layer 5); the resolvent sextic with its separation evidence (Layer 4).
+
+- **What no milestone claims: a search.** Nothing here searches for a certificate, and no
+  statement asserts that one exists or that a procedure terminates. In particular, the existence
+  of a prime with a prescribed factorization type is Chebotarev's theorem, which belongs to the
+  L-functions roadmap and is used by nothing here; and the existence of an admissible Tschirnhaus
+  transform over an infinite field is explicitly not a milestone of Layer 4. A statement of the
+  form "the quintic procedure always decides" would be a claim about search, and would be false
+  for the data this roadmap owns, by the ⚠ above.
+  *Needs:* nothing. This item constrains the others.
 
 ### Layer 9: `Sₙ` as a Galois group over `ℚ`
 - **The full-symmetric predicate.** `HasFullSymmetricGaloisGroup f` says that `f` is separable
@@ -1200,29 +1469,39 @@ LMFDB field pages. Each one tests a specific layer.
   second is identified through `galCyclotomicEquivUnitsZMod`, which gives `(ZMod 5)ˣ`. The
   polynomial `x⁴ + 1` also carries a test for Layer 5 read in the other direction. Its group `V₄`
   contains no 4-cycle, so `x⁴ + 1` is reducible modulo every prime.
-- **Degree 5, for Layers 4 to 6.**
+- **Degree 5, for Layers 4 to 6.** Each of the five carries the certificate that proves its
+  label, so that the acceptance tests are instances of the soundness theorem and not of a
+  procedure.
   - `x⁵ + x⁴ − 4x³ − 3x² + 3x + 1` defines `ℚ(ζ₁₁)⁺` and gives `C₅ = 5T1`. The field is
-    `5.5.14641.1`, of discriminant `11⁴`.
+    `5.5.14641.1`, of discriminant `11⁴ = 121²`. Certificate: the cyclic route, irreducible
+    modulo `2`, with the second root `α² − 2` in `ℚ[X]/(f)` — indeed `f(X² − 2) ≡ 0 mod f`, since
+    `α = ζ₁₁ + ζ₁₁⁻¹` and `α² − 2 = ζ₁₁² + ζ₁₁⁻²`. The discriminant and the sextic resolvent do
+    not prove this label: see the ⚠ in Layer 6, of which this polynomial is half.
   - `x⁵ − 5x − 12` gives `D₅ = 5T2`, with field `5.1.1000000.1` and polynomial discriminant
-    `8000²`. This example shows why upper bounds need more than factorization types. A 5-cycle
-    and an element of type `(1,2,2)` occur. Every factorization type of this `f` at a prime that
-    does not divide the discriminant is a cycle type of `D₅ ⊂ A₅`, so no prime excludes `A₅`. The
-    proof uses the square discriminant, which excludes `S₅` and `F₂₀`, together with a rational
-    root of the sextic resolvent, which excludes `A₅`. The order then gives `5T2`.
+    `8000² = 2¹² · 5⁶`. This example shows why upper bounds need more than factorization types. A
+    5-cycle and an element of type `(1,2,2)` occur. Every factorization type of this `f` at a
+    prime that does not divide the discriminant is a cycle type of `D₅ ⊂ A₅`, so no prime
+    excludes `A₅`. The square discriminant excludes `S₅` and `F₂₀`, and the rational root `40` of
+    the separable sextic resolvent excludes `A₅` — but those two data leave `5T1` and `5T2`
+    both open, and the order does **not** follow from them. Certificate: the dihedral route,
+    irreducible modulo `7`, discriminant `8000²`, sextic root `40`, and factorization type
+    `(1,2,2)` modulo `3`, which exhibits the element of order 2 that `C₅` has not.
   - `x⁵ − 2` gives `F₂₀ = 5T3`, with field `5.1.50000.1`. This is the Kummer example. Its Galois
-    group is solvable, the sextic resolvent has a rational root, and the discriminant `50000` is
-    not a square.
+    group is solvable, the sextic resolvent is `X⁶ − 50000X` with the rational root `0`, and the
+    discriminant `50000` is not a square. Certificate: the Frobenius route, irreducible modulo
+    `11`, sextic root `0`.
   - `x⁵ + 20x − 16` gives `A₅ = 5T4`, with field `5.1.1000000.2`. The discriminant `32000²` is a
     square. A prime with factorization type `(1,1,3)`, together with primitivity, which is
     automatic in prime degree, gives a group that contains `A₅`. The square discriminant then
     bounds it above by `A₅`. This field has the same discriminant `10⁶` as the `D₅` example. The
-    pair shows that the label is not a function of `(n, r₁, |disc|)`.
+    pair shows that the label is not a function of `(n, r₁, |disc|)`. Certificate: the
+    alternating route, irreducible modulo `3`, discriminant `32000²`, type `(1,1,3)` modulo `7`.
   - `x⁵ − x − 1` gives `S₅ = 5T5`, with field `5.1.2869.1` and discriminant `2869 = 19·151`.
     Modulo 2 the factorization is `(x² + x + 1)(x³ + x² + 1)`, which exhibits an element of
     order 6. Modulo 5 the polynomial is `x⁵ − x − 1`, which is Artin-Schreier and therefore
     irreducible; that exhibits a 5-cycle and proves irreducibility over `ℚ`. A transitive group
     with an element of order 6 is `S₅`, by the recognition theorems; no discriminant computation
-    is needed.
+    is needed. Certificate: the symmetric route, irreducible modulo `3`, type `(2,3)` modulo `2`.
 - **The generic instance, for Layer 5.** A quintic that is irreducible modulo one good prime and
   has factor type `(1,1,1,2)` modulo another has group `S₅`.
 - **Non-examples.** These test that the definitions exclude what they should.
@@ -1235,6 +1514,11 @@ LMFDB field pages. Each one tests a specific layer.
     size 2. `TransitiveGroupLabel` does not apply to it.
   - `x⁵ + x + 1 = (x² + x + 1)(x³ − x² + 1)` is a reducible quintic. It is a regression test that
     no `5Tj` label is assigned to it.
+  - `x⁵ − x` is separable, with `disc = 256`, and its resolvent sextic is `(X − 2)⁴ (X² + 16)`,
+    which is **not** separable. It is the regression test for the collision hypothesis: the
+    rational root `2` of that sextic does not place the Galois group inside a conjugate of `F₂₀`,
+    because the group is generated by a transposition and `F₂₀` contains none. Any upper-bound
+    theorem that runs on it without separation evidence is wrong.
 
 ## Order of work
 
@@ -1247,7 +1531,7 @@ The layer numbering is a topological order. No layer depends on a later one.
 | 2 | 0, 1 | the field and permutation dictionary |
 | 3 | 0 | discriminants and the alternating group |
 | 4 | 0, 3 | resolvents, and the quartic and quintic specifications |
-| 5 | 0, 1, 3, and Number Field Arithmetic 3.10 | the factorization-degree carrier, the finite-field orbit lemma, and the membership statement derived from the imported theorem |
+| 5 | 0, 1, 3, 4, and Number Field Arithmetic 3.10 | the factorization-degree carrier, good primes for a polynomial and for a resolvent, the finite-field orbit lemma, and the membership statement derived from the imported theorem |
 | 6 | 1, 2, 3, 4, 5 | the classification for `n ≤ 5`, the label predicates, and the decision procedures |
 | 9 | 1, 5 | `Sₙ` as a Galois group over `ℚ` |
 
@@ -1270,6 +1554,10 @@ their proofs.
 - The membership statement of Layer 5, whose shape is fixed by the supplied theorem and can be
   written down before that theorem is proved.
 - The tables in degree at most 5, in Layer 6.
+- The `ResolventSpec` carrier and `ResolventSpec.specialize`, in Layer 4. Every resolvent
+  milestone and every certificate of Layer 6 is stated against them, and the separation between
+  the universal invariant and its specializations is what keeps a second coefficient ring from
+  needing a second invariant.
 
 ## Related roadmaps
 
@@ -1279,9 +1567,10 @@ This roadmap serves the LMFDB section `galois_groups`.
   factorization theorem and the ramification theory behind it. This is the one upstream
   relation, it is a single declaration, and §What this roadmap consumes is the contract. That
   roadmap merges first.
-- Computational certificate storage or search requested by downstream projects belongs in a
-  dedicated computational repository such as Hex. The generic quintic recognition theorem here
-  remains available as a mathematical API.
+- Storing certificates, and searching for one, belong in a dedicated computational repository
+  such as Hex. What stays here is the certificate type of Layer 6 with its soundness theorem,
+  and the classification theorems it is built from; those are mathematics, and Hex consumes them
+  rather than restating them.
 - The [representation theory](../RepresentationTheory/README.md) roadmaps own data about abstract
   groups, such as character tables. This roadmap owns only permutation data.
 - Density of the cycle types is the subject of Chebotarev's theorem, which belongs to the
@@ -1292,6 +1581,21 @@ This roadmap serves the LMFDB section `galois_groups`.
 No milestone rests on a source that was not inspected. Where a classical book is the traditional
 citation but was not available for this pass, the entry says how the milestone is grounded
 instead.
+
+Each registered invariant and each low-degree decision table has one exact source, and the
+convention it fixes:
+
+| Item | Source | What the source fixes |
+|---|---|---|
+| the quartic `D₄` invariant and resolvent cubic | Conrad, Definition 3.1 and (3.7) | the three orbit values, and the closed form `X³ − bX² + (ac − 4d)X − (a²d + c² − 4bd)` |
+| a quartic and its resolvent have equal discriminant | Conrad, Theorem 3.4 | that a separable quartic has a separable resolvent cubic |
+| the quartic decision table | Conrad, Theorem 3.6 with Table 4, and Corollary 3.8 | the four rows, and "splits completely" against "unique root in the base field" |
+| the `C₄`-against-`D₄` row | Kappe–Warren, as Conrad Theorem 4.1 | the two quadratics that split over `K(√Δ)`, equivalently reducibility of `f` there |
+| the quintic `F₂₀` invariant | Dummit, §2, p. 388 | the ten monomials, and that the stabilizer is *precisely* `F₂₀` |
+| the resolvent sextic's closed form | Dummit, (2) and (2′) | the acceptance test the orbit-product definition is checked against |
+| the solvability criterion | Dummit, Theorem 1 | a rational root of the sextic against solvability, for irreducible quintics |
+| the `nTj` reference generators | LMFDB `gps_transitive` | the representative of each conjugacy class, in 1-based cycle notation |
+| the three-prime realization of `Sₙ` | van der Waerden §61 | the shape of the construction; the three patterns are fixed in Layer 9 |
 
 - A. Hulpke, *Constructing transitive permutation groups*, J. Symbolic Comput. 39 (2005) 1-30.
   In the project's `references/`. The inflation and base-group method of §3 is the construction
@@ -1310,7 +1614,11 @@ instead.
 - LMFDB, *Galois group labels* and the `gps_transitive` table,
   <https://www.lmfdb.org/GaloisGroup/>. The source of the reference generators and of the label
   semantics, under the discipline recorded in the conventions. The table in degree at most 5 was
-  checked against it.
+  checked against it. Its generators are written in 1-based cycle notation, and the reference
+  subgroups here are their 0-based transcriptions: `4T3 = ⟨(1234),(13)⟩` is
+  `⟨(0 1 2 3),(0 2)⟩ ≤ Equiv.Perm (Fin 4)`, and `5T3 = ⟨(12345),(1243)⟩` is
+  `⟨(0 1 2 3 4),(0 1 3 2)⟩ ≤ Equiv.Perm (Fin 5)`, which is `AGL(1,5)` under `Fin 5 = ℤ/5`, since
+  `(0 1 3 2)` is `a ↦ 2a + 1`.
 - G. Butler and J. McKay, *The transitive groups of degree up to eleven*, Comm. Algebra 11 (1983)
   863-911. The origin of the `T` numbering used for the low-degree table. *Not inspected for
   this pass.* The low-degree entries were compared with the LMFDB.
@@ -1318,19 +1626,67 @@ instead.
   1 (1998) 1-8. Names and properties in degrees up to 15, which is the name column of the LMFDB.
   Context only. This roadmap does not own names of abstract groups.
 - B. L. van der Waerden, *Algebra* I, §61, and J.-P. Serre, *Topics in Galois Theory*, 2nd
-  edition, A K Peters, 2008, §4.4. The three-prime construction of Layer 9. *Not inspected for
-  this pass.* Layer 9 lists all eight prerequisites, so the construction is grounded in this
-  document. Sections 3 and 4.5 of Serre, on thin sets, Hilbert irreducibility, and the
-  realization of `Aₙ`, describe material that this roadmap places outside its scope.
+  edition, A K Peters, 2008. The traditional citations for the three-prime construction of
+  Layer 9. *Not inspected for this pass*, and no milestone depends on their wording: Layer 9
+  fixes the construction completely, by naming the three reductions it uses — irreducible modulo
+  2, factor degrees `(1, n−1)` modulo 3, and one quadratic factor with all other factor degrees
+  odd modulo 5 — and by listing all eight prerequisites, each an existence statement over a
+  finite field or a group-theoretic step of Layer 1. A source that uses a different triple of
+  patterns proves the same theorem by the same four group-theoretic steps; the triple written
+  here is the one implementors must use, because the prerequisites are stated for it. Serre's
+  material on thin sets, Hilbert irreducibility, and the realization of `Aₙ` is what this roadmap
+  places outside its scope.
 - H. Cohen, *A Course in Computational Algebraic Number Theory*, GTM 138, Springer, 1993, §6.3.
-  The resolvent method and the decision trees in degrees up to 7. *Not inspected for this pass.*
-  The dependent milestones are written out in Layer 4, with their proof routes. §6.3.2 is the
-  traditional citation for Dedekind's theorem, which this roadmap does not prove; its source
-  entry belongs to the supplier.
-- D. S. Dummit, *Solving solvable quintics*, Math. Comp. 57 (1991) 387-401. The closed
-  coefficient formula for the resolvent sextic. *Not inspected for this pass*, and no milestone
-  depends on it. Layer 4 defines `resolventSextic` as the orbit resolvent of an invariant that is
-  written out in full.
+  The resolvent method and the decision trees in degrees up to 7. *Not inspected for this pass*,
+  and no milestone depends on it: the quartic table is grounded in Conrad and Kappe–Warren below,
+  the quintic criterion in Dummit below, and the generic resolvent theory is written out in
+  Layer 4 with its proof routes. §6.3.2 is the traditional citation for Dedekind's theorem, which
+  this roadmap does not prove; its source entry belongs to the supplier.
+
+- K. Conrad, *Galois groups of cubics and quartics (not in characteristic 2)*, expository notes,
+  <https://kconrad.math.uconn.edu/blurbs/galoistheory/cubicquartic.pdf>. **Inspected.** The exact
+  source for the quartic layer, in the same convention as the roadmap. Definition 3.1 and (3.7):
+  the cubic resolvent of `X⁴ + aX³ + bX² + cX + d` is
+  `X³ − bX² + (ac − 4d)X − (a²d + c² − 4bd)`, which at `a = 0` is the `resolventCubic p q r` of
+  Layer 4. Theorem 3.4: a quartic and its cubic resolvent have the same discriminant, so the
+  resolvent of a separable quartic is separable — this is the theorem that makes the quartic
+  table need no separation evidence. Theorem 3.6 with Table 4: the four rows of the decision
+  table. Corollary 3.8: `V` exactly when the resolvent splits completely, `D₄` or `C₄` exactly
+  when it has a unique root in the base field. Example 3.3 is the worked instance `x⁴ + 8x + 12`
+  with resolvent `X³ − 48X − 64` and discriminant `576²`, and Example 3.2 is `x⁴ − x − 1`; both
+  appear in the acceptance tests above.
+
+- L.-C. Kappe and B. Warren, *An elementary test for the Galois group of a quartic polynomial*,
+  Amer. Math. Monthly 96 (1989), 133–137; stated as Theorem 4.1 of Conrad's notes above, which is
+  where it was inspected. It separates `C₄` from `D₄` by asking whether `X² + aX + (b − r′)` and
+  `X² − r′X + d` split over `K(√Δ)`, where `r′` is the unique base-field root of the resolvent
+  cubic. Those two quadratics are the factors of `f` over `K(√Δ)`, so the criterion is the same
+  as the one Layer 4 states — `C₄` exactly when `f` becomes reducible over `F(√disc f)` — and the
+  roadmap adopts the reducibility form, which mentions no choice of `r′`.
+- D. S. Dummit, *Solving solvable quintics*, Math. Comp. 57 (1991) 387-401. **Inspected.** The
+  exact source for the quintic invariant and the solvability criterion.
+
+  - §2, p. 388 fixes `F₂₀ < S₅` by the generators `(1 2 3 4 5)` and `(2 3 5 4)`, and states that
+    the stabilizer in `S₅` of
+    `θ₁ = x₁²x₂x₅ + x₁²x₃x₄ + x₂²x₁x₃ + x₂²x₄x₅ + x₃²x₁x₅ + x₃²x₂x₄ + x₄²x₁x₂ + x₄²x₃x₅ +
+    x₅²x₁x₄ + x₅²x₂x₃` is *precisely* `F₂₀`. Under the shift `xⱼ ↦ x_{j−1}`, which turns his
+    wrap-around indexing of `{1,…,5}` into `ℤ/5` on `Fin 5`, his `θ₁` is term for term the
+    invariant `Σ_a x_a²(x_{a+1}x_{a−1} + x_{a+2}x_{a−2})` of Layer 4, and his two generators
+    become `a ↦ a + 1` and `a ↦ 2a`, which generate `AGL(1,5)`, the reference subgroup of `5T3`.
+    The same page lists his six conjugates `θ₁, …, θ₆` with the permutations that produce them,
+    which is his numbering of the orbit; the roadmap fixes no orbit numbering and does not need
+    his.
+  - Equations (2) and (2′) are his closed coefficient formulas for the resolvent sextic of a
+    depressed quintic. The roadmap does **not** define the sextic by them. It uses (2′), namely
+    `f₂₀(x) = x⁶ + 8ax⁵ + 40a²x⁴ + 160a³x³ + 400a⁴x² + (512a⁵ − 3125b⁴)x + (256a⁶ − 9375ab⁴)`
+    for `x⁵ + ax + b`, as an acceptance test against the orbit-product definition.
+  - Theorem 1, p. 389: an irreducible quintic in `ℚ[x]` is solvable by radicals if and only if
+    `f₂₀` has a rational root, and in that case `f₂₀` is a linear factor times an irreducible
+    quintic. ⚠ Its proof reads a rational root as "some `θᵢ` is rational, hence the group lies in
+    that conjugate of `F₂₀`". The step from a rational **value** to containment in the stabilizer
+    of the **polynomial** is exactly where separation evidence enters, and Layer 4's `x⁵ − x`
+    shows it fails without it. The roadmap therefore carries the evidence hypothesis that the
+    classical statement leaves implicit.
 - L. Soicher and J. McKay, *Computing Galois groups over the rationals*, J. Number Theory 20
   (1985) 273-281. Linear resolvents. Context for Layer 4.
 - R. P. Stauduhar, *The determination of Galois groups*, Math. Comp. 27 (1973) 981-996, and

@@ -9,9 +9,12 @@ import TauCetiRoadmap.NumberFieldArithmetic.Suggested
 contributors converge on names and signatures. To discharge all of them finishes neither a
 layer nor the roadmap.
 
-`sorry` is allowed in this human-owned roadmap library. It appears here in two roles, which
+`sorry` is allowed in this human-owned roadmap library. It appears here in three roles, which
 should not be confused. In an `example` it marks a milestone of this roadmap. In a `def` it
-marks data that a frozen export supplies, and not a proof that anybody owes.
+marks data that a frozen export supplies, and not a proof that anybody owes. In the
+`orbitProduct` field of a `ResolventSpec` it marks data that is *determined*: `esymmSubst` is
+injective, so the accompanying equation has at most one solution, and the fundamental theorem of
+symmetric polynomials says it has one.
 
 Two declarations in the Layer 5 block carry **closed** proofs, and they state something about
 the supplier contract rather than a milestone anybody owes. Dedekind's factorization theorem is
@@ -31,6 +34,20 @@ The pinned Mathlib has:
 
 Every carrier type of the roadmap therefore elaborates at that version, and this file spans
 Layers 0 to 6, and Layers 8 and 9.
+
+Two things about the shape of this file are worth reading before either is copied elsewhere.
+
+A resolvent specification carries no polynomial and no coefficient ring. Specialization at a
+polynomial is `ResolventSpec.specialize`, a construction over an arbitrary commutative ring, and
+base change, coefficient integrality and reduction modulo `p` are theorems about it rather than
+separate constructions. A specification that stored one specialization would have to be rebuilt
+for every coefficient ring, and there would be no statement that base change commutes with the
+resolvent.
+
+The degree-five certificate is **sound only**: `check cert = true` implies the label, and nothing
+here says that a certificate exists, or searches for one, or terminates. What separates `5T1`
+from `5T2` is evidence beyond the discriminant and the resolvent sextic, and a milestone below
+exhibits the two polynomials that prove it.
 
 One statement below is worth reading with care before its shape is copied elsewhere. The
 Layer 9 milestone says that the Galois image is the full symmetric group on the distinct
@@ -144,72 +161,132 @@ degree. See the file header for why bijectivity of `galActionHom` alone is not e
 def HasFullSymmetricGaloisGroup {F : Type u} [Field F] (f : F[X]) : Prop :=
   f.Separable ∧ Function.Surjective (Polynomial.Gal.galActionHom f f.SplittingField)
 
-/-! ### Resolvents -/
+/-! ### Resolvents: universal data, and specialization as a base change
 
-/-- **Layer 4, root enumeration.** `x` lists the roots of `f` in `L`, with multiplicity. This
-is the hypothesis under which a coefficient-side resolvent is compared with the root-side
-product. -/
+A resolvent specification is **universal**. It carries an invariant in the formal roots with
+integral coefficients, the subgroup that is *exactly* its stabilizer, and an integral symmetric
+expression for the orbit product. No polynomial and no coefficient ring appears in it, so the
+invariant is written and proved once and never rebuilt.
+
+Specialization at a polynomial is a separate construction, `ResolventSpec.specialize`, available
+over any commutative ring: it substitutes the coefficients of a monic `f` of degree `n` for the
+elementary symmetric polynomials of the roots. It is functorial, and the milestones below say
+so — base change along any ring morphism, coefficient integrality as the case `ℤ → ℚ` of that,
+reduction modulo `p` as the case `ℤ → ZMod p`, and agreement with the root-side orbit product
+in a splitting field.
+-/
+
+/-- **Layer 4, root enumeration.** `x` lists the roots of `f` in `L`, with multiplicity. Because
+the multiset of roots then has `n` elements, this forces `f` to split in `L` when
+`f.natDegree = n`, and `x` is injective exactly when the mapped polynomial is separable; both
+are milestones below. This is the hypothesis under which a coefficient-side resolvent is
+compared with the root-side product. -/
 def IsRootEnumeration {F : Type u} [Field F] {L : Type v} [Field L] [Algebra F L] {n : ℕ}
     (f : F[X]) (x : Fin n → L) : Prop :=
   (f.map (algebraMap F L)).roots = Multiset.map x Finset.univ.val
 
 open scoped Classical in
-/-- **Layer 4 prototype.** The orbit resolvent of an invariant `Φ` evaluated at a root vector
-`x`: the product of `X − Ψ(x)` over the orbit of `Φ` under permutation of the variables. Its
-degree is the orbit size `[Sₙ : H]` when the orbit values stay distinct, and for `x`
-enumerating the roots of a monic separable `f` its coefficients descend to `F`. -/
-noncomputable def galResolvent {F : Type u} [Field F] {L : Type v} [Field L] [Algebra F L]
-    {n : ℕ} (Φ : MvPolynomial (Fin n) F) (x : Fin n → L) : L[X] :=
-  ∏ Ψ ∈ Finset.univ.image fun σ : Equiv.Perm (Fin n) => MvPolynomial.rename (⇑σ) Φ,
-    (X - C (MvPolynomial.aeval x Ψ))
+/-- **Layer 4, the universal resolvent.** The orbit product in the formal roots: the product of
+`X − Ψ` over the rename-orbit of `Φ`, a monic polynomial of degree `[Sₙ : H]` whose coefficients
+are integral polynomials in `x₀, …, x_{n−1}`. Everything about a resolvent that does not mention
+a polynomial lives here. -/
+noncomputable def universalResolvent {n : ℕ} (Φ : MvPolynomial (Fin n) ℤ) :
+    (MvPolynomial (Fin n) ℤ)[X] :=
+  ∏ Ψ ∈ Finset.univ.image fun σ : Equiv.Perm (Fin n) => MvPolynomial.rename (⇑σ) Φ, (X - C Ψ)
 
-/-- **Layer 4, a static resolvent specification.** Library data, written and proved once: an
-invariant together with the subgroup that is *exactly* its stabilizer. -/
+/-- **Layer 4, the elementary-symmetric substitution** `xᵢ ↦ eᵢ₊₁`. The fundamental theorem of
+symmetric polynomials is Mathlib's `MvPolynomial.esymmAlgHom_fin_bijective`: this map is
+injective, with image exactly the symmetric polynomials. A symmetric polynomial therefore has
+exactly one expression through it, which is what makes the `orbitProduct` field below
+determined rather than chosen. -/
+noncomputable def esymmSubst (n : ℕ) : MvPolynomial (Fin n) ℤ →+* MvPolynomial (Fin n) ℤ :=
+  (MvPolynomial.aeval fun i : Fin n => MvPolynomial.esymm (Fin n) ℤ ((i : ℕ) + 1)).toRingHom
+
+/-- **Layer 4, the Vieta substitution.** For a monic `f` of degree `n` over `R`, the `(k+1)`-st
+elementary symmetric polynomial of the roots of `f` is `(−1)^(k+1) * f.coeff (n − (k+1))`. This
+is the ring morphism that performs that substitution; it is what turns a universal integral
+expression in the elementary symmetric polynomials into a polynomial over `R`. Its correctness
+— that these values *are* the elementary symmetric polynomials of a root enumeration — is the
+Vieta milestone below, and that milestone is where monicity and the degree are used. -/
+noncomputable def vietaHom {R : Type u} [CommRing R] (n : ℕ) (f : R[X]) :
+    MvPolynomial (Fin n) ℤ →+* R :=
+  MvPolynomial.eval₂Hom (Int.castRingHom R)
+    fun i : Fin n => (-1) ^ ((i : ℕ) + 1) * f.coeff (n - ((i : ℕ) + 1))
+
+/-- **Layer 4, a static resolvent specification.** Universal library data, written and proved
+once: an invariant in the formal roots, the subgroup that is exactly its stabilizer, and an
+integral symmetric expression for the orbit product. Nothing here mentions a polynomial or a
+coefficient ring; specialization is `ResolventSpec.specialize` below. -/
 structure ResolventSpec (n : ℕ) where
   /-- The subgroup the resolvent tests membership in. -/
   H : Subgroup (Equiv.Perm (Fin n))
-  /-- The invariant polynomial. -/
+  /-- The invariant polynomial, with integral coefficients. -/
   Φ : MvPolynomial (Fin n) ℤ
-  /-- The stabilizer of `Φ` is exactly `H`, not merely contained in it. -/
+  /-- The stabilizer of `Φ` is exactly `H`, not merely contained in it. "Exactly" is the point:
+  a containment would not let the factorization of the resolvent detect the subgroup. -/
   stabilizer_eq : ∀ σ : Equiv.Perm (Fin n), MvPolynomial.rename (⇑σ) Φ = Φ ↔ σ ∈ H
-  /-- **The coefficient-side resolvent.** An executable function of the coefficients of `f`;
-  the root product below is what it means. -/
-  specialize : ℤ[X] → ℚ[X]
-  /-- `specialize` computes the orbit resolvent. -/
-  specialize_correct :
-    ∀ f : ℤ[X], f.Monic → f.natDegree = n →
-      ∀ x : Fin n → (f.map (Int.castRingHom ℚ)).SplittingField,
-        IsRootEnumeration (f.map (Int.castRingHom ℚ)) x →
-          (specialize f).map (algebraMap ℚ (f.map (Int.castRingHom ℚ)).SplittingField)
-            = galResolvent (MvPolynomial.map (Int.castRingHom ℚ) Φ) x
+  /-- **The integral symmetric expression for the orbit product**: the universal resolvent
+  rewritten in the elementary symmetric polynomials. This field is *determined*, not chosen —
+  `esymmSubst` is injective, so `orbitProduct_esymm` has at most one solution, and the
+  fundamental theorem of symmetric polynomials says it has one. -/
+  orbitProduct : (MvPolynomial (Fin n) ℤ)[X]
+  /-- Substituting the elementary symmetric polynomials for the variables recovers the orbit
+  product in the formal roots. -/
+  orbitProduct_esymm : orbitProduct.map (esymmSubst n) = universalResolvent Φ
+
+/-- **Layer 4, specialization, over any commutative ring.** Substitute the coefficients of `f`
+for the elementary symmetric polynomials in the integral orbit product. The definition is total;
+its agreement with the root-side product is a theorem with `f.Monic` and `f.natDegree = n` in
+its hypotheses. Because the universal side is integral, `specialize ℤ f` is an integral
+polynomial and every other coefficient ring receives it by base change. -/
+noncomputable def ResolventSpec.specialize {n : ℕ} (spec : ResolventSpec n) (R : Type u)
+    [CommRing R] (f : R[X]) : R[X] :=
+  spec.orbitProduct.map (vietaHom n f)
+
+open scoped Classical in
+/-- **Layer 4, the root-side orbit resolvent.** The product of `X − Ψ(x)` over the rename-orbit
+of `Φ`, evaluated at a root vector `x`.
+
+⚠ The orbit is taken in `MvPolynomial (Fin n) ℤ`, and the values are the images of *those*
+polynomials. Taking the orbit after mapping the coefficients into `L` would be wrong: over a
+base where two integral renamings of `Φ` become equal, that orbit is smaller, and the product
+over it is not the specialization of the universal resolvent. -/
+noncomputable def galResolvent {L : Type v} [CommRing L] {n : ℕ}
+    (Φ : MvPolynomial (Fin n) ℤ) (x : Fin n → L) : L[X] :=
+  ∏ Ψ ∈ Finset.univ.image fun σ : Equiv.Perm (Fin n) => MvPolynomial.rename (⇑σ) Φ,
+    (X - C (MvPolynomial.eval₂ (Int.castRingHom L) x Ψ))
 
 /-- **Layer 4.** The resolvent cubic of the depressed quartic `X⁴ + pX² + qX + r`, from the
 `D₄`-invariant `x₀x₂ + x₁x₃`. (Named `resolventCubic`, not `resolvent`: in Mathlib
-`resolvent` is spectral theory.) -/
+`resolvent` is spectral theory.) That this cubic is `quarticD4Spec.specialize` at the depressed
+quartic is a theorem below, not a definition. -/
 noncomputable def resolventCubic {F : Type u} [Field F] (p q r : F) : F[X] :=
   X ^ 3 - C p * X ^ 2 - C (4 * r) * X + C (4 * p * r - q ^ 2)
 
 /-- **Layer 4, the invariant behind the resolvent sextic.** Indexing `Fin 5` by `ℤ/5`,
-`Φ = Σ_a x_a² (x_{a+1} x_{a−1} + x_{a+2} x_{a−2})`, ten terms of shape `x_a² x_b x_c`. Its
-stabilizer is exactly the Frobenius group `F₂₀ = AGL(1,5)` of order 20 and its `S₅`-orbit has
-six elements, so the orbit resolvent is a sextic; both facts are targets below. Defining the
-resolvent this way makes it self-contained, so nothing depends on transcribing Dummit's
-closed coefficient formula. -/
+`Φ = Σ_a x_a² (x_{a+1} x_{a−1} + x_{a+2} x_{a−2})`, ten terms of shape `x_a² x_b x_c`. This is
+the invariant of Dummit, *Solving solvable quintics*, §1, with his `x₁, …, x₅` read as
+`x₀, …, x₄`; the ten monomials are the same ten. Its stabilizer is exactly the Frobenius group
+`F₂₀ = AGL(1,5)` of order 20 and its `S₅`-orbit has six elements, so the orbit resolvent is a
+sextic; both facts are targets below. Defining the resolvent as that orbit product makes it
+self-contained, so nothing depends on transcribing a closed coefficient formula. -/
 noncomputable def quinticF20Invariant : MvPolynomial (Fin 5) ℤ :=
   ∑ a : Fin 5, (MvPolynomial.X a) ^ 2 *
     (MvPolynomial.X (a + 1) * MvPolynomial.X (a - 1) +
       MvPolynomial.X (a + 2) * MvPolynomial.X (a - 2))
 
-/-- **Layer 4, collision evidence for a specialized orbit resolvent.** A resolvent
-supplies a sound subgroup upper bound only when specialization has preserved the full orbit
-degree and kept the orbit values distinct; over a field, separability records the latter.
-This evidence is required before the corresponding upper-bound theorem may run. -/
-structure ResolventSeparationEvidence {F : Type u} [Field F] (R : F[X])
-    (expectedOrbitDegree : ℕ) : Prop where
-  /-- The specialized resolvent still has the full orbit degree `[Sₙ : H]`. -/
-  fullOrbitDegree : R.natDegree = expectedOrbitDegree
+/-- **Layer 4, collision evidence for a specialized orbit resolvent.** The specialized resolvent
+never loses degree: it is the image of a monic polynomial of degree `[Sₙ : H]` under a ring
+morphism, and `specialize_natDegree` below records that. What specialization can destroy is
+*distinctness of the values*: two orbit elements, hence two cosets of `H`, can take the same
+value at the roots of a particular `f`. Only distinct values let the factorization of the
+resolvent read the subgroup, and over a field separability of the specialized resolvent records
+exactly that. This evidence is required before the corresponding upper-bound theorem may run;
+`x⁵ − x` below is the polynomial that shows the requirement is not decoration. -/
+structure ResolventSeparationEvidence {F : Type u} [Field F] {n : ℕ} (spec : ResolventSpec n)
+    (f : F[X]) : Prop where
   /-- Distinct cosets did not collide at the roots of this particular polynomial. -/
-  specializationSeparated : R.Separable
+  specializationSeparated : (spec.specialize F f).Separable
 
 /-! ### Tschirnhaus transforms, on the coefficient side -/
 
@@ -236,29 +313,47 @@ not representable. -/
 abbrev ResolventSpecIndex (n : ℕ) : Type := Fin (numResolventSpecs n)
 
 /-- **Layer 4, the quartic specification.** The `D₄`-invariant `x₀x₂ + x₁x₃`, whose stabilizer
-is exactly `referenceSubgroup 4 2`, the reference for the label `4T3`. Its `specialize` is the
+is exactly `referenceSubgroup 4 2`, the reference for the label `4T3`: the dihedral group of
+order 8 preserving the pairing `{{0,2},{1,3}}`. Its specialization at a depressed quartic is the
 resolvent cubic. -/
-def quarticD4Spec : ResolventSpec 4 :=
-  sorry
+noncomputable def quarticD4Spec : ResolventSpec 4 where
+  H := referenceSubgroup 4 ⟨2, by decide⟩
+  Φ := MvPolynomial.X 0 * MvPolynomial.X 2 + MvPolynomial.X 1 * MvPolynomial.X 3
+  stabilizer_eq := sorry
+  orbitProduct := sorry
+  orbitProduct_esymm := sorry
 
 /-- **Layer 4, the quintic specification.** The invariant `quinticF20Invariant`, whose
 stabilizer is exactly `referenceSubgroup 5 2`, the reference for the label `5T3`. -/
-def quinticF20Spec : ResolventSpec 5 :=
-  sorry
+noncomputable def quinticF20Spec : ResolventSpec 5 where
+  H := referenceSubgroup 5 ⟨2, by decide⟩
+  Φ := quinticF20Invariant
+  stabilizer_eq := sorry
+  orbitProduct := sorry
+  orbitProduct_esymm := sorry
 
-/-- **Layer 4, the quintic pair-sum specification**, whose orbit has ten elements. -/
-def quinticPairSumSpec : ResolventSpec 5 :=
-  sorry
+/-- **Layer 4, the quintic pair-sum specification**, whose orbit has ten elements. The
+stabilizer of `x₀ + x₁` is the intransitive group `S_{{0,1}} × S_{{2,3,4}}` of order 12, so it
+is not a reference subgroup of any label; it is pinned here by generators. -/
+noncomputable def quinticPairSumSpec : ResolventSpec 5 where
+  H := Subgroup.closure {Equiv.swap 0 1, Equiv.swap 2 3, Equiv.swap 3 4}
+  Φ := MvPolynomial.X 0 + MvPolynomial.X 1
+  stabilizer_eq := sorry
+  orbitProduct := sorry
+  orbitProduct_esymm := sorry
 
 /-- The small library registry: index `0` in degree 4 is `quarticD4Spec`, index `0` in degree 5
 is `quinticF20Spec`, and index `1` in degree 5 is `quinticPairSumSpec`. -/
-def registeredResolvent (n : ℕ) (i : ResolventSpecIndex n) : ResolventSpec n :=
+noncomputable def registeredResolvent (n : ℕ) (i : ResolventSpecIndex n) : ResolventSpec n :=
   sorry
 
-/-- **Layer 4.** The resolvent sextic of a quintic: the coefficient-side specialization of the
-`F₂₀` specification. -/
-def resolventSextic (f : ℤ[X]) : ℚ[X] :=
-  quinticF20Spec.specialize f
+/-- **Layer 4.** The resolvent sextic of a quintic: the specialization of the `F₂₀`
+specification, **over `ℤ`**. Coefficient integrality is a theorem about `specialize` and not an
+extra hypothesis, so this is a monic integral sextic; by the rational root theorem every
+rational root of it is therefore an integer, which is what makes "has a rational root" a finite
+condition on integers. The polynomial over `ℚ` is its image, by `specialize_map`. -/
+noncomputable def resolventSextic (f : ℤ[X]) : ℤ[X] :=
+  quinticF20Spec.specialize ℤ f
 
 end Prototypes
 
@@ -393,8 +488,31 @@ example {R : Type u} {S : Type v} [CommRing R] [CommRing S] (φ : R →+* S) (f 
     (hf : f.Monic) : (f.map φ).discr = φ f.discr :=
   sorry
 
-/-- **Layer 3.** Nonvanishing of the discriminant detects separability, in the monic case. -/
+/-- **Layer 3.** Nonvanishing of the discriminant detects separability, in the monic case.
+
+⚠ `F` is a **field** here, and that is not slack in the statement. Over a commutative ring, or
+even over a domain, the two sides come apart: `Polynomial.Separable` is coprimality of `f` with
+`f'` in the coefficient ring, and the next milestone exhibits an integral polynomial with
+nonzero discriminant that fails it. The ring-level content of the discriminant is the universal
+polynomial identity of the root-product formula above; the separability reading is
+field-level. -/
 example (f : F[X]) (hf : f.Monic) : f.discr ≠ 0 ↔ f.Separable :=
+  sorry
+
+/-- **Layer 3, the field hypothesis is necessary.** `X² − 1` over `ℤ` has discriminant `4 ≠ 0`
+and is not `Polynomial.Separable`: a coprimality witness would give `2 ∣ 1` on evaluating at
+`1`. So `discr ≠ 0 ↔ Separable` is false over `ℤ`, and every use of it over `ℤ` goes through the
+fraction field, as in the milestone below. -/
+example : (X ^ 2 - 1 : ℤ[X]).discr = 4 ∧ ¬ (X ^ 2 - 1 : ℤ[X]).Separable :=
+  sorry
+
+/-- **Layer 3, the criterion over a domain**, obtained by passing to the fraction field. This is
+the form Layer 5 and the certificates of Layer 6 use over `ℤ`: a nonzero integral discriminant
+says that the polynomial is separable **over `ℚ`**, and says nothing about coprimality in
+`ℤ[X]`. -/
+example {R : Type u} [CommRing R] [IsDomain R] {K : Type v} [Field K] [Algebra R K]
+    [IsFractionRing R K] (f : R[X]) (hf : f.Monic) :
+    f.discr ≠ 0 ↔ (f.map (algebraMap R K)).Separable :=
   sorry
 
 open scoped Classical in
@@ -416,20 +534,145 @@ example : (X ^ 3 - 3 * X - 1 : ℚ[X]).discr = 81 :=
 example : ¬ IsSquare (X ^ 3 - 2 : ℚ[X]).discr :=
   sorry
 
-/-! ## Layer 4: resolvents -/
+/-! ## Layer 4: resolvents
 
-open scoped Classical in
-/-- **Layer 4, rationality of the orbit resolvent.** Evaluated at an enumeration of the roots
-of a monic `f`, the orbit resolvent has coefficients in the base field: it descends to `F[X]`,
-by the fundamental theorem of symmetric polynomials. -/
-example {L : Type v} [Field L] [Algebra F L] {n : ℕ} (f : F[X]) (hf : f.Monic)
-    (hdeg : f.natDegree = n) (Φ : MvPolynomial (Fin n) F) (x : Fin n → L)
-    (hx : (f.map (algebraMap F L)).roots = Multiset.map x Finset.univ.val) :
-    ∃ R : F[X], galResolvent Φ x = R.map (algebraMap F L) :=
+The five milestones of the symmetric-polynomial descent come first, in order. They are what
+makes the coefficient-side resolvent exist at all: Galois invariance alone does not put the
+orbit product's coefficients in the base field, and without the descent "compute the
+coefficient-side resolvent" would hide the algebra behind a choice of splitting field.
+-/
+
+/-- **Layer 4, descent step 1: the orbit product is invariant under the full symmetric group.**
+Renaming the formal roots permutes the orbit of `Φ` and so fixes the product over it. This is a
+statement about `Sₙ`, not about a Galois group, and it holds for every `Φ`. -/
+example {n : ℕ} (Φ : MvPolynomial (Fin n) ℤ) (σ : Equiv.Perm (Fin n)) :
+    (universalResolvent Φ).map (MvPolynomial.rename (⇑σ)).toRingHom = universalResolvent Φ :=
+  sorry
+
+/-- **Layer 4, descent step 2: each coefficient is a symmetric polynomial in the formal
+roots.** The coefficientwise reading of step 1. -/
+example {n : ℕ} (Φ : MvPolynomial (Fin n) ℤ) (k : ℕ) :
+    ((universalResolvent Φ).coeff k).IsSymmetric :=
+  sorry
+
+/-- **Layer 4, descent step 3: the fundamental theorem of symmetric polynomials.** Each
+coefficient is an *integral* polynomial in the elementary symmetric polynomials, and only one
+such polynomial: `esymmSubst` is injective by `MvPolynomial.esymmAlgHom_fin_injective` and its
+image is the symmetric polynomials by `MvPolynomial.esymmAlgHom_fin_bijective`. This is the
+milestone that makes the `orbitProduct` field of a `ResolventSpec` determined rather than
+chosen, and it is where integrality of the coefficient side comes from. -/
+example {n : ℕ} (Φ : MvPolynomial (Fin n) ℤ) :
+    ∃! D : (MvPolynomial (Fin n) ℤ)[X], D.map (esymmSubst n) = universalResolvent Φ :=
+  sorry
+
+/-- **Layer 4, descent step 4: Vieta.** For a monic `g` of degree `n` over a domain, listed with
+multiplicity by `x`, the `(k+1)`-st elementary symmetric polynomial evaluated at `x` is the
+signed coefficient `(−1)^(k+1) * g.coeff (n − (k+1))`. This is what `vietaHom` substitutes, and
+this milestone is the reason monicity and the degree are hypotheses of every theorem that reads
+`specialize` as a resolvent. -/
+example {L : Type v} [CommRing L] [IsDomain L] {n : ℕ} (g : L[X]) (hg : g.Monic)
+    (hdeg : g.natDegree = n) (x : Fin n → L)
+    (hx : g.roots = Multiset.map x Finset.univ.val) (k : Fin n) :
+    MvPolynomial.eval x (MvPolynomial.esymm (Fin n) L ((k : ℕ) + 1))
+      = (-1) ^ ((k : ℕ) + 1) * g.coeff (n - ((k : ℕ) + 1)) :=
+  sorry
+
+/-- **Layer 4, descent step 5: the specialization is the root-side orbit product.** In a field
+where `f` splits, the coefficient-side resolvent maps to the product over the orbit evaluated at
+the roots. The root product says what the resolvent *means*; `specialize` says how to obtain it
+from the coefficients of `f`, and this is the theorem that joins the two. -/
+example {L : Type v} [Field L] [Algebra F L] {n : ℕ} (spec : ResolventSpec n) (f : F[X])
+    (hf : f.Monic) (hdeg : f.natDegree = n) (x : Fin n → L) (hx : IsRootEnumeration f x) :
+    (spec.specialize F f).map (algebraMap F L) = galResolvent spec.Φ x :=
+  sorry
+
+/-- **Layer 4, base change.** Specialization commutes with any ring morphism on the
+coefficients. No hypothesis on `f` is needed, because `vietaHom` reads coefficients and
+`Polynomial.map` commutes with that; the hypotheses live in the *interpretation* milestones, not
+here. -/
+theorem specialize_map {R : Type u} {S : Type v} [CommRing R] [CommRing S] {n : ℕ}
+    (spec : ResolventSpec n) (φ : R →+* S) (f : R[X]) :
+    (spec.specialize R f).map φ = spec.specialize S (f.map φ) :=
+  sorry
+
+/-- **Layer 4, coefficient integrality**, the case `ℤ → ℚ` of base change: the resolvent of an
+integral polynomial over `ℚ` is the image of an integral one. This is what makes
+`resolventSextic` a polynomial over `ℤ`. -/
+example {n : ℕ} (spec : ResolventSpec n) (f : ℤ[X]) :
+    (spec.specialize ℤ f).map (Int.castRingHom ℚ)
+      = spec.specialize ℚ (f.map (Int.castRingHom ℚ)) :=
+  specialize_map spec (Int.castRingHom ℚ) f
+
+/-- **Layer 4, reduction modulo `p`**, the case `ℤ → ZMod p` of base change. ⚠ The *identity* is
+unconditional; the Galois-theoretic reading of the reduced resolvent is not. That reading needs
+`p` good for `f` **and** good for the specialized resolvent, which is a second and independent
+condition; see `ResolventSpec.IsGoodPrime` in Layer 5. -/
+example {n : ℕ} (spec : ResolventSpec n) (f : ℤ[X]) (p : ℕ) [Fact p.Prime] :
+    (spec.specialize ℤ f).map (Int.castRingHom (ZMod p))
+      = spec.specialize (ZMod p) (f.map (Int.castRingHom (ZMod p))) :=
+  specialize_map spec (Int.castRingHom (ZMod p)) f
+
+/-- **Layer 4, the specialized resolvent is monic of the full orbit degree**, over every
+coefficient ring and for every `f`: it is the image of a monic polynomial of degree
+`[Sₙ : spec.H]`. Degree is therefore never the thing a specialization destroys, and no theorem
+below takes the full orbit degree as a hypothesis. What a specialization can destroy is
+distinctness of the orbit *values*; that is `ResolventSeparationEvidence`. -/
+example {R : Type u} [CommRing R] [Nontrivial R] {n : ℕ} (spec : ResolventSpec n) (f : R[X]) :
+    (spec.specialize R f).Monic ∧ (spec.specialize R f).natDegree = spec.H.index :=
+  sorry
+
+/-- **Layer 4, what a root enumeration entails: the polynomial splits.** Listing `n = natDegree`
+roots with multiplicity is exactly splitting; the finite indexing is not available before this
+is known. -/
+example {L : Type v} [Field L] [Algebra F L] {n : ℕ} (f : F[X]) (hf : f ≠ 0)
+    (hdeg : f.natDegree = n) (x : Fin n → L) (hx : IsRootEnumeration f x) :
+    (f.map (algebraMap F L)).Splits :=
+  sorry
+
+/-- **Layer 4, what a root enumeration entails: a *bijective* indexing needs separability.**
+Without it the enumeration repeats a root, the permutation action is on too few points, and the
+stabilizer reading of the resolvent's roots is false. -/
+example {L : Type v} [Field L] [Algebra F L] {n : ℕ} (f : F[X]) (hf : f ≠ 0)
+    (hdeg : f.natDegree = n) (x : Fin n → L) (hx : IsRootEnumeration f x) :
+    Function.Injective x ↔ (f.map (algebraMap F L)).Separable :=
+  sorry
+
+/-- **Layer 4, the degenerate case, and why the collision hypothesis is not decoration.**
+`f = x⁵ − x` is separable — its discriminant is `256` — yet only three of the six orbit values of
+the `F₂₀`-invariant are distinct at its roots `0, ±1, ±i`, and its resolvent sextic is
+`(X − 2)⁴ (X² + 16)`. So the sextic has the rational root `2` while the Galois group, generated
+by the transposition of `i` and `−i`, is **not** conjugate into `F₂₀`, which contains no
+transposition. A rational root of a resolvent proves the containment only under separation
+evidence; the other direction, that a containment produces a rational root, needs no
+hypothesis. -/
+example : resolventSextic (X ^ 5 - X) = (X - C 2) ^ 4 * (X ^ 2 + C 16) :=
+  sorry
+
+/-- **Layer 4, the acceptance test against the literature.** Dummit's closed formula (2′) for
+the resolvent sextic of `x⁵ + ax + b`. It is a test of the orbit-product definition against the
+source, and **not** the definition: a disagreement is a defect in the specification, in the
+descent, or in the Vieta substitution. Three instances the roadmap uses follow from it — `x⁵ − 2`
+gives `X⁶ − 50000X`, `x⁵ − 5x − 12` gives a sextic with the rational root `40`, and `x⁵ − x`
+gives the collision witness above. -/
+example (a b : ℤ) :
+    resolventSextic (X ^ 5 + C a * X + C b) =
+      X ^ 6 + C (8 * a) * X ^ 5 + C (40 * a ^ 2) * X ^ 4 + C (160 * a ^ 3) * X ^ 3 +
+        C (400 * a ^ 4) * X ^ 2 + C (512 * a ^ 5 - 3125 * b ^ 4) * X +
+        C (256 * a ^ 6 - 9375 * a * b ^ 4) :=
+  sorry
+
+/-- **Layer 4, the quartic closed form.** The resolvent cubic is the specialization of the
+`D₄` specification at a depressed quartic. The closed form is a theorem about the universal
+object, not a definition of the resolvent. -/
+example (p q r : F) :
+    quarticD4Spec.specialize F (X ^ 4 + C p * X ^ 2 + C q * X + C r) = resolventCubic p q r :=
   sorry
 
 /-- **Layer 4, quartic bookkeeping:** a depressed quartic and its resolvent cubic have the
-*same* discriminant. -/
+*same* discriminant. Two consequences: the quartic decision table needs no separation evidence,
+because a separable quartic has a separable resolvent cubic automatically; and the sign
+convention of `Polynomial.discr` is the same on both sides. The quintic has no such identity,
+which is why the sextic keeps its evidence hypothesis. -/
 example (p q r : ℚ) :
     (X ^ 4 + C p * X ^ 2 + C q * X + C r : ℚ[X]).discr = (resolventCubic p q r).discr :=
   sorry
@@ -641,6 +884,20 @@ example (f : ℤ[X]) (hf : f.Monic) (p : ℕ) [Fact p.Prime] (hp : ¬ (p : ℤ) 
     (f.map (Int.castRingHom (ZMod p))).Separable :=
   sorry
 
+/-- **Layer 5, a good prime for a polynomial.** `p` does not divide the discriminant, so the
+reduction stays separable and the factorization type is a cycle type of the Galois image. -/
+def IsGoodPrime (f : ℤ[X]) (p : ℕ) : Prop := ¬ (p : ℤ) ∣ f.discr
+
+/-- **Layer 5, a good prime for a polynomial *and* a resolvent.** Reducing a resolvent modulo
+`p` is a second condition, independent of the first: the identity
+`(spec.specialize ℤ f).map (ZMod p) = spec.specialize (ZMod p) (f mod p)` is unconditional, but
+reading the reduced resolvent as a resolvent of the reduced polynomial needs the reduced
+resolvent to stay separable too. A prime may be good for `f` and bad for the resolvent, and then
+no factorization statement about the reduced resolvent is available. Any milestone that reduces
+a resolvent modulo `p` carries this predicate, and not `IsGoodPrime`. -/
+def ResolventSpec.IsGoodPrime {n : ℕ} (spec : ResolventSpec n) (f : ℤ[X]) (p : ℕ) : Prop :=
+  ¬ (p : ℤ) ∣ f.discr ∧ ¬ (p : ℤ) ∣ (spec.specialize ℤ f).discr
+
 /-- **Layer 5, a finite-field input.** For an element `α` of an extension of
 `ZMod q`, the degree of the minimal polynomial is the size of the orbit of `α` under `x ↦ x ^ q`.
 This statement mentions no Galois theory over `ℚ`, and it is not a step of the imported theorem
@@ -715,6 +972,153 @@ group `5T5`). Modulo 2 the factorization `(x² + x + 1)(x³ + x² + 1)` exhibits
 element of order 6; modulo 5 the polynomial is Artin–Schreier, hence irreducible; transitive
 together with an element of order 6 forces `S₅`. -/
 example : Nat.card (X ^ 5 - X - 1 : ℚ[X]).Gal = 120 :=
+  sorry
+
+/-! ## Layer 6: what the low-degree data determine, and certificates
+
+Three different things, kept apart. First, a **classification theorem from a package of data**:
+what the discriminant and the registered resolvents determine on their own. Second, a **sound
+certificate**: a finite package of evidence, which may additionally contain good-prime
+factorizations, together with a soundness theorem. Third, a **search** for such evidence, which
+is not here: nothing below claims that a certificate exists for a given `f`, and nothing below
+terminates. The existence of a prime with a prescribed factorization type is Chebotarev's
+theorem, which this roadmap does not own and does not use.
+-/
+
+/-- **Layer 6, the degree-five package theorem.** Exactly what the discriminant and the
+resolvent sextic determine for an irreducible quintic, with the separation evidence attached to
+the two branches that need it. Three of the four branches determine the label. The fourth does
+not, and no strengthening of these two data will make it: see the next milestone. -/
+example (f : ℤ[X]) (hf : f.Monic) (hdeg : f.natDegree = 5)
+    (hirr : Irreducible (f.map (Int.castRingHom ℚ))) :
+    (¬ IsSquare f.discr → (∀ a : ℤ, (resolventSextic f).eval a ≠ 0) →
+        HasGaloisLabel (f.map (Int.castRingHom ℚ)) (⟨4, by decide⟩ : TransitiveGroupIndex 5)) ∧
+      (IsSquare f.discr → (∀ a : ℤ, (resolventSextic f).eval a ≠ 0) →
+        HasGaloisLabel (f.map (Int.castRingHom ℚ)) (⟨3, by decide⟩ : TransitiveGroupIndex 5)) ∧
+      (¬ IsSquare f.discr → (resolventSextic f).discr ≠ 0 →
+        (∃ a : ℤ, (resolventSextic f).eval a = 0) →
+        HasGaloisLabel (f.map (Int.castRingHom ℚ)) (⟨2, by decide⟩ : TransitiveGroupIndex 5)) ∧
+      (IsSquare f.discr → (resolventSextic f).discr ≠ 0 →
+        (∃ a : ℤ, (resolventSextic f).eval a = 0) →
+        HasGaloisLabel (f.map (Int.castRingHom ℚ)) (⟨0, by decide⟩ : TransitiveGroupIndex 5) ∨
+          HasGaloisLabel (f.map (Int.castRingHom ℚ)) (⟨1, by decide⟩ : TransitiveGroupIndex 5)) :=
+  sorry
+
+/-- **Layer 6, the fourth branch is genuinely undetermined.** `x⁵ + x⁴ − 4x³ − 3x² + 3x + 1`
+(the field `ℚ(ζ₁₁)⁺`, label `5T1`) and `x⁵ − 5x − 12` (label `5T2`) both have square
+discriminant — `11⁴ = 121²` and `8000²` — and both have a **separable** resolvent sextic with a
+rational root, at `−16` and at `40`. Their sextics even have the same factorization type,
+`1 + 5`. So no reading of the discriminant and the sextic resolvent separates `C₅` from `D₅`,
+and a decision procedure claimed from those two data alone would be false. Separating them takes
+a further datum: a good-prime factorization, or a second root of `f` in `ℚ[X]/(f)`. -/
+example :
+    (X ^ 5 + X ^ 4 - 4 * X ^ 3 - 3 * X ^ 2 + 3 * X + 1 : ℤ[X]).discr = 121 ^ 2 ∧
+      (X ^ 5 - 5 * X - 12 : ℤ[X]).discr = 8000 ^ 2 ∧
+      (resolventSextic (X ^ 5 + X ^ 4 - 4 * X ^ 3 - 3 * X ^ 2 + 3 * X + 1)).eval (-16) = 0 ∧
+      (resolventSextic (X ^ 5 - 5 * X - 12)).eval 40 = 0 ∧
+      (resolventSextic (X ^ 5 + X ^ 4 - 4 * X ^ 3 - 3 * X ^ 2 + 3 * X + 1)).discr ≠ 0 ∧
+      (resolventSextic (X ^ 5 - 5 * X - 12)).discr ≠ 0 ∧
+      HasGaloisLabel ((X ^ 5 + X ^ 4 - 4 * X ^ 3 - 3 * X ^ 2 + 3 * X + 1 : ℤ[X]).map
+          (Int.castRingHom ℚ)) (⟨0, by decide⟩ : TransitiveGroupIndex 5) ∧
+      HasGaloisLabel ((X ^ 5 - 5 * X - 12 : ℤ[X]).map (Int.castRingHom ℚ))
+        (⟨1, by decide⟩ : TransitiveGroupIndex 5) :=
+  sorry
+
+/-- **Layer 6, a good-prime factorization item.** `p` is good for `f` and the factor degrees of
+`f mod p` are `t`. By the membership statement this exhibits an element of the Galois image with
+`fullCycleType` equal to `t`, so it is **lower-bound** evidence: it never certifies containment
+in a proper subgroup. -/
+def HasFactorDegrees (f : ℤ[X]) (p : ℕ) (t : Multiset ℕ) : Prop :=
+  ∃ hp : p.Prime, IsGoodPrime f p ∧ @factorDegrees f p ⟨hp⟩ = t
+
+/-- **Layer 6, a resolvent item.** `a` is a root of the resolvent sextic, and that sextic is
+separable, so the root really does place the Galois image inside a conjugate of `F₂₀`. Both
+conjuncts are conditions on integers: the sextic is monic over `ℤ`. This is **upper-bound**
+evidence. -/
+def HasSexticRoot (f : ℤ[X]) (a : ℤ) : Prop :=
+  (resolventSextic f).eval a = 0 ∧ (resolventSextic f).discr ≠ 0
+
+/-- **Layer 6, a normality item.** `b` names a root of `f` in `ℚ[X]/(f)` other than the class of
+`X`. For an irreducible quintic the point stabilizer fixes exactly one root unless the group is
+`C₅`, so a second root in the field generated by one root is upper-bound evidence that pins
+`5T1`. -/
+def HasSecondRootInRootField (f : ℤ[X]) (b : ℚ[X]) : Prop :=
+  ((f.map (Int.castRingHom ℚ)).comp b) %ₘ (f.map (Int.castRingHom ℚ)) = 0 ∧
+    b %ₘ (f.map (Int.castRingHom ℚ)) ≠ X
+
+/-- **Layer 6, a degree-five certificate.** One constructor per sound route to a label; the
+arguments are the evidence, and `Verifies` says what has to hold of it. The type is
+deliberately small and closed: a certificate is a finite package, it carries no proof of its own
+existence, and nothing here searches for one. -/
+inductive QuinticCertificate : Type
+  /-- `5T1`: irreducible modulo `p`, and a second root of `f` in `ℚ[X]/(f)`. -/
+  | cyclic (p : ℕ) (b : ℚ[X]) : QuinticCertificate
+  /-- `5T2`: irreducible modulo `p`, square discriminant `s²`, a root `a` of a separable sextic,
+  and a prime `q` with factorization type `(1,2,2)`, which exhibits the element of order two
+  that `C₅` has not. -/
+  | dihedral (p q : ℕ) (s a : ℤ) : QuinticCertificate
+  /-- `5T3`: irreducible modulo `p`, non-square discriminant, and a root `a` of a separable
+  sextic. -/
+  | frobeniusF20 (p : ℕ) (a : ℤ) : QuinticCertificate
+  /-- `5T4`: irreducible modulo `p`, square discriminant `s²`, and a prime `q` with
+  factorization type `(1,1,3)`. -/
+  | alternating (p q : ℕ) (s : ℤ) : QuinticCertificate
+  /-- `5T5`: irreducible modulo `p`, and a prime `q` with factorization type `(2,3)`, which
+  exhibits an element of order six. -/
+  | symmetric (p q : ℕ) : QuinticCertificate
+
+/-- The label a certificate claims. -/
+def QuinticCertificate.label : QuinticCertificate → TransitiveGroupIndex 5
+  | .cyclic _ _ => ⟨0, by decide⟩
+  | .dihedral _ _ _ _ => ⟨1, by decide⟩
+  | .frobeniusF20 _ _ => ⟨2, by decide⟩
+  | .alternating _ _ _ => ⟨3, by decide⟩
+  | .symmetric _ _ => ⟨4, by decide⟩
+
+/-- **Layer 6, the verification conditions.** Every clause is finite: an equation between
+integers, a divisibility of integers, an equation in `ℚ[X]`, or the factorization of `f` over
+the finite field `ZMod p`. There is no quantifier over primes and no unbounded search. -/
+def QuinticCertificate.Verifies (f : ℤ[X]) : QuinticCertificate → Prop
+  | .cyclic p b => HasFactorDegrees f p {5} ∧ HasSecondRootInRootField f b
+  | .dihedral p q s a =>
+      HasFactorDegrees f p {5} ∧ f.discr = s ^ 2 ∧ HasSexticRoot f a ∧
+        HasFactorDegrees f q {1, 2, 2}
+  | .frobeniusF20 p a =>
+      HasFactorDegrees f p {5} ∧ ¬ IsSquare f.discr ∧ HasSexticRoot f a
+  | .alternating p q s =>
+      HasFactorDegrees f p {5} ∧ f.discr = s ^ 2 ∧ HasFactorDegrees f q {1, 1, 3}
+  | .symmetric p q => HasFactorDegrees f p {5} ∧ HasFactorDegrees f q {2, 3}
+
+open scoped Classical in
+/-- **Layer 6, the checker.** `decide` of the verification conditions. It is `noncomputable`
+only because Mathlib's `Polynomial` is: the conditions themselves are finite, and an
+implementation evaluates them by integer arithmetic and by factoring over a finite field. -/
+noncomputable def QuinticCertificate.check (f : ℤ[X]) (cert : QuinticCertificate) : Bool :=
+  decide (cert.Verifies f)
+
+/-- **Layer 6, the public theorem: soundness, and only soundness.** A certificate that checks
+proves the label. Nothing is claimed in the other direction: there is no theorem that a
+certificate exists, and no procedure that finds one. Producing the good primes a certificate
+needs is Chebotarev's theorem, which is outside this roadmap. -/
+theorem QuinticCertificate.check_sound (f : ℤ[X]) (hf : f.Monic) (hdeg : f.natDegree = 5)
+    (cert : QuinticCertificate) (h : cert.check f = true) :
+    HasGaloisLabel (f.map (Int.castRingHom ℚ)) cert.label :=
+  sorry
+
+/-- **Layer 6, the five acceptance certificates.** One per label, with the evidence written
+out: `x⁵ + x⁴ − 4x³ − 3x² + 3x + 1` is irreducible modulo `2` and has the second root `α² − 2`
+in `ℚ[X]/(f)`; `x⁵ − 5x − 12` is irreducible modulo `7`, has discriminant `8000²`, sextic root
+`40`, and type `(1,2,2)` modulo `3`; `x⁵ − 2` is irreducible modulo `11`, has non-square
+discriminant `50000`, and sextic root `0`; `x⁵ + 20x − 16` is irreducible modulo `3`, has
+discriminant `32000²`, and type `(1,1,3)` modulo `7`; `x⁵ − x − 1` is irreducible modulo `3` and
+has type `(2,3)` modulo `2`. -/
+example :
+    (QuinticCertificate.cyclic 2 (X ^ 2 - 2)).check
+        (X ^ 5 + X ^ 4 - 4 * X ^ 3 - 3 * X ^ 2 + 3 * X + 1) = true ∧
+      (QuinticCertificate.dihedral 7 3 8000 40).check (X ^ 5 - 5 * X - 12) = true ∧
+      (QuinticCertificate.frobeniusF20 11 0).check (X ^ 5 - 2) = true ∧
+      (QuinticCertificate.alternating 3 7 32000).check (X ^ 5 + 20 * X - 16) = true ∧
+      (QuinticCertificate.symmetric 3 2).check (X ^ 5 - X - 1) = true :=
   sorry
 
 /-! ## Layer 9: `Sₙ` over `ℚ`, and its prerequisites -/
