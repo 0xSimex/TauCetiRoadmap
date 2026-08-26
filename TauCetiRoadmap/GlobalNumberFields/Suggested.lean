@@ -110,42 +110,82 @@ def RayClassGroup (𝔪 : Modulus K) : Type u :=
 noncomputable instance (𝔪 : Modulus K) : CommGroup (RayClassGroup 𝔪) :=
   inferInstanceAs (CommGroup (idealsPrimeTo 𝔪 ⧸ ray 𝔪))
 
-/-- Coprimality of a nonzero integral ideal to the finite part. -/
+/-- Coprimality of a nonzero integral ideal to the finite part. This is the *predicate* form;
+the carrier that `idealClass` is defined on is `integralIdealsPrimeTo` below, and
+`Modulus.mem_integralIdealsPrimeTo` is the bridge. -/
 def Modulus.IsCoprimeTo (𝔪 : Modulus K) (I : Ideal (𝓞 K)) : Prop :=
   I ≠ ⊥ ∧ ∀ v : HeightOneSpectrum (𝓞 K), v ∈ 𝔪.support → ¬ v.asIdeal ∣ I
 
-noncomputable def idealClass (𝔪 : Modulus K) (I : Ideal (𝓞 K)) : RayClassGroup 𝔪 := sorry
+/-- **Single ownership of the integral prime-to monoid.** The nonzero integral ideals prime to
+the finite part of `𝔪` are the supplier's `integralIdealsAway 𝔪.support`; no second carrier
+is introduced. -/
+noncomputable abbrev integralIdealsPrimeTo (𝔪 : Modulus K) :=
+  TauCetiRoadmap.NumberFieldArithmetic.integralIdealsAway (K := K) 𝔪.support
 
-theorem idealClass_mul (𝔪 : Modulus K) {I J : Ideal (𝓞 K)}
-    (hI : 𝔪.IsCoprimeTo I) (hJ : 𝔪.IsCoprimeTo J) :
-    idealClass 𝔪 (I * J) = idealClass 𝔪 I * idealClass 𝔪 J := sorry
+theorem Modulus.mem_integralIdealsPrimeTo {𝔪 : Modulus K} {I : Ideal (𝓞 K)} :
+    I ∈ integralIdealsPrimeTo 𝔪 ↔ 𝔪.IsCoprimeTo I := Iff.rfl
 
-theorem idealClass_surjective (𝔪 : Modulus K) (c : RayClassGroup 𝔪) :
-    ∃ I : Ideal (𝓞 K), 𝔪.IsCoprimeTo I ∧ idealClass 𝔪 I = c := sorry
+/-- **The ray class of an integral ideal prime to the modulus.** ⚠ The domain is the monoid of
+nonzero integral ideals prime to `𝔪.support`, never `Ideal (𝓞 K)`. A version totalized over
+arbitrary ideals exports a junk class for the zero ideal and for every ideal sharing a prime
+with the modulus, which later lets a false theorem typecheck; here the coprimality proof is
+carried by the argument, and multiplicativity is `map_mul` on the correct domain rather than a
+separate law with side conditions. -/
+noncomputable def idealClass (𝔪 : Modulus K) :
+    integralIdealsPrimeTo 𝔪 →* RayClassGroup 𝔪 := sorry
+
+theorem idealClass_mul (𝔪 : Modulus K) (I J : integralIdealsPrimeTo 𝔪) :
+    idealClass 𝔪 (I * J) = idealClass 𝔪 I * idealClass 𝔪 J :=
+  map_mul _ _ _
+
+theorem idealClass_surjective (𝔪 : Modulus K) :
+    Function.Surjective (idealClass 𝔪) := sorry
 
 theorem finite_rayClassGroup (𝔪 : Modulus K) : Finite (RayClassGroup 𝔪) := sorry
+
+/-- Monotonicity of the integral prime-to monoid along divisibility of moduli: `𝔪 ∣ 𝔫` makes
+`𝔪.support ⊆ 𝔫.support`, so an ideal prime to `𝔫` is prime to `𝔪`. This is the literal
+inclusion, matching the supplier's `idealsAwayInclusion`. -/
+noncomputable def integralIdealsPrimeToInclusion {𝔪 𝔫 : Modulus K} (h : 𝔪 ∣ 𝔫) :
+    integralIdealsPrimeTo 𝔫 →* integralIdealsPrimeTo 𝔪 :=
+  Submonoid.inclusion sorry
 
 noncomputable def classMap {𝔪 𝔫 : Modulus K} (h : 𝔪 ∣ 𝔫) :
     RayClassGroup 𝔫 →* RayClassGroup 𝔪 := sorry
 
-theorem classMap_idealClass {𝔪 𝔫 : Modulus K} (h : 𝔪 ∣ 𝔫) {I : Ideal (𝓞 K)}
-    (hI : 𝔫.IsCoprimeTo I) : classMap h (idealClass 𝔫 I) = idealClass 𝔪 I := sorry
+theorem classMap_idealClass {𝔪 𝔫 : Modulus K} (h : 𝔪 ∣ 𝔫) (I : integralIdealsPrimeTo 𝔫) :
+    classMap h (idealClass 𝔫 I) = idealClass 𝔪 (integralIdealsPrimeToInclusion h I) := sorry
 
 theorem classMap_surjective {𝔪 𝔫 : Modulus K} (h : 𝔪 ∣ 𝔫) :
     Function.Surjective (classMap h) := sorry
 
-/-- The canonical ideal-class map kills exactly the ray-principal ideals. Keeping the
-triviality criterion named prevents consumers from replacing factorization through the ray
-class group by an unstructured hypothesis on an ideal weight. -/
-theorem idealClass_eq_one_iff (m : Modulus K) {I : Ideal (𝓞 K)}
-    (hI : m.IsCoprimeTo I) :
-    idealClass m I = 1 ↔
-      ∃ a b : 𝓞 K, a ≠ 0 ∧ b ≠ 0 ∧ a - 1 ∈ m.finitePart ∧ b - 1 ∈ m.finitePart ∧
-        (∀ w ∈ m.infinitePart,
+/-- **The intrinsic ray-triviality criterion, and the primary form.** The class of `I` is
+trivial exactly when `I` has a generator `x ∈ Kˣ` that is congruent to one modulo the finite
+part and positive at every real place of the modulus — that is, `IsCongrOne 𝔪 x`. The
+generator is a fractional-ideal generator: it is not required to be integral, and no
+denominator has been cleared. Keeping the triviality criterion named prevents consumers from
+replacing factorization through the ray class group by an unstructured hypothesis on an ideal
+weight. -/
+theorem idealClass_eq_one_iff (𝔪 : Modulus K) (I : integralIdealsPrimeTo 𝔪) :
+    idealClass 𝔪 I = 1 ↔
+      ∃ x : Kˣ, IsCongrOne 𝔪 x ∧
+        ((I : Ideal (𝓞 K)) : FractionalIdeal (𝓞 K)⁰ K) =
+          FractionalIdeal.spanSingleton (𝓞 K)⁰ (x : K) := sorry
+
+/-- **Denominator-cleared form of the triviality criterion.** Writing the generator of
+`idealClass_eq_one_iff` as `a/b` with `a` and `b` integral and both congruent to one gives an
+equation of integral ideals. This is a corollary of the intrinsic criterion, not the definition
+of the ray: a downstream proof that needs a fractional generator must not be forced through
+this presentation. The integrality of `b` is what turns `I = (x)` into `I·(b) = (a)`; note that
+`a ≡ b ≡ 1 mod 𝔪₀` already forces `a` and `b` prime to `𝔪₀`. -/
+theorem idealClass_eq_one_iff_exists_integral (𝔪 : Modulus K) (I : integralIdealsPrimeTo 𝔪) :
+    idealClass 𝔪 I = 1 ↔
+      ∃ a b : 𝓞 K, a ≠ 0 ∧ b ≠ 0 ∧ a - 1 ∈ 𝔪.finitePart ∧ b - 1 ∈ 𝔪.finitePart ∧
+        (∀ w ∈ 𝔪.infinitePart,
           0 < InfinitePlace.embedding_of_isReal w.2 (algebraMap (𝓞 K) K a)) ∧
-        (∀ w ∈ m.infinitePart,
+        (∀ w ∈ 𝔪.infinitePart,
           0 < InfinitePlace.embedding_of_isReal w.2 (algebraMap (𝓞 K) K b)) ∧
-        I * Ideal.span {b} = Ideal.span {a} := sorry
+        (I : Ideal (𝓞 K)) * Ideal.span {b} = Ideal.span {a} := sorry
 
 /-- Reduction on residue-field units along divisibility of moduli. The direction is from the
 larger modulus to the smaller one, matching `classMap`; this is a units pullback and not a
@@ -154,21 +194,106 @@ noncomputable def finiteUnitsMap {m n : Modulus K} (h : m ∣ n) :
     ((𝓞 K) ⧸ n.finitePart)ˣ →* ((𝓞 K) ⧸ m.finitePart)ˣ :=
   Units.map (Ideal.Quotient.factor (Ideal.le_of_dvd h.1)).toMonoidHom
 
-/-! ## Layer 3: ray-class counting -/
+/-! ## Layer 3: geometry of numbers and ray-class counting
+
+The uniform power saving below is a geometry-of-numbers theorem, not a corollary of finiteness
+of the ray class group, and it is much stronger than Mathlib's
+`NumberField.Ideal.tendsto_norm_le_and_mk_eq_div_atTop`, which gives a limit with no error term.
+The intermediate milestones are the lattice-point count with a power-saving error
+(`card_inter_smul_isBigO`), the index of the congruence lattice
+(`relIndex_congruenceLattice`), the finite index of the congruence units
+(`unitsCongruenceSubgroup_finiteIndex`), and the ray-refined fundamental domain
+(`rayFundamentalDomain` and its boundary). -/
+
+/-- **Layer 3A, Lipschitz parametrizability in dimension `d`.** A set is Lipschitz
+parametrizable when finitely many Lipschitz maps out of the unit cube `[0,1]^d` cover it. This
+is the boundary hypothesis that upgrades a lattice-point limit to a lattice-point count with a
+power-saving error; Mathlib's `ZLattice.covolume.tendsto_card_le_div'` uses only
+`volume (frontier _) = 0`, which is too weak to give an error term. -/
+def IsLipschitzParametrizable {E : Type*} [PseudoEMetricSpace E] (d : ℕ) (S : Set E) : Prop :=
+  ∃ (n : ℕ) (C : NNReal) (f : Fin n → (Fin d → ℝ) → E),
+    (∀ i, LipschitzWith C (f i)) ∧ S ⊆ ⋃ i, f i '' Set.Icc 0 1
+
+open scoped Pointwise in
+/-- **Layer 3A, the lattice-point count with a power-saving error.** For a full `ℤ`-lattice in a
+finite-dimensional real space and a bounded measurable region whose boundary is Lipschitz
+parametrizable in dimension `n-1`, the number of lattice points in the dilate `c • D` is
+`vol D / covolume Λ * cⁿ + O(c^(n-1))`. This is Lang's counting theorem, and the exponent
+`n-1` is where the power saving `δ = 1/n` in `rayClassIdealCount` comes from. -/
+theorem card_inter_smul_isBigO {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [FiniteDimensional ℝ E] [MeasureTheory.MeasureSpace E] [BorelSpace E]
+    (Λ : Submodule ℤ E) [DiscreteTopology Λ] [IsZLattice ℝ Λ]
+    (D : Set E) (hD : MeasurableSet D) (hbdd : Bornology.IsBounded D)
+    (hfr : IsLipschitzParametrizable (Module.finrank ℝ E - 1) (frontier D)) :
+    (fun c : ℝ => (Nat.card ((c • D) ∩ (Λ : Set E) : Set E) : ℝ) -
+        MeasureTheory.volume.real D / ZLattice.covolume Λ * c ^ Module.finrank ℝ E)
+      =O[atTop] (fun c : ℝ => c ^ (Module.finrank ℝ E - 1)) := sorry
+
+/-- **Layer 3B, the congruence lattice.** Inside the ideal lattice of `I` under the Minkowski
+embedding, the elements congruent to zero modulo the finite part of the modulus. The
+congruence condition on ray-class representatives is imposed by counting cosets of this
+sublattice, not by an unstructured side condition on the count. -/
+noncomputable def congruenceLattice (𝔪 : Modulus K) (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
+    Submodule ℤ (mixedEmbedding.mixedSpace K) := sorry
+
+/-- **Layer 3B, the index of the congruence lattice.** It has index `N 𝔪₀` in the ideal lattice,
+so its covolume is `N 𝔪₀` times the covolume of the ideal lattice and each congruence class
+contributes `N 𝔪₀ ⁻¹` of the unrestricted count. Mathlib's
+`NumberField.mixedEmbedding.covolume_idealLattice` computes the second factor. -/
+theorem relIndex_congruenceLattice (𝔪 : Modulus K) (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
+    (congruenceLattice 𝔪 I).toAddSubgroup.relIndex
+        (mixedEmbedding.idealLattice K I).toAddSubgroup =
+      Ideal.absNorm 𝔪.finitePart := sorry
+
+/-- **Layer 3C, the unit action.** The units congruent to one modulo the modulus have finite
+index in `(𝓞 K)ˣ`, so a fundamental domain for their action on the Minkowski space is a finite
+union of translates of Mathlib's `NumberField.mixedEmbedding.fundamentalCone`. This finiteness
+is what makes the error term uniform over the ray class group. -/
+theorem unitsCongruenceSubgroup_finiteIndex (𝔪 : Modulus K) :
+    (unitsCongruenceSubgroup 𝔪).FiniteIndex := sorry
+
+/-- **Layer 3C, the ray-refined fundamental domain.** The subset of the Minkowski space that
+represents each orbit of `unitsCongruenceSubgroup 𝔪` on the nonzero elements exactly once, with
+the signs prescribed by the infinite part of the modulus. Specializing to the trivial modulus
+recovers `NumberField.mixedEmbedding.fundamentalCone`. -/
+noncomputable def rayFundamentalDomain (𝔪 : Modulus K) : Set (mixedEmbedding.mixedSpace K) :=
+  sorry
 
 open scoped Classical in
-/-- The number of nonzero integral ideals in one ray class with norm at most `x`. The subtype
-contains the coprimality and class conditions, so the zero ideal and other classes cannot enter. -/
+/-- **Layer 3C, the boundary estimate.** The norm-one section of the ray-refined fundamental
+domain is bounded, measurable, and has Lipschitz-parametrizable boundary, which is exactly the
+hypothesis of `card_inter_smul_isBigO`. The corresponding Mathlib facts for the trivial modulus
+are `isBounded_normLeOne`, `measurableSet_normLeOne` and `volume_frontier_normLeOne`. -/
+theorem isLipschitzParametrizable_frontier_rayFundamentalDomain (𝔪 : Modulus K) :
+    Bornology.IsBounded
+        {x ∈ rayFundamentalDomain 𝔪 | mixedEmbedding.norm x ≤ 1} ∧
+      MeasurableSet {x ∈ rayFundamentalDomain 𝔪 | mixedEmbedding.norm x ≤ 1} ∧
+        IsLipschitzParametrizable (Module.finrank ℚ K - 1)
+          (frontier {x ∈ rayFundamentalDomain 𝔪 | mixedEmbedding.norm x ≤ 1}) := sorry
+
+open scoped Classical in
+/-- The number of nonzero integral ideals in one ray class with norm at most `x`. The carrier
+already forces coprimality and nonvanishing, so the zero ideal and other classes cannot enter. -/
 noncomputable def rayClassIdealCountingFunction
     (𝔪 : Modulus K) (c : RayClassGroup 𝔪) (x : ℝ) : ℕ :=
-  Nat.card {I : Ideal (𝓞 K) // 𝔪.IsCoprimeTo I ∧ idealClass 𝔪 I = c ∧
-    (Ideal.absNorm I : ℝ) ≤ x}
+  Nat.card {I : integralIdealsPrimeTo 𝔪 //
+    idealClass 𝔪 I = c ∧ (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ) ≤ x}
 
-/-- The positive coefficient common to every ray class. Its explicit formula is the Dedekind-zeta
-residue times the Euler factors at the finite support, divided by `#Cl_𝔪`. -/
+/-- The positive coefficient common to every ray class. -/
 noncomputable def rayClassIdealMainTerm (𝔪 : Modulus K) : ℝ := sorry
 
 theorem rayClassIdealMainTerm_pos (𝔪 : Modulus K) : 0 < rayClassIdealMainTerm 𝔪 := sorry
+
+/-- **The explicit main term.** The Dedekind-zeta residue, corrected by the Euler factors at the
+primes dividing the finite part of the modulus, divided by the order of the ray class group.
+The Euler factors are present because the count is over ideals *prime to* `𝔪₀`; dropping them
+gives a main term that is too large by `∏_{𝔭 ∣ 𝔪₀} (1 - N𝔭⁻¹)⁻¹`. Mathlib's
+`NumberField.dedekindZeta_residue` is
+`2^r₁ (2π)^r₂ R_K h_K / (w_K √|d_K|)`. -/
+theorem rayClassIdealMainTerm_eq (𝔪 : Modulus K) :
+    rayClassIdealMainTerm 𝔪 =
+      NumberField.dedekindZeta_residue K / (Nat.card (RayClassGroup 𝔪) : ℝ) *
+        ∏ v ∈ 𝔪.support, (1 - ((Ideal.absNorm v.asIdeal : ℝ))⁻¹) := sorry
 
 /-- **Exact Chebotarev contract: uniform ray-class ideal counting.** One positive power-saving
 exponent works for every member of the finite ray class group. -/
@@ -177,6 +302,13 @@ theorem rayClassIdealCount (𝔪 : Modulus K) :
       (fun x : ℝ =>
           (rayClassIdealCountingFunction 𝔪 c x : ℝ) - rayClassIdealMainTerm 𝔪 * x) =O[atTop]
         (fun x : ℝ => x ^ (1 - δ)) := sorry
+
+/-- **Agreement with Mathlib's total count.** Summing the ray-class counts for the trivial
+modulus recovers `NumberField.Ideal.tendsto_norm_le_div_atTop₀`. -/
+theorem tendsto_rayClassIdealCountingFunction_one :
+    Filter.Tendsto
+      (fun x : ℝ => (rayClassIdealCountingFunction (Modulus.one K) 1 x : ℝ) / x) atTop
+      (nhds (NumberField.dedekindZeta_residue K / (Nat.card (ClassGroup (𝓞 K)) : ℝ))) := sorry
 
 /-! ## Layer 9 dependency: character carriers -/
 
@@ -187,8 +319,8 @@ abbrev RayClassCharacter (𝔪 : Modulus K) := RayClassGroup 𝔪 →* ℂˣ
 open scoped Classical in
 noncomputable def rayClassCharacterPartialSum
     (𝔪 : Modulus K) (χ : RayClassCharacter 𝔪) (x : ℝ) : ℂ :=
-  ∑ᶠ I : {I : Ideal (𝓞 K) // 𝔪.IsCoprimeTo I ∧ (Ideal.absNorm I : ℝ) ≤ x},
-    (χ (idealClass 𝔪 (I : Ideal (𝓞 K))) : ℂ)
+  ∑ᶠ I : {I : integralIdealsPrimeTo 𝔪 // (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ) ≤ x},
+    (χ (idealClass 𝔪 (I : integralIdealsPrimeTo 𝔪)) : ℂ)
 
 /-- **Exact Chebotarev contract: cancellation of a nontrivial ray class character.** -/
 theorem rayClassCharacter_partialSums (𝔪 : Modulus K) (χ : RayClassCharacter 𝔪) (hχ : χ ≠ 1) :
@@ -236,6 +368,156 @@ theorem rayClassQuotient_surjective (𝔪 : Modulus K) :
 
 theorem ker_rayClassQuotient (𝔪 : Modulus K) :
     (rayClassQuotient 𝔪).ker = RaySubgroup 𝔪 := sorry
+
+/-! ### Layer 8: base change of adeles along a finite extension
+
+The comparison `𝔸_K ⊗_K L ≃ 𝔸_L` is pinned as an isomorphism of **topological** `𝔸_K`-algebras.
+A bare algebra equivalence is not enough for the later idelic arguments, which need the map and
+its inverse to be continuous and open. Because `L/K` is finite there is no completed tensor
+product to take: the algebraic tensor product carries the module topology over `𝔸_K`, which is
+the product topology of any `K`-basis of `L`, and that is what `IsModuleTopology` records. -/
+
+section BaseChange
+
+/-- **Layer 8, the adelic extension map.** Placewise it is given by the inclusions `K_v → L_w`
+for `w ∣ v`. It is stated as a ring homomorphism with `continuous_adeleExtension` and
+`adeleExtension_algebraMap` beside it, rather than as a `K`-algebra map, because `𝔸_L` has no
+canonical `K`-algebra instance to be a map over. -/
+noncomputable def adeleExtension (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L] :
+    AdeleRing (𝓞 K) K →+* AdeleRing (𝓞 L) L := sorry
+
+theorem continuous_adeleExtension (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L] :
+    Continuous (adeleExtension K L) := sorry
+
+/-- Compatibility with the two diagonal embeddings: `adeleExtension` extends `K → L`. -/
+theorem adeleExtension_algebraMap (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L] (x : K) :
+    adeleExtension K L (algebraMap K (AdeleRing (𝓞 K) K) x) =
+      algebraMap L (AdeleRing (𝓞 L) L) (algebraMap K L x) := sorry
+
+/-- The finite-adelic extension map. -/
+noncomputable def finiteAdeleExtension (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L] :
+    IsDedekindDomain.FiniteAdeleRing (𝓞 K) K →+*
+      IsDedekindDomain.FiniteAdeleRing (𝓞 L) L := sorry
+
+theorem continuous_finiteAdeleExtension (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L] :
+    Continuous (finiteAdeleExtension K L) := sorry
+
+/-- The infinite-adelic extension map. -/
+noncomputable def infiniteAdeleExtension (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L] :
+    InfiniteAdeleRing K →+* InfiniteAdeleRing L := sorry
+
+theorem continuous_infiniteAdeleExtension (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L] :
+    Continuous (infiniteAdeleExtension K L) := sorry
+
+/-- `𝔸_L` is an `𝔸_K`-algebra through `adeleExtension`; this is the structure the base-change
+comparison is stated over. The low priority keeps `Algebra.id` in place when `L = K`. -/
+noncomputable instance (priority := 100) adeleAlgebra (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L] :
+    Algebra (AdeleRing (𝓞 K) K) (AdeleRing (𝓞 L) L) :=
+  RingHom.toAlgebra (adeleExtension K L)
+
+noncomputable instance (priority := 100) finiteAdeleAlgebra (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L] :
+    Algebra (IsDedekindDomain.FiniteAdeleRing (𝓞 K) K)
+      (IsDedekindDomain.FiniteAdeleRing (𝓞 L) L) :=
+  RingHom.toAlgebra (finiteAdeleExtension K L)
+
+noncomputable instance (priority := 100) infiniteAdeleAlgebra (K : Type u) [Field K]
+    [NumberField K] (L : Type u) [Field L] [NumberField L] [Algebra K L] :
+    Algebra (InfiniteAdeleRing K) (InfiniteAdeleRing L) :=
+  RingHom.toAlgebra (infiniteAdeleExtension K L)
+
+/-- **Layer 8, the topological base-change comparison.** ⚠ The content is that this is an
+isomorphism of topological `𝔸_K`-algebras, not merely of `𝔸_K`-algebras: the
+`IsModuleTopology` hypothesis pins the topology on the source, and `ContinuousAlgEquiv` carries
+continuity in both directions, so the map is a homeomorphism and in particular open.
+`L ⊗_K 𝔸_K` and `𝔸_K ⊗_K L` are the same comparison. -/
+noncomputable def adeleBaseChangeEquiv (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [TopologicalSpace (TensorProduct K (AdeleRing (𝓞 K) K) L)]
+    [IsModuleTopology (AdeleRing (𝓞 K) K) (TensorProduct K (AdeleRing (𝓞 K) K) L)] :
+    TensorProduct K (AdeleRing (𝓞 K) K) L ≃A[AdeleRing (𝓞 K) K] AdeleRing (𝓞 L) L := sorry
+
+/-- Openness of the base-change comparison, from continuity of its inverse. -/
+theorem isOpenMap_adeleBaseChangeEquiv (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [TopologicalSpace (TensorProduct K (AdeleRing (𝓞 K) K) L)]
+    [IsModuleTopology (AdeleRing (𝓞 K) K) (TensorProduct K (AdeleRing (𝓞 K) K) L)] :
+    IsOpenMap (adeleBaseChangeEquiv K L) :=
+  (adeleBaseChangeEquiv K L).isOpenMap
+
+/-- The base-change comparison extends `adeleExtension`: it agrees with it on `𝔸_K ⊗ 1`. -/
+theorem adeleBaseChangeEquiv_tmul_one (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [TopologicalSpace (TensorProduct K (AdeleRing (𝓞 K) K) L)]
+    [IsModuleTopology (AdeleRing (𝓞 K) K) (TensorProduct K (AdeleRing (𝓞 K) K) L)]
+    (x : AdeleRing (𝓞 K) K) :
+    adeleBaseChangeEquiv K L (x ⊗ₜ[K] (1 : L)) = adeleExtension K L x := sorry
+
+/-- The finite-adelic half of the comparison. -/
+noncomputable def finiteAdeleBaseChangeEquiv (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [TopologicalSpace (TensorProduct K (IsDedekindDomain.FiniteAdeleRing (𝓞 K) K) L)]
+    [IsModuleTopology (IsDedekindDomain.FiniteAdeleRing (𝓞 K) K)
+      (TensorProduct K (IsDedekindDomain.FiniteAdeleRing (𝓞 K) K) L)] :
+    TensorProduct K (IsDedekindDomain.FiniteAdeleRing (𝓞 K) K) L
+      ≃A[IsDedekindDomain.FiniteAdeleRing (𝓞 K) K]
+        IsDedekindDomain.FiniteAdeleRing (𝓞 L) L := sorry
+
+/-- The infinite-adelic half of the comparison. -/
+noncomputable def infiniteAdeleBaseChangeEquiv (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [TopologicalSpace (TensorProduct K (InfiniteAdeleRing K) L)]
+    [IsModuleTopology (InfiniteAdeleRing K) (TensorProduct K (InfiniteAdeleRing K) L)] :
+    TensorProduct K (InfiniteAdeleRing K) L ≃A[InfiniteAdeleRing K] InfiniteAdeleRing L := sorry
+
+/-- **Compatibility with the finite and infinite components.** Under
+`AdeleRing = InfiniteAdeleRing × FiniteAdeleRing`, the base-change comparison is the product of
+the two component comparisons. -/
+theorem adeleBaseChangeEquiv_apply_prod (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [TopologicalSpace (TensorProduct K (AdeleRing (𝓞 K) K) L)]
+    [IsModuleTopology (AdeleRing (𝓞 K) K) (TensorProduct K (AdeleRing (𝓞 K) K) L)]
+    [TopologicalSpace (TensorProduct K (IsDedekindDomain.FiniteAdeleRing (𝓞 K) K) L)]
+    [IsModuleTopology (IsDedekindDomain.FiniteAdeleRing (𝓞 K) K)
+      (TensorProduct K (IsDedekindDomain.FiniteAdeleRing (𝓞 K) K) L)]
+    [TopologicalSpace (TensorProduct K (InfiniteAdeleRing K) L)]
+    [IsModuleTopology (InfiniteAdeleRing K) (TensorProduct K (InfiniteAdeleRing K) L)]
+    (x : AdeleRing (𝓞 K) K) (y : L) :
+    adeleBaseChangeEquiv K L (x ⊗ₜ[K] y) =
+      (infiniteAdeleBaseChangeEquiv K L (x.1 ⊗ₜ[K] y),
+        finiteAdeleBaseChangeEquiv K L (x.2 ⊗ₜ[K] y)) := sorry
+
+/-- **Composition in towers for the extension map.** -/
+theorem adeleExtension_comp (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    (M : Type u) [Field M] [NumberField M] [Algebra K M] [Algebra L M] [IsScalarTower K L M]
+    (x : AdeleRing (𝓞 K) K) :
+    adeleExtension L M (adeleExtension K L x) = adeleExtension K M x := sorry
+
+/-- **Naturality in towers.** Base change from `K` to `M` factors through base change from `K`
+to `L`: the two routes from `𝔸_K ⊗_K M` to `𝔸_M` agree on pure tensors, hence agree. -/
+theorem adeleBaseChangeEquiv_tower (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    (M : Type u) [Field M] [NumberField M] [Algebra K M] [Algebra L M] [IsScalarTower K L M]
+    [TopologicalSpace (TensorProduct K (AdeleRing (𝓞 K) K) L)]
+    [IsModuleTopology (AdeleRing (𝓞 K) K) (TensorProduct K (AdeleRing (𝓞 K) K) L)]
+    [TopologicalSpace (TensorProduct K (AdeleRing (𝓞 K) K) M)]
+    [IsModuleTopology (AdeleRing (𝓞 K) K) (TensorProduct K (AdeleRing (𝓞 K) K) M)]
+    [TopologicalSpace (TensorProduct L (AdeleRing (𝓞 L) L) M)]
+    [IsModuleTopology (AdeleRing (𝓞 L) L) (TensorProduct L (AdeleRing (𝓞 L) L) M)]
+    (x : AdeleRing (𝓞 K) K) (z : M) :
+    adeleBaseChangeEquiv K M (x ⊗ₜ[K] z) =
+      adeleBaseChangeEquiv L M ((adeleBaseChangeEquiv K L (x ⊗ₜ[K] (1 : L))) ⊗ₜ[L] z) := sorry
+
+end BaseChange
 
 /-! ## Layer 9: Hecke characters -/
 
@@ -285,9 +567,132 @@ noncomputable def ratModulus (n : ℕ)
   finitePart_ne_bot := h
   infinitePart := Finset.univ
 
-/-- The integer exponents of an algebraic infinity type, indexed by embeddings into `ℂ`. -/
-structure InfinityType (K : Type u) [Field K] [NumberField K] where
+/-! ### Layer 10: infinity types
+
+⚠ A continuous character of the idele class group is **not** determined at infinity by a list of
+integer exponents: at a real place there is a continuous parameter through `|x|^(it)`, and at a
+complex place there are independent modulus and angular parameters. Three carriers therefore
+appear, and every theorem says which one it is about.
+
+* `ContinuousInfinityType` is the general archimedean parameter of an arbitrary
+  `HeckeCharacter`;
+* `AlgebraicInfinityType` is the integral subcase, the one that produces gamma shifts and
+  motivic weights;
+* `FiniteOrderInfinityType` is the still smaller subcase realized by finite-order characters,
+  which is what the ray-class characters consumed by the L-functions roadmap have. -/
+
+/-- **The archimedean parameters of an arbitrary continuous Hecke character.** By the Layer 10
+classification, its restriction to the archimedean part is `x ↦ |x|^(s_w) sgn(x)^(ε_w)` at a real
+place `w` and `z ↦ |z|^(s_w) (z/|z|)^(k_w)` at a complex place. The exponents `s_w` are complex:
+they are exactly the continuous spectral parameters that a list of integers cannot record. -/
+structure ContinuousInfinityType (K : Type u) [Field K] [NumberField K] where
+  realExponent : {w : InfinitePlace K // w.IsReal} → ℂ
+  realParity : {w : InfinitePlace K // w.IsReal} → ZMod 2
+  complexExponent : {w : InfinitePlace K // w.IsComplex} → ℂ
+  complexAngular : {w : InfinitePlace K // w.IsComplex} → ℤ
+
+/-- **The integer exponents of an algebraic infinity type**, indexed by embeddings into `ℂ`:
+the archimedean component is `x ↦ ∏ σ, σ x ^ (exponent σ)`. -/
+structure AlgebraicInfinityType (K : Type u) [Field K] [NumberField K] where
   exponent : (K →+* ℂ) → ℤ
+
+/-- **The infinity type of a finite-order Hecke character**: a parity at each real place. A
+continuous finite-order character of `ℂˣ` is trivial, so there is no complex data and no
+exponent. -/
+structure FiniteOrderInfinityType (K : Type u) [Field K] [NumberField K] where
+  parity : {w : InfinitePlace K // w.IsReal} → ZMod 2
+
+/-- The conjugation bookkeeping: at a real place the exponent of the unique embedding is both
+the modulus exponent and, mod `2`, the sign parity; at a complex place the two conjugate
+embeddings contribute their sum as modulus exponent and their difference as angular frequency. -/
+noncomputable def AlgebraicInfinityType.toContinuous (a : AlgebraicInfinityType K) :
+    ContinuousInfinityType K where
+  realExponent w := (a.exponent w.1.embedding : ℂ)
+  realParity w := (a.exponent w.1.embedding : ZMod 2)
+  complexExponent w :=
+    ((a.exponent w.1.embedding + a.exponent (ComplexEmbedding.conjugate w.1.embedding) : ℤ) : ℂ)
+  complexAngular w :=
+    a.exponent w.1.embedding - a.exponent (ComplexEmbedding.conjugate w.1.embedding)
+
+theorem AlgebraicInfinityType.toContinuous_injective :
+    Function.Injective (AlgebraicInfinityType.toContinuous (K := K)) := sorry
+
+/-- A finite-order character has zero exponents and zero angular frequency. -/
+def FiniteOrderInfinityType.toContinuous (e : FiniteOrderInfinityType K) :
+    ContinuousInfinityType K where
+  realExponent _ := 0
+  realParity := e.parity
+  complexExponent _ := 0
+  complexAngular _ := 0
+
+theorem FiniteOrderInfinityType.toContinuous_injective :
+    Function.Injective (FiniteOrderInfinityType.toContinuous (K := K)) := sorry
+
+/-- Agreement of two archimedean parameters on the identity component of the archimedean group:
+the exponents and the angular frequencies match, while the sign characters at the real places
+are free. ⚠ This, and not equality of `ContinuousInfinityType`s, is the comparison in Weil's
+type-`A₀` condition: the sign characters are trivial on the identity component, so a finite-order
+sign twist does not change the infinity type of an algebraic character. Requiring full equality
+would wrongly declare the quadratic character mod `4` non-algebraic. -/
+def ContinuousInfinityType.EqOnIdentityComponent (a b : ContinuousInfinityType K) : Prop :=
+  a.realExponent = b.realExponent ∧ a.complexExponent = b.complexExponent ∧
+    a.complexAngular = b.complexAngular
+
+/-- A finite-order infinity type agrees on the identity component with the zero algebraic
+infinity type: a finite-order Hecke character is algebraic of weight zero, sign character and
+all. -/
+theorem FiniteOrderInfinityType.eqOnIdentityComponent_zero (e : FiniteOrderInfinityType K) :
+    ContinuousInfinityType.EqOnIdentityComponent
+      (⟨fun _ => 0⟩ : AlgebraicInfinityType K).toContinuous e.toContinuous := sorry
+
+/-- **The archimedean parameters of a Hecke character.** Every continuous character of the
+idele class group has them; only some of them come from an `AlgebraicInfinityType`. -/
+noncomputable def HeckeCharacter.infinityType (χ : HeckeCharacter K) :
+    ContinuousInfinityType K := sorry
+
+/-- A Hecke character is algebraic (Weil's type `A₀`) when its archimedean parameters agree with
+those of an algebraic infinity type on the identity component. -/
+def HeckeCharacter.IsAlgebraic (χ : HeckeCharacter K) : Prop :=
+  ∃ a : AlgebraicInfinityType K,
+    ContinuousInfinityType.EqOnIdentityComponent a.toContinuous χ.infinityType
+
+/-- A Hecke character has finite order when some positive power is trivial. This is the
+condition equivalent to open kernel and to factoring through a ray class group. -/
+def HeckeCharacter.IsFiniteOrder (χ : HeckeCharacter K) : Prop :=
+  ∃ n : ℕ, 0 < n ∧ ∀ y : IdeleClassGroup K, (χ y) ^ n = 1
+
+theorem HeckeCharacter.isFiniteOrder_iff_exists_rayClassCharacter (χ : HeckeCharacter K) :
+    χ.IsFiniteOrder ↔
+      ∃ (𝔪 : Modulus K) (η : RayClassCharacter 𝔪),
+        HeckeCharacter.ofRayClassCharacter η = χ := sorry
+
+/-- A finite-order character has a `FiniteOrderInfinityType`: no exponent and no angular
+frequency, only signs. -/
+theorem HeckeCharacter.exists_finiteOrderInfinityType {χ : HeckeCharacter K}
+    (hχ : χ.IsFiniteOrder) :
+    ∃ e : FiniteOrderInfinityType K, e.toContinuous = χ.infinityType := sorry
+
+/-- Finite order implies algebraic, with weight zero. The converse fails: an algebraic character
+of nonzero weight has infinite order. -/
+theorem HeckeCharacter.isAlgebraic_of_isFiniteOrder {χ : HeckeCharacter K}
+    (hχ : χ.IsFiniteOrder) : χ.IsAlgebraic := sorry
+
+/-- The unramified norm-power character `‖·‖^(it)` on the idele class group. It is trivial on
+principal ideles because the idele norm is, so it descends; it is the standard example of a
+continuous Hecke character that is neither algebraic nor of finite order. -/
+noncomputable def normCharacter (K : Type u) [Field K] [NumberField K] (t : ℝ) :
+    HeckeCharacter K := sorry
+
+/-- **Regression: integer exponents do not describe a general Hecke character at infinity.**
+For `t ≠ 0` the exponents of `normCharacter K t` are purely imaginary and nonzero, so no
+`AlgebraicInfinityType` — and a fortiori no `FiniteOrderInfinityType` — produces them. A
+roadmap or implementation that gives `HeckeCharacter` an integer-exponent infinity type
+unconditionally contradicts this. -/
+theorem not_isAlgebraic_normCharacter {t : ℝ} (ht : t ≠ 0) :
+    ¬ (normCharacter K t).IsAlgebraic := sorry
+
+theorem not_isFiniteOrder_normCharacter {t : ℝ} (ht : t ≠ 0) :
+    ¬ (normCharacter K t).IsFiniteOrder := sorry
 
 /-! ## Layer 11: orders and Picard groups -/
 
@@ -401,17 +806,65 @@ theorem NumberFieldOrder.unitSignBoundary_injective (O : NumberFieldOrder K) :
 theorem NumberFieldOrder.ker_narrowToPic (O : NumberFieldOrder K) :
     O.narrowToPic.ker = O.unitSignBoundary.range := sorry
 
-/-- Morphisms of orders, used to state functoriality without hiding the comparison maps. -/
-structure NumberFieldOrder.Hom (O O' : NumberFieldOrder K) where
-  toAlgHom : O.toSubalgebra →ₐ[ℤ] O'.toSubalgebra
+/-! ### Functoriality of `Pic` and `NarrowPic`
 
-noncomputable def NumberFieldOrder.Hom.mapPic {O O' : NumberFieldOrder K}
+⚠ An arbitrary `ℤ`-algebra homomorphism `O →ₐ[ℤ] O'` does **not** induce a map on `Pic`. Two
+things are missing. First, the extension `I ↦ I·O'` of a fractional ideal is only defined when
+the two orders sit inside comparable fraction fields and the map is the restriction of that
+embedding, so a homomorphism of the abstract rings has nowhere to send a denominator. Second,
+`NarrowPic` is a quotient by ideals with a **totally positive** generator, so the map must carry
+real places of the target back to real places of the source and preserve positivity there. Both
+requirements are in the carrier below, and both have named lemmas. -/
+
+/-- A morphism of orders: a field embedding of the ambient number fields that carries the
+source order into the target order. This is the data that induces extension of fractional
+ideals; the underlying `ℤ`-algebra homomorphism of the orders alone is not. -/
+structure NumberFieldOrder.Hom {K K' : Type u} [Field K] [NumberField K]
+    [Field K'] [NumberField K'] (O : NumberFieldOrder K) (O' : NumberFieldOrder K') where
+  /-- The embedding of fraction fields along which fractional ideals are extended. -/
+  toRingHom : K →+* K'
+  maps_mem : ∀ x ∈ O.toSubalgebra, toRingHom x ∈ O'.toSubalgebra
+
+/-- The inclusion of one order into a larger order of the same field: the fraction-field
+embedding is the identity. This is the case used to compare an order with the maximal order. -/
+def NumberFieldOrder.Hom.ofLE {O O' : NumberFieldOrder K}
+    (h : O.toSubalgebra ≤ O'.toSubalgebra) : O.Hom O' where
+  toRingHom := RingHom.id K
+  maps_mem _ hx := h hx
+
+/-- **Control of real places.** A real place of the target restricts to a real place of the
+source along the fraction-field embedding, which is what lets positivity conditions be
+transported. This is Mathlib's `NumberField.InfinitePlace.IsReal.comap`. -/
+theorem NumberFieldOrder.Hom.isReal_comap {K K' : Type u} [Field K] [NumberField K]
+    [Field K'] [NumberField K'] {O : NumberFieldOrder K} {O' : NumberFieldOrder K'}
+    (f : O.Hom O') {w : InfinitePlace K'} (hw : w.IsReal) :
+    (w.comap f.toRingHom).IsReal :=
+  InfinitePlace.IsReal.comap f.toRingHom hw
+
+/-- **Transport of positivity.** A totally positive element of `K` has totally positive image in
+`K'`, because every real place of `K'` restricts to a real place of `K`. This is the lemma the
+narrow functoriality below rests on; without it `mapNarrowPic` is not well defined. -/
+theorem NumberFieldOrder.Hom.pos_of_totallyPos {K K' : Type u} [Field K] [NumberField K]
+    [Field K'] [NumberField K'] {O : NumberFieldOrder K} {O' : NumberFieldOrder K'}
+    (f : O.Hom O') {x : K}
+    (hx : ∀ (w : InfinitePlace K) (hw : w.IsReal),
+      0 < InfinitePlace.embedding_of_isReal hw x)
+    {w : InfinitePlace K'} (hw : w.IsReal) :
+    0 < InfinitePlace.embedding_of_isReal hw (f.toRingHom x) := sorry
+
+/-- Extension of invertible proper fractional ideals along a morphism of orders. -/
+noncomputable def NumberFieldOrder.Hom.mapPic {K K' : Type u} [Field K] [NumberField K]
+    [Field K'] [NumberField K'] {O : NumberFieldOrder K} {O' : NumberFieldOrder K'}
     (f : O.Hom O') : Pic O →* Pic O' := sorry
 
-noncomputable def NumberFieldOrder.Hom.mapNarrowPic {O O' : NumberFieldOrder K}
+/-- The narrow analogue. It exists precisely because of
+`NumberFieldOrder.Hom.pos_of_totallyPos`. -/
+noncomputable def NumberFieldOrder.Hom.mapNarrowPic {K K' : Type u} [Field K] [NumberField K]
+    [Field K'] [NumberField K'] {O : NumberFieldOrder K} {O' : NumberFieldOrder K'}
     (f : O.Hom O') : NarrowPic O →* NarrowPic O' := sorry
 
-theorem NumberFieldOrder.narrowToPic_natural {O O' : NumberFieldOrder K}
+theorem NumberFieldOrder.narrowToPic_natural {K K' : Type u} [Field K] [NumberField K]
+    [Field K'] [NumberField K'] {O : NumberFieldOrder K} {O' : NumberFieldOrder K'}
     (f : O.Hom O') :
     f.mapPic.comp O.narrowToPic = O'.narrowToPic.comp f.mapNarrowPic := sorry
 
@@ -477,7 +930,7 @@ theorem narrowClassToClass_eq :
       (maximalOrderPicEquiv (K := K)).toMonoidHom.comp
         (maximalNumberFieldOrder K).narrowToPic := rfl
 
-/-- Backwards-compatible existential corollary. -/
+/-- Existential corollary of the named map. -/
 theorem narrowPic_surjective (O : NumberFieldOrder K) :
     ∃ f : NarrowPic O →* Pic O, Function.Surjective f :=
   ⟨O.narrowToPic, O.narrowToPic_surjective⟩

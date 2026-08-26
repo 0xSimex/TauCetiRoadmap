@@ -3,7 +3,7 @@
 This roadmap builds the reusable global arithmetic carried by a number field before reciprocity or
 L-function analysis begins. Its central objects are the places and completions of a number field,
 weak approximation, moduli and ray class groups, additive and multiplicative adeles, the idele
-class group, ray class and Hecke characters, algebraic infinity types, and orders with their Picard
+class group, ray class and Hecke characters, infinity types, and orders with their Picard
 groups. Geometry of numbers supplies the uniform ideal-counting statements that analytic consumers
 need.
 
@@ -39,7 +39,8 @@ in a private provenance ledger.
 - archimedean completion classification and normalized absolute values;
 - ray class characters, Hecke characters, their conductors, shifts, and unitary parts;
 - the arithmetic splitting and ramification package for cyclotomic fields;
-- continuous and algebraic infinity types;
+- three infinity-type carriers -- continuous, algebraic, and finite-order -- and the theorems
+  that separate them;
 - orders in number fields, conductors, invertible proper fractional ideals, their wide and narrow
   Picard groups, and the separate ideal class monoid that also sees noninvertible ideals.
 
@@ -78,7 +79,7 @@ The dependency is one-way. The exact declarations consumed here are:
 | --- | --- |
 | `idealsAway` | The group of fractional ideals whose valuations vanish at a finite set of primes. `idealsPrimeTo 𝔪` is a reducible abbreviation at `𝔪.support`, never another subgroup. |
 | `idealsAwayInclusion` | Transition of prime-to ideal groups when the support grows. |
-| `integralIdealsAway`, `integralIdealsAwayHom` | Nonzero integral ideals prime to a finite set and their map to the fractional-ideal group. |
+| `integralIdealsAway`, `integralIdealsAwayHom` | Nonzero integral ideals prime to a finite set and their map to the fractional-ideal group. `integralIdealsPrimeTo 𝔪` is a reducible abbreviation at `𝔪.support`, and is the **domain of `idealClass`**; there is no second monoid of integral ideals prime to a modulus. |
 | the finite-completion dictionary | Identification of `v.adicCompletion K` with the canonical nonarchimedean local-field data, including normalized valuation and residue cardinality. |
 
 No Artin symbol or Artin homomorphism is consumed in the construction of the carriers here.
@@ -93,20 +94,23 @@ Modulus
 Modulus.support
 Modulus.exponent
 congruenceSubgroup
+IsCongrOne
 idealsPrimeTo
+integralIdealsPrimeTo
 ray
 RayClassGroup
 idealClass
+idealClass_eq_one_iff
 classMap
 narrowModulus
 IdeleGroup
 IdeleClassGroup
-ideleNorm
 IdeleClassGroup.normOne
 IdeleCongruenceSubgroup
 RaySubgroup
 rayClassQuotient
 adeleExtension
+adeleBaseChangeEquiv
 adeleNorm
 ideleExtension
 ideleNorm
@@ -114,6 +118,7 @@ HeckeCharacter
 RayClassCharacter
 HeckeCharacter.shift
 HeckeCharacter.unitaryPart
+HeckeCharacter.IsFiniteOrder
 ```
 
 These are arithmetic and topological carriers. A reciprocity map from an idele class quotient to a
@@ -127,10 +132,19 @@ ray-class arithmetic. Chebotarev additionally consumes the two uniform counting 
 | Declaration | Exact contract |
 | --- | --- |
 | `GlobalNumberFields.rayClassIdealCount` | Every ray class has the same positive linear main term in the number of nonzero integral ideals prime to the modulus, with one power-saving exponent uniform over the finite ray class group. |
+| `GlobalNumberFields.rayClassIdealMainTerm_eq` | That main term is the Dedekind-zeta residue times the Euler factors at the primes dividing the finite modulus, divided by the order of the ray class group. |
 | `GlobalNumberFields.rayClassCharacter_partialSums` | For a nontrivial ray class character, the common main terms cancel and the character sum over ideals of norm at most `x` satisfies a power-saving bound. |
 
 Total ideal counting is not a substitute for either theorem. The second is what continues a
 nontrivial ray-class character series through `Re s = 1` by Abel summation.
+
+The infinity-type export is three carriers, not one, and a consumer names the one it means:
+
+| Declaration | Exact contract |
+| --- | --- |
+| `GlobalNumberFields.ContinuousInfinityType` | The archimedean parameters of an arbitrary `HeckeCharacter`, including the complex exponents at real and complex places and the angular frequency at complex places. |
+| `GlobalNumberFields.AlgebraicInfinityType` | Integer exponents at the embeddings into `ℂ`. This is the carrier that produces gamma shifts and motivic weights, and it describes a Hecke character only under `HeckeCharacter.IsAlgebraic`. |
+| `GlobalNumberFields.FiniteOrderInfinityType` | Signs at the real places, and nothing else. This is what a character coming from `RayClassCharacter` has. |
 
 ### Interface supplied to Global Quadratic Forms
 
@@ -195,12 +209,19 @@ group.
 | Divisibility | `𝔪 ∣ 𝔫` means that the finite exponents and the infinite set grow. The transition map runs `Cl_𝔫 ↠ Cl_𝔪`. |
 | Multiplicative congruence | `x ≡ 1 mod* 𝔪` is a condition on `Kˣ`: the prescribed valuation of `x-1` at finite divisors and positivity at the selected real places. It is not unqualified membership in `1 + 𝔪₀`. |
 | Prime-to ideal group | `idealsPrimeTo 𝔪` abbreviates `NumberFieldArithmetic.idealsAway 𝔪.support`. There is one group. |
+| Integral prime-to monoid | `integralIdealsPrimeTo 𝔪` abbreviates `NumberFieldArithmetic.integralIdealsAway 𝔪.support`. There is one monoid, and its membership predicate is `Modulus.IsCoprimeTo`. |
 | Ray class group | `Cl_𝔪 K = J^{𝔪₀}/P_𝔪`. The trivial modulus comparison with `ClassGroup (𝓞 K)` is a named equivalence, not definitional equality. |
+| Ray class of an ideal | `idealClass 𝔪 : integralIdealsPrimeTo 𝔪 →* RayClassGroup 𝔪`, a monoid homomorphism on the ideals that actually have a class. It is never a total function on `Ideal (𝓞 K)`. |
+| Ray triviality | The primary criterion is intrinsic: `[I] = 1` iff `I = (x)` as a fractional ideal for some `x : Kˣ` with `IsCongrOne 𝔪 x`. The integral `a, b` equation `I·(b) = (a)` is a derived corollary. |
 | Narrow class group | The ray class group for the modulus with unit finite part and every real place. It agrees with the wide group for a totally imaginary field by theorem. |
 | Idele topology | The topology on the units of `AdeleRing` is the units topology from `x ↦ (x,x⁻¹)`, not the subspace topology inherited from the ring. |
 | Idele norm | Product of normalized local absolute values. It is `1` on principal ideles, and therefore descends to the idele class group. |
 | Hecke character | A continuous multiplicative character of the idele class group. A collection of ideal coefficients, gamma shifts, and finite characters is a presentation of one, not another carrier. |
 | Shift | The unique **real** `σ` with `|χ| = ‖·‖^σ`; allowing a complex shift destroys uniqueness up to unitary norm twists. |
+| Infinity type | Three carriers. `ContinuousInfinityType` is the archimedean parameter of an arbitrary Hecke character and has **complex** exponents; `AlgebraicInfinityType` is integer exponents at the embeddings; `FiniteOrderInfinityType` is signs at the real places. `HeckeCharacter.infinityType` lands in the first. |
+| Algebraic character | Weil's type `A₀`: the archimedean parameters agree with those of an `AlgebraicInfinityType` **on the identity component**, so a finite-order sign twist does not destroy algebraicity. Equality of full `ContinuousInfinityType`s is the wrong comparison. |
+| Base change of adeles | `𝔸_K ⊗_K L ≃ 𝔸_L` is a `ContinuousAlgEquiv` over `𝔸_K`, with the module topology on the source. A bare `AlgEquiv` is not the target. |
+| Morphism of orders | A field embedding of the ambient number fields carrying one order into the other. A bare `ℤ`-algebra homomorphism of the orders does not induce a map on `Pic` or `NarrowPic`. |
 | Proper ideal of an order | A fractional ideal `I` with multiplier ring `{x | xI ⊆ I}` equal to the order. This is necessary but, for a general non-Gorenstein order, not sufficient for invertibility. |
 | Picard group of an order | The group of **invertible proper fractional ideals** modulo nonzero principal fractional ideals. It is not the ideal class monoid of all fractional ideals. |
 | Narrow Picard group | The same invertible carrier modulo principal fractional ideals with a totally positive generator (equivalently positive norm only in the quadratic cases where that dictionary is used). |
@@ -253,36 +274,97 @@ modulus, and `narrowModulus`. Define `IsCongrOne`, `primeToSubgroup`, and `congr
 the valuation and positivity clauses visible.
 
 Define `idealsPrimeTo 𝔪` as the reducible abbreviation of
-`NumberFieldArithmetic.idealsAway 𝔪.support`. Define the ray of principal ideals generated by
-`congruenceSubgroup 𝔪`, then define `RayClassGroup 𝔪` as the quotient. Supply:
+`NumberFieldArithmetic.idealsAway 𝔪.support`, and `integralIdealsPrimeTo 𝔪` as the reducible
+abbreviation of `NumberFieldArithmetic.integralIdealsAway 𝔪.support`, with
+`Modulus.mem_integralIdealsPrimeTo` identifying membership with `Modulus.IsCoprimeTo`. Define the
+ray of principal ideals generated by `congruenceSubgroup 𝔪`, then define `RayClassGroup 𝔪` as the
+quotient. Supply:
 
 - the named subgroups `primeToSubgroup` and `unitsCongruenceSubgroup`, so reduction and the
   unit correction in the class-number formula have exact carriers;
-- `idealClass`, its multiplicativity and the named triviality criterion
-  `idealClass_eq_one_iff`;
-- the moving lemma and `idealClass_surjective`;
-- `classMap` and `finiteUnitsMap`, their direction from a larger modulus to a smaller one,
-  surjectivity where appropriate, composition, and compatibility with `idealClass`;
+- `idealClass 𝔪` as a **monoid homomorphism out of `integralIdealsPrimeTo 𝔪`**, with
+  `idealClass_mul` as the resulting `map_mul` and `idealClass_surjective` as surjectivity of that
+  homomorphism;
+- the moving lemma;
+- `integralIdealsPrimeToInclusion`, `classMap` and `finiteUnitsMap`, their direction from a larger
+  modulus to a smaller one, surjectivity where appropriate, composition, and compatibility with
+  `idealClass`;
 - the ray-class exact sequence including the unit-sign obstruction;
 - `finite_rayClassGroup` and the class-number formula;
 - the trivial-modulus equivalence with `ClassGroup (𝓞 K)`;
 - the narrow class group, its surjection to the wide group, and its kernel formula.
+
+⚠ `idealClass` is a homomorphism on the ideals that have a ray class, not a total function on
+`Ideal (𝓞 K)`. A version totalized over arbitrary ideals hands back a junk class for `⊥` and for
+every ideal sharing a prime with `𝔪₀`; the coprimality hypothesis then reappears only on the
+theorems, and every statement that forgets it typechecks. Carrying the proof in the argument also
+makes multiplicativity and compatibility with `classMap` definitionally correct rather than
+side-conditioned.
+
+The triviality criterion `idealClass_eq_one_iff` is the **intrinsic** one:
+
+```text
+idealClass 𝔪 I = 1  ↔  ∃ x : Kˣ, IsCongrOne 𝔪 x ∧ (I : FractionalIdeal (𝓞 K)⁰ K) = (x).
+```
+
+The generator is a fractional-ideal generator; `IsCongrOne 𝔪 x` already carries the finite
+congruence and the positivity at the real places of `𝔪`. Prove the denominator-cleared form
+
+```text
+∃ a b : 𝓞 K, a ≡ b ≡ 1 mod 𝔪₀, a, b ≫ 0 at 𝔪∞, and I·(b) = (a)
+```
+
+separately, as `idealClass_eq_one_iff_exists_integral`, derived from the intrinsic statement.
+Downstream proofs must be able to use whichever they need, so neither may be the only form on
+offer, and the fractional one is primary. (`a ≡ 1 mod 𝔪₀` already forces `a` prime to `𝔪₀`, so no
+extra coprimality hypothesis belongs in the integral form.)
 
 A direct-product decomposition into residue units, signs, and the ordinary class group is false in
 general because the image of global units glues the factors.
 
 ### Layer 3: geometry of numbers and ray-class ideal counting
 
-Build the Minkowski embedding and its lattice/covolume API from Mathlib's canonical embedding.
-Prove a Lipschitz-boundary lattice-point estimate for the expanding regions used to count integral
-ideals. Recover Mathlib's total ideal-counting asymptotic as an agreement theorem.
+The uniform power saving of this layer is a geometry-of-numbers theorem in its own right. It is
+much stronger than finiteness of the ray class group, and stronger than Mathlib's
+`NumberField.Ideal.tendsto_norm_le_and_mk_eq_div_atTop`, which gives a limit for a class-group
+class and no error term at all. The layer is therefore split into named milestones, and
+"geometry of numbers" is never a prerequisite standing in for the argument.
 
-Refine the argument to every ray class. Define `rayClassIdealCountingFunction 𝔪 c x` using only
-nonzero integral ideals prime to `𝔪` whose `idealClass` is `c`. Define the positive common coefficient
-`rayClassIdealMainTerm 𝔪`; identify it with the Dedekind-zeta residue times the finite Euler factors,
-divided by `#RayClassGroup 𝔪`.
+**3A. Lattice-point counting with a power-saving error.** Build the Minkowski embedding and its
+lattice/covolume API on Mathlib's `NumberField.mixedEmbedding.idealLattice`,
+`NumberField.mixedEmbedding.covolume_idealLattice`, and `ZLattice.covolume`. Define
+`IsLipschitzParametrizable d S`: finitely many Lipschitz maps out of `[0,1]^d` cover `S`. Prove
 
-Prove the exact consumer export
+```text
+card_inter_smul_isBigO :
+  # (c • D ∩ Λ) = volume D / covolume Λ * c^n + O(c^(n-1))
+```
+
+for a full lattice `Λ` in an `n`-dimensional real space and a bounded measurable `D` whose
+frontier is Lipschitz parametrizable in dimension `n-1`. Mathlib's
+`ZLattice.covolume.tendsto_card_le_div'` assumes only that the frontier is null, which yields the
+limit but no error term, so this theorem is built here rather than consumed.
+
+**3B. The congruence sublattice.** Define `congruenceLattice 𝔪 I` inside the ideal lattice of `I`
+and prove `relIndex_congruenceLattice`: it has index `N 𝔪₀`, so its covolume is `N 𝔪₀` times the
+covolume of the ideal lattice. Congruence conditions on ray-class representatives are imposed by
+counting cosets of this sublattice, never as an unstructured side condition on the count.
+
+**3C. The unit action and a fundamental domain.** Prove `unitsCongruenceSubgroup_finiteIndex`:
+the units congruent to one modulo `𝔪` have finite index in `(𝓞 K)ˣ`. Define
+`rayFundamentalDomain 𝔪`, the subset of the Minkowski space meeting each orbit of that subgroup
+once and carrying the signs prescribed by `𝔪∞`; the trivial modulus recovers Mathlib's
+`NumberField.mixedEmbedding.fundamentalCone`. Prove
+`isLipschitzParametrizable_frontier_rayFundamentalDomain`: the norm-one section is bounded and
+measurable and its frontier is Lipschitz parametrizable in dimension `[K:ℚ] - 1`. The finite
+index is what makes the implied constants uniform in the class, since a fundamental domain for
+the smaller unit group is a finite union of translates of the cone.
+
+**3D. Assembly, uniformly in the class.** Combine 3A, 3B and 3C: an ideal of a fixed ray class
+prime to `𝔪` corresponds to a lattice point of a coset of `congruenceLattice` inside the cone,
+modulo the congruence units. Define `rayClassIdealCountingFunction 𝔪 c x` on
+`integralIdealsPrimeTo 𝔪` restricted to `idealClass 𝔪 I = c`, and `rayClassIdealMainTerm 𝔪`, and
+prove the exact consumer export
 
 ```text
 GlobalNumberFields.rayClassIdealCount
@@ -294,8 +376,24 @@ with one exponent `δ > 0`, independent of `c`, such that every class count is
 rayClassIdealMainTerm 𝔪 * x + O(x^(1-δ)).
 ```
 
-For a nontrivial `χ : RayClassCharacter 𝔪`, use finite-character orthogonality to cancel the common
-main terms and prove the exact export
+The exponent `δ = 1/[K:ℚ]` comes out of 3A's `c^(n-1)`; nothing here needs a better one.
+
+**3E. The main term, explicitly.** Prove `rayClassIdealMainTerm_pos` and
+
+```text
+rayClassIdealMainTerm_eq :
+  rayClassIdealMainTerm 𝔪
+    = dedekindZeta_residue K / #(RayClassGroup 𝔪) * ∏_{𝔭 ∣ 𝔪₀} (1 - N𝔭⁻¹),
+```
+
+with `NumberField.dedekindZeta_residue K = 2^r₁ (2π)^r₂ R_K h_K / (w_K √|d_K|)` consumed from
+Mathlib. ⚠ The Euler factors are not decoration: the count is over ideals **prime to** `𝔪₀`, and
+dropping them makes the main term too large by `∏_{𝔭 ∣ 𝔪₀} (1 - N𝔭⁻¹)⁻¹`. Prove
+`tendsto_rayClassIdealCountingFunction_one` as the agreement theorem with Mathlib's total ideal
+count at the trivial modulus.
+
+**3F. Character cancellation.** For a nontrivial `χ : RayClassCharacter 𝔪`, use finite-character
+orthogonality to cancel the common main terms and prove the exact export
 
 ```text
 GlobalNumberFields.rayClassCharacter_partialSums.
@@ -365,10 +463,31 @@ open subgroup of the idele class group contains a ray subgroup and describe the 
 
 ### Layer 8: finite extensions of adeles and ideles
 
-For a finite extension `L/K`, construct the `𝔸_K`-algebra structure on `𝔸_L` and the topological
-comparison with `L ⊗_K 𝔸_K`. Construct the Galois action placewise and prove continuity. Define the
-extension and norm maps on adeles, ideles, and idele classes, with component formulas over the
-places above each base place.
+For a finite extension `L/K`, define `adeleExtension`, `finiteAdeleExtension` and
+`infiniteAdeleExtension` as ring homomorphisms, prove they are continuous, and prove
+`adeleExtension_algebraMap`, their compatibility with the two diagonal embeddings. These maps give
+`𝔸_L` its `𝔸_K`-algebra structure. Construct the Galois action placewise and prove continuity.
+Define the norm maps on adeles, ideles, and idele classes, with component formulas over the places
+above each base place.
+
+Then prove the base-change comparison. ⚠ Its content is **topological**, and a bare algebra
+equivalence does not discharge it: later idelic arguments need the map and its inverse to be
+continuous, and need images of open sets to be open. Concretely:
+
+- `L/K` is finite, so no completed tensor product is involved. The algebraic tensor product
+  `𝔸_K ⊗_K L` carries the **module topology** over `𝔸_K` — the product topology of any `K`-basis
+  of `L` — recorded by Mathlib's `IsModuleTopology`. Every statement below is under that
+  hypothesis, and the topology is never left to be guessed.
+- `adeleBaseChangeEquiv : 𝔸_K ⊗_K L ≃A[𝔸_K] 𝔸_L`, a `ContinuousAlgEquiv`, hence continuous both
+  ways; `isOpenMap_adeleBaseChangeEquiv` is the openness corollary. `L ⊗_K 𝔸_K` is the same
+  comparison written in the other order.
+- Compatibility with components: `finiteAdeleBaseChangeEquiv` and `infiniteAdeleBaseChangeEquiv`
+  are the two halves, and `adeleBaseChangeEquiv_apply_prod` says the full comparison is their
+  product under `AdeleRing = InfiniteAdeleRing × FiniteAdeleRing`.
+- Naturality: `adeleBaseChangeEquiv_tmul_one` identifies the comparison with `adeleExtension` on
+  `𝔸_K ⊗ 1`, `adeleExtension_comp` gives composition in a tower `K ⊆ L ⊆ M`, and
+  `adeleBaseChangeEquiv_tower` says base change from `K` to `M` factors through base change from
+  `K` to `L`.
 
 Prove composition in towers, compatibility with principal elements, the projection formula, and
 the local-degree formula for the global norm. These are carrier and functoriality theorems. Do not
@@ -386,7 +505,8 @@ and `RayClassCharacter 𝔪 := RayClassGroup 𝔪 →* ℂˣ`. Construct
 `HeckeCharacter.ofRayClassCharacter` as pullback along `rayClassQuotient`; prove injectivity and
 characterize its image.
 
-Prove that finite order, open kernel, and factoring through some ray class group are equivalent.
+Prove that `HeckeCharacter.IsFiniteOrder`, open kernel, and factoring through some ray class group
+are equivalent; `HeckeCharacter.isFiniteOrder_iff_exists_rayClassCharacter` is the named form.
 Define local components and the finite conductor ideal. For characters trivial on the identity
 component, define the least ray conductor modulus. Define `RayClassCharacter.induced` against
 `classMap` and `RayClassCharacter.IsPrimitive`; prove that the trivial character of a nontrivial
@@ -398,10 +518,36 @@ prove the conductor- and parity-compatible dictionary with Dirichlet characters.
 
 ### Layer 10: archimedean characters, infinity types, and cyclotomic arithmetic
 
-Classify continuous characters of `ℝˣ` as `|x|^s sgn(x)^ε`, with `ε : ZMod 2`, and of `ℂˣ` as
-`(z/|z|)^k |z|^s`, with `k : ℤ`. Define `InfinityType K` by its integer exponents at embeddings and
-the conjugation bookkeeping. Define algebraicity of a Hecke character through this carrier and
-prove the unit compatibility, purity, norm twists, base change, and the ideal-side character.
+Classify continuous characters of `ℝˣ` as `|x|^s sgn(x)^ε`, with `s : ℂ` and `ε : ZMod 2`, and of
+`ℂˣ` as `(z/|z|)^k |z|^s`, with `s : ℂ` and `k : ℤ`.
+
+⚠ The exponents `s` are **complex**, so a continuous idele-class character is not determined at
+infinity by a list of integer exponents. There are therefore three carriers, and every statement
+says which one it is about.
+
+- `ContinuousInfinityType K` records `(s_w, ε_w)` at each real place and `(s_w, k_w)` at each
+  complex place. This is what `HeckeCharacter.infinityType` returns, for every Hecke character.
+- `AlgebraicInfinityType K` is the integer exponents `(n_σ)` at the embeddings `K → ℂ`. Define
+  `AlgebraicInfinityType.toContinuous` with the conjugation bookkeeping — a real place contributes
+  its exponent as modulus exponent and, mod `2`, as sign parity; a complex place with conjugate
+  embeddings `σ, σ̄` contributes `n_σ + n_σ̄` as modulus exponent and `n_σ - n_σ̄` as angular
+  frequency — and prove it injective.
+- `FiniteOrderInfinityType K` is a sign at each real place, and nothing else: a continuous
+  finite-order character of `ℂˣ` is trivial. Prove
+  `HeckeCharacter.exists_finiteOrderInfinityType` for a character of finite order.
+
+Define `HeckeCharacter.IsAlgebraic` as Weil's type `A₀`: the archimedean parameters agree with
+those of an `AlgebraicInfinityType` **on the identity component**, that is, up to the sign
+characters at the real places, which the identity component does not see. ⚠ Demanding equality of
+full `ContinuousInfinityType`s instead would declare the odd quadratic character mod `4` not
+algebraic, which is false. Prove `HeckeCharacter.isAlgebraic_of_isFiniteOrder`, and for the
+algebraic characters prove the unit compatibility, purity, norm twists, base change, and the
+ideal-side character.
+
+The separation is a target, not a remark. Define the unramified norm-power character
+`normCharacter K t` and prove `not_isAlgebraic_normCharacter` and
+`not_isFiniteOrder_normCharacter` for `t ≠ 0`: its archimedean exponents are purely imaginary,
+so no integer exponents and no sign data describe it.
 
 For `ℚ(ζ_n)`, prove the splitting law, the prime-power and general ramification formulas, and the
 conductor-normalized statement accounting for `ℚ(ζ₆)=ℚ(ζ₃)`. Prove
@@ -441,9 +587,23 @@ to the maximal order, where every nonzero fractional ideal is invertible. The wi
 comparison is the named canonical map
 `NumberFieldOrder.narrowToPic : NarrowPic O →* Pic O`: give its value on an ideal class, prove
 surjectivity, and identify its kernel through the exact sequence
-`Oˣ → {±1}^{r₁} → NarrowPic O → Pic O → 1`. Prove naturality for order morphisms and state the
-commuting maximal-order specialization as `narrowClassToClass`; the old existential
-`narrowPic_surjective` remains only as a corollary of the named map.
+`Oˣ → {±1}^{r₁} → NarrowPic O → Pic O → 1`. State the commuting maximal-order specialization as
+`narrowClassToClass`; the existential `narrowPic_surjective` remains only as a corollary of the
+named map.
+
+Functoriality is stated for the morphisms that actually induce it. ⚠ An arbitrary
+`ℤ`-algebra homomorphism `O →ₐ[ℤ] O'` does **not** induce a map on `Pic` or `NarrowPic`, so a
+functoriality statement quantified over one is a false theorem. Two things are missing: extension
+of a fractional ideal needs a compatible embedding of the fraction fields, since a homomorphism of
+the abstract rings has nowhere to send a denominator; and the narrow quotient is by ideals with a
+**totally positive** generator, so the map must control real places. `NumberFieldOrder.Hom O O'`
+is therefore a ring homomorphism `K →+* K'` of the ambient number fields carrying `O` into `O'`,
+with `NumberFieldOrder.Hom.ofLE` the inclusion of two orders of one field as the special case.
+Prove `NumberFieldOrder.Hom.isReal_comap` (a real place of `K'` restricts to a real place of `K`,
+from Mathlib's `InfinitePlace.IsReal.comap`) and `NumberFieldOrder.Hom.pos_of_totallyPos`, then
+`Hom.mapPic`, `Hom.mapNarrowPic`, and the naturality square `narrowToPic_natural`. The positivity
+lemma is what makes `mapNarrowPic` well defined, and it is a named target rather than a step
+inside a construction.
 
 Do not define `ringClassField O`. Class Field Theory consumes the congruence description and builds
 that field.
@@ -459,39 +619,63 @@ produce a nonunit class in `IdealClassMonoid O`, never an element of `Pic O`.
 1. A mixed finite/real set of places is accepted by `weakApproximation_denseRange`; a theorem only
    about infinite places or only about congruences does not discharge the target.
 2. Weak approximation does not assert integrality at every omitted finite place.
-3. `idealsPrimeTo 𝔪` unfolds to `NumberFieldArithmetic.idealsAway 𝔪.support`.
-4. A modulus over a real field is tested with a nonempty infinite part; otherwise every narrow
+3. `idealsPrimeTo 𝔪` unfolds to `NumberFieldArithmetic.idealsAway 𝔪.support`, and
+   `integralIdealsPrimeTo 𝔪` to `NumberFieldArithmetic.integralIdealsAway 𝔪.support`.
+4. `idealClass` does not accept an arbitrary `I : Ideal (𝓞 K)`. A definition that does, with the
+   coprimality hypothesis moved onto the theorems, is rejected: it exports a junk class for `⊥`
+   and for every ideal meeting `𝔪₀`.
+5. A modulus over a real field is tested with a nonempty infinite part; otherwise every narrow
    statement can silently collapse to the wide one.
-5. The transition map runs from a larger modulus to a smaller modulus.
-6. The ray class group is not a product of residue units, signs, and the class group; global units
+6. The transition map runs from a larger modulus to a smaller modulus.
+7. The ray class group is not a product of residue units, signs, and the class group; global units
    impose the extension.
-7. `rayClassIdealCount` has one main coefficient and one power-saving exponent uniform in the ray
-   class. Total ideal counting does not imply it.
-8. `rayClassCharacter_partialSums` assumes the character is nontrivial. For the trivial character,
-   the linear main term survives.
-9. `K` is dense in the finite adeles and discrete in the full adeles. Interchanging those ambient
-   rings makes both statements false.
-10. At a complex place the local norm uses `|z|²`, not `|z|`.
-11. The idele topology is the units topology, not the subspace topology.
-12. A complex shift in the unitary decomposition is rejected because uniqueness fails.
-13. `ℚ(ζ₆)` is unramified at `2`; “ramified exactly at primes dividing `n`” is rejected without
+8. `idealClass_eq_one_iff` is the fractional-generator statement. A development in which the only
+   available criterion is the integral `I·(b) = (a)` equation does not discharge it; the integral
+   form is `idealClass_eq_one_iff_exists_integral` and is derived from it.
+9. `rayClassIdealCount` has one main coefficient and one power-saving exponent uniform in the ray
+   class. Total ideal counting does not imply it, and neither does Mathlib's class-group limit
+   `NumberField.Ideal.tendsto_norm_le_and_mk_eq_div_atTop`, which has no error term.
+10. `rayClassIdealMainTerm_eq` carries the Euler factors `∏_{𝔭 ∣ 𝔪₀} (1 - N𝔭⁻¹)`. A main term that
+    is the zeta residue divided by `#Cl_𝔪` alone is too large, because the count is over ideals
+    prime to `𝔪₀`.
+11. `rayClassCharacter_partialSums` assumes the character is nontrivial. For the trivial character,
+    the linear main term survives.
+12. `K` is dense in the finite adeles and discrete in the full adeles. Interchanging those ambient
+    rings makes both statements false.
+13. At a complex place the local norm uses `|z|²`, not `|z|`.
+14. The idele topology is the units topology, not the subspace topology.
+15. A complex shift in the unitary decomposition is rejected because uniqueness fails.
+16. `HeckeCharacter.infinityType` lands in `ContinuousInfinityType`, whose exponents are complex.
+    A development that gives every Hecke character an integer-exponent infinity type is refuted by
+    `not_isAlgebraic_normCharacter`. Conversely, an `AlgebraicInfinityType` for a character whose
+    exponents are not integers is rejected.
+17. `HeckeCharacter.IsAlgebraic` compares infinity types on the identity component only. A version
+    demanding equality of full `ContinuousInfinityType`s is rejected: the odd quadratic character
+    modulo `4` is algebraic and has a nontrivial sign at the real place.
+18. The base-change comparison is a `ContinuousAlgEquiv` over `𝔸_K` with `IsModuleTopology` on the
+    source. An `AlgEquiv` with no topology, or one over `K` rather than `𝔸_K`, does not discharge
+    the target.
+19. `ℚ(ζ₆)` is unramified at `2`; “ramified exactly at primes dividing `n`” is rejected without
     conductor normalization.
-14. A proper ideal in a general order need not be invertible. The cubic regression ideal
+20. A proper ideal in a general order need not be invertible. The cubic regression ideal
     `8ℤ + 2ℤ∛2 + 2ℤ(∛2)²` is proper but noninvertible and belongs only to the ideal class
     monoid.
-15. `Pic` and `NarrowPic` use invertible proper fractional ideals; neither quotients all proper
+21. `Pic` and `NarrowPic` use invertible proper fractional ideals; neither quotients all proper
     ideals into a group.
-16. Extension/contraction and prime correspondence are stated on invertible ideals or primes away
+22. Extension/contraction and prime correspondence are stated on invertible ideals or primes away
     from the conductor. The maximal-order comparison does not erase these hypotheses before the
     actual maximal-order specialization.
-17. No declaration named `ringClassField`, `globalArtinMap`, or `reciprocity` is introduced here.
+23. `Hom.mapPic` and `Hom.mapNarrowPic` are stated for `NumberFieldOrder.Hom`, which carries a
+    ring homomorphism of the ambient fields. A functoriality claim for an arbitrary
+    `O.toSubalgebra →ₐ[ℤ] O'.toSubalgebra` is rejected.
+24. No declaration named `ringClassField`, `globalArtinMap`, or `reciprocity` is introduced here.
 
 ## Ordering and parallelism
 
 Layers 0 and 1 start from Mathlib and the finite-completion exports of Number Field Arithmetic.
-Layer 2 uses Layer 1 and the consumed `idealsAway`. Layer 3 uses Layer 2 and can proceed in parallel
-with Layers 4--5. Layers 6--8 build the adelic spine. Layer 9 depends on Layers 2 and 7. Layers 10
-and 11 are independent after their carrier dependencies are present.
+Layer 2 uses Layer 1 and the consumed `idealsAway` and `integralIdealsAway`. Layer 3 uses Layer 2
+and can proceed in parallel with Layers 4--5. Layers 6--8 build the adelic spine. Layer 9 depends
+on Layers 2 and 7. Layers 10 and 11 are independent after their carrier dependencies are present.
 
 Class Field Theory, L-functions, Chebotarev, Adelic Algebraic Groups, Global Quadratic Forms, and
 Integral Lattices consume this roadmap after these contracts stabilize.
