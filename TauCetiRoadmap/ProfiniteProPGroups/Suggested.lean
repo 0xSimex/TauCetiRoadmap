@@ -229,6 +229,14 @@ instance proCKernel_normal (C : FiniteGroupClass.{u}) (G : Type u) [Group G]
     [TopologicalSpace G] : (proCKernel C G).Normal :=
   Subgroup.normal_iInf_normal fun U ↦ U.1.isNormal'
 
+/-- **Pro-`C`, in quotient form**, the exact analogue of `IsProP` for a class `C`: each
+continuous finite quotient lies in the class. `IsProP p` is the case `C = finiteGroupClassP p`,
+by the Layer 4 comparison. This is the predicate the free pro-`C` universal property is stated
+against; without it that universal property cannot say what its targets are. -/
+def IsProC (C : FiniteGroupClass.{u}) (G : Type u) [Group G] [TopologicalSpace G] : Prop :=
+  ∀ U : OpenNormalSubgroup G, ∃ _ : Finite (G ⧸ U.toSubgroup), C.mem (G ⧸ U.toSubgroup)
+
+
 /-! ## Prototypes: free objects, presentations, and the dyadic instance -/
 
 section FreeObjects
@@ -248,6 +256,10 @@ noncomputable def freeProfiniteGroup.of {X : Type u} (x : X) : freeProfiniteGrou
 noncomputable abbrev freeProC (C : FiniteGroupClass.{u}) (X : Type u) : Type u :=
   freeProfiniteGroup X ⧸ proCKernel C (freeProfiniteGroup X)
 
+/-- The generators of the free pro-`C` group. -/
+noncomputable def freeProC.of {C : FiniteGroupClass.{u}} {X : Type u} (x : X) : freeProC C X :=
+  QuotientGroup.mk (freeProfiniteGroup.of x)
+
 /-- The **free pro-`p` group** on `X`: the maximal pro-`p` quotient of the free profinite
 group (equivalently, the pro-`p` completion of the discrete free group). That this agrees
 with `freeProC (finiteGroupClassP p) X` is a Layer 4 milestone, not a coincidence. -/
@@ -266,11 +278,23 @@ noncomputable abbrev presentedProfiniteGroup (X : Type u)
     (rels : Set (freeProfiniteGroup X)) : Type u :=
   freeProfiniteGroup X ⧸ (Subgroup.normalClosure rels).topologicalClosure
 
+/-- The canonical projection onto the presented profinite group. Named, because the universal
+property below is a statement about factoring **through it**, and a nameless quotient map cannot
+be the subject of one. -/
+noncomputable def presentedProfiniteGroup.mk {X : Type u} (rels : Set (freeProfiniteGroup X)) :
+    freeProfiniteGroup X →* presentedProfiniteGroup X rels :=
+  QuotientGroup.mk' _
+
 /-- The pro-`p` group **presented** by generators `X` and relators `rels`: the free pro-`p`
 group modulo the *closed* normal closure of the relators (closedness is what keeps the
 quotient profinite; the algebraic normal closure need not be closed). -/
 noncomputable abbrev presentedProP (X : Type u) (rels : Set (freeProP p X)) : Type u :=
   freeProP p X ⧸ (Subgroup.normalClosure rels).topologicalClosure
+
+/-- The canonical projection onto the presented pro-`p` group. -/
+noncomputable def presentedProP.mk {X : Type u} (rels : Set (freeProP p X)) :
+    freeProP p X →* presentedProP p X rels :=
+  QuotientGroup.mk' _
 
 /-- The dyadic Demushkin relator `A²S⁴(S,Y)` in the free pro-`2` group on `A, S, Y`
 (`= of 0, of 1, of 2`), written out in Labute's commutator convention
@@ -1780,16 +1804,194 @@ example {p : ℕ} [Fact p.Prime] {X : Type u} :
 /-- **Layer 4, universal property of the free profinite group.** A map `X → G` into a
 profinite group extends uniquely to a morphism of profinite groups out of
 `freeProfiniteGroup X`. -/
-theorem freeProfiniteGroup.lift (X : Type u) (G : ProfiniteGrp.{u}) (f : X → G) :
+theorem freeProfiniteGroup.existsUnique_lift (X : Type u) (G : ProfiniteGrp.{u}) (f : X → G) :
     ∃! φ : freeProfiniteGroup X ⟶ G, ∀ x : X, φ (freeProfiniteGroup.of x) = f x :=
+  sorry
+
+/-! ### The universal properties, pinned
+
+⚠ These are the declarations downstream roadmaps consume, so they are **named theorems** and not
+anonymous `example`s: `LocalGaloisGroups` and the Belyi successor cite them, and a consumer cannot
+cite an `example`. Each object gets two, because consumers use two different forms. The `lift`
+theorems are `∃!`, which is the universal property itself; the `hom_ext` theorems are the
+extensionality form — two morphisms that agree on the generators are equal — which is what a proof
+that two constructions coincide actually applies. `freeProfiniteGroup.lift` is stated above, with
+the free profinite object.
+
+For the two presented objects the universal property is the one a quotient has: a morphism out of
+the free object that kills the relators factors uniquely through the projection. That is the form
+Layer 5's non-vacuity argument for `D₀` uses, and the form the Iwasawa presentation in
+`LocalFieldsRamification` Layer 4 consumes. -/
+
+/-- **Layer 4, the lift itself.** ⚠ `existsUnique_lift` is the universal property, but a consumer
+cannot *apply* an `∃!`: it has no name for the map. This is the map, and `lift_of` and
+`lift_unique` are its two characterising equations. Together they are the supplier contract —
+a carrier called "free" with no usable `lift` is not one. -/
+noncomputable def freeProfiniteGroup.lift {X : Type u} (G : ProfiniteGrp.{u}) (f : X → G) :
+    freeProfiniteGroup X ⟶ G :=
+  sorry
+
+/-- **Layer 4, the computation rule.** -/
+theorem freeProfiniteGroup.lift_of {X : Type u} (G : ProfiniteGrp.{u}) (f : X → G) (x : X) :
+    freeProfiniteGroup.lift G f (freeProfiniteGroup.of x) = f x :=
+  sorry
+
+/-- **Layer 4, the uniqueness rule.** -/
+theorem freeProfiniteGroup.lift_unique {X : Type u} (G : ProfiniteGrp.{u}) (f : X → G)
+    (φ : freeProfiniteGroup X ⟶ G) (hφ : ∀ x : X, φ (freeProfiniteGroup.of x) = f x) :
+    φ = freeProfiniteGroup.lift G f :=
+  sorry
+
+/-- **Layer 4, the lift out of the free pro-`p` group**, with the pro-`p` hypothesis on the target
+visible in the type. -/
+noncomputable def freeProP.lift {p : ℕ} {X : Type u} {P : Type v} [Group P] [TopologicalSpace P]
+    [IsTopologicalGroup P] [CompactSpace P] [TotallyDisconnectedSpace P] (hP : IsProP p P)
+    (m : X → P) : freeProP p X →* P :=
+  sorry
+
+/-- **Layer 4.** The pro-`p` lift is continuous. ⚠ A separate statement: `→*` carries no
+continuity, so a consumer that needs it must be able to cite it. -/
+theorem freeProP.lift_continuous {p : ℕ} {X : Type u} {P : Type v} [Group P] [TopologicalSpace P]
+    [IsTopologicalGroup P] [CompactSpace P] [TotallyDisconnectedSpace P] (hP : IsProP p P)
+    (m : X → P) : Continuous (freeProP.lift hP m) :=
+  sorry
+
+/-- **Layer 4, the computation rule for the pro-`p` lift.** -/
+theorem freeProP.lift_of {p : ℕ} {X : Type u} {P : Type v} [Group P] [TopologicalSpace P]
+    [IsTopologicalGroup P] [CompactSpace P] [TotallyDisconnectedSpace P] (hP : IsProP p P)
+    (m : X → P) (x : X) : freeProP.lift hP m (freeProP.of p x) = m x :=
+  sorry
+
+/-- **Layer 4, the uniqueness rule for the pro-`p` lift.** -/
+theorem freeProP.lift_unique {p : ℕ} {X : Type u} {P : Type v} [Group P] [TopologicalSpace P]
+    [IsTopologicalGroup P] [CompactSpace P] [TotallyDisconnectedSpace P] (hP : IsProP p P)
+    (m : X → P) (f : freeProP p X →* P) (hfc : Continuous f)
+    (hf : ∀ x : X, f (freeProP.of p x) = m x) : f = freeProP.lift hP m :=
+  sorry
+
+/-- **Layer 5, the factorisation through a presented profinite group**, given a morphism out of
+the free object that kills the relators. -/
+noncomputable def presentedProfiniteGroup.lift {X : Type u} (rels : Set (freeProfiniteGroup X))
+    {G : Type u} [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [CompactSpace G]
+    [T2Space G] [TotallyDisconnectedSpace G] (ψ : freeProfiniteGroup X →* G)
+    (hψc : Continuous ψ) (hψ : ∀ r ∈ rels, ψ r = 1) :
+    presentedProfiniteGroup X rels →* G :=
+  sorry
+
+/-- **Layer 5, the computation rule: the factorisation recovers `ψ`.** -/
+theorem presentedProfiniteGroup.lift_mk {X : Type u} (rels : Set (freeProfiniteGroup X))
+    {G : Type u} [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [CompactSpace G]
+    [T2Space G] [TotallyDisconnectedSpace G] (ψ : freeProfiniteGroup X →* G)
+    (hψc : Continuous ψ) (hψ : ∀ r ∈ rels, ψ r = 1) :
+    (presentedProfiniteGroup.lift rels ψ hψc hψ).comp (presentedProfiniteGroup.mk rels) = ψ :=
+  sorry
+
+/-- **Layer 5, the uniqueness rule.** -/
+theorem presentedProfiniteGroup.lift_unique {X : Type u} (rels : Set (freeProfiniteGroup X))
+    {G : Type u} [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [CompactSpace G]
+    [T2Space G] [TotallyDisconnectedSpace G] (ψ : freeProfiniteGroup X →* G)
+    (hψc : Continuous ψ) (hψ : ∀ r ∈ rels, ψ r = 1)
+    (φ : presentedProfiniteGroup X rels →* G)
+    (hφ : φ.comp (presentedProfiniteGroup.mk rels) = ψ) :
+    φ = presentedProfiniteGroup.lift rels ψ hψc hψ :=
+  sorry
+
+/-- **Layer 5, the factorisation through a presented pro-`p` group.** -/
+noncomputable def presentedProP.lift {p : ℕ} {X : Type u} (rels : Set (freeProP p X))
+    {P : Type u} [Group P] [TopologicalSpace P] [IsTopologicalGroup P] [CompactSpace P]
+    [T2Space P] [TotallyDisconnectedSpace P] (hP : IsProP p P) (ψ : freeProP p X →* P)
+    (hψc : Continuous ψ) (hψ : ∀ r ∈ rels, ψ r = 1) :
+    presentedProP p X rels →* P :=
+  sorry
+
+/-- **Layer 5, the computation rule for the pro-`p` factorisation.** -/
+theorem presentedProP.lift_mk {p : ℕ} {X : Type u} (rels : Set (freeProP p X))
+    {P : Type u} [Group P] [TopologicalSpace P] [IsTopologicalGroup P] [CompactSpace P]
+    [T2Space P] [TotallyDisconnectedSpace P] (hP : IsProP p P) (ψ : freeProP p X →* P)
+    (hψc : Continuous ψ) (hψ : ∀ r ∈ rels, ψ r = 1) :
+    (presentedProP.lift rels hP ψ hψc hψ).comp (presentedProP.mk p rels) = ψ :=
+  sorry
+
+/-- **Layer 4, uniqueness on generators for the free profinite group.** The extensionality form of
+`freeProfiniteGroup.lift`. -/
+theorem freeProfiniteGroup.hom_ext {X : Type u} {G : ProfiniteGrp.{u}}
+    {φ ψ : freeProfiniteGroup X ⟶ G}
+    (h : ∀ x : X, φ (freeProfiniteGroup.of x) = ψ (freeProfiniteGroup.of x)) :
+    φ = ψ :=
+  sorry
+
+/-- **Layer 4, universal property of the free pro-`C` group.** A map `X → P` into a pro-`C` group
+extends uniquely to a continuous homomorphism out of `freeProC C X`. -/
+theorem freeProC.existsUnique_lift {C : FiniteGroupClass.{u}} {X : Type u} {P : Type u} [Group P]
+    [TopologicalSpace P] [IsTopologicalGroup P] [CompactSpace P] [T2Space P]
+    [TotallyDisconnectedSpace P] (_hP : IsProC C P) (m : X → P) :
+    ∃! f : freeProC C X →* P, Continuous f ∧ ∀ x : X, f (freeProC.of x) = m x :=
+  sorry
+
+/-- **Layer 4, uniqueness on generators for the free pro-`C` group.** ⚠ No pro-`C` hypothesis on
+the target: two continuous homomorphisms agreeing on a topologically generating set agree, and
+that needs only a Hausdorff target. -/
+theorem freeProC.hom_ext {C : FiniteGroupClass.{u}} {X : Type u} {P : Type u} [Group P]
+    [TopologicalSpace P] [IsTopologicalGroup P] [T2Space P] {f g : freeProC C X →* P}
+    (hf : Continuous f) (hg : Continuous g)
+    (h : ∀ x : X, f (freeProC.of x) = g (freeProC.of x)) :
+    f = g :=
   sorry
 
 /-- **Layer 4, universal property of the free pro-`p` group.** Maps from `X` into a pro-`p`
 profinite group extend uniquely to continuous homomorphisms from `freeProP p X`. -/
-example {p : ℕ} {X : Type u} {P : Type v} [Group P] [TopologicalSpace P]
-    [IsTopologicalGroup P] [CompactSpace P] [TotallyDisconnectedSpace P] (hP : IsProP p P)
+theorem freeProP.existsUnique_lift {p : ℕ} {X : Type u} {P : Type v} [Group P] [TopologicalSpace P]
+    [IsTopologicalGroup P] [CompactSpace P] [TotallyDisconnectedSpace P] (_hP : IsProP p P)
     (m : X → P) :
     ∃! f : freeProP p X →* P, Continuous f ∧ ∀ x : X, f (freeProP.of p x) = m x :=
+  sorry
+
+/-- **Layer 4, uniqueness on generators for the free pro-`p` group.** -/
+theorem freeProP.hom_ext {p : ℕ} {X : Type u} {P : Type v} [Group P] [TopologicalSpace P]
+    [IsTopologicalGroup P] [T2Space P] {f g : freeProP p X →* P}
+    (hf : Continuous f) (hg : Continuous g)
+    (h : ∀ x : X, f (freeProP.of p x) = g (freeProP.of p x)) :
+    f = g :=
+  sorry
+
+/-- **Layer 5, universal property of a presented profinite group.** A continuous morphism out of
+the free profinite group that kills every relator factors uniquely through the projection.
+⚠ The relators are killed, not merely sent into a normal subgroup, and the factorisation is
+through `presentedProfiniteGroup.mk`; the quotient is by the **closed** normal closure, which is
+what keeps the target profinite. -/
+theorem presentedProfiniteGroup.existsUnique_lift {X : Type u} (rels : Set (freeProfiniteGroup X))
+    {G : Type u} [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [CompactSpace G]
+    [T2Space G] [TotallyDisconnectedSpace G] (ψ : freeProfiniteGroup X →* G)
+    (_hψc : Continuous ψ) (_hψ : ∀ r ∈ rels, ψ r = 1) :
+    ∃! φ : presentedProfiniteGroup X rels →* G,
+      Continuous φ ∧ φ.comp (presentedProfiniteGroup.mk rels) = ψ :=
+  sorry
+
+/-- **Layer 5, uniqueness for a presented profinite group.** -/
+theorem presentedProfiniteGroup.hom_ext {X : Type u} {rels : Set (freeProfiniteGroup X)}
+    {G : Type u} [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [T2Space G]
+    {φ ψ : presentedProfiniteGroup X rels →* G}
+    (h : φ.comp (presentedProfiniteGroup.mk rels) = ψ.comp (presentedProfiniteGroup.mk rels)) :
+    φ = ψ :=
+  sorry
+
+/-- **Layer 5, universal property of a presented pro-`p` group.** ⚠ Distinct from the profinite
+one: the free object is already the pro-`p` one, so the targets are pro-`p` groups and the
+statement forgets the prime-to-`p` part that `presentedProfiniteGroup` retains. -/
+theorem presentedProP.existsUnique_lift {p : ℕ} {X : Type u} (rels : Set (freeProP p X))
+    {P : Type u} [Group P] [TopologicalSpace P] [IsTopologicalGroup P] [CompactSpace P]
+    [T2Space P] [TotallyDisconnectedSpace P] (_hP : IsProP p P) (ψ : freeProP p X →* P)
+    (_hψc : Continuous ψ) (_hψ : ∀ r ∈ rels, ψ r = 1) :
+    ∃! φ : presentedProP p X rels →* P,
+      Continuous φ ∧ φ.comp (presentedProP.mk p rels) = ψ :=
+  sorry
+
+/-- **Layer 5, uniqueness for a presented pro-`p` group.** -/
+theorem presentedProP.hom_ext {p : ℕ} {X : Type u} {rels : Set (freeProP p X)}
+    {P : Type u} [Group P] [TopologicalSpace P] [IsTopologicalGroup P] [T2Space P]
+    {φ ψ : presentedProP p X rels →* P}
+    (h : φ.comp (presentedProP.mk p rels) = ψ.comp (presentedProP.mk p rels)) :
+    φ = ψ :=
   sorry
 
 /-- **Layer 4, topological finite generation of free pro-`p` groups.** The free pro-`p`
@@ -1958,6 +2160,150 @@ theorem standardD0Orientation_relator (φ : freeProP 2 (Fin 3) →* ℤ_[2]ˣ)
     (hA : φ (freeProP.of 2 0) = -1) (hS : φ (freeProP.of 2 1) = 1)
     (hY : φ (freeProP.of 2 2) = negThreeUnit⁻¹) : φ d0Relator = 1 :=
   sorry
+
+/-! ### Layer 5: finite embedding problems and projectivity
+
+The route from the extension dictionary to projectivity is six statements, not one. Each is named
+below, so that a reader can see which step a proof is at and the dependency graph is closed:
+the embedding problem itself; solvability when the kernel is elementary abelian, which is the
+step `H²` vanishing feeds; the lower `p`-central reduction of a `p`-group kernel to a chain of
+those; solvability with `p`-group kernel; the level-`U` problems and their solution sets; and the
+inverse-limit lifting that turns compatible finite solutions into projectivity.
+
+⚠ Continuity of a homomorphism into a **finite discrete** group is openness of its kernel, and
+that is how it is written here — the same convention `OccursAsFiniteQuotient` uses, and the reason
+no field of the problem below carries a topology. -/
+
+/-- **Layer 5, a finite embedding problem** for a profinite `G`: a continuous surjection
+`π : G ↠ Q` onto a finite group together with a surjection `α : E ↠ Q` of finite groups. -/
+structure FiniteEmbeddingProblem (G : Type u) [Group G] [TopologicalSpace G] where
+  /-- The finite quotient of `G` the problem sits over. -/
+  Q : Type u
+  [groupQ : Group Q]
+  [finiteQ : Finite Q]
+  /-- The finite group the solution must land in. -/
+  E : Type u
+  [groupE : Group E]
+  [finiteE : Finite E]
+  /-- The continuous surjection `G ↠ Q`. -/
+  π : G →* Q
+  /-- Continuity of `π`, as openness of its kernel. -/
+  π_ker_isOpen : IsOpen (π.ker : Set G)
+  π_surjective : Function.Surjective π
+  /-- The surjection of finite groups. -/
+  α : E →* Q
+  α_surjective : Function.Surjective α
+
+attribute [instance] FiniteEmbeddingProblem.groupQ FiniteEmbeddingProblem.finiteQ
+  FiniteEmbeddingProblem.groupE FiniteEmbeddingProblem.finiteE
+
+/-- **Layer 5, a solution** of a finite embedding problem: a continuous `β : G → E` over `π`.
+⚠ Nothing here asks `β` to be surjective, and no theorem below makes it so. With `G = C_p`,
+`Q = 1` and `E = C_p × C_p` the unique maps form an embedding problem all of whose solutions miss
+a generator; projectivity needs only this weak form. -/
+def FiniteEmbeddingProblem.IsSolution {G : Type u} [Group G] [TopologicalSpace G]
+    (P : FiniteEmbeddingProblem G) (β : G →* P.E) : Prop :=
+  IsOpen (β.ker : Set G) ∧ ∀ g : G, P.α (β g) = P.π g
+
+/-- **Layer 5.1, solvability with elementary abelian kernel**, the step the vanishing of `H²`
+feeds. `ker α` is elementary abelian and centralized by itself, so conjugation makes it a
+`Q`-module, and the class of the extension in `H²(G, ker α)` is the obstruction. -/
+def HasElementaryAbelianSolutions (p : ℕ) (G : Type u) [Group G] [TopologicalSpace G] : Prop :=
+  ∀ P : FiniteEmbeddingProblem G, IsPGroup p P.α.ker → (∀ x : P.α.ker, x ^ p = 1) →
+    (∀ x : P.α.ker, ∀ y : P.α.ker, x * y = y * x) → ∃ β : G →* P.E, P.IsSolution β
+
+/-- **Layer 5.3, solvability with `p`-group kernel**, the conclusion of the induction below. -/
+def HasPGroupSolutions (p : ℕ) (G : Type u) [Group G] [TopologicalSpace G] : Prop :=
+  ∀ P : FiniteEmbeddingProblem G, IsPGroup p P.α.ker → ∃ β : G →* P.E, P.IsSolution β
+
+/-- **Layer 5.2, the lower `p`-central reduction.** A `p`-group kernel `N = ker α` is filtered by
+`λ_0(N) = N`, `λ_{k+1}(N) = λ_k(N)^p [λ_k(N), N]`, which reaches `1` in finitely many steps and
+whose factors are elementary abelian. ⚠ Each `λ_k(N)` is **characteristic** in `N`, hence normal
+in `E`; that is what makes the factors `Q`-modules and the reduction work. An arbitrary central
+series of `N` need not be stable under conjugation by `E`. -/
+theorem exists_pLowerCentral_filtration_of_isPGroup {p : ℕ} [Fact p.Prime] {E : Type u} [Group E]
+    [Finite E] (N : Subgroup E) [N.Normal] (_hN : IsPGroup p N) :
+    ∃ (m : ℕ) (lam : ℕ → Subgroup E), lam 0 = N ∧ lam m = ⊥ ∧
+      (∀ k, lam (k + 1) ≤ lam k) ∧ (∀ k, (lam k).Normal) ∧
+      (∀ k, ∀ x ∈ lam k, x ^ p ∈ lam (k + 1)) ∧
+      ∀ k, ∀ x ∈ lam k, ∀ y ∈ N, x * y * x⁻¹ * y⁻¹ ∈ lam (k + 1) :=
+  sorry
+
+/-- **Layer 5.3, the induction.** Solvability for elementary abelian kernels gives solvability for
+`p`-group kernels, one step of the filtration at a time. This is the only place the filtration is
+used, and it is why 5.2 is a separate milestone rather than a line of the proof. -/
+theorem hasPGroupSolutions_of_hasElementaryAbelianSolutions {p : ℕ} [Fact p.Prime] {G : Type u}
+    [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [CompactSpace G]
+    [TotallyDisconnectedSpace G] (_h : HasElementaryAbelianSolutions p G) :
+    HasPGroupSolutions p G :=
+  sorry
+
+/-- **Layer 5.4, the level-`U` embedding problem.** For a surjection `α : A ↠ B` of pro-`p` groups
+and a continuous `f : G →* B`, each open normal `U ≤ A` cuts out a finite embedding problem for
+`G`: take `E = A ⧸ U` and `Q = B ⧸ α(U)`. Its solutions are the level-`U` approximate lifts, and
+they are the sets the compactness lemma is applied to. -/
+noncomputable def levelProblem {p : ℕ} {G A B : Type u} [Group G] [TopologicalSpace G]
+    [Group A] [TopologicalSpace A] [IsTopologicalGroup A] [CompactSpace A]
+    [TotallyDisconnectedSpace A] [Group B] [TopologicalSpace B] [IsTopologicalGroup B]
+    [CompactSpace B] [TotallyDisconnectedSpace B] (_hA : IsProP p A) (_hB : IsProP p B)
+    (α : A →* B) (_hαc : Continuous α) (_hα : Function.Surjective α)
+    (f : G →* B) (_hf : Continuous f) (U : OpenNormalSubgroup A) :
+    FiniteEmbeddingProblem G :=
+  sorry
+
+/-- **Layer 5.5, compatible systems of finite solutions.** Every level problem is solvable, its
+solution set is nonempty and finite, and the transition maps between levels are surjective.
+⚠ Nonemptiness level by level is not enough on its own: what the Layer 0 compactness lemma needs
+is a **directed family of nonempty closed** subsets, which is why finiteness of each level and
+surjectivity of the transitions are part of this milestone and not asides. -/
+theorem nonempty_isSolution_levelProblem {p : ℕ} [Fact p.Prime] {G A B : Type u} [Group G]
+    [TopologicalSpace G] [IsTopologicalGroup G] [CompactSpace G] [TotallyDisconnectedSpace G]
+    [Group A] [TopologicalSpace A] [IsTopologicalGroup A] [CompactSpace A]
+    [TotallyDisconnectedSpace A] [Group B] [TopologicalSpace B] [IsTopologicalGroup B]
+    [CompactSpace B] [TotallyDisconnectedSpace B] (hA : IsProP p A) (hB : IsProP p B)
+    (α : A →* B) (hαc : Continuous α) (hα : Function.Surjective α)
+    (f : G →* B) (hf : Continuous f) (_hG : HasPGroupSolutions p G) (U : OpenNormalSubgroup A) :
+    ∃ β : G →* (levelProblem hA hB α hαc hα f hf U).E,
+      (levelProblem hA hB α hαc hα f hf U).IsSolution β :=
+  sorry
+
+/-- **Layer 5.6, projectivity**: every continuous map to a pro-`p` quotient lifts. -/
+def IsProjective (p : ℕ) (G : Type u) [Group G] [TopologicalSpace G] : Prop :=
+  ∀ (A B : Type u) [Group A] [TopologicalSpace A] [IsTopologicalGroup A] [CompactSpace A]
+    [TotallyDisconnectedSpace A] [Group B] [TopologicalSpace B] [IsTopologicalGroup B]
+    [CompactSpace B] [TotallyDisconnectedSpace B],
+    IsProP p A → IsProP p B →
+      ∀ α : A →* B, Continuous α → Function.Surjective α →
+        ∀ f : G →* B, Continuous f →
+          ∃ β : G →* A, Continuous β ∧ α.comp β = f
+
+/-- **Layer 5.6, inverse-limit lifting.** The compatible finite solutions of 5.5 assemble to a
+continuous lift, by the Layer 0 compactness lemma applied to the level solution sets. This is the
+projectivity statement Layer 6 consumes; `cd_p G ≤ 1` enters through 5.1. -/
+theorem isProjective_of_hasPGroupSolutions {p : ℕ} [Fact p.Prime] {G : Type u} [Group G]
+    [TopologicalSpace G] [IsTopologicalGroup G] [CompactSpace G] [TotallyDisconnectedSpace G]
+    (_hG : HasPGroupSolutions p G) :
+    IsProjective p G :=
+  sorry
+
+/-- **Layer 5.7, the converse.** A projective group solves every finite embedding problem with
+`p`-group kernel: a finite embedding problem *is* a lifting problem against the surjection
+`E ↠ Q` of finite — hence pro-`p`, when the kernel is a `p`-group — groups. -/
+theorem hasPGroupSolutions_of_isProjective {p : ℕ} [Fact p.Prime] {G : Type u} [Group G]
+    [TopologicalSpace G] [IsTopologicalGroup G] [CompactSpace G] [TotallyDisconnectedSpace G]
+    (_hG : IsProjective p G) :
+    HasPGroupSolutions p G :=
+  sorry
+
+/-- **Layer 5.7, the equivalence with topological projectivity.** The two formulations agree, so
+a consumer may use whichever is convenient and Layer 6 may quote either.
+⚠ This is the step at which an abstract finite-group argument would silently replace the required
+continuous profinite one: the right-to-left direction is finite-level bookkeeping, but
+left-to-right is the inverse limit of 5.5–5.6 and is not formal. -/
+theorem isProjective_iff_hasPGroupSolutions {p : ℕ} [Fact p.Prime] {G : Type u} [Group G]
+    [TopologicalSpace G] [IsTopologicalGroup G] [CompactSpace G] [TotallyDisconnectedSpace G] :
+    IsProjective p G ↔ HasPGroupSolutions p G :=
+  ⟨hasPGroupSolutions_of_isProjective, isProjective_of_hasPGroupSolutions⟩
 
 /-! ## Layer 6: cohomological dimension, and its Nielsen-Schreier consequence
 

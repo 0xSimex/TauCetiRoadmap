@@ -1,6 +1,6 @@
 # Roadmap: profinite and pro-`p` groups
 
-This roadmap owns the abstract group theory used throughout the arithmetic portfolio:
+This roadmap develops the abstract group theory used throughout the arithmetic portfolio:
 profinite foundations, supernatural order and Sylow theory, Frattini quotients and generator
 rank, free pro-`p` groups, cohomological dimension, lower `p`-series, completed group algebras,
 one-relator theory, and the classification of finite-rank Demushkin groups.
@@ -44,7 +44,9 @@ The frozen downstream surface includes:
 | pro-`p` carriers | `IsProP`, `proPKernel`, `maximalProPQuotient`, `IsProPSylow` |
 | profinite Sylow interface | `exists_isProPSylow`, `IsProP.exists_le_isProPSylow`, `IsProPSylow.eq_of_normal`, `IsProPSylow.map_of_surjective` |
 | finite generation | `IsTopologicallyFinitelyGenerated`, `topologicalGeneratorRank`, `topologicalGeneratorRankNat`, `proPFrattini` |
-| free objects and presentations | `freeProfiniteGroup`, `freeProfiniteGroup.of`, `freeProfiniteGroup.lift`, `freeProC`, `freeProP`, `presentedProfiniteGroup`, `presentedProP` |
+| free objects and presentations | `freeProfiniteGroup`, `freeProfiniteGroup.of`, `freeProC`, `freeProC.of`, `freeProP`, `freeProP.of`, `presentedProfiniteGroup`, `presentedProfiniteGroup.mk`, `presentedProP`, `presentedProP.mk` |
+| their universal properties | `freeProfiniteGroup.lift`, `freeProfiniteGroup.hom_ext`, `freeProC.lift`, `freeProC.hom_ext`, `freeProP.lift`, `freeProP.hom_ext`, `presentedProfiniteGroup.lift`, `presentedProfiniteGroup.hom_ext`, `presentedProP.lift`, `presentedProP.hom_ext` |
+| embedding problems and projectivity | `IsProC`, `FiniteEmbeddingProblem`, `FiniteEmbeddingProblem.IsSolution`, `HasElementaryAbelianSolutions`, `HasPGroupSolutions`, `levelProblem`, `IsProjective` |
 | Demushkin invariants | `IsDemushkin`, `demushkinRank`, `demushkinQ`, `demushkinCharacter`, `HasPrescriptionProperty` |
 | marked classification | `demushkinWordNeTwo`, `demushkinWordTwoOdd`, `demushkinWordTwoEven`, `isDemushkin_marked_of_q_ne_two`, `isDemushkin_marked_of_q_two_odd`, `isDemushkin_marked_of_q_two_even` |
 | standard dyadic group | `demushkinD0`, `d0A`, `d0S`, `d0Y`, `standardD0Orientation` and its value theorems |
@@ -503,7 +505,7 @@ terms that satisfy its signatures without satisfying the exactness and pairing l
 later layers use, and a private operation would need an unproved comparison with the one that
 already exists.
 
-What this layer owns is the coefficient object the pro-`p` theory computes with, and nothing
+What this layer introduces is the coefficient object the pro-`p` theory computes with, and nothing
 about the substrate.
 
 - **The coefficient object.** `trivialFp p G` is the trivial `𝔽_p`-representation of `G`, an
@@ -622,34 +624,57 @@ about the substrate.
 - **Splitting.** An extension has a continuous group-theoretic section if and only if its
   class in `H²(G, M)` is zero.
   *Needs:* L5 the bijection.
-- **Embedding problems with `p`-group kernel.** A finite embedding problem for `G` is a
-  continuous surjection `π : G ↠ Q` onto a finite group, together with a surjection
-  `α : E ↠ Q` of finite groups; a solution is a continuous `β : G → E` with `α ∘ β = π`.
-  Reduce the case where `N := ker α` is a finite `p`-group to the central elementary-abelian
-  case along the lower `p`-central series of `N`, that is `λ_0(N) = N` and
-  `λ_{k+1}(N) = λ_k(N)^p [λ_k(N), N]`. Each `λ_k(N)` is characteristic in `N`, hence normal
-  in `E`; each factor is elementary abelian and is centralized by `N`, hence is a
-  `Q`-module; and the series reaches `1` in finitely many steps. A solution is built in that
-  many steps, each of them an extension of the kind above.
-  *Needs:* L5 extensions; M `IsPGroup` and the finite lower `p`-central series.
-  ⚠ Characteristicity is what makes the reduction work. An arbitrary central series of `N`
-  need not be stable under conjugation by `E`.
-- **Vanishing of `H²` solves them.** If `H²(G, M) = 0` for every finite discrete
-  elementary abelian `p`-primary `G`-module `M`, then every finite embedding problem for `G`
-  with `p`-group kernel has a solution, by induction along that series. The solution is a
-  homomorphism `β` with `α ∘ β = π`, and nothing more.
-  *Needs:* L5 embedding problems; L5 the extension dictionary.
-  ⚠ A solution cannot be made surjective in general, and no statement here says otherwise.
-  With `G = C_p`, `Q = 1` and `E = C_p × C_p`, the unique maps form an embedding problem
-  whose solutions are the homomorphisms `C_p → C_p × C_p`, none of which is surjective. The
-  Burnside criterion certifies that a map which is already surjective on the Frattini
-  quotient is surjective; it cannot supply a missing generator. Projectivity needs only the
-  weak form, which is what the next item uses.
-- **From finite solutions to projectivity.** Compatible solutions over the finite quotients
-  assemble to a continuous lift against an arbitrary surjection of pro-`p` groups: apply the
-  Layer 0 compactness lemma to the nonempty closed sets of level-`k` solutions. This is the
-  projectivity statement that Layer 6 uses.
-  *Needs:* L0 compactness lemma; L5 the previous item.
+The passage from the extension dictionary to projectivity is six statements, and each one is a
+milestone of its own below rather than a line in a proof of the last. `Suggested.lean` names all
+six, so the dependency graph closes without prose.
+
+- **5.1 The finite embedding problem.** A finite embedding problem for `G` is a continuous
+  surjection `π : G ↠ Q` onto a finite group together with a surjection `α : E ↠ Q` of finite
+  groups; a solution is a continuous `β : G → E` with `α ∘ β = π`. Both are named:
+  `FiniteEmbeddingProblem` and `FiniteEmbeddingProblem.IsSolution`.
+  *Needs:* L0 profinite foundations; L5 extensions.
+  ⚠ Continuity of a homomorphism into a finite discrete group is openness of its kernel, and that
+  is how both are written; no field of the problem carries a topology, exactly as in
+  `OccursAsFiniteQuotient`.
+  ⚠ A solution cannot be made surjective in general, and no statement here says otherwise. With
+  `G = C_p`, `Q = 1` and `E = C_p × C_p`, the unique maps form an embedding problem whose
+  solutions are the homomorphisms `C_p → C_p × C_p`, none of which is surjective. The Burnside
+  criterion certifies that a map already surjective on the Frattini quotient is surjective; it
+  cannot supply a missing generator. Everything below needs only the weak form.
+- **5.2 Solvability with elementary abelian kernel.** The predicate
+  `HasElementaryAbelianSolutions p G`: every finite embedding problem for `G` whose kernel
+  `N = ker α` is elementary abelian has a solution. This is the single step that consumes
+  cohomology — conjugation makes `N` a `Q`-module, the extension dictionary turns the problem into
+  a class in `H²(G, N)`, and vanishing of that class is exactly solvability. If `H²(G, M) = 0` for
+  every finite discrete elementary abelian `p`-primary `G`-module `M`, the predicate holds.
+  *Needs:* L5 the bijection; L5 splitting.
+- **5.3 The lower `p`-central reduction.** A finite `p`-group kernel `N` is filtered by
+  `λ_0(N) = N` and `λ_{k+1}(N) = λ_k(N)^p [λ_k(N), N]`, a chain that reaches `1` in finitely many
+  steps and whose factors are elementary abelian:
+  `exists_pLowerCentral_filtration_of_isPGroup`.
+  *Needs:* M `IsPGroup` and the finite lower `p`-central series.
+  ⚠ Characteristicity is what makes the reduction work: each `λ_k(N)` is characteristic in `N`,
+  hence normal in `E`, which is what makes each factor a `Q`-module. An arbitrary central series
+  of `N` need not be stable under conjugation by `E`.
+- **5.4 Solvability with `p`-group kernel.** The predicate `HasPGroupSolutions p G`, and the
+  induction `hasPGroupSolutions_of_hasElementaryAbelianSolutions` that derives it from 5.2 by
+  climbing the filtration of 5.3, one extension of the kind in the dictionary per step. 5.3 is
+  used here and nowhere else, which is why it is stated separately.
+  *Needs:* L5.1, L5.2, L5.3.
+- **5.5 Compatible systems of finite solutions.** For a surjection `α : A ↠ B` of pro-`p` groups
+  and a continuous `f : G → B`, each open normal `U ≤ A` cuts out a finite embedding problem
+  `levelProblem … U` with `E = A/U` and `Q = B/α(U)`. Every one of them is solvable by 5.4, its
+  solution set is finite, and the transition maps between levels are surjective:
+  `nonempty_isSolution_levelProblem`.
+  *Needs:* L5.4; L0 open normal subgroups.
+  ⚠ Nonemptiness level by level is not what the compactness lemma consumes. It needs a **directed
+  family of nonempty closed** subsets, so finiteness of each level set and surjectivity of the
+  transitions belong to this milestone rather than to the proof of the next.
+- **5.6 Inverse-limit lifting: projectivity.** The predicate `IsProjective p G` — every continuous
+  map into a pro-`p` quotient lifts — and `isProjective_of_hasPGroupSolutions`, which assembles
+  the compatible finite solutions of 5.5 into one continuous lift by the Layer 0 compactness
+  lemma. This is the projectivity statement Layer 6 consumes.
+  *Needs:* L0 compactness lemma; L5.5.
 - **`H²` of a free pro-`p` group vanishes.** For `F` free pro-`p` of finite rank and `M`
   finite discrete `p`-primary, `H²(F, M) = 0`. Proof: by the dictionary a class is an
   extension `1 → M → E → F → 1`, and the universal property of `F` lifts a generating tuple
@@ -781,7 +806,7 @@ would not agree with the standard `cd_p`.
   `ProfiniteCohomology.cd_p_eq_of_index_not_dvd`. That theorem is the open prime-to-`p`-index
   case, and it supplies exactly the open subgroups `U ⊇ G_p` of prime-to-`p` index; the colimit
   description of the cohomology of a closed subgroup and the Sylow theory of Layer 2 are what
-  turn those into the equality, and they are the part this milestone owns.
+  turn those into the equality, and they are the part this milestone proves.
   *Needs:* L1 supernatural index; L2 Sylow existence and conjugacy; PC-10 `corestriction`,
   `corestriction_comp_res`; PC-11 `cd_p_eq_of_index_not_dvd`; PC-7 closed-subgroup Shapiro.
   *Source:* NSW (3.3.6); Serre, *Galois Cohomology* I §3.3.
