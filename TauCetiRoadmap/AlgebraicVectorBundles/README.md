@@ -392,12 +392,12 @@ than a second curve-specific degree theory.
 ### Hodge structures
 
 `HodgeStructures` builds pure, mixed, and polarized Hodge structures. The Chern classes here are
-algebraic classes in operational Chow cohomology. Their Betti and de Rham realizations are supplied
-by the successor roadmap below; for a smooth projective complex scheme, the resulting classes have
-Hodge type `(i,i)`. `HodgeStructures` packages the linear-algebraic structure carried by those
+algebraic classes in operational Chow cohomology. The cohomological realization below specifies
+their Betti and de Rham comparison; for a smooth projective complex scheme, the resulting classes
+have Hodge type `(i,i)`. `HodgeStructures` packages the linear-algebraic structure carried by those
 realizations rather than constructing the realization functors themselves.
 
-## Successor roadmap: Betti realization and cycle classes
+## Cohomological realization
 
 The word *geometric* in `GeomVB(X)` refers to an algebraic vector bundle presented by its total
 space as a scheme over `X`. Passing from an algebraic scheme over `ℂ` to its analytic space, and
@@ -442,8 +442,8 @@ this identifies algebraic Chern classes with integral cohomological characterist
 places their complexifications in Hodge type `(i,i)`.
 
 Mathlib already supplies the singular set, the singular chain-complex functor, singular homology,
-and its homotopy invariance in `Mathlib/AlgebraicTopology/SingularHomology/`. The successor roadmap
-builds the multiplicative cohomology API, cup products, fundamental and Thom classes,
+and its homotopy invariance in `Mathlib/AlgebraicTopology/SingularHomology/`. The comparison
+programme requires the multiplicative cohomology API, cup products, fundamental and Thom classes,
 Borel--Moore homology, Poincaré duality, complex topological Chern classes, analytification of
 schemes and finite locally free sheaves, the cycle-class map, and the comparison theorem above.
 The generic topological constructions are natural Mathlib contributions; analytification and the
