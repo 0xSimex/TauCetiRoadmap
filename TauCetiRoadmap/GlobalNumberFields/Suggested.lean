@@ -342,6 +342,28 @@ abbrev IdeleClassGroup (K : Type u) [Field K] [NumberField K] :=
 /-- The global idele norm, using squared modulus at complex places. -/
 noncomputable def ideleNorm : IdeleGroup K →* Units NNReal := sorry
 
+/-- **The coordinate of an idele at a finite place**, as a group homomorphism to the units of the
+`v`-adic completion. ⚠ Named here because two consumers can otherwise only cite a milestone:
+Class Field Theory's placewise description of the idelic norm for an *arbitrary* idele
+(`mem_range_ideleNormMap_iff`) is stated against it, and Global Quadratic Forms' kernel
+computation for `i ↦ ∏_v (i_v, b_v)_v` reads coordinates off non-principal ideles. -/
+noncomputable def ideleFiniteCoord (v : HeightOneSpectrum (𝓞 K)) :
+    IdeleGroup K →* (v.adicCompletion K)ˣ := sorry
+
+/-- On a principal idele the finite coordinate is the image of the global element. This is the
+compatibility that keeps the arbitrary-idele and principal-idele statements one theory. -/
+theorem ideleFiniteCoord_principal (v : HeightOneSpectrum (𝓞 K)) (x : Kˣ) :
+    ideleFiniteCoord v (Units.map (algebraMap K (AdeleRing (𝓞 K) K)).toMonoidHom x) =
+      Units.map (algebraMap K (v.adicCompletion K)).toMonoidHom x := sorry
+
+/-- The coordinate of an idele at an infinite place. -/
+noncomputable def ideleInfiniteCoord (w : InfinitePlace K) :
+    IdeleGroup K →* (w.Completion)ˣ := sorry
+
+theorem ideleInfiniteCoord_principal (w : InfinitePlace K) (x : Kˣ) :
+    ideleInfiniteCoord w (Units.map (algebraMap K (AdeleRing (𝓞 K) K)).toMonoidHom x) =
+      Units.map (algebraMap K w.Completion).toMonoidHom x := sorry
+
 namespace IdeleClassGroup
 
 /-- The norm-one idele classes; compactness is a theorem of Layer 6. -/
