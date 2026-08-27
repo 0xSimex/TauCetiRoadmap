@@ -509,6 +509,8 @@ topological or de Rham Chern classes, and intersection-theoretic calculations on
   [splitting principle](https://stacks.math.columbia.edu/tag/02UK).
 - W. Fulton, *Intersection Theory*, Chapters 1--3 and 17.
 - A. Grothendieck, *La théorie des classes de Chern*.
+- D. Edidin and W. Graham, *Equivariant intersection theory*.
+- B. Totaro, *The Chow ring of a classifying space*.
 
 ## Motivation
 
