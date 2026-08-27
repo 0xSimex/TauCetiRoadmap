@@ -270,9 +270,10 @@ pullback with relative-dimension shift, rational equivalence, and Chow homology 
 functoriality, base change for proper/flat squares, localization, and the projection formula in the
 generality used below.
 
-Construct intersection with Cartier divisors and first Chern class operations for invertible
-modules. Package bivariant classes and operational Chow cohomology, including compatibility with
-proper pushforward, flat pullback, and refined Gysin operations.
+Consume the scheme-theoretic Cartier divisors and divisor--invertible-sheaf dictionary from
+`JacobianChallenge`. Construct their intersection action and the first Chern class operations for
+invertible modules. Package bivariant classes and operational Chow cohomology, including
+compatibility with proper pushforward, flat pullback, and refined Gysin operations.
 
 For a finite locally free module `E` of rank `r`, prove the projective bundle formula for
 `p : P(E) → X`. In operational form, pullback and powers of
@@ -329,7 +330,7 @@ and compatibly with the splitting principle.
 | Area | Ownership contract |
 | --- | --- |
 | Mathlib | Tau Ceti builds every target here using Mathlib's current vocabulary. If Mathlib supplies an API, the Tau Ceti implementation is replaced by the import and the comparison theorems are retained. |
-| `JacobianChallenge` | Owns invertible sheaves as the input to the Picard group and Picard functor, coherent cohomology and base change, degree on curves, `Pic⁰`, the Picard scheme, and the Jacobian. This roadmap consumes its existing rank-one objects and supplies their total spaces, projective bundles, and Chern classes. |
+| `JacobianChallenge` | Owns scheme-theoretic Weil and Cartier divisors, the divisor--invertible-sheaf dictionary, invertible sheaves as the input to the Picard group and Picard functor, coherent cohomology and base change, degree on curves, `Pic⁰`, the Picard scheme, and the Jacobian. This roadmap consumes its divisor and rank-one objects and supplies their Chow action, total spaces, projective bundles, and Chern classes. |
 | `AlgebraicCurves` | Owns function-field divisors and Riemann--Roch and its comparison with scheme-theoretic divisors. This roadmap supplies general Chow and Chern operations; it does not redefine the curve-specific divisor or degree theories. |
 | `HodgeStructures` | The algebraic Chern classes here are inputs to later comparison theorems with cohomological characteristic classes. The Hodge-structure definitions and period-domain data remain there. |
 
