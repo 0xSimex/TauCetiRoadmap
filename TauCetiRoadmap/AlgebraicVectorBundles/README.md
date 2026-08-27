@@ -392,9 +392,67 @@ than a second curve-specific degree theory.
 ### Hodge structures
 
 `HodgeStructures` builds pure, mixed, and polarized Hodge structures. The Chern classes here are
-algebraic classes in operational Chow cohomology. A later cycle-class comparison can map them to
-cohomological characteristic classes and then into Hodge-theoretic structures; that comparison is
-the named interface between the developments.
+algebraic classes in operational Chow cohomology. Their Betti and de Rham realizations are supplied
+by the successor roadmap below; for a smooth projective complex scheme, the resulting classes have
+Hodge type `(i,i)`. `HodgeStructures` packages the linear-algebraic structure carried by those
+realizations rather than constructing the realization functors themselves.
+
+## Successor roadmap: Betti realization and cycle classes
+
+The word *geometric* in `GeomVB(X)` refers to an algebraic vector bundle presented by its total
+space as a scheme over `X`. Passing from an algebraic scheme over `ℂ` to its analytic space, and
+from an algebraic vector bundle to a complex topological vector bundle, is a second comparison.
+For a smooth complex scheme `X`, its central map is the cycle-class homomorphism
+
+```math
+\mathrm{cl}_X^p :
+\mathrm{CH}^p(X)
+\longrightarrow
+H^{2p}(X^{\mathrm{an}},\mathbf Z(p)).
+```
+
+The class of an integral codimension-`p` subscheme is sent to its analytic fundamental class in
+Borel--Moore homology and then, when `X` is smooth, to cohomology by Poincaré duality. Rational
+equivalence must map to zero so that this construction descends to the Chow group.
+
+The first precise comparison target is stated for a smooth projective scheme `X` over `ℂ` and a
+finite locally free module `E` on `X`:
+
+```math
+\mathrm{cl}_X^i
+\left(
+  c_i^{\mathrm{CH}}(\mathcal E)
+\right)
+=
+c_i^{\mathrm{top}}
+\left(
+  \mathcal E^{\mathrm{an}}
+\right).
+```
+
+Together with the de Rham--Betti comparison
+
+```math
+H^n_{\mathrm{dR}}(X/\mathbf C)
+\simeq
+H^n(X^{\mathrm{an}},\mathbf C),
+```
+
+this identifies algebraic Chern classes with integral cohomological characteristic classes and
+places their complexifications in Hodge type `(i,i)`.
+
+Mathlib already supplies the singular set, the singular chain-complex functor, singular homology,
+and its homotopy invariance in `Mathlib/AlgebraicTopology/SingularHomology/`. The successor roadmap
+builds the multiplicative cohomology API, cup products, fundamental and Thom classes,
+Borel--Moore homology, Poincaré duality, complex topological Chern classes, analytification of
+schemes and finite locally free sheaves, the cycle-class map, and the comparison theorem above.
+The generic topological constructions are natural Mathlib contributions; analytification and the
+algebraic-to-Betti comparison belong in Tau Ceti.
+
+This cohomology is distinct from `Scheme.Modules.Cohomology M q`, the Zariski sheaf cohomology used
+by `JacobianChallenge` for coherent sheaves, Riemann--Roch, and the Picard/Jacobian construction.
+The two theories meet later through algebraic de Rham cohomology and comparison theorems, not by
+identifying their definitions.
 
 ## Cross-cutting acceptance criteria
 
@@ -428,3 +486,30 @@ topological or de Rham Chern classes, and intersection-theoretic calculations on
   [splitting principle](https://stacks.math.columbia.edu/tag/02UK).
 - W. Fulton, *Intersection Theory*, Chapters 1--3 and 17.
 - A. Grothendieck, *La théorie des classes de Chern*.
+
+## Motivation
+
+The longer-term programme is to formalize the reusable geometry connecting algebraic vector
+bundles, complex and smooth vector bundles, connections and curvature, gauge theory and
+Yang--Mills equations, Higgs bundles, and their moduli spaces. These subjects repeatedly use the
+same structural operations developed here: pullback, duals, tensor and Hom bundles, determinants,
+tautological bundles, characteristic classes, projective and Grassmann bundles, and deformation
+data expressed through cohomology.
+
+There are two complementary routes out of this foundation. On the algebraic and complex-geometric
+side, finite locally free sheaves lead to stability, moduli of bundles and sheaves, Higgs fields,
+Higgs-bundle moduli, the Hitchin fibration, and integrable systems. On the differential-geometric
+side, complex vector bundles lead to connections, curvature, Chern--Weil theory, unitary gauge
+groups, and Yang--Mills moduli. Analytification and the comparison of characteristic classes form
+the first compatibility layer between these routes.
+
+Over a compact Riemann surface the later bridge theorems include Narasimhan--Seshadri, relating
+stable degree-zero bundles to irreducible unitary representations, and the
+Hitchin--Simpson/Donaldson--Corlette
+correspondence among Higgs bundles, harmonic bundles, and reductive flat connections. Their moduli
+spaces support the Atiyah--Bott gauge-theoretic picture, the Hitchin integrable system, and further
+directions toward nonabelian Hodge theory and geometric Langlands.
+
+This roadmap is the first self-contained foundation in that programme. The theories just listed
+motivate its choice of definitions, naturality statements, and comparison theorems; each requires
+its own focused successor roadmap and is not an additional completion criterion here.
