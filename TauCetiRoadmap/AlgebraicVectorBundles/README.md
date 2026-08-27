@@ -1,10 +1,12 @@
 # Roadmap: algebraic vector bundles and characteristic classes
 
 This roadmap builds the scheme-theoretic bridge from quasi-coherent modules to geometric vector
-bundles and follows it through projective and Grassmann bundles to **Chern classes in operational
-Chow cohomology**. Its summit is the construction and characterization of the total Chern class,
-with the sheaf-theoretic and geometric presentations proved to agree. `Suggested.lean` records
-representative Lean signatures; this `README.md` is the definitive specification.
+bundles and follows it through projective, Grassmann, and flag bundles to **characteristic classes
+in operational Chow cohomology**. Its summit is the construction and characterization of the
+Chern classes, the universal generators for ordinary Chow-valued characteristic classes of
+algebraic vector bundles, together with the standard characteristic-class calculus derived from
+them. The sheaf-theoretic and geometric presentations are proved to agree. `Suggested.lean`
+records representative Lean signatures; this `README.md` is the definitive specification.
 
 The organizing correspondence is
 
@@ -351,10 +353,31 @@ isomorphism, pullback naturality, the Whitney sum formula, and the splitting pri
 full flag bundle from L3. Derive the Chern-root formulas for duals, tensor products, internal Hom,
 exterior powers, symmetric powers, and determinants.
 
+Package the total Chern class and Chern polynomial. Using the splitting principle, define and prove
+the expected formulas for the Euler class `e(E) = c_r(E)`, the total Segre class
+`s(E) = c(E)⁻¹`, and, with rational coefficients, the Chern character and Todd class. Every
+characteristic-class expression given by a symmetric polynomial or symmetric power series in the
+Chern roots must descend uniquely to a polynomial or completed expression in the Chern classes.
+
+Use the universal quotient bundles on the Grassmannians from L3 and stabilization in codimension
+to obtain the universal calculation
+
+```math
+\mathrm{CH}^*(B\mathrm{GL}_r)
+=
+\mathbf Z[c_1,\ldots,c_r].
+```
+
+This identifies the Chern classes as universal generators: every integral Chow-valued
+characteristic class of rank-`r` algebraic vector bundles is represented by a unique polynomial in
+`c₁,…,cᵣ`. The rational Chern character and Todd class are the corresponding power-series
+constructions after extending coefficients.
+
 **Milestone:** the Chern-class assignment factors through
 `FinLocFree(X) ≌ GeomVB(X)` and is uniquely characterized there by pullback naturality,
 line-bundle normalization, and the Whitney sum formula. The sheaf and geometric total-space
-presentations therefore produce the same operational Chow classes.
+presentations therefore produce the same operational Chow classes and the same derived
+characteristic classes.
 
 ## Worked instances
 
