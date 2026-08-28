@@ -1,239 +1,228 @@
-# Roadmap: algebraic vector bundles and characteristic classes
+# Roadmap: algebraic vector bundles
 
-This roadmap builds the scheme-theoretic bridge from quasi-coherent modules to geometric vector
-bundles and follows it through projective, Grassmann, and flag bundles to **characteristic classes
-in operational Chow cohomology**. Its summit is the construction and characterization of the
-Chern classes, the universal generators for ordinary Chow-valued characteristic classes of
-algebraic vector bundles, together with the standard characteristic-class calculus derived from
-them. The sheaf-theoretic and geometric presentations are proved to agree. `Suggested.lean`
-records representative Lean signatures; this `README.md` is the definitive specification.
-
-The organizing correspondence is
+This roadmap builds a single coherent theory of **algebraic vector bundles over schemes**. Its
+summit is the equivalence between the sheaf-theoretic and geometric presentations of a vector
+bundle, with projective, Grassmann, and flag bundles as classifying constructions on top:
 
 ```math
 \mathsf{QCoh}(X)^{\mathrm{op}}
 \simeq
 \mathsf{GradedVB}(X),
-```
-
-whose finite locally free part becomes, after dualization,
-
-```math
+\qquad
 \mathsf{FinLocFree}(X)
 \simeq
 \mathsf{GeomVB}(X).
 ```
 
-The roadmap develops the complete API around these equivalences rather than treating them as
-object-level bijections. The geometric constructions then supply the projective bundle formula and
-splitting principle from which the Chern operations are defined.
+The first equivalence is the Stacks/EGA correspondence between quasi-coherent modules and affine
+linear schemes. The second restricts to finite locally free modules and dualizes, so that the
+geometric total space represents sections rather than linear functionals. The equivalences are
+categorical: they include morphisms, units and counits, base change, and the standard algebra of
+bundles. `Suggested.lean` records representative definitions and milestone signatures;
+this `README.md` is the definitive specification.
 
-Suggested library home: `TauCeti/AlgebraicGeometry/VectorBundle/`, with the relative-spectrum and
-intersection-theory foundations under `TauCeti/AlgebraicGeometry/RelativeSpec/` and
-`TauCeti/AlgebraicGeometry/Chow/`.
+Chow groups and characteristic classes are a natural **successor roadmap**, not a second summit of
+this one. A further successor should construct their cohomological realization. The final section
+records those two continuations only as roadmaps-for-roadmaps; they are not completion criteria
+here.
 
-## Prior art and Mathlib substrate
+Suggested library home: `TauCeti/AlgebraicGeometry/VectorBundle/`, with the relative affine
+geometry under `TauCeti/AlgebraicGeometry/RelativeSpec/` and the classifying constructions under
+`TauCeti/AlgebraicGeometry/Grassmannian/`.
 
-The implementation starts from the repository's pinned Mathlib and Tau Ceti revisions. The
-following declarations are existing inputs, not names to reproduce.
+## Pinned inventory
 
-### Sheaves of modules
+This inventory was checked against the repository pins, not against an assumed future Mathlib:
 
-- `Scheme.Modules` and `SheafOfModules` provide the ambient categories of modules over a scheme's
-  structure sheaf.
-- `SheafOfModules.IsQuasicoherent` and `SheafOfModules.isQuasicoherent`, in
-  `Mathlib/Algebra/Category/ModuleCat/Sheaf/Quasicoherent.lean`, provide quasi-coherence and its
-  full subcategory.
-- `SheafOfModules.IsFinitePresentation`, in the same file, is the finite-presentation condition
-  used under arbitrary base change.
-- `SheafOfModules.IsLocallyFree`, in
-  `Mathlib/Algebra/Category/ModuleCat/Sheaf/LocallyFree.lean`, records local free presentations.
-  Its local bases may be infinite and their cardinalities may vary, so L0 adds the
-  finite-locally-free refinement and its locally constant finite rank.
-- `AlgebraicGeometry.tilde` and `AlgebraicGeometry.tildeEquiv`, in
-  `Mathlib/AlgebraicGeometry/Modules/Tilde.lean`, give the affine model
+- Mathlib [`05ae010`](https://github.com/leanprover-community/mathlib4/commit/05ae0103f49b1ad1248f6039bbbad43d8aeb52a9);
+- Tau Ceti [`e8af08d`](https://github.com/TauCetiProject/TauCeti/commit/e8af08d0aeda4012832880bd56edfc88af061691).
+
+### What Mathlib already supplies
+
+- `Scheme.Modules` is the abelian category of modules over a scheme's structure sheaf. It has all
+  limits and colimits used below, as well as `Scheme.Modules.pullback`, the
+  pullback--pushforward adjunction, and identity/composition isomorphisms for pullback.
+- `SheafOfModules.IsQuasicoherent`, `IsFinitePresentation`, and `IsLocallyFree` are already present.
+  `IsFinitePresentation` implies quasi-coherence and finite type. `IsLocallyFree` is expressed by
+  local free presentations and also implies quasi-coherence, but its indexing types may be infinite
+  and may vary from chart to chart.
+- `AlgebraicGeometry.tilde` and `AlgebraicGeometry.tildeEquiv` give
 
   ```math
   R\text{-}\mathsf{Mod}
   \simeq
-  \mathsf{QCoh}(\mathrm{Spec}(R)).
+  \mathsf{QCoh}(\operatorname{Spec} R).
   ```
 
-  Affine computations and descent in L0--L2 reduce to this equivalence.
+  This is the affine comparison on which the scheme-level descent proofs must be based.
+- At the ring/module level Mathlib has tensor products, linear duals, symmetric and exterior
+  algebras, `ModuleCat.exteriorPower.functor`, finite projective modules, localization, and stalks.
+  It does **not** yet lift tensor, internal Hom, dual, symmetric powers, or exterior powers to a
+  monoidal theory of sheaves of modules.
+- Mathlib has affine schemes and morphisms, pullbacks, open immersions, gluing, and
+  `AlgebraicGeometry.IsAffineHom`. It has `Scheme.Spec` and `AlgebraicGeometry.ProjectiveSpectrum`
+  for rings and graded rings, but no relative `Spec_X` or `Proj_X` for quasi-coherent sheaf
+  algebras.
+- `Module.Grassmannian` and `Module.Grassmannian.functor` already use the quotient convention: an
+  `A`-point is a finite projective rank-`r` quotient of `A \otimes_R M`. Their source file explicitly
+  leaves charts, a scheme-level Grassmannian, and representability to future work.
 
-### Algebraic and scheme-theoretic constructions
+### What Tau Ceti already supplies
 
-- Mathlib's tensor products, symmetric algebras, exterior algebras, linear duals, finite projective
-  modules, localization, and stalks provide the affine algebra used in L0.
-- `Scheme.Spec`, affine schemes, affine morphisms, scheme pullbacks, open immersions, and gluing
-  provide the scheme substrate for relative spectrum.
-- `AlgebraicGeometry.ProjectiveSpectrum` provides Proj for graded rings and its scheme structure.
-  L3 builds the relative sheaf-level Proj interface and its base-change theorem from this affine
-  substrate.
-- `Module.Grassmannian` and `Module.Grassmannian.functor`, in
-  `Mathlib/RingTheory/Grassmannian.lean`, already encode the quotient convention: an `A`-point is
-  a quotient of `A ⊗[R] M` which is finite locally free of the specified rank. The file leaves
-  affine charts, scheme-level Grassmannians, and representability as future work; those are L3
-  targets here.
+- `TauCeti.AlgebraicGeometry.InvertibleSheaf X` packages rank-one locally free sheaves and provides
+  free and trivial examples.
+- `TauCeti.AlgebraicGeometry.FinitelyPresentedSheaf X` packages finite presentation, with a fully
+  faithful inclusion `InvertibleSheaf.toFinitelyPresented`.
+- The line-bundle source explicitly notes that tensor products and the Picard group still require a
+  monoidal structure on sheaves of modules. Thus even the rank-one theory does not yet provide the
+  tensor/dual API required below.
+- Tau Ceti's anti-equivalence between commutative Hopf algebras and affine group schemes over an
+  affine base is useful implementation precedent for essential-image categories and base change.
+  It is not a relative-spectrum construction over an arbitrary scheme.
 
-Mathlib at the pin has no relative spectrum for quasi-coherent sheaves of algebras, no category of
-Stacks-style graded vector bundles over a scheme, no equivalence with quasi-coherent modules, no
-scheme-level representability theorem for `Module.Grassmannian.functor`, and no Chow groups or
-Chern classes of algebraic vector bundles. These are the new layers of this roadmap.
+There is currently no general algebraic-vector-bundle object, no geometric total-space
+construction, and no sheaf/geometric equivalence in either pinned repository.
 
-### Existing Tau Ceti objects
+### Active Mathlib work to coordinate with
 
-- `TauCeti.AlgebraicGeometry.LineBundle.Basic` packages
-  `TauCeti.SheafOfModules.IsInvertible` as `AlgebraicGeometry.InvertibleSheaf X` and supplies the
-  trivial invertible sheaf.
-- `TauCeti.AlgebraicGeometry.FinitelyPresentedSheaf.Basic` packages
-  `SheafOfModules.IsFinitePresentation` over a scheme and supplies the inclusion of invertible
-  sheaves into finitely presented sheaves.
+These pull requests are not inputs at the pin. They are not blockers: build the required API in
+Tau Ceti now, following their shape closely enough that a later replacement is an import-and-delete
+change rather than a redesign.
 
-These rank-one and finite-presentation objects are imported and extended; the general finite
-locally free category in L0 is built compatibly with them.
-
-## Core definitions
-
-The sheaf conditions form successive, non-identical strata.
-
-| Condition | Mathematical role in this roadmap |
+| Pull request | Relevance and coordination rule |
 | --- | --- |
-| quasi-coherent | ambient module and degree-one datum of a graded vector bundle |
-| finite presentation | base-change-stable finiteness condition |
-| coherent on a locally Noetherian scheme | finite-type/finite-presentation stratum used by coherent cohomology |
-| finite locally free | dualizable stratum corresponding to finite geometric vector bundles |
-| invertible | rank-one finite locally free stratum corresponding to geometric line bundles |
+| [mathlib4#27098](https://github.com/leanprover-community/mathlib4/pull/27098) | An earlier `VectorBundleData` proposal. It predates the current `IsLocallyFree`; do not create a competing wrapper without first reconciling it with that discussion. |
+| [mathlib4#39553](https://github.com/leanprover-community/mathlib4/pull/39553) | Proves that `IsLocallyFree` is local. L0 should match its theorem shape and use the Mathlib result directly once available. |
+| [mathlib4#39989](https://github.com/leanprover-community/mathlib4/pull/39989) | Proves pullback preserves quasi-coherent and locally free sheaves. Its pullback--restriction isomorphism and naming should shape L0. |
+| [mathlib4#40194](https://github.com/leanprover-community/mathlib4/pull/40194) | Develops locally free sheaves on `Spec R` and their affine comparison. L0 should extend this to the finite-projective equivalence rather than build a parallel affine API. |
+| [mathlib4#14686](https://github.com/leanprover-community/mathlib4/pull/14686) | Constructs a Grassmannian scheme by gluing charts for a finite free module. L3 should reuse its chart design and supply the relative finite-locally-free and representability layers. |
 
-For a quasi-coherent module `F` on `X`, follow Stacks Project §27.6 and define the contravariant
-linear scheme
+## Definitions and pinned conventions
+
+### The sheaf strata
+
+The following conditions are related but not interchangeable:
+
+| Condition | Role here |
+| --- | --- |
+| quasi-coherent | arbitrary degree-one datum for an affine linear scheme |
+| finite presentation | base-change-stable finiteness condition |
+| finite locally free | dualizable quasi-coherent objects and finite geometric bundles |
+| invertible | constant rank one, agreeing with Tau Ceti's existing object |
+
+Define a finite locally free sheaf at the present API boundary by
+
+```math
+\operatorname{IsFiniteLocallyFree}(\mathcal E)
+\;:\!\!\Longleftrightarrow\;
+\mathcal E\text{ is locally free and finitely presented}.
+```
+
+L0 proves that this is equivalent to being locally free on a Zariski cover with finite bases, to
+being finitely presented and flat, to having finite-projective affine modules, and to being
+dualizable in `QCoh(X)`. Its rank is a locally constant function `X \to \mathbb N`; fixed-rank
+theorems carry a hypothesis `rank(E)=r` rather than silently assuming that `X` is connected.
+
+### Two related total-space constructions
+
+For a quasi-coherent module `F`, follow Stacks Project §27.6 and define
 
 ```math
 \mathbf V_{\mathrm{lin}}(\mathcal F)
 =
-\mathrm{Spec}_X
-\left(
-  \mathrm{Sym}_{\mathcal O_X}(\mathcal F)
-\right).
+\operatorname{Spec}_X
+\operatorname{Sym}_{\mathcal O_X}(\mathcal F).
 ```
 
-Its universal property is
+It is contravariant in `F` and represents linear functionals:
 
 ```math
-\mathrm{Hom}_X
-\left(
-  T,\mathbf V_{\mathrm{lin}}(\mathcal F)
-\right)
+\operatorname{Hom}_X(T,\mathbf V_{\mathrm{lin}}(\mathcal F))
 \simeq
-\mathrm{Hom}_{\mathcal O_T}
-\left(
-  f^*\mathcal F,\mathcal O_T
-\right).
+\operatorname{Hom}_{\mathcal O_T}(f^*\mathcal F,\mathcal O_T).
 ```
 
-A **graded vector bundle** over `X`, in the Stacks/EGA sense, is an affine morphism `p : V → X`
-with a grading
+A graded vector bundle is intrinsically an affine morphism `p : V \to X` together with a grading
 
 ```math
-p_*\mathcal O_V
-=
-\bigoplus_{n \ge 0}\mathcal A_n
+p_*\mathcal O_V = \bigoplus_{n\geq 0}\mathcal A_n
 ```
 
-such that `A₀ = O_X` and every canonical map `Symⁿ(A₁) → Aₙ` is an isomorphism. Morphisms
-preserve the grading. The degree-one summand recovers the quasi-coherent module.
+such that `A_0 \cong O_X` and each canonical map `Sym^n(A_1) \to A_n` is an isomorphism. Morphisms
+preserve the grading. The implementation may initially use the essential image of `V_lin`, but it
+must also construct this intrinsic structure and prove that the two definitions agree.
 
-For a finite locally free module `E`, define the geometric total space by dualizing before applying
-the Stacks construction:
+For a finite locally free sheaf of sections `E`, define the geometric total space
 
 ```math
 \mathbf V(\mathcal E)
 =
 \mathbf V_{\mathrm{lin}}(\mathcal E^\vee)
 =
-\mathrm{Spec}_X
-\left(
-  \mathrm{Sym}_{\mathcal O_X}(\mathcal E^\vee)
-\right).
+\operatorname{Spec}_X
+\operatorname{Sym}_{\mathcal O_X}(\mathcal E^\vee).
 ```
 
-Dualizability changes the functor of points into the section-valued form
+It is covariant in `E`, Zariski-locally an affine space with linear transition functions, and
+represents sections:
 
 ```math
-\mathrm{Hom}_X
-\left(
-  T,\mathbf V(\mathcal E)
-\right)
+\operatorname{Hom}_X(T,\mathbf V(\mathcal E))
 \simeq
 \Gamma(T,f^*\mathcal E).
 ```
 
-Thus `F ↦ V_lin(F)` is contravariant, whereas `E ↦ V(E)` is covariant. The two constructions
-have separate names and separate functors throughout the API.
+The names `linearSpec` and `totalSpace` remain distinct throughout the API so that the variance and
+the dual cannot be lost accidentally.
 
-## Generality bar
+### Classifying conventions
 
-- L0--L3 work over an arbitrary scheme `X` and for finite locally free modules whose rank is a
-  locally constant function on `X`.
-- Statements about a fixed rank `r` carry that hypothesis explicitly, component by component.
-- The quasi-coherent correspondence is stated for arbitrary quasi-coherent modules; finite
-  presentation and finite local freeness are restrictions of that correspondence.
-- L4--L5 use the Stacks Project Chow setup: a locally Noetherian universally catenary base scheme
-  `S` equipped with a dimension function, and schemes locally of finite type over `S`.
-- Chow groups have integral coefficients. Chern classes are operational bivariant classes, so they
-  act on every `Y → X`; evaluation on `[X]` gives ordinary Chow-ring classes when available.
-
-## Conventions (pinned)
-
-- Relative Spec is contravariant in quasi-coherent algebras and commutes with arbitrary base change.
-- `P(E)` uses the quotient convention
+- Relative Spec is contravariant in quasi-coherent commutative algebras and commutes with arbitrary
+  base change.
+- Projective bundles use Grothendieck's quotient convention:
 
   ```math
   \mathbf P(\mathcal E)
   =
-  \mathrm{Proj}_X
-  \left(
-    \mathrm{Sym}_{\mathcal O_X}(\mathcal E)
-  \right),
+  \operatorname{Proj}_X\operatorname{Sym}(\mathcal E),
+  \qquad
+  p^*\mathcal E\twoheadrightarrow\mathcal O_{\mathbf P(\mathcal E)}(1).
   ```
 
-  and represents invertible quotients of pullbacks of `E`; its tautological map is
-  `p*E → O(1)`.
-- `Gr_X(r,E)` represents rank-`r` finite locally free quotients of pullbacks of `E`, matching
-  `Module.Grassmannian.functor`.
-- The first Chern class of an invertible sheaf agrees with intersection by the corresponding
-  Cartier divisor.
-- The projective-bundle relation uses `xi = c₁(O(1))` and the signs displayed in L5.
+- `Gr_X(r,E)` represents finite locally free rank-`r` quotients of pullbacks of `E`, modulo the
+  unique compatible isomorphism of quotient sheaves. This matches `Module.Grassmannian.functor`.
+- Full flag bundles use successive quotient lines. Partial flags use increasing quotient ranks.
 
 ## Layers
 
-The ordering is the dependency order. Each layer has a principal theorem, together with the API
-needed to make that theorem usable.
+Each layer has one discharge-gated milestone and the companion API needed to make it usable.
 
-### L0 — finite locally free sheaves and their algebra
+### L0 — finite locally free sheaves and monoidal algebra
 
-Build tensor products, symmetric and exterior powers, duals, internal Hom, determinants, evaluation,
-coevaluation, and the double-dual map for scheme-valued sheaves of modules. Prove restriction,
-stalk, affine-local, and pullback formulas and state the exact finiteness hypotheses for every
-preservation theorem.
+Construct the symmetric monoidal closed structure on `X.Modules` and prove that it restricts to
+`QCoh(X)`. Build tensor products, internal Hom, duals, evaluation and coevaluation, symmetric and
+exterior powers, and determinants. Provide restriction, stalk, and pullback comparison isomorphisms
+with simp and reassociation lemmas.
 
-Define finite local freeness as a refinement of `SheafOfModules.IsLocallyFree`, construct the
-locally constant finite rank, and prove the affine-local and stalkwise equivalences among finite
-locally free, finitely presented flat, finite projective on affine opens, and dualizable
-quasi-coherent modules.
+Package `FiniteLocallyFreeSheaf X`, prove closure under isomorphism and arbitrary pullback, construct
+the locally constant rank, and identify rank one with the existing `InvertibleSheaf X`. On affine
+schemes, restrict `tildeEquiv` to finite projective modules and make the restriction natural under
+base change.
 
-**Milestone:** finite locally free modules are exactly the dualizable objects of `QCoh(X)`, with
-dual given by internal Hom into `O_X`.
+**Milestone:** a quasi-coherent sheaf is finite locally free if and only if it has a left/right dual
+in the symmetric monoidal category `QCoh(X)`; the categorical dual agrees with
+`Hom(E,O_X)`, and the canonical double-dual map is an isomorphism.
 
-**Companions:** locally split exact sequences with finite locally free quotient; compatibility of
-dual, tensor, internal Hom, exterior/symmetric powers, and determinant with pullback; agreement with
-the existing `InvertibleSheaf` in rank one.
+**Companion results:** tensor, dual, internal Hom, symmetric/exterior powers, and determinant
+preserve finite local freeness and commute with pullback; locally split exact sequences with finite
+locally free quotient; rank formulas for direct sum, tensor, dual, exterior powers, and determinant.
 
-### L1 — relative spectrum and affine morphisms
+### L1 — relative Spec and affine schemes over a base
 
-For a quasi-coherent `O_X`-algebra `A`, construct `Spec_X(A) → X` by affine-local spectra and
-gluing. Prove the functor-of-points universal property, recovery of `A` from the pushforward of the
-structure sheaf, restriction to affine opens, functoriality, and arbitrary base change.
+Define quasi-coherent commutative `O_X`-algebras using the L0 monoidal structure. Construct
+`Spec_X(A) \to X` by affine-local spectra and gluing. Prove the functor-of-points universal
+property, recover `A` from the pushforward of the structure sheaf, and prove compatibility with
+restriction to opens and arbitrary base change.
 
 **Milestone:** construct the anti-equivalence
 
@@ -243,14 +232,19 @@ structure sheaf, restriction to affine opens, functoriality, and arbitrary base 
 \mathsf{AffSch}_{/X}
 ```
 
-with explicit functors, unit, counit, and naturality under change of base.
+with explicit functors, unit, counit, and pseudofunctorial compatibility under `Y \to X`.
 
-### L2 — the module-to-vector-bundle correspondence
+**Companion results:** relative spectra of symmetric algebras, affine localization, products and
+fiber products of affine `X`-schemes, and affine computations through `tildeEquiv`.
 
-Apply relative Spec to `Sym(F)`. Construct the grading, zero section, addition, and scalar
-multiplication on `V_lin(F)` and prove their affine-local formulas and base-change compatibility.
+### L2 — sheaves versus geometric vector bundles
 
-**First milestone:** recover the Stacks Project anti-equivalence
+Apply relative Spec to the symmetric algebra. On `V_lin(F)`, construct the grading, zero section,
+addition, and scalar multiplication and prove their affine formulas. Define geometric vector
+bundles intrinsically as schemes over `X` which are Zariski-locally affine spaces with linear
+transition maps, equivalently as the finite locally free part of the graded theory.
+
+**First milestone:** the degree-one functor and `linearSpec` are quasi-inverse equivalences
 
 ```math
 \mathsf{QCoh}(X)^{\mathrm{op}}
@@ -258,10 +252,7 @@ multiplication on `V_lin(F)` and prove their affine-local formulas and base-chan
 \mathsf{GradedVB}(X).
 ```
 
-Restrict to finite locally free modules and graded vector bundles which are Zariski-locally affine
-space with linear transition maps.
-
-**Second milestone:** dualization gives the covariant equivalence
+**Second milestone:** restricting to finite locally free sheaves and dualizing gives
 
 ```math
 \mathsf{FinLocFree}(X)
@@ -269,233 +260,128 @@ space with linear transition maps.
 \mathsf{GeomVB}(X).
 ```
 
-**Companions:** prove the section-valued universal property and every row of the following table as
-a natural isomorphism.
+Both equivalences are natural under base change. Prove the section-valued universal property and
+the following dictionary as natural isomorphisms, not object-level coincidences:
 
 | Sheaf side | Geometric side |
 | --- | --- |
-| pullback `f*E` | base change `Y ×_X V(E)` |
-| section of `E` | section `X → V(E)` |
-| fibre `E ⊗ k(x)` | scheme fibre over `x` |
+| pullback `f^*E` | base change `Y\times_X V(E)` |
+| global section | section of `V(E)\to X` |
+| fibre `E\otimes k(x)` | scheme fibre over `x` |
 | direct sum | fibre product over `X` |
+| zero and addition | zero section and fibrewise addition |
 | dual, tensor, internal Hom | corresponding geometric bundles |
-| exterior and symmetric powers | corresponding geometric bundles |
-| determinant | determinant line bundle |
-| locally split exact sequence | fibrewise exact sequence of geometric bundles |
+| exterior/symmetric powers, determinant | corresponding geometric bundles and determinant line |
 
 ### L3 — projective, Grassmann, and flag bundles
 
-Complete the relative Proj interface needed for symmetric algebras, including `O(1)`, affine
-charts, functoriality, and arbitrary base change. Prove that `P(E)` represents invertible quotients
-of pullbacks of `E`.
+Build the relative `Proj_X` interface needed for symmetric algebras: affine charts, `O(1)`,
+functoriality, and arbitrary base change. Prove that `P(E)` represents invertible quotients and
+identify it with `Gr_X(1,E)`.
 
-Represent `Module.Grassmannian.functor` by `Gr_X(r,E)`. Construct the standard affine charts,
-universal quotient `p*E → Q`, tautological kernel `S`, universal exact sequence, and base change.
+Construct `Gr_X(r,E)` by standard affine charts, reusing the chart design of mathlib4#14686 where
+possible. Build the universal quotient `p^*E \twoheadrightarrow Q`, tautological kernel `S`, and
+universal exact sequence. Prove that `S` and `Q` are finite locally free with the expected ranks.
 
-**Milestone:** prove the natural classifying equivalence
+**Milestone:** for every `f : T \to X`, construct a natural equivalence
 
 ```math
-\mathrm{Hom}_X
-\left(
-  T,\mathrm{Gr}_X(r,\mathcal E)
-\right)
+\operatorname{Hom}_X(T,\operatorname{Gr}_X(r,\mathcal E))
 \simeq
 \left\{
-  f^*\mathcal E\twoheadrightarrow\mathcal Q
-  \;\middle|\;
-  \mathcal Q\text{ finite locally free of rank }r
-\right\}/\simeq.
+f^*\mathcal E\twoheadrightarrow\mathcal Q
+\;\middle|\;
+\mathcal Q\text{ finite locally free of rank }r
+\right\}/\cong.
 ```
 
-**Companions:** projective bundles as the rank-one case; flag bundles as iterated Grassmann or
-projective bundles; tautological filtrations; a full flag bundle on which the pullback of `E` has
-invertible successive quotients.
-
-### L4 — Chow homology and operational Chow cohomology
-
-Construct dimension-graded cycles, proper pushforward, flat pullback with its dimension shift,
-rational equivalence, and Chow homology in the pinned Stacks generality. Prove functoriality,
-proper/flat base change, localization, and the projection formula.
-
-Consume the scheme-theoretic Cartier divisors and divisor--invertible-sheaf dictionary from
-`JacobianChallenge`. Construct intersection with Cartier divisors, first Chern operations for
-invertible sheaves, bivariant classes, and operational Chow cohomology.
-
-**Milestone:** for a rank-`r` finite locally free module `E`, pullback and powers of
-`xi = c₁(O(1))` give the projective bundle isomorphism
-
-```math
-\bigoplus_{i=0}^{r-1}
-\mathrm{CH}_{k-i}(X)
-\simeq
-\mathrm{CH}_k(\mathbf P(\mathcal E)).
-```
-
-The summand `CH_{k-i}(X)` maps by flat pullback followed by capping with `xi^(r-1-i)`; construct
-the inverse by proper pushforward and prove the projective-space computation for a trivial bundle.
-
-### L5 — Chern classes and the splitting principle
-
-Define the Chern operations of a rank-`r` finite locally free module by the unique
-projective-bundle relation
-
-```math
-\sum_{i=0}^{r}
-(-1)^i
-c_1(\mathcal O_{\mathbf P(\mathcal E)}(1))^i
-\cap
-p^*c_{r-i}(\mathcal E)
-=0.
-```
-
-Construct the operations as central bivariant classes and prove normalization, invariance under
-isomorphism, pullback naturality, the Whitney sum formula, and the splitting principle using the
-full flag bundle from L3. Derive the Chern-root formulas for duals, tensor products, internal Hom,
-exterior powers, symmetric powers, and determinants.
-
-Package the total Chern class and Chern polynomial. Using the splitting principle, define and prove
-the expected formulas for the Euler class `e(E) = c_r(E)`, the total Segre class
-`s(E) = c(E)⁻¹`, and, with rational coefficients, the Chern character and Todd class. Every
-characteristic-class expression given by a symmetric polynomial or symmetric power series in the
-Chern roots must descend uniquely to a polynomial or completed expression in the Chern classes.
-
-Use the universal quotient bundles on the Grassmannians from L3 and stabilization in codimension
-to obtain the universal calculation
-
-```math
-\mathrm{CH}^*(B\mathrm{GL}_r)
-=
-\mathbf Z[c_1,\ldots,c_r].
-```
-
-This identifies the Chern classes as universal generators: every integral Chow-valued
-characteristic class of rank-`r` algebraic vector bundles is represented by a unique polynomial in
-`c₁,…,cᵣ`. The rational Chern character and Todd class are the corresponding power-series
-constructions after extending coefficients.
-
-**Milestone:** the Chern-class assignment factors through
-`FinLocFree(X) ≌ GeomVB(X)` and is uniquely characterized there by pullback naturality,
-line-bundle normalization, and the Whitney sum formula. The sheaf and geometric total-space
-presentations therefore produce the same operational Chow classes and the same derived
-characteristic classes.
+Build partial and full flag bundles as iterated Grassmann bundles, with universal quotient flags,
+base change, and the classifying universal property. On the full flag bundle of a constant-rank
+bundle, the pulled-back bundle has a filtration whose successive quotients are invertible sheaves.
 
 ## Worked instances
 
-- On `Spec(R)`, the construction agrees through `tildeEquiv` with finite projective `R`-modules
-  and `Spec(Sym_R(M^∨))`.
-- A free rank-`r` sheaf gives affine `r`-space, and its total space represents `r`-tuples of
-  sections.
-- The existing trivial invertible sheaf gives the trivial geometric line bundle.
-- `P(O_X^r)` is projective `(r-1)`-space over `X`, with the tautological quotient.
-- `Gr_X(r,O_X^N)` represents `Module.Grassmannian.functor` and carries its universal quotient.
-- Chern classes of a trivial bundle vanish in positive degree; for an invertible sheaf, `c₁`
-  agrees with its Cartier-divisor action.
-
-## Relation to sibling roadmaps
-
-### Jacobian challenge
-
-`JacobianChallenge` supplies the rank-one and divisor inputs used here: invertible sheaves,
-finitely presented sheaves, scheme-theoretic Weil and Cartier divisors, and the
-divisor--invertible-sheaf dictionary. This roadmap imports those objects. L0 identifies invertible
-sheaves as the rank-one part of the general finite locally free theory; L2 constructs their
-geometric total spaces; L4 uses the Cartier-divisor action to normalize `c₁`.
-
-The Picard group and Picard functor, coherent cohomology and base change, degree on curves, `Pic⁰`,
-the Picard scheme, and the Jacobian are targets of `JacobianChallenge`. Their definitions are not
-duplicated here. The common interface is `InvertibleSheaf` and its first Chern class.
-
-### Algebraic curves
-
-`AlgebraicCurves` builds function-field places and divisors, Riemann--Roch, and the comparison with
-scheme-theoretic divisors. Its scheme comparison consumes the Cartier-divisor and Chow interfaces
-used here. This roadmap works with the general scheme-theoretic cycle and Chern operations rather
-than a second curve-specific degree theory.
-
-### Hodge structures
-
-`HodgeStructures` builds pure, mixed, and polarized Hodge structures. The Chern classes here are
-algebraic classes in operational Chow cohomology. The cohomological realization below specifies
-their Betti and de Rham comparison; for a smooth projective complex scheme, the resulting classes
-have Hodge type `(i,i)`. `HodgeStructures` packages the linear-algebraic structure carried by those
-realizations rather than constructing the realization functors themselves.
-
-## Cohomological realization
-
-The word *geometric* in `GeomVB(X)` refers to an algebraic vector bundle presented by its total
-space as a scheme over `X`. Passing from an algebraic scheme over `ℂ` to its analytic space, and
-from an algebraic vector bundle to a complex topological vector bundle, is a second comparison.
-For a smooth complex scheme `X`, its central map is the cycle-class homomorphism
-
-```math
-\mathrm{cl}_X^p :
-\mathrm{CH}^p(X)
-\longrightarrow
-H^{2p}(X^{\mathrm{an}},\mathbf Z(p)).
-```
-
-The class of an integral codimension-`p` subscheme is sent to its analytic fundamental class in
-Borel--Moore homology and then, when `X` is smooth, to cohomology by Poincaré duality. Rational
-equivalence must map to zero so that this construction descends to the Chow group.
-
-The first precise comparison target is stated for a smooth projective scheme `X` over `ℂ` and a
-finite locally free module `E` on `X`:
-
-```math
-\mathrm{cl}_X^i
-\left(
-  c_i^{\mathrm{CH}}(\mathcal E)
-\right)
-=
-c_i^{\mathrm{top}}
-\left(
-  \mathcal E^{\mathrm{an}}
-\right).
-```
-
-Together with the de Rham--Betti comparison
-
-```math
-H^n_{\mathrm{dR}}(X/\mathbf C)
-\simeq
-H^n(X^{\mathrm{an}},\mathbf C),
-```
-
-this identifies algebraic Chern classes with integral cohomological characteristic classes and
-places their complexifications in Hodge type `(i,i)`.
-
-Mathlib already supplies the singular set, the singular chain-complex functor, singular homology,
-and its homotopy invariance in `Mathlib/AlgebraicTopology/SingularHomology/`. The comparison
-programme requires the multiplicative cohomology API, cup products, fundamental and Thom classes,
-Borel--Moore homology, Poincaré duality, complex topological Chern classes, analytification of
-schemes and finite locally free sheaves, the cycle-class map, and the comparison theorem above.
-The generic topological constructions are natural Mathlib contributions; analytification and the
-algebraic-to-Betti comparison belong in Tau Ceti.
-
-This cohomology is distinct from `Scheme.Modules.Cohomology M q`, the Zariski sheaf cohomology used
-by `JacobianChallenge` for coherent sheaves, Riemann--Roch, and the Picard/Jacobian construction.
-The two theories meet later through algebraic de Rham cohomology and comparison theorems, not by
-identifying their definitions.
+- Through `tildeEquiv`, a finite projective `R`-module `M` gives
+  `Spec(Sym_R(M^\vee)) \to Spec R`.
+- The free sheaf on `Fin r` gives affine `r`-space and represents `r`-tuples of sections.
+- `InvertibleSheaf.trivial X` gives the trivial geometric line bundle.
+- `P(O_X^r)` is projective `(r-1)`-space with its tautological quotient.
+- `Gr_X(r,O_X^N)` represents the existing `Module.Grassmannian.functor` after affine base change.
+- `Gr_X(1,E) \cong P(E)` and the full flag bundle of a split bundle carries the expected universal
+  quotient-line filtration.
 
 ## Cross-cutting acceptance criteria
 
-- Every construction has restriction, affine-local computation, pullback, and base-change theorems.
-- Every equivalence includes functors, unit, counit, and naturality; an object-level bijection is
-  insufficient.
-- The two variances `F ↦ V_lin(F)` and `E ↦ V(E)` remain visible in names and theorem statements.
-- Universal objects are characterized by represented functors, with quotient conventions matching
-  `Module.Grassmannian.functor`.
-- Fiberwise algebra and section-level operations have extensionality and simp lemmas usable without
-  unfolding affine covers or descent data.
-- Chow grading shifts and signs agree across the projective bundle formula, Chern relation, Whitney
-  sum formula, and splitting principle.
-- The worked instances above exercise the public API.
+- Every construction has restriction, affine-local computation, pullback, and arbitrary-base-change
+  theorems.
+- Every equivalence exposes its functors, unit, counit, and naturality. Defining the target category
+  as an essential image is not by itself the intrinsic characterization theorem.
+- The variance distinction `F \mapsto V_lin(F)` versus `E \mapsto V(E)` is visible in names and
+  theorem statements.
+- Universal objects are characterized by represented functors. Quotient families are identified
+  modulo compatible isomorphism, not by equality of chosen quotient carriers.
+- Fixed-rank statements explicitly assume constant rank; otherwise rank remains locally constant.
+- Public APIs have extensionality and simp lemmas that do not require unfolding covers, gluing data,
+  or affine equivalences.
+- The worked instances above compile against the public interface.
 
-## Downstream
+## Relations to existing roadmaps
 
-This library supplies algebraic vector bundles, tautological bundles, and characteristic classes to
-roadmaps for stability and moduli of sheaves, algebraic gauge theory, Higgs bundles, comparison with
-topological or de Rham Chern classes, and intersection-theoretic calculations on moduli spaces.
+`JacobianChallenge` supplies the present rank-one object `InvertibleSheaf`, finitely presented
+sheaves, and later the divisor--line-bundle dictionary. This roadmap generalizes its sheaf object to
+all finite ranks and supplies the tensor/dual and geometric-total-space infrastructure that its
+Picard theory needs; it does not duplicate the Picard scheme or Jacobian.
+
+`AlgebraicCurves` supplies curve-specific divisors and Riemann--Roch. The vector-bundle theory here
+is over arbitrary schemes and is independent of a curve-specific degree theory.
+
+## Successor roadmaps — motivation only
+
+The following are two separate future roadmaps. Contributors should not implement them to discharge
+L0--L3.
+
+### 1. Chow groups and characteristic classes
+
+Projective, Grassmann, and full flag bundles make the next step natural: construct cycles, rational
+equivalence, Chow homology/cohomology, Cartier-divisor actions, and the projective bundle formula;
+then define Chern classes by the projective-bundle relation and prove naturality, Whitney sum, and
+the splitting principle. The flag bundle from L3 is precisely the geometric input that reduces
+characteristic-class identities to line bundles. That programme is large enough, and depends on
+enough new intersection theory, to require its own dependency-ordered roadmap.
+
+### 2. Cohomological realization and the Hodge Conjecture interface
+
+A further roadmap should construct analytification, topological vector bundles and Chern classes,
+Betti and algebraic de Rham cohomology, the cycle-class map
+
+```math
+\operatorname{cl}_X^p :
+\operatorname{CH}^p(X)
+\longrightarrow
+H^{2p}(X^{\mathrm{an}},\mathbb Z(p)),
+```
+
+and compatibility between algebraic and topological Chern classes. For a smooth projective complex
+scheme it should prove that algebraic cycle classes have Hodge type `(p,p)`.
+
+Together with the merged [Hodge structures roadmap
+#49](https://github.com/TauCetiProject/TauCetiRoadmap/pull/49) (merged 13 August 2026), this supplies
+the interfaces needed to state the Hodge Conjecture as
+
+```math
+\operatorname{im}\!\left(
+  \operatorname{cl}_X^p : \operatorname{CH}^p(X)\otimes\mathbb Q
+  \longrightarrow H^{2p}(X^{\mathrm{an}},\mathbb Q(p))
+\right)
+=
+\operatorname{Hdg}^p(X),
+```
+
+where `Hdg^p(X)` is the rational subspace of Hodge classes: type `(0,0)` after the Tate twist,
+equivalently type `(p,p)` in untwisted degree `2p`. The Hodge-structures roadmap provides the
+linear-algebraic target; this future realization roadmap must build the geometric cohomology,
+comparisons, and cycle-class map that populate it. This is a formulation target, not a claim that
+the present roadmap proves the conjecture.
 
 ## References
 
@@ -503,38 +389,6 @@ topological or de Rham Chern classes, and intersection-theoretic calculations on
   [Vector bundles](https://stacks.math.columbia.edu/tag/01M1),
   [Projective bundles](https://stacks.math.columbia.edu/tag/01OA), and
   [Grassmannians](https://stacks.math.columbia.edu/tag/089R).
-- The Stacks Project, [Chow Homology and Chern Classes](https://stacks.math.columbia.edu/tag/02P3),
-  especially the [projective bundle formula](https://stacks.math.columbia.edu/tag/02TX),
-  [Chern classes](https://stacks.math.columbia.edu/tag/02TZ), and
-  [splitting principle](https://stacks.math.columbia.edu/tag/02UK).
-- W. Fulton, *Intersection Theory*, Chapters 1--3 and 17.
-- A. Grothendieck, *La théorie des classes de Chern*.
-- D. Edidin and W. Graham, *Equivariant intersection theory*.
-- B. Totaro, *The Chow ring of a classifying space*.
-
-## Motivation
-
-The longer-term programme is to formalize the reusable geometry connecting algebraic vector
-bundles, complex and smooth vector bundles, connections and curvature, gauge theory and
-Yang--Mills equations, Higgs bundles, and their moduli spaces. These subjects repeatedly use the
-same structural operations developed here: pullback, duals, tensor and Hom bundles, determinants,
-tautological bundles, characteristic classes, projective and Grassmann bundles, and deformation
-data expressed through cohomology.
-
-There are two complementary routes out of this foundation. On the algebraic and complex-geometric
-side, finite locally free sheaves lead to stability, moduli of bundles and sheaves, Higgs fields,
-Higgs-bundle moduli, the Hitchin fibration, and integrable systems. On the differential-geometric
-side, complex vector bundles lead to connections, curvature, Chern--Weil theory, unitary gauge
-groups, and Yang--Mills moduli. Analytification and the comparison of characteristic classes form
-the first compatibility layer between these routes.
-
-Over a compact Riemann surface the later bridge theorems include Narasimhan--Seshadri, relating
-stable degree-zero bundles to irreducible unitary representations, and the
-Hitchin--Simpson/Donaldson--Corlette
-correspondence among Higgs bundles, harmonic bundles, and reductive flat connections. Their moduli
-spaces support the Atiyah--Bott gauge-theoretic picture, the Hitchin integrable system, and further
-directions toward nonabelian Hodge theory and geometric Langlands.
-
-This roadmap is the first self-contained foundation in that programme. The theories just listed
-motivate its choice of definitions, naturality statements, and comparison theorems; each requires
-its own focused successor roadmap and is not an additional completion criterion here.
+- EGA II, §§1 and 4; EGA I, the affine-morphism/quasi-coherent-algebra correspondence.
+- R. Hartshorne, *Algebraic Geometry*, II.5 and II.7.
+- D. Huybrechts and M. Lehn, *The Geometry of Moduli Spaces of Sheaves*, §2.2.

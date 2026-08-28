@@ -1,96 +1,351 @@
+import Mathlib.AlgebraicGeometry.AffineSpace
 import Mathlib.AlgebraicGeometry.Modules.Tilde
+import Mathlib.AlgebraicGeometry.Morphisms.Affine
 import Mathlib.AlgebraicGeometry.ProjectiveSpectrum.Functor
+import Mathlib.CategoryTheory.EssentialImage
+import Mathlib.CategoryTheory.Monoidal.CommMon_
+import Mathlib.CategoryTheory.Monoidal.Rigid.Basic
 import Mathlib.RingTheory.Grassmannian
 import TauCeti.AlgebraicGeometry.FinitelyPresentedSheaf.Basic
 
 /-!
-# Algebraic vector bundles and characteristic classes: proposed definitions + target signatures
+# Algebraic vector bundles: proposed definitions and target signatures
 
 **This file is not the roadmap and is not exhaustive.** The definitive document is `README.md`.
-The statements here suggest Lean forms for particular milestones, so that contributors and reviewers
-converge on names and signatures; discharging all of them finishes neither a layer nor the roadmap.
+The declarations below pin the shape of the four layers and their principal universal properties;
+`sorry` is intentional in this human-owned roadmap library.
 
-The narrative roadmap (Mathlib substrate, definitions, generality bar, conventions, Layers L0--L5,
-worked instances, and sibling relations) is in `README.md`.
-
-At the pinned revisions Mathlib can already express the finite-locally-free sheaf stratum and its
-affine finite-projective model. The later milestone types depend on infrastructure built by earlier
-layers: quasi-coherent algebras and relative Spec (L1), graded and geometric vector bundles (L2),
-relative projective/Grassmann/flag bundles (L3), and operational Chow groups (L4). Following the
-honest-`sorry` rule, those signatures enter this file once their types exist; they are stated
-unambiguously in `README.md` now rather than encoded by empty `Prop` fields.
-
-The imports pin the existing APIs consumed immediately:
-
-* `SheafOfModules.IsQuasicoherent`, `IsFinitePresentation`, `IsLocallyFree`, and
-  `AlgebraicGeometry.tildeEquiv`;
-* `AlgebraicGeometry.ProjectiveSpectrum`;
-* `Module.Grassmannian.functor`;
-* Tau Ceti's `InvertibleSheaf` and `FinitelyPresentedSheaf` packaging.
+The types which already exist at the repository pins are used directly: `Scheme.Modules`, the
+quasi-coherent/finite-presentation/locally-free predicates, `tildeEquiv`, affine morphisms,
+`ProjectiveSpectrum`, `Module.Grassmannian.functor`, `InvertibleSheaf`, and
+`FinitelyPresentedSheaf`. The monoidal structure, relative Spec, total-space functors, and
+classifying schemes are targets of this roadmap rather than fictional existing APIs.
 -/
 
 namespace TauCetiRoadmap.AlgebraicVectorBundles
 
-open CategoryTheory
+open CategoryTheory AlgebraicGeometry Opposite
 
 universe u v
 
-/-! ## L0: finite locally free sheaves -/
+/-! ## L0: finite locally free sheaves and monoidal algebra -/
 
-variable (X : Scheme.{u})
+/-- Quasi-coherent sheaves on `X`, using Mathlib's existing object property. -/
+abbrev QuasicoherentSheaf (X : Scheme.{u}) :=
+  (SheafOfModules.isQuasicoherent X.ringCatSheaf).FullSubcategory
 
-/-- The finite locally free stratum inside `X.Modules`.
+/-- The finite locally free stratum at the current API boundary.
 
-Mathlib's `IsLocallyFree` permits infinite local bases. Intersecting it with finite presentation is
-the base-change-stable finite-rank condition used by the roadmap; L0 proves its equivalent stalkwise,
-affine finite-projective, finitely-presented-flat, and dualizable formulations. -/
-def isFiniteLocallyFree : ObjectProperty X.Modules :=
+`IsLocallyFree` alone permits infinite local bases. Finite presentation forces the local ranks to
+be finite and is stable under the base changes used by the roadmap. -/
+def isFiniteLocallyFree (X : Scheme.{u}) : ObjectProperty X.Modules :=
   fun E => E.IsLocallyFree ∧ E.IsFinitePresentation
 
-/-- Finite locally free sheaves on a scheme, with the morphisms already used by `X.Modules`. -/
-abbrev FiniteLocallyFreeSheaf :=
+/-- Finite locally free sheaves on a scheme. -/
+abbrev FiniteLocallyFreeSheaf (X : Scheme.{u}) :=
   (isFiniteLocallyFree X).FullSubcategory
 
-variable {X}
-
-/-- A finite locally free sheaf is quasi-coherent. This sanity check makes the inclusion
-`FinLocFree(X) → QCoh(X)` explicit at the existing API level. -/
-example (E : FiniteLocallyFreeSheaf X) : E.obj.IsQuasicoherent := by
-  letI : E.obj.IsLocallyFree := E.property.1
-  infer_instance
-
-section AffineModel
-
-variable (R : Type u) [CommRing R]
-variable (M : Type v) [AddCommGroup M] [Module R M]
-
-/-- **L0 affine milestone:** finite projective modules are reflexive. The scheme-level theorem is
-the corresponding double-dual isomorphism for finite locally free sheaves, compatible with
-`AlgebraicGeometry.tildeEquiv` and pullback. -/
-example [Module.Finite R M] [Module.Projective R M] :
-    Nonempty (M ≃ₗ[R] ((M →ₗ[R] R) →ₗ[R] R)) := by
+/-- Transport finite local freeness across an isomorphism. This requires the general locally-free
+transport/locality API rather than the rank-one theorem currently in Tau Ceti. -/
+noncomputable instance (X : Scheme.{u}) :
+    (isFiniteLocallyFree X).IsClosedUnderIsomorphisms := by
   sorry
 
-end AffineModel
+namespace FiniteLocallyFreeSheaf
+
+variable {X : Scheme.{u}}
+
+instance (E : FiniteLocallyFreeSheaf X) : E.obj.IsLocallyFree := E.property.1
+
+instance (E : FiniteLocallyFreeSheaf X) : E.obj.IsFinitePresentation := E.property.2
+
+/-- A finite locally free sheaf is quasi-coherent, through Mathlib's existing instance. -/
+example (E : FiniteLocallyFreeSheaf X) : E.obj.IsQuasicoherent := by infer_instance
+
+end FiniteLocallyFreeSheaf
+
+/-- The fully faithful inclusion into quasi-coherent sheaves. -/
+abbrev finiteLocallyFreeToQuasicoherent (X : Scheme.{u}) :
+    FiniteLocallyFreeSheaf X ⥤ QuasicoherentSheaf X :=
+  ObjectProperty.ιOfLE fun E hE => by
+    letI : E.IsLocallyFree := hE.1
+    infer_instance
+
+/-- The fully faithful inclusion into Tau Ceti's finitely presented sheaves. -/
+abbrev finiteLocallyFreeToFinitelyPresented (X : Scheme.{u}) :
+    FiniteLocallyFreeSheaf X ⥤ TauCeti.AlgebraicGeometry.FinitelyPresentedSheaf X :=
+  ObjectProperty.ιOfLE fun _ hE => hE.2
+
+/-- Tau Ceti's invertible sheaves form the rank-one input to the general theory. -/
+noncomputable def invertibleToFiniteLocallyFree (X : Scheme.{u}) :
+    TauCeti.AlgebraicGeometry.InvertibleSheaf X ⥤ FiniteLocallyFreeSheaf X := by
+  apply ObjectProperty.ιOfLE
+  intro E hE
+  letI : TauCeti.SheafOfModules.IsInvertible (R := X.ringCatSheaf) E := hE
+  exact ⟨inferInstance,
+    TauCeti.SheafOfModules.IsInvertible.isFinitePresentation (M := E)⟩
+
+/-- The finite rank of a finite locally free sheaf at a point. L0 constructs it from a finite local
+basis and proves independence from every choice. -/
+noncomputable def rank {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X) (x : X) : ℕ := by
+  sorry
+
+/-- The rank is locally constant; fixed-rank APIs use `HasConstantRank` below. -/
+example {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X) :
+    IsLocallyConstant (rank E) := by
+  sorry
+
+/-- Constant rank is a separate hypothesis because the base scheme need not be connected. -/
+def HasConstantRank {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X) (r : ℕ) : Prop :=
+  ∀ x, rank E x = r
+
+/-- Pullback preserves finite local freeness. This target should reuse the API of
+mathlib4#39989 if it lands. -/
+noncomputable def pullback {X Y : Scheme.{u}} (f : Y ⟶ X) :
+    FiniteLocallyFreeSheaf X ⥤ FiniteLocallyFreeSheaf Y := by
+  sorry
+
+/-- The proposed pullback functor has Mathlib's `Scheme.Modules.pullback` as underlying functor. -/
+noncomputable def pullbackObjIso {X Y : Scheme.{u}} (f : Y ⟶ X)
+    (E : FiniteLocallyFreeSheaf X) :
+    ((pullback f).obj E).obj ≅ (Scheme.Modules.pullback f).obj E.obj := by
+  sorry
+
+/-- Identity coherence for finite-locally-free pullback. -/
+example (X : Scheme.{u}) : pullback (𝟙 X) ≅ 𝟭 (FiniteLocallyFreeSheaf X) := by
+  sorry
+
+/-- Composition coherence for finite-locally-free pullback. -/
+example {X Y Z : Scheme.{u}} (f : Y ⟶ X) (g : Z ⟶ Y) :
+    pullback (g ≫ f) ≅ pullback f ⋙ pullback g := by
+  sorry
+
+/-- Finite projective modules, the affine model for finite locally free sheaves. -/
+def isFiniteProjectiveModule (R : Type u) [CommRing R] : ObjectProperty (ModuleCat.{u} R) :=
+  fun M => Module.Finite R M ∧ Module.Projective R M
+
+abbrev FiniteProjectiveModule (R : Type u) [CommRing R] :=
+  (isFiniteProjectiveModule R).FullSubcategory
+
+/-- **Affine L0 target:** the restriction of `tildeEquiv` to finite projective modules. -/
+noncomputable def tildeFiniteProjectiveEquiv (R : Type u) [CommRing R] :
+    FiniteProjectiveModule R ≌ FiniteLocallyFreeSheaf (Spec (.of R)) := by
+  sorry
 
 /-!
-## Later target shapes
-
-These become compiled `sorry`-goals when the preceding layers have introduced their types.
-
-* **L1:** the relative-spectrum functor is an equivalence
-  `QCAlg(X)ᵒᵖ ≌ AffSchOver(X)`, natural under base change.
-* **L2:** `linearSpec` gives `QCoh(X)ᵒᵖ ≌ GradedVectorBundle(X)`; after restricting to finite
-  locally free objects and dualizing, `totalSpace` gives
-  `FiniteLocallyFreeSheaf(X) ≌ GeometricVectorBundle(X)`.
-* **L3:** the scheme `Gr_X(r,E)` represents `Module.Grassmannian.functor` and carries the
-  universal finite locally free quotient.
-* **L4:** pullback and powers of `c₁(O(1))` give the projective bundle formula on Chow groups.
-* **L5:** Chern operations satisfy normalization, pullback naturality, Whitney sum, and the splitting
-  principle, and factor through the L2 equivalence.
-
-The precise universal properties, grading shifts, signs, hypotheses, and companion API are the
-corresponding layer specifications in `README.md`.
+The next two instances are substantive L0 targets. They are stated as categorical structures, not
+as empty propositions: the tensor unit must be `O_X`, tensor must be the sheaf tensor product, and
+the symmetry/coherence maps must restrict and pull back as specified in `README.md`.
 -/
+
+noncomputable def modulesMonoidalCategory (X : Scheme.{u}) : MonoidalCategory X.Modules := by
+  sorry
+
+attribute [local instance] modulesMonoidalCategory
+
+noncomputable def modulesSymmetricCategory (X : Scheme.{u}) : SymmetricCategory X.Modules := by
+  sorry
+
+attribute [local instance] modulesSymmetricCategory
+
+/-- The tensor unit supplied by L0 agrees with the existing structure sheaf as a module. -/
+noncomputable def tensorUnitIso (X : Scheme.{u}) :
+    𝟙_ X.Modules ≅ SheafOfModules.unit X.ringCatSheaf := by
+  sorry
+
+/-- Internal Hom for sheaves of modules. -/
+noncomputable def internalHom (X : Scheme.{u}) :
+    X.Modulesᵒᵖ ⥤ X.Modules ⥤ X.Modules := by
+  sorry
+
+/-- Tensor product restricts to finite locally free sheaves. -/
+noncomputable def tensorFiniteLocallyFree (X : Scheme.{u}) :
+    FiniteLocallyFreeSheaf X × FiniteLocallyFreeSheaf X ⥤ FiniteLocallyFreeSheaf X := by
+  sorry
+
+/-- Dualization on finite locally free sheaves. -/
+noncomputable def dual (X : Scheme.{u}) :
+    (FiniteLocallyFreeSheaf X)ᵒᵖ ⥤ FiniteLocallyFreeSheaf X := by
+  sorry
+
+/-- The canonical double-dual isomorphism. -/
+noncomputable def doubleDualIso {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X) :
+    E ≅ (dual X).obj (op ((dual X).obj (op E))) := by
+  sorry
+
+/-- Symmetric powers preserve finite local freeness. -/
+noncomputable def symmetricPower (X : Scheme.{u}) (n : ℕ) :
+    FiniteLocallyFreeSheaf X ⥤ FiniteLocallyFreeSheaf X := by
+  sorry
+
+/-- Exterior powers preserve finite local freeness. -/
+noncomputable def exteriorPower (X : Scheme.{u}) (n : ℕ) :
+    FiniteLocallyFreeSheaf X ⥤ FiniteLocallyFreeSheaf X := by
+  sorry
+
+/-- The determinant is an invertible sheaf even when rank is only locally constant. -/
+noncomputable def determinant (X : Scheme.{u}) :
+    FiniteLocallyFreeSheaf X ⥤ TauCeti.AlgebraicGeometry.InvertibleSheaf X := by
+  sorry
+
+/-- The symmetric monoidal structure restricts from modules to quasi-coherent modules. -/
+noncomputable def quasicoherentMonoidalCategory (X : Scheme.{u}) :
+    MonoidalCategory (QuasicoherentSheaf X) := by
+  sorry
+
+attribute [local instance] quasicoherentMonoidalCategory
+
+/-- **L0 milestone:** the dualizable quasi-coherent objects are exactly the finite locally free
+ones. `HasLeftDual` contains evaluation, coevaluation, and both triangle identities. -/
+example {X : Scheme.{u}} (E : QuasicoherentSheaf X) :
+    (∃ E' : FiniteLocallyFreeSheaf X, Nonempty (E'.obj ≅ E.obj)) ↔
+      Nonempty (HasLeftDual E) := by
+  sorry
+
+/-! ## L1: relative Spec and affine schemes over a base -/
+
+/-- Quasi-coherent commutative algebras, using the L0 symmetric monoidal structure. -/
+def isQuasicoherentAlgebra (X : Scheme.{u}) : ObjectProperty (CommMon X.Modules) :=
+  fun A => A.X.IsQuasicoherent
+
+abbrev QuasicoherentAlgebra (X : Scheme.{u}) :=
+  (isQuasicoherentAlgebra X).FullSubcategory
+
+/-- Schemes affine over `X`, expressed with Mathlib's existing morphism property. -/
+abbrev AffineSchemeOver (X : Scheme.{u}) :=
+  MorphismProperty.Over @IsAffineHom ⊤ X
+
+/-- The forgetful functor from affine `X`-schemes to all `X`-schemes. -/
+abbrev affineSchemeOverForget (X : Scheme.{u}) : AffineSchemeOver X ⥤ Over X :=
+  MorphismProperty.Over.forget @IsAffineHom ⊤ X
+
+/-- **L1 milestone:** quasi-coherent algebras are anti-equivalent to affine schemes over `X`. -/
+noncomputable def relativeSpecEquiv (X : Scheme.{u}) :
+    (QuasicoherentAlgebra X)ᵒᵖ ≌ AffineSchemeOver X := by
+  sorry
+
+/-! ## L2: the two vector-bundle equivalences -/
+
+/-- The symmetric algebra functor on quasi-coherent sheaves. -/
+noncomputable def symmetricAlgebra (X : Scheme.{u}) :
+    QuasicoherentSheaf X ⥤ QuasicoherentAlgebra X := by
+  sorry
+
+/-- `F ↦ Spec_X(Sym(F))`, contravariant in `F`. -/
+noncomputable def linearSpec (X : Scheme.{u}) :
+    (QuasicoherentSheaf X)ᵒᵖ ⥤ AffineSchemeOver X :=
+  (symmetricAlgebra X).op ⋙ (relativeSpecEquiv X).functor
+
+/-- A concrete first model for graded vector bundles. L2 must additionally prove that this
+essential image agrees with the intrinsic grading definition in `README.md`. -/
+abbrev GradedVectorBundle (X : Scheme.{u}) :=
+  (linearSpec X).EssImageSubcategory
+
+/-- **First L2 milestone:** the degree-one and linear-Spec functors are quasi-inverse. -/
+noncomputable def linearSpecEquiv (X : Scheme.{u}) :
+    (QuasicoherentSheaf X)ᵒᵖ ≌ GradedVectorBundle X := by
+  sorry
+
+/-- `E ↦ Spec_X(Sym(Eᵛ))`, covariant after dualization. -/
+noncomputable def totalSpace (X : Scheme.{u}) :
+    FiniteLocallyFreeSheaf X ⥤ AffineSchemeOver X := by
+  sorry
+
+/-- Geometric finite vector bundles, initially modeled as the essential image of `totalSpace`.
+L2 identifies this with the intrinsic locally-linear affine-space definition. -/
+abbrev GeometricVectorBundle (X : Scheme.{u}) :=
+  (totalSpace X).EssImageSubcategory
+
+/-- **Second L2 milestone:** finite locally free sheaves and geometric vector bundles agree. -/
+noncomputable def totalSpaceEquiv (X : Scheme.{u}) :
+    FiniteLocallyFreeSheaf X ≌ GeometricVectorBundle X := by
+  sorry
+
+/-- **Section-valued universal property.** A section of a sheaf `M` is expressed categorically as
+`O_T ⟶ M`, avoiding any invented global-sections API. -/
+noncomputable def totalSpaceHomEquiv {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X)
+    (T : Over X) :
+    (T ⟶ (affineSchemeOverForget X).obj ((totalSpace X).obj E)) ≃
+      (SheafOfModules.unit T.left.ringCatSheaf ⟶
+        (Scheme.Modules.pullback T.hom).obj E.obj) := by
+  sorry
+
+/-! ## L3: projective, Grassmann, and flag bundles -/
+
+/-- The projective bundle in the quotient convention. -/
+noncomputable def projectiveBundle {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X) :
+    Over X := by
+  sorry
+
+/-- The tautological quotient line `O(1)` on `P(E)`. -/
+noncomputable def projectiveOOne {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X) :
+    TauCeti.AlgebraicGeometry.InvertibleSheaf (projectiveBundle E).left := by
+  sorry
+
+/-- The tautological quotient `p^*E ⟶ O(1)`. -/
+noncomputable def projectiveTautologicalQuotient {X : Scheme.{u}}
+    (E : FiniteLocallyFreeSheaf X) :
+    (Scheme.Modules.pullback (projectiveBundle E).hom).obj E.obj ⟶
+      (projectiveOOne E).obj := by
+  sorry
+
+/-- The tautological map is an epimorphism of sheaves. -/
+example {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X) :
+    Epi (projectiveTautologicalQuotient E) := by
+  sorry
+
+/-- The relative Grassmannian of rank-`r` quotients. -/
+noncomputable def grassmannBundle {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X)
+    (r : ℕ) : Over X := by
+  sorry
+
+/-- A quotient family classified by `Gr_X(r,E)`. -/
+structure QuotientFamily {X : Scheme.{u}} (T : Over X)
+    (E : FiniteLocallyFreeSheaf X) (r : ℕ) where
+  quotient : FiniteLocallyFreeSheaf T.left
+  map : (Scheme.Modules.pullback T.hom).obj E.obj ⟶ quotient.obj
+  map_epi : Epi map
+  rank_eq : HasConstantRank quotient r
+
+/-- Two quotient families are equivalent when their quotient sheaves are compatibly isomorphic. -/
+def QuotientFamily.Rel {X : Scheme.{u}} {T : Over X}
+    {E : FiniteLocallyFreeSheaf X} {r : ℕ}
+    (A B : QuotientFamily T E r) : Prop :=
+  ∃ e : A.quotient ≅ B.quotient, A.map ≫ e.hom.hom = B.map
+
+/-- The compatible-isomorphism relation is an equivalence relation. -/
+noncomputable instance quotientFamilySetoid {X : Scheme.{u}} {T : Over X}
+    {E : FiniteLocallyFreeSheaf X} {r : ℕ} : Setoid (QuotientFamily T E r) := by
+  refine ⟨QuotientFamily.Rel, ?_⟩
+  sorry
+
+/-- Isomorphism classes of quotient families, the set represented by the Grassmannian. -/
+abbrev QuotientFamilyIsoClass {X : Scheme.{u}} (T : Over X)
+    (E : FiniteLocallyFreeSheaf X) (r : ℕ) :=
+  Quotient (quotientFamilySetoid (T := T) (E := E) (r := r))
+
+/-- **L3 milestone:** the Grassmannian represents rank-`r` finite locally free quotients. -/
+noncomputable def grassmannHomEquiv {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X)
+    (r : ℕ) (T : Over X) :
+    (T ⟶ grassmannBundle E r) ≃ QuotientFamilyIsoClass T E r := by
+  sorry
+
+/-- Projective bundles are the rank-one Grassmannians. -/
+noncomputable def projectiveIsoGrassmannOne {X : Scheme.{u}}
+    (E : FiniteLocallyFreeSheaf X) :
+    projectiveBundle E ≅ grassmannBundle E 1 := by
+  sorry
+
+/-- The full flag bundle of a constant-rank vector bundle. The rank hypothesis is explicit because
+rank is only locally constant over an arbitrary base. -/
+noncomputable def fullFlagBundle {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X)
+    (r : ℕ) (hr : HasConstantRank E r) : Over X := by
+  sorry
+
+/-- The universal successive quotient lines on the full flag bundle. -/
+noncomputable def fullFlagQuotientLine {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X)
+    (r : ℕ) (hr : HasConstantRank E r) (i : Fin r) :
+    TauCeti.AlgebraicGeometry.InvertibleSheaf (fullFlagBundle E r hr).left := by
+  sorry
 
 end TauCetiRoadmap.AlgebraicVectorBundles
