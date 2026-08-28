@@ -126,8 +126,10 @@ Galois group is not among the exports.
 
 ### Interfaces supplied to analytic roadmaps
 
-L-functions consumes the character carriers, their conductor and unitary decomposition, and the
-ray-class arithmetic. Chebotarev additionally consumes the two uniform counting declarations:
+L-functions consumes the character carriers, their conductor and unitary decomposition, the
+ray-class arithmetic, and the support characterization `Modulus.mem_support_iff`, which reads its
+finite Euler correction — a product over `𝔪.support` — as the product over the primes dividing
+the finite part. Chebotarev additionally consumes the two uniform counting declarations:
 
 | Declaration | Exact contract |
 | --- | --- |
@@ -206,6 +208,7 @@ group.
 | Absolute values | At a finite place, a uniformizer has absolute value `q_v⁻¹`; at a real place use `|x|`; at a complex place use `|z|²`. These are exactly the multiplicities in Mathlib's product formula. |
 | Weak approximation | Density of `K` in any finite product of its finite and infinite completions. The mixed product is the primary theorem; congruence and sign statements are corollaries. |
 | Modulus | A nonzero integral ideal and a `Finset` of real places. Complex places never divide a modulus. |
+| Support of a modulus | `𝔪.support` is exactly the finite set of height-one primes dividing `𝔪.finitePart`: membership is the named characterization `Modulus.mem_support_iff`. The empty support of the trivial modulus (`Modulus.support_one`) and monotonicity under divisibility (`Modulus.support_mono`) are consequences of it, not separate conventions. |
 | Divisibility | `𝔪 ∣ 𝔫` means that the finite exponents and the infinite set grow. The transition map runs `Cl_𝔫 ↠ Cl_𝔪`. |
 | Multiplicative congruence | `x ≡ 1 mod* 𝔪` is a condition on `Kˣ`: the prescribed valuation of `x-1` at finite divisors and positivity at the selected real places. It is not unqualified membership in `1 + 𝔪₀`. |
 | Prime-to ideal group | `idealsPrimeTo 𝔪` abbreviates `NumberFieldArithmetic.idealsAway 𝔪.support`. There is one group. |
@@ -270,7 +273,10 @@ additional condition and is proved adelically in Layer 6.
 ### Layer 2: moduli and ray class carriers
 
 Define `Modulus K`, its finite support and exponent function, divisibility, `gcd`, `lcm`, the trivial
-modulus, and `narrowModulus`. Define `IsCongrOne`, `primeToSubgroup`, and `congruenceSubgroup`, with
+modulus, and `narrowModulus`. The support is exactly the finite set of height-one primes dividing
+the finite part: `Modulus.mem_support_iff` (`v ∈ 𝔪.support ↔ v.asIdeal ∣ 𝔪.finitePart`) is its
+characterizing theorem, with `Modulus.support_one` and `Modulus.support_mono` derived from it.
+Define `IsCongrOne`, `primeToSubgroup`, and `congruenceSubgroup`, with
 the valuation and positivity clauses visible.
 
 Define `idealsPrimeTo 𝔪` as the reducible abbreviation of

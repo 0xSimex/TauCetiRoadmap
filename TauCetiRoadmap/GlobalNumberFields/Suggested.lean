@@ -51,6 +51,19 @@ instance : Dvd (Modulus K) :=
 /-- The finite support of a modulus. -/
 noncomputable def Modulus.support (𝔪 : Modulus K) : Finset (HeightOneSpectrum (𝓞 K)) := sorry
 
+/-- **Membership in the support is divisibility of the finite part.** This is the characterizing
+theorem of `Modulus.support`, not a second definition of it. This exact name is consumed by
+L-functions, whose finite Euler correction is a product over `𝔪.support` read, through this
+theorem, as the product over the primes dividing `𝔪.finitePart`. -/
+theorem Modulus.mem_support_iff (𝔪 : Modulus K) (v : HeightOneSpectrum (𝓞 K)) :
+    v ∈ 𝔪.support ↔ v.asIdeal ∣ 𝔪.finitePart := sorry
+
+/-- Support is monotone under divisibility of moduli: the finite part of a divisor divides the
+finite part of the multiple. Derived from `Modulus.mem_support_iff`. -/
+theorem Modulus.support_mono {𝔪 𝔫 : Modulus K} (h : 𝔪 ∣ 𝔫) :
+    𝔪.support ⊆ 𝔫.support := fun v hv =>
+  (mem_support_iff 𝔫 v).mpr (dvd_trans ((mem_support_iff 𝔪 v).mp hv) h.1)
+
 /-- The exponent of a finite place in a modulus. -/
 noncomputable def Modulus.exponent (𝔪 : Modulus K) (v : HeightOneSpectrum (𝓞 K)) : ℕ :=
   (Associates.mk v.asIdeal).count (Associates.mk 𝔪.finitePart).factors
@@ -59,6 +72,14 @@ def Modulus.one (K : Type u) [Field K] [NumberField K] : Modulus K where
   finitePart := ⊤
   finitePart_ne_bot := top_ne_bot
   infinitePart := ∅
+
+/-- The trivial modulus has empty support: no height-one prime divides the unit ideal. Derived
+from `Modulus.mem_support_iff`. -/
+@[simp] theorem Modulus.support_one : (Modulus.one K).support = ∅ := by
+  ext v
+  rw [mem_support_iff]
+  simp only [Finset.notMem_empty, iff_false]
+  exact fun hv => v.isPrime.ne_top (top_le_iff.mp (Ideal.le_of_dvd hv))
 
 theorem Modulus.one_dvd (𝔪 : Modulus K) : Modulus.one K ∣ 𝔪 := sorry
 
