@@ -1020,12 +1020,11 @@ root-side meaning and coefficient-side computation are kept distinct throughout.
   - *The acceptance test against the source.* Dummit's formula (2′) for `x⁵ + ax + b`,
     `f₂₀(x) = x⁶ + 8ax⁵ + 40a²x⁴ + 160a³x³ + 400a⁴x² + (512a⁵ − 3125b⁴)x + (256a⁶ − 9375ab⁴)`,
     is a milestone as an *identity to check* against the orbit-product definition, not as the
-    definition. It pins the convention against the literature: a disagreement between the two
-    sides is a defect in the specification, in the descent, or in the Vieta substitution. Three
-    instances the roadmap uses fall out of it. `x⁵ − 2` gives `X⁶ − 50000X`, whose rational root
-    is `0`. `x⁵ − 5x − 12` gives
-    `X⁶ − 40X⁵ + 1000X⁴ − 20000X³ + 250000X² − 66400000X + 976000000`, whose rational root is
-    `40`. And `x⁵ − x` gives `(X − 2)⁴ (X² + 16)`, the collision witness above.
+    definition. It is the check that rejects a silently different normalization: a disagreement
+    between the two sides is a defect in the specification, in the descent, or in the Vieta
+    substitution. The values the roadmap uses elsewhere follow from it: the sextic roots `0` for
+    `x⁵ − 2` and `40` for `x⁵ − 5x − 12`, which the Layer 6 certificates carry, and the collision
+    witness `(X − 2)⁴ (X² + 16)` for `x⁵ − x`.
   - *The criterion.* For an irreducible separable quintic, `IsSolvable f.Gal` holds if and only
     if the image is conjugate into `F₂₀`. Combined with the factorization theorem: under
     separation evidence, `IsSolvable f.Gal` holds if and only if `resolventSextic f` has a root
@@ -1322,15 +1321,15 @@ soundness theorem. A **search** for such evidence is neither of those, and is no
     The first two need no separation evidence: they use only the direction that a containment
     produces a rational root, which is unconditional.
 
-  ⚠ The fourth branch is genuinely undetermined, and no reading of the discriminant and the
-  sextic resolvent will close it. `x⁵ + x⁴ − 4x³ − 3x² + 3x + 1`, which defines `ℚ(ζ₁₁)⁺` and has
-  label `5T1`, and `x⁵ − 5x − 12`, which has label `5T2`, both have square discriminant — `11⁴`
-  and `8000²` — and both have a separable resolvent sextic with a rational root, at `−16` and at
-  `40` respectively. The two sextics even have the same factorization type, `1 + 5`. A milestone
-  states this pair, so that no later revision reintroduces a "quintic decision procedure" from
-  those two data. Separating `5T1` from `5T2` takes a further datum, and the certificate below
-  carries one: a good-prime factorization of type `(1,2,2)`, or a second root of `f` in
-  `ℚ[X]/(f)`.
+  ⚠ The fourth branch is genuinely undetermined. `x⁵ + x⁴ − 4x³ − 3x² + 3x + 1`, which defines
+  `ℚ(ζ₁₁)⁺` and has label `5T1`, and `x⁵ − 5x − 12`, which has label `5T2`, both have square
+  discriminant — `11⁴` and `8000²` — and both have a separable resolvent sextic with a rational
+  root, at `−16` and at `40` respectively. The hypotheses of the fourth branch hold of both, and
+  the labels differ. The named regression theorem
+  `discriminant_and_sextic_do_not_distinguish_C5_D5` states this pair, so that no later revision
+  reintroduces a "quintic decision procedure" from those two data. Separating `5T1` from `5T2`
+  takes a further datum, and the certificate below carries one: a good-prime factorization of
+  type `(1,2,2)`, or a second root of `f` in `ℚ[X]/(f)`.
 
   *Needs:* the classification and order recognition above (Layer 6); the discriminant test and
   the quadratic extension (Layer 3); the quartic and quintic resolvents with their separation

@@ -46,8 +46,8 @@ resolvent.
 
 The degree-five certificate is **sound only**: `check cert = true` implies the label, and nothing
 here says that a certificate exists, or searches for one, or terminates. What separates `5T1`
-from `5T2` is evidence beyond the discriminant and the resolvent sextic, and a milestone below
-exhibits the two polynomials that prove it.
+from `5T2` is evidence beyond the discriminant and the resolvent sextic, and
+`discriminant_and_sextic_do_not_distinguish_C5_D5` exhibits the two polynomials that prove it.
 
 One statement below is worth reading with care before its shape is copied elsewhere. The
 Layer 9 milestone says that the Galois image is the full symmetric group on the distinct
@@ -988,7 +988,8 @@ theorem, which this roadmap does not own and does not use.
 /-- **Layer 6, the degree-five package theorem.** Exactly what the discriminant and the
 resolvent sextic determine for an irreducible quintic, with the separation evidence attached to
 the two branches that need it. Three of the four branches determine the label. The fourth does
-not, and no strengthening of these two data will make it: see the next milestone. -/
+not: `discriminant_and_sextic_do_not_distinguish_C5_D5` exhibits the pair that keeps it a
+disjunction. -/
 example (f : ℤ[X]) (hf : f.Monic) (hdeg : f.natDegree = 5)
     (hirr : Irreducible (f.map (Int.castRingHom ℚ))) :
     (¬ IsSquare f.discr → (∀ a : ℤ, (resolventSextic f).eval a ≠ 0) →
@@ -1007,11 +1008,18 @@ example (f : ℤ[X]) (hf : f.Monic) (hdeg : f.natDegree = 5)
 /-- **Layer 6, the fourth branch is genuinely undetermined.** `x⁵ + x⁴ − 4x³ − 3x² + 3x + 1`
 (the field `ℚ(ζ₁₁)⁺`, label `5T1`) and `x⁵ − 5x − 12` (label `5T2`) both have square
 discriminant — `11⁴ = 121²` and `8000²` — and both have a **separable** resolvent sextic with a
-rational root, at `−16` and at `40`. Their sextics even have the same factorization type,
-`1 + 5`. So no reading of the discriminant and the sextic resolvent separates `C₅` from `D₅`,
-and a decision procedure claimed from those two data alone would be false. Separating them takes
-a further datum: a good-prime factorization, or a second root of `f` in `ℚ[X]/(f)`. -/
-example :
+rational root, at `−16` and at `40`. So the hypotheses of the package theorem's fourth branch
+hold of both while the labels differ, and a decision procedure claimed from the discriminant
+and a rational sextic root alone would be false. Separating `5T1` from `5T2` takes a further
+datum, and the certificates below carry one: a good-prime factorization of type `(1,2,2)`, or a
+second root of `f` in `ℚ[X]/(f)`.
+
+This is a regression theorem, not stored database computation: the pair is recorded as the
+counterexample that keeps the fourth branch a disjunction, so that no revision reintroduces a
+"quintic decision procedure" from those two data. It is the acceptance test for the certificate
+API — the `cyclic` and `dihedral` constructors carry evidence beyond the sextic because this
+pair shows those two data do not decide. -/
+theorem discriminant_and_sextic_do_not_distinguish_C5_D5 :
     (X ^ 5 + X ^ 4 - 4 * X ^ 3 - 3 * X ^ 2 + 3 * X + 1 : ℤ[X]).discr = 121 ^ 2 ∧
       (X ^ 5 - 5 * X - 12 : ℤ[X]).discr = 8000 ^ 2 ∧
       (resolventSextic (X ^ 5 + X ^ 4 - 4 * X ^ 3 - 3 * X ^ 2 + 3 * X + 1)).eval (-16) = 0 ∧
