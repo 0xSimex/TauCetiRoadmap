@@ -42,6 +42,7 @@ body:
         - OptimalTransport
         - PDE
         - ProfiniteCohomology
+        - ProfiniteProPGroups
         - ReductiveGroups
         - RepresentationTheory
         - StandardDistributions
