@@ -11,15 +11,15 @@ import TauCeti.AlgebraicGeometry.FinitelyPresentedSheaf.Basic
 /-!
 # Algebraic vector bundles: proposed definitions and target signatures
 
-**This file is not the roadmap and is not exhaustive.** The definitive document is `README.md`.
-The declarations below pin the shape of the four layers and their principal universal properties;
-`sorry` is intentional in this human-owned roadmap library.
+`README.md` is the definitive roadmap. The declarations below record representative definitions
+for the four layers and their principal universal properties. Each `sorry` marks a theorem or
+construction targeted by the roadmap.
 
 The types which already exist at the repository pins are used directly: `Scheme.Modules`, the
 quasi-coherent/finite-presentation/locally-free predicates, `tildeEquiv`, affine morphisms,
 `ProjectiveSpectrum`, `Module.Grassmannian.functor`, `InvertibleSheaf`, and
-`FinitelyPresentedSheaf`. The monoidal structure, relative Spec, total-space functors, and
-classifying schemes are targets of this roadmap rather than fictional existing APIs.
+`FinitelyPresentedSheaf`. The roadmap adds the monoidal structure, relative Spec, total-space functors, and classifying
+schemes on top of these pinned APIs.
 -/
 
 namespace TauCetiRoadmap.AlgebraicVectorBundles
@@ -36,8 +36,8 @@ abbrev QuasicoherentSheaf (X : Scheme.{u}) :=
 
 /-- The finite locally free stratum at the current API boundary.
 
-`IsLocallyFree` alone permits infinite local bases. Finite presentation forces the local ranks to
-be finite and is stable under the base changes used by the roadmap. -/
+Finite presentation refines `IsLocallyFree` to finite local rank and supplies the base-change
+stability used throughout the roadmap. -/
 def isFiniteLocallyFree (X : Scheme.{u}) : ObjectProperty X.Modules :=
   fun E => E.IsLocallyFree ∧ E.IsFinitePresentation
 
@@ -45,8 +45,7 @@ def isFiniteLocallyFree (X : Scheme.{u}) : ObjectProperty X.Modules :=
 abbrev FiniteLocallyFreeSheaf (X : Scheme.{u}) :=
   (isFiniteLocallyFree X).FullSubcategory
 
-/-- Transport finite local freeness across an isomorphism. This requires the general locally-free
-transport/locality API rather than the rank-one theorem currently in Tau Ceti. -/
+/-- Transport finite local freeness across an isomorphism, extending Tau Ceti's rank-one API. -/
 noncomputable instance (X : Scheme.{u}) :
     (isFiniteLocallyFree X).IsClosedUnderIsomorphisms := by
   sorry
@@ -95,7 +94,7 @@ example {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X) :
     IsLocallyConstant (rank E) := by
   sorry
 
-/-- Constant rank is a separate hypothesis because the base scheme need not be connected. -/
+/-- Constant-rank hypotheses record the common rank across all connected components. -/
 def HasConstantRank {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X) (r : ℕ) : Prop :=
   ∀ x, rank E x = r
 
@@ -133,9 +132,9 @@ noncomputable def tildeFiniteProjectiveEquiv (R : Type u) [CommRing R] :
   sorry
 
 /-!
-The next two instances are substantive L0 targets. They are stated as categorical structures, not
-as empty propositions: the tensor unit must be `O_X`, tensor must be the sheaf tensor product, and
-the symmetry/coherence maps must restrict and pull back as specified in `README.md`.
+The next two instances specify the L0 monoidal structures. The tensor unit is `O_X`, tensor is the
+sheaf tensor product, and the symmetry and coherence maps satisfy the restriction and pullback
+properties in `README.md`.
 -/
 
 noncomputable def modulesMonoidalCategory (X : Scheme.{u}) : MonoidalCategory X.Modules := by
@@ -183,7 +182,7 @@ noncomputable def exteriorPower (X : Scheme.{u}) (n : ℕ) :
     FiniteLocallyFreeSheaf X ⥤ FiniteLocallyFreeSheaf X := by
   sorry
 
-/-- The determinant is an invertible sheaf even when rank is only locally constant. -/
+/-- The determinant of a finite locally free sheaf, with locally constant rank. -/
 noncomputable def determinant (X : Scheme.{u}) :
     FiniteLocallyFreeSheaf X ⥤ TauCeti.AlgebraicGeometry.InvertibleSheaf X := by
   sorry
@@ -262,7 +261,7 @@ noncomputable def totalSpaceEquiv (X : Scheme.{u}) :
   sorry
 
 /-- **Section-valued universal property.** A section of a sheaf `M` is expressed categorically as
-`O_T ⟶ M`, avoiding any invented global-sections API. -/
+`O_T ⟶ M`. -/
 noncomputable def totalSpaceHomEquiv {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X)
     (T : Over X) :
     (T ⟶ (affineSchemeOverForget X).obj ((totalSpace X).obj E)) ≃
@@ -336,8 +335,8 @@ noncomputable def projectiveIsoGrassmannOne {X : Scheme.{u}}
     projectiveBundle E ≅ grassmannBundle E 1 := by
   sorry
 
-/-- The full flag bundle of a constant-rank vector bundle. The rank hypothesis is explicit because
-rank is only locally constant over an arbitrary base. -/
+/-- The full flag bundle of a constant-rank vector bundle, with the rank hypothesis recorded
+explicitly over an arbitrary base. -/
 noncomputable def fullFlagBundle {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X)
     (r : ℕ) (hr : HasConstantRank E r) : Over X := by
   sorry

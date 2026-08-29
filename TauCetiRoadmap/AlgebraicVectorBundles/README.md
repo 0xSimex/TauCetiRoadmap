@@ -15,16 +15,15 @@ bundle, with projective, Grassmann, and flag bundles as classifying construction
 ```
 
 The first equivalence is the Stacks/EGA correspondence between quasi-coherent modules and affine
-linear schemes. The second restricts to finite locally free modules and dualizes, so that the
-geometric total space represents sections rather than linear functionals. The equivalences are
+linear schemes. The second restricts to finite locally free modules and dualizes. The resulting geometric total
+space represents sections, while the first construction represents linear functionals. The equivalences are
 categorical: they include morphisms, units and counits, base change, and the standard algebra of
 bundles. `Suggested.lean` records representative definitions and milestone signatures;
 this `README.md` is the definitive specification.
 
-Chow groups and characteristic classes are a natural **successor roadmap**, not a second summit of
-this one. A further successor should construct their cohomological realization. The final section
-records those two continuations only as roadmaps-for-roadmaps; they are not completion criteria
-here.
+The final section sketches two natural continuations. The first develops Chow groups and
+characteristic classes; the second constructs their cohomological realization and the interface
+with Hodge theory.
 
 Suggested library home: `TauCeti/AlgebraicGeometry/VectorBundle/`, with the relative affine
 geometry under `TauCeti/AlgebraicGeometry/RelativeSpec/` and the classifying constructions under
@@ -32,7 +31,7 @@ geometry under `TauCeti/AlgebraicGeometry/RelativeSpec/` and the classifying con
 
 ## Pinned inventory
 
-This inventory was checked against the repository pins, not against an assumed future Mathlib:
+This inventory uses the exact repository pins:
 
 - Mathlib [`05ae010`](https://github.com/leanprover-community/mathlib4/commit/05ae0103f49b1ad1248f6039bbbad43d8aeb52a9);
 - Tau Ceti [`e8af08d`](https://github.com/TauCetiProject/TauCeti/commit/e8af08d0aeda4012832880bd56edfc88af061691).
@@ -57,12 +56,11 @@ This inventory was checked against the repository pins, not against an assumed f
   This is the affine comparison on which the scheme-level descent proofs must be based.
 - At the ring/module level Mathlib has tensor products, linear duals, symmetric and exterior
   algebras, `ModuleCat.exteriorPower.functor`, finite projective modules, localization, and stalks.
-  It does **not** yet lift tensor, internal Hom, dual, symmetric powers, or exterior powers to a
-  monoidal theory of sheaves of modules.
-- Mathlib has affine schemes and morphisms, pullbacks, open immersions, gluing, and
-  `AlgebraicGeometry.IsAffineHom`. It has `Scheme.Spec` and `AlgebraicGeometry.ProjectiveSpectrum`
-  for rings and graded rings, but no relative `Spec_X` or `Proj_X` for quasi-coherent sheaf
-  algebras.
+  L0 lifts these constructions to a monoidal theory of sheaves of modules.
+- Mathlib has affine schemes and morphisms, pullbacks, open immersions, gluing,
+  `AlgebraicGeometry.IsAffineHom`, `Scheme.Spec`, and
+  `AlgebraicGeometry.ProjectiveSpectrum`. L1 and L3 develop relative `Spec_X` and `Proj_X`
+  for quasi-coherent sheaf algebras from this affine substrate.
 - `Module.Grassmannian` and `Module.Grassmannian.functor` already use the quotient convention: an
   `A`-point is a finite projective rank-`r` quotient of `A \otimes_R M`. Their source file explicitly
   leaves charts, a scheme-level Grassmannian, and representability to future work.
@@ -73,35 +71,33 @@ This inventory was checked against the repository pins, not against an assumed f
   free and trivial examples.
 - `TauCeti.AlgebraicGeometry.FinitelyPresentedSheaf X` packages finite presentation, with a fully
   faithful inclusion `InvertibleSheaf.toFinitelyPresented`.
-- The line-bundle source explicitly notes that tensor products and the Picard group still require a
-  monoidal structure on sheaves of modules. Thus even the rank-one theory does not yet provide the
-  tensor/dual API required below.
+- The line-bundle source identifies a monoidal structure on sheaves of modules as the foundation
+  for tensor products and the Picard group. L0 supplies the corresponding tensor/dual API.
 - Tau Ceti's anti-equivalence between commutative Hopf algebras and affine group schemes over an
   affine base is useful implementation precedent for essential-image categories and base change.
-  It is not a relative-spectrum construction over an arbitrary scheme.
 
-There is currently no general algebraic-vector-bundle object, no geometric total-space
-construction, and no sheaf/geometric equivalence in either pinned repository.
+The roadmap begins at this boundary by constructing general algebraic vector bundles, their
+geometric total spaces, and the sheaf/geometric equivalence.
 
 ### Active Mathlib work to coordinate with
 
-These pull requests are not inputs at the pin. They are not blockers: build the required API in
-Tau Ceti now, following their shape closely enough that a later replacement is an import-and-delete
-change rather than a redesign.
+These pull requests describe compatible interfaces under active development. The Tau Ceti
+implementation should follow their theorem shapes and naming so that the corresponding Mathlib
+results can be adopted directly when they land.
 
 | Pull request | Relevance and coordination rule |
 | --- | --- |
-| [mathlib4#27098](https://github.com/leanprover-community/mathlib4/pull/27098) | An earlier `VectorBundleData` proposal. It predates the current `IsLocallyFree`; do not create a competing wrapper without first reconciling it with that discussion. |
+| [mathlib4#27098](https://github.com/leanprover-community/mathlib4/pull/27098) | An earlier `VectorBundleData` proposal. Reconcile the finite-locally-free wrapper with that discussion and the current `IsLocallyFree` API. |
 | [mathlib4#39553](https://github.com/leanprover-community/mathlib4/pull/39553) | Proves that `IsLocallyFree` is local. L0 should match its theorem shape and use the Mathlib result directly once available. |
 | [mathlib4#39989](https://github.com/leanprover-community/mathlib4/pull/39989) | Proves pullback preserves quasi-coherent and locally free sheaves. Its pullback--restriction isomorphism and naming should shape L0. |
-| [mathlib4#40194](https://github.com/leanprover-community/mathlib4/pull/40194) | Develops locally free sheaves on `Spec R` and their affine comparison. L0 should extend this to the finite-projective equivalence rather than build a parallel affine API. |
+| [mathlib4#40194](https://github.com/leanprover-community/mathlib4/pull/40194) | Develops locally free sheaves on `Spec R` and their affine comparison. L0 should use this affine API as the basis for the finite-projective equivalence. |
 | [mathlib4#14686](https://github.com/leanprover-community/mathlib4/pull/14686) | Constructs a Grassmannian scheme by gluing charts for a finite free module. L3 should reuse its chart design and supply the relative finite-locally-free and representability layers. |
 
 ## Definitions and pinned conventions
 
 ### The sheaf strata
 
-The following conditions are related but not interchangeable:
+The following conditions form the sheaf-theoretic hierarchy used by the roadmap:
 
 | Condition | Role here |
 | --- | --- |
@@ -121,7 +117,7 @@ Define a finite locally free sheaf at the present API boundary by
 L0 proves that this is equivalent to being locally free on a Zariski cover with finite bases, to
 being finitely presented and flat, to having finite-projective affine modules, and to being
 dualizable in `QCoh(X)`. Its rank is a locally constant function `X \to \mathbb N`; fixed-rank
-theorems carry a hypothesis `rank(E)=r` rather than silently assuming that `X` is connected.
+theorems carry an explicit hypothesis `rank(E)=r`, allowing arbitrary base schemes.
 
 ### Two related total-space constructions
 
@@ -172,8 +168,8 @@ represents sections:
 \Gamma(T,f^*\mathcal E).
 ```
 
-The names `linearSpec` and `totalSpace` remain distinct throughout the API so that the variance and
-the dual cannot be lost accidentally.
+The names `linearSpec` and `totalSpace` record the variance and the dualization directly in the
+public API.
 
 ### Classifying conventions
 
@@ -261,7 +257,7 @@ transition maps, equivalently as the finite locally free part of the graded theo
 ```
 
 Both equivalences are natural under base change. Prove the section-valued universal property and
-the following dictionary as natural isomorphisms, not object-level coincidences:
+the following dictionary as natural isomorphisms:
 
 | Sheaf side | Geometric side |
 | --- | --- |
@@ -314,15 +310,15 @@ bundle, the pulled-back bundle has a filtration whose successive quotients are i
 
 - Every construction has restriction, affine-local computation, pullback, and arbitrary-base-change
   theorems.
-- Every equivalence exposes its functors, unit, counit, and naturality. Defining the target category
-  as an essential image is not by itself the intrinsic characterization theorem.
+- Every equivalence exposes its functors, unit, counit, and naturality, and identifies its
+  essential-image model with the intrinsic target category.
 - The variance distinction `F \mapsto V_lin(F)` versus `E \mapsto V(E)` is visible in names and
   theorem statements.
 - Universal objects are characterized by represented functors. Quotient families are identified
-  modulo compatible isomorphism, not by equality of chosen quotient carriers.
+  modulo compatible isomorphism.
 - Fixed-rank statements explicitly assume constant rank; otherwise rank remains locally constant.
-- Public APIs have extensionality and simp lemmas that do not require unfolding covers, gluing data,
-  or affine equivalences.
+- Public APIs have extensionality and simp lemmas that keep covers, gluing data, and affine
+  equivalences behind the implementation boundary.
 - The worked instances above compile against the public interface.
 
 ## Relations to existing roadmaps
@@ -330,15 +326,14 @@ bundle, the pulled-back bundle has a filtration whose successive quotients are i
 `JacobianChallenge` supplies the present rank-one object `InvertibleSheaf`, finitely presented
 sheaves, and later the divisor--line-bundle dictionary. This roadmap generalizes its sheaf object to
 all finite ranks and supplies the tensor/dual and geometric-total-space infrastructure that its
-Picard theory needs; it does not duplicate the Picard scheme or Jacobian.
+Picard theory needs. The Picard scheme and Jacobian remain governed by `JacobianChallenge`.
 
-`AlgebraicCurves` supplies curve-specific divisors and Riemann--Roch. The vector-bundle theory here
-is over arbitrary schemes and is independent of a curve-specific degree theory.
+`AlgebraicCurves` supplies curve-specific divisors and Riemann--Roch. The vector-bundle theory here works over arbitrary schemes; `AlgebraicCurves` supplies the
+curve-specific degree theory.
 
 ## Successor roadmaps — motivation only
 
-The following are two separate future roadmaps. Contributors should not implement them to discharge
-L0--L3.
+The following are two separate future roadmaps, following the completion of L0--L3.
 
 ### 1. Chow groups and characteristic classes
 
@@ -366,7 +361,7 @@ scheme it should prove that algebraic cycle classes have Hodge type `(p,p)`.
 
 Together with the merged [Hodge structures roadmap
 #49](https://github.com/TauCetiProject/TauCetiRoadmap/pull/49) (merged 13 August 2026), this supplies
-the interfaces needed to state the Hodge Conjecture as
+the interfaces for the following formulation of the Hodge Conjecture:
 
 ```math
 \operatorname{im}\!\left(
@@ -379,9 +374,9 @@ the interfaces needed to state the Hodge Conjecture as
 
 where `Hdg^p(X)` is the rational subspace of Hodge classes: type `(0,0)` after the Tate twist,
 equivalently type `(p,p)` in untwisted degree `2p`. The Hodge-structures roadmap provides the
-linear-algebraic target; this future realization roadmap must build the geometric cohomology,
-comparisons, and cycle-class map that populate it. This is a formulation target, not a claim that
-the present roadmap proves the conjecture.
+linear-algebraic target; the future realization roadmap builds the geometric cohomology,
+comparisons, and cycle-class map that populate it. The present roadmap supplies the algebraic
+vector-bundle input to that programme.
 
 ## References
 
