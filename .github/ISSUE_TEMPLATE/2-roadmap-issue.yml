@@ -19,6 +19,7 @@ body:
         - ArithmeticDirichletSeries
         - BelyiMaps
         - CFSGStatement
+        - Chebotarev
         - CombinatorialHeegaardFloer
         - ConformalMapping
         - ContourIntegration
