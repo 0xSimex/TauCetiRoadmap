@@ -2,7 +2,7 @@
 
 This roadmap builds a single coherent theory of **algebraic vector bundles over schemes**. Its
 summit is the equivalence between the sheaf-theoretic and geometric presentations of a vector
-bundle, with projective, Grassmann, and flag bundles as classifying constructions on top:
+bundle:
 
 ```math
 \mathsf{QCoh}(X)^{\mathrm{op}}
@@ -26,8 +26,7 @@ characteristic classes; the second constructs their cohomological realization an
 with Hodge theory.
 
 Suggested library home: `TauCeti/AlgebraicGeometry/VectorBundle/`, with the relative affine
-geometry under `TauCeti/AlgebraicGeometry/RelativeSpec/` and the classifying constructions under
-`TauCeti/AlgebraicGeometry/Grassmannian/`.
+geometry under `TauCeti/AlgebraicGeometry/RelativeSpec/`.
 
 ## Pinned inventory
 
@@ -58,12 +57,8 @@ This inventory uses the exact repository pins:
   algebras, `ModuleCat.exteriorPower.functor`, finite projective modules, localization, and stalks.
   L0 lifts these constructions to a monoidal theory of sheaves of modules.
 - Mathlib has affine schemes and morphisms, pullbacks, open immersions, gluing,
-  `AlgebraicGeometry.IsAffineHom`, `Scheme.Spec`, and
-  `AlgebraicGeometry.ProjectiveSpectrum`. L1 and L3 develop relative `Spec_X` and `Proj_X`
-  for quasi-coherent sheaf algebras from this affine substrate.
-- `Module.Grassmannian` and `Module.Grassmannian.functor` already use the quotient convention: an
-  `A`-point is a finite projective rank-`r` quotient of `A \otimes_R M`. Their source file explicitly
-  leaves charts, a scheme-level Grassmannian, and representability to future work.
+  `AlgebraicGeometry.IsAffineHom`, and `Scheme.Spec`. L1 develops relative `Spec_X` for
+  quasi-coherent sheaf algebras from this affine substrate.
 
 ### What Tau Ceti already supplies
 
@@ -91,7 +86,6 @@ results can be adopted directly when they land.
 | [mathlib4#39553](https://github.com/leanprover-community/mathlib4/pull/39553) | Proves that `IsLocallyFree` is local. L0 should match its theorem shape and use the Mathlib result directly once available. |
 | [mathlib4#39989](https://github.com/leanprover-community/mathlib4/pull/39989) | Proves pullback preserves quasi-coherent and locally free sheaves. Its pullback--restriction isomorphism and naming should shape L0. |
 | [mathlib4#40194](https://github.com/leanprover-community/mathlib4/pull/40194) | Develops locally free sheaves on `Spec R` and their affine comparison. L0 should use this affine API as the basis for the finite-projective equivalence. |
-| [mathlib4#14686](https://github.com/leanprover-community/mathlib4/pull/14686) | Constructs a Grassmannian scheme by gluing charts for a finite free module. L3 should reuse its chart design and supply the relative finite-locally-free and representability layers. |
 
 ## Definitions and pinned conventions
 
@@ -171,23 +165,10 @@ represents sections:
 The names `linearSpec` and `totalSpace` record the variance and the dualization directly in the
 public API.
 
-### Classifying conventions
+### Relative-Spec convention
 
-- Relative Spec is contravariant in quasi-coherent commutative algebras and commutes with arbitrary
-  base change.
-- Projective bundles use Grothendieck's quotient convention:
-
-  ```math
-  \mathbf P(\mathcal E)
-  =
-  \operatorname{Proj}_X\operatorname{Sym}(\mathcal E),
-  \qquad
-  p^*\mathcal E\twoheadrightarrow\mathcal O_{\mathbf P(\mathcal E)}(1).
-  ```
-
-- `Gr_X(r,E)` represents finite locally free rank-`r` quotients of pullbacks of `E`, modulo the
-  unique compatible isomorphism of quotient sheaves. This matches `Module.Grassmannian.functor`.
-- Full flag bundles use successive quotient lines. Partial flags use increasing quotient ranks.
+Relative Spec is contravariant in quasi-coherent commutative algebras and commutes with arbitrary
+base change.
 
 ## Layers
 
@@ -269,42 +250,12 @@ the following dictionary as natural isomorphisms:
 | dual, tensor, internal Hom | corresponding geometric bundles |
 | exterior/symmetric powers, determinant | corresponding geometric bundles and determinant line |
 
-### L3 — projective, Grassmann, and flag bundles
-
-Build the relative `Proj_X` interface needed for symmetric algebras: affine charts, `O(1)`,
-functoriality, and arbitrary base change. Prove that `P(E)` represents invertible quotients and
-identify it with `Gr_X(1,E)`.
-
-Construct `Gr_X(r,E)` by standard affine charts, reusing the chart design of mathlib4#14686 where
-possible. Build the universal quotient `p^*E \twoheadrightarrow Q`, tautological kernel `S`, and
-universal exact sequence. Prove that `S` and `Q` are finite locally free with the expected ranks.
-
-**Milestone:** for every `f : T \to X`, construct a natural equivalence
-
-```math
-\operatorname{Hom}_X(T,\operatorname{Gr}_X(r,\mathcal E))
-\simeq
-\left\{
-f^*\mathcal E\twoheadrightarrow\mathcal Q
-\;\middle|\;
-\mathcal Q\text{ finite locally free of rank }r
-\right\}/\cong.
-```
-
-Build partial and full flag bundles as iterated Grassmann bundles, with universal quotient flags,
-base change, and the classifying universal property. On the full flag bundle of a constant-rank
-bundle, the pulled-back bundle has a filtration whose successive quotients are invertible sheaves.
-
 ## Worked instances
 
 - Through `tildeEquiv`, a finite projective `R`-module `M` gives
   `Spec(Sym_R(M^\vee)) \to Spec R`.
 - The free sheaf on `Fin r` gives affine `r`-space and represents `r`-tuples of sections.
 - `InvertibleSheaf.trivial X` gives the trivial geometric line bundle.
-- `P(O_X^r)` is projective `(r-1)`-space with its tautological quotient.
-- `Gr_X(r,O_X^N)` represents the existing `Module.Grassmannian.functor` after affine base change.
-- `Gr_X(1,E) \cong P(E)` and the full flag bundle of a split bundle carries the expected universal
-  quotient-line filtration.
 
 ## Cross-cutting acceptance criteria
 
@@ -314,8 +265,6 @@ bundle, the pulled-back bundle has a filtration whose successive quotients are i
   essential-image model with the intrinsic target category.
 - The variance distinction `F \mapsto V_lin(F)` versus `E \mapsto V(E)` is visible in names and
   theorem statements.
-- Universal objects are characterized by represented functors. Quotient families are identified
-  modulo compatible isomorphism.
 - Fixed-rank statements explicitly assume constant rank; otherwise rank remains locally constant.
 - Public APIs have extensionality and simp lemmas that keep covers, gluing data, and affine
   equivalences behind the implementation boundary.
@@ -333,18 +282,23 @@ curve-specific degree theory.
 
 ## Successor roadmaps — motivation only
 
-The following are two separate future roadmaps, following the completion of L0--L3.
+The completion of L0--L2 supplies the algebraic vector-bundle theory required by three natural
+successors.
 
-### 1. Chow groups and characteristic classes
+### 1. Projective, Grassmann, and flag bundles
 
-Projective, Grassmann, and full flag bundles make the next step natural: construct cycles, rational
+A separate roadmap should construct relative projective bundles, Grassmann bundles, and flag
+bundles together with their quotient-classifying universal properties. Its main geometric outputs
+are the universal quotient bundles and the flag-bundle input for the splitting principle.
+
+### 2. Chow groups and characteristic classes
+
+Building on those classifying constructions, a further roadmap should construct cycles, rational
 equivalence, Chow homology/cohomology, Cartier-divisor actions, and the projective bundle formula;
-then define Chern classes by the projective-bundle relation and prove naturality, Whitney sum, and
-the splitting principle. The flag bundle from L3 is precisely the geometric input that reduces
-characteristic-class identities to line bundles. That programme is large enough, and depends on
-enough new intersection theory, to require its own dependency-ordered roadmap.
+then define Chern classes and prove naturality, the Whitney sum formula, and the splitting
+principle.
 
-### 2. Cohomological realization and the Hodge Conjecture interface
+### 3. Cohomological realization and the Hodge Conjecture interface
 
 A further roadmap should construct analytification, topological vector bundles and Chern classes,
 Betti and algebraic de Rham cohomology, the cycle-class map
@@ -380,10 +334,8 @@ vector-bundle input to that programme.
 
 ## References
 
-- The Stacks Project, [Relative spectrum as a functor](https://stacks.math.columbia.edu/tag/01LQ),
-  [Vector bundles](https://stacks.math.columbia.edu/tag/01M1),
-  [Projective bundles](https://stacks.math.columbia.edu/tag/01OA), and
-  [Grassmannians](https://stacks.math.columbia.edu/tag/089R).
-- EGA II, §§1 and 4; EGA I, the affine-morphism/quasi-coherent-algebra correspondence.
-- R. Hartshorne, *Algebraic Geometry*, II.5 and II.7.
+- The Stacks Project, [Relative spectrum as a functor](https://stacks.math.columbia.edu/tag/01LQ)
+  and [Vector bundles](https://stacks.math.columbia.edu/tag/01M1).
+- EGA II, §1; EGA I, the affine-morphism/quasi-coherent-algebra correspondence.
+- R. Hartshorne, *Algebraic Geometry*, II.5.
 - D. Huybrechts and M. Lehn, *The Geometry of Moduli Spaces of Sheaves*, §2.2.
