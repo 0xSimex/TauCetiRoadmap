@@ -1,25 +1,22 @@
 import Mathlib.AlgebraicGeometry.AffineSpace
 import Mathlib.AlgebraicGeometry.Modules.Tilde
 import Mathlib.AlgebraicGeometry.Morphisms.Affine
-import Mathlib.AlgebraicGeometry.ProjectiveSpectrum.Functor
 import Mathlib.CategoryTheory.EssentialImage
 import Mathlib.CategoryTheory.Monoidal.CommMon_
 import Mathlib.CategoryTheory.Monoidal.Rigid.Basic
-import Mathlib.RingTheory.Grassmannian
 import TauCeti.AlgebraicGeometry.FinitelyPresentedSheaf.Basic
 
 /-!
 # Algebraic vector bundles: proposed definitions and target signatures
 
 `README.md` is the definitive roadmap. The declarations below record representative definitions
-for the four layers and their principal universal properties. Each `sorry` marks a theorem or
+for the three layers and their principal universal properties. Each `sorry` marks a theorem or
 construction targeted by the roadmap.
 
 The types which already exist at the repository pins are used directly: `Scheme.Modules`, the
 quasi-coherent/finite-presentation/locally-free predicates, `tildeEquiv`, affine morphisms,
-`ProjectiveSpectrum`, `Module.Grassmannian.functor`, `InvertibleSheaf`, and
-`FinitelyPresentedSheaf`. The roadmap adds the monoidal structure, relative Spec, total-space functors, and classifying
-schemes on top of these pinned APIs.
+`InvertibleSheaf`, and `FinitelyPresentedSheaf`. The roadmap adds the monoidal structure,
+relative Spec, and total-space functors on top of these pinned APIs.
 -/
 
 namespace TauCetiRoadmap.AlgebraicVectorBundles
@@ -267,84 +264,6 @@ noncomputable def totalSpaceHomEquiv {X : Scheme.{u}} (E : FiniteLocallyFreeShea
     (T ⟶ (affineSchemeOverForget X).obj ((totalSpace X).obj E)) ≃
       (SheafOfModules.unit T.left.ringCatSheaf ⟶
         (Scheme.Modules.pullback T.hom).obj E.obj) := by
-  sorry
-
-/-! ## L3: projective, Grassmann, and flag bundles -/
-
-/-- The projective bundle in the quotient convention. -/
-noncomputable def projectiveBundle {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X) :
-    Over X := by
-  sorry
-
-/-- The tautological quotient line `O(1)` on `P(E)`. -/
-noncomputable def projectiveOOne {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X) :
-    TauCeti.AlgebraicGeometry.InvertibleSheaf (projectiveBundle E).left := by
-  sorry
-
-/-- The tautological quotient `p^*E ⟶ O(1)`. -/
-noncomputable def projectiveTautologicalQuotient {X : Scheme.{u}}
-    (E : FiniteLocallyFreeSheaf X) :
-    (Scheme.Modules.pullback (projectiveBundle E).hom).obj E.obj ⟶
-      (projectiveOOne E).obj := by
-  sorry
-
-/-- The tautological map is an epimorphism of sheaves. -/
-example {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X) :
-    Epi (projectiveTautologicalQuotient E) := by
-  sorry
-
-/-- The relative Grassmannian of rank-`r` quotients. -/
-noncomputable def grassmannBundle {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X)
-    (r : ℕ) : Over X := by
-  sorry
-
-/-- A quotient family classified by `Gr_X(r,E)`. -/
-structure QuotientFamily {X : Scheme.{u}} (T : Over X)
-    (E : FiniteLocallyFreeSheaf X) (r : ℕ) where
-  quotient : FiniteLocallyFreeSheaf T.left
-  map : (Scheme.Modules.pullback T.hom).obj E.obj ⟶ quotient.obj
-  map_epi : Epi map
-  rank_eq : HasConstantRank quotient r
-
-/-- Two quotient families are equivalent when their quotient sheaves are compatibly isomorphic. -/
-def QuotientFamily.Rel {X : Scheme.{u}} {T : Over X}
-    {E : FiniteLocallyFreeSheaf X} {r : ℕ}
-    (A B : QuotientFamily T E r) : Prop :=
-  ∃ e : A.quotient ≅ B.quotient, A.map ≫ e.hom.hom = B.map
-
-/-- The compatible-isomorphism relation is an equivalence relation. -/
-noncomputable instance quotientFamilySetoid {X : Scheme.{u}} {T : Over X}
-    {E : FiniteLocallyFreeSheaf X} {r : ℕ} : Setoid (QuotientFamily T E r) := by
-  refine ⟨QuotientFamily.Rel, ?_⟩
-  sorry
-
-/-- Isomorphism classes of quotient families, the set represented by the Grassmannian. -/
-abbrev QuotientFamilyIsoClass {X : Scheme.{u}} (T : Over X)
-    (E : FiniteLocallyFreeSheaf X) (r : ℕ) :=
-  Quotient (quotientFamilySetoid (T := T) (E := E) (r := r))
-
-/-- **L3 milestone:** the Grassmannian represents rank-`r` finite locally free quotients. -/
-noncomputable def grassmannHomEquiv {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X)
-    (r : ℕ) (T : Over X) :
-    (T ⟶ grassmannBundle E r) ≃ QuotientFamilyIsoClass T E r := by
-  sorry
-
-/-- Projective bundles are the rank-one Grassmannians. -/
-noncomputable def projectiveIsoGrassmannOne {X : Scheme.{u}}
-    (E : FiniteLocallyFreeSheaf X) :
-    projectiveBundle E ≅ grassmannBundle E 1 := by
-  sorry
-
-/-- The full flag bundle of a constant-rank vector bundle, with the rank hypothesis recorded
-explicitly over an arbitrary base. -/
-noncomputable def fullFlagBundle {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X)
-    (r : ℕ) (hr : HasConstantRank E r) : Over X := by
-  sorry
-
-/-- The universal successive quotient lines on the full flag bundle. -/
-noncomputable def fullFlagQuotientLine {X : Scheme.{u}} (E : FiniteLocallyFreeSheaf X)
-    (r : ℕ) (hr : HasConstantRank E r) (i : Fin r) :
-    TauCeti.AlgebraicGeometry.InvertibleSheaf (fullFlagBundle E r hr).left := by
   sorry
 
 end TauCetiRoadmap.AlgebraicVectorBundles
