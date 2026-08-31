@@ -21,9 +21,8 @@ categorical: they include morphisms, units and counits, base change, and the sta
 bundles. `Suggested.lean` records representative definitions and milestone signatures;
 this `README.md` is the definitive specification.
 
-The final section sketches two natural continuations. The first develops Chow groups and
-characteristic classes; the second constructs their cohomological realization and the interface
-with Hodge theory.
+The final section records the successor chain through classifying bundles, Chow groups and
+characteristic classes, and cohomological realization.
 
 Suggested library home: `TauCeti/AlgebraicGeometry/VectorBundle/`, with the relative affine
 geometry under `TauCeti/AlgebraicGeometry/RelativeSpec/`.
