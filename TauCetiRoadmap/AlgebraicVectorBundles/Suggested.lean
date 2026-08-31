@@ -4,6 +4,7 @@ import Mathlib.AlgebraicGeometry.Morphisms.Affine
 import Mathlib.CategoryTheory.EssentialImage
 import Mathlib.CategoryTheory.Monoidal.CommMon_
 import Mathlib.CategoryTheory.Monoidal.Rigid.Basic
+import Mathlib.Topology.LocallyConstant.Basic
 import TauCeti.AlgebraicGeometry.FinitelyPresentedSheaf.Basic
 
 /-!
@@ -22,6 +23,7 @@ relative Spec, and total-space functors on top of these pinned APIs.
 namespace TauCetiRoadmap.AlgebraicVectorBundles
 
 open CategoryTheory AlgebraicGeometry Opposite
+open scoped MonoidalCategory
 
 universe u v
 
@@ -56,16 +58,15 @@ instance (E : FiniteLocallyFreeSheaf X) : E.obj.IsLocallyFree := E.property.1
 instance (E : FiniteLocallyFreeSheaf X) : E.obj.IsFinitePresentation := E.property.2
 
 /-- A finite locally free sheaf is quasi-coherent, through Mathlib's existing instance. -/
-example (E : FiniteLocallyFreeSheaf X) : E.obj.IsQuasicoherent := by infer_instance
+example (E : FiniteLocallyFreeSheaf X) : E.obj.IsQuasicoherent := by
+  sorry
 
 end FiniteLocallyFreeSheaf
 
 /-- The fully faithful inclusion into quasi-coherent sheaves. -/
 abbrev finiteLocallyFreeToQuasicoherent (X : Scheme.{u}) :
-    FiniteLocallyFreeSheaf X ⥤ QuasicoherentSheaf X :=
-  ObjectProperty.ιOfLE fun E hE => by
-    letI : E.IsLocallyFree := hE.1
-    infer_instance
+    FiniteLocallyFreeSheaf X ⥤ QuasicoherentSheaf X := by
+  sorry
 
 /-- The fully faithful inclusion into Tau Ceti's finitely presented sheaves. -/
 abbrev finiteLocallyFreeToFinitelyPresented (X : Scheme.{u}) :
@@ -75,11 +76,7 @@ abbrev finiteLocallyFreeToFinitelyPresented (X : Scheme.{u}) :
 /-- Tau Ceti's invertible sheaves form the rank-one input to the general theory. -/
 noncomputable def invertibleToFiniteLocallyFree (X : Scheme.{u}) :
     TauCeti.AlgebraicGeometry.InvertibleSheaf X ⥤ FiniteLocallyFreeSheaf X := by
-  apply ObjectProperty.ιOfLE
-  intro E hE
-  letI : TauCeti.SheafOfModules.IsInvertible (R := X.ringCatSheaf) E := hE
-  exact ⟨inferInstance,
-    TauCeti.SheafOfModules.IsInvertible.isFinitePresentation (M := E)⟩
+  sorry
 
 /-- The finite rank of a finite locally free sheaf at a point. L0 constructs it from a finite local
 basis and proves independence from every choice. -/
@@ -134,11 +131,13 @@ sheaf tensor product, and the symmetry and coherence maps satisfy the restrictio
 properties in `README.md`.
 -/
 
+@[instance_reducible]
 noncomputable def modulesMonoidalCategory (X : Scheme.{u}) : MonoidalCategory X.Modules := by
   sorry
 
 attribute [local instance] modulesMonoidalCategory
 
+@[instance_reducible]
 noncomputable def modulesSymmetricCategory (X : Scheme.{u}) : SymmetricCategory X.Modules := by
   sorry
 
@@ -185,6 +184,7 @@ noncomputable def determinant (X : Scheme.{u}) :
   sorry
 
 /-- The symmetric monoidal structure restricts from modules to quasi-coherent modules. -/
+@[instance_reducible]
 noncomputable def quasicoherentMonoidalCategory (X : Scheme.{u}) :
     MonoidalCategory (QuasicoherentSheaf X) := by
   sorry
@@ -207,13 +207,17 @@ def isQuasicoherentAlgebra (X : Scheme.{u}) : ObjectProperty (CommMon X.Modules)
 abbrev QuasicoherentAlgebra (X : Scheme.{u}) :=
   (isQuasicoherentAlgebra X).FullSubcategory
 
-/-- Schemes affine over `X`, expressed with Mathlib's existing morphism property. -/
+/-- The property of an `X`-scheme that its structure morphism is affine. -/
+def isAffineSchemeOver (X : Scheme.{u}) : ObjectProperty (Over X) :=
+  fun T => IsAffineHom T.hom
+
+/-- Schemes affine over `X`. -/
 abbrev AffineSchemeOver (X : Scheme.{u}) :=
-  MorphismProperty.Over @IsAffineHom ⊤ X
+  (isAffineSchemeOver X).FullSubcategory
 
 /-- The forgetful functor from affine `X`-schemes to all `X`-schemes. -/
 abbrev affineSchemeOverForget (X : Scheme.{u}) : AffineSchemeOver X ⥤ Over X :=
-  MorphismProperty.Over.forget @IsAffineHom ⊤ X
+  ObjectProperty.ι (isAffineSchemeOver X)
 
 /-- **L1 milestone:** quasi-coherent algebras are anti-equivalent to affine schemes over `X`. -/
 noncomputable def relativeSpecEquiv (X : Scheme.{u}) :
