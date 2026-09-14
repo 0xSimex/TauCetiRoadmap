@@ -17,8 +17,9 @@ structure, including on morphisms. The main equivalences are
 Here `LinearSch(X)` consists of affine `X`-schemes whose quasicoherent coordinate algebra is
 nonnegatively graded and freely generated in degree one; its morphisms preserve the grading.
 `GeomVB(X)` is the full subcategory whose degree-one piece is finite locally free. Equivalently,
-these objects are affine module schemes, and their morphisms preserve zero, addition and scalar
-multiplication.
+these objects are affine module schemes whose canonical graded symmetric-algebra map from the
+degree-one piece is an isomorphism; their morphisms preserve zero, addition and scalar
+multiplication. The finite-bundle subcategory additionally has finite locally free degree one.
 
 The construction factors the first equivalence as
 
@@ -85,6 +86,16 @@ This inventory uses the exact repository pins:
   for tensor products and the Picard group. L0 supplies the corresponding tensor/dual API.
 - Tau Ceti's anti-equivalence between commutative Hopf algebras and affine group schemes over an
   affine base is useful implementation precedent for structured affine objects and base change.
+
+The sheafified tensor construction in Tau Ceti
+[`77140d1`](https://github.com/TauCetiProject/TauCeti/commit/77140d1fa19c0e8b74a4b681f590f69691a30e3d)
+provides [`SheafOfModules.tensorProduct` and `tensorProductIso`](https://github.com/TauCetiProject/TauCeti/blob/77140d1fa19c0e8b74a4b681f590f69691a30e3d/TauCeti/Algebra/Category/ModuleCat/Sheaf/TensorProduct/Basic.lean),
+and the scheme specialization
+[`Scheme.Modules.tensorProduct`](https://github.com/TauCetiProject/TauCeti/blob/77140d1fa19c0e8b74a4b681f590f69691a30e3d/TauCeti/AlgebraicGeometry/Modules/TensorProduct.lean).
+At the dependency pin above, use the same sheafification of the presheaf tensor product, as in
+`tensorUnderlyingIso`; adopt these individual modules when available in the dependency graph.
+The full closed symmetric monoidal coherence and strong symmetric monoidal pullback remain L0A
+targets.
 
 The roadmap begins at this boundary by constructing general algebraic vector bundles, their
 geometric total spaces, and the sheaf/geometric equivalence.
@@ -161,8 +172,13 @@ graded algebras
 ```
 
 including compatibility with multiplication and the unit. Morphisms preserve the grading. The
-equivalent affine-module-scheme presentation supplies zero, addition and scalar multiplication;
-the roadmap proves that the two presentations agree.
+equivalent affine-module-scheme presentation supplies zero, addition and scalar multiplication
+and retains the condition that the canonical map `Sym^gr(A_1) → A` is an isomorphism. Prove the
+correspondence of grading-preserving and module-structure-preserving morphisms on these objects.
+An arbitrary affine module scheme need not satisfy this recognition condition: over `F_p`,
+`Spec(F_p[t]/(t^p))` is a module scheme but its coordinate algebra is not freely generated in
+degree one. For finite bundles, local linear trivializations provide the equivalent recognition
+condition.
 
 For a finite locally free sheaf of sections `E`, define the geometric total space
 
@@ -199,9 +215,12 @@ Each layer has one discharge-gated milestone and the companion API needed to mak
 ### L0A — sheaves of modules
 
 Construct the symmetric monoidal closed structure on `X.Modules` from presheaf tensor product and
-sheafification. Expose the tensor--Hom adjunction, evaluation, coevaluation, restriction and stalk
-formulas. Make module pullback a strong symmetric monoidal functor with coherent identity and
-composition comparisons.
+sheafification, with a natural comparison identifying the tensor object and tensor maps with
+that sheafification construction. Expose the tensor--Hom adjunction, evaluation, coevaluation,
+and restriction formulas. For internal Hom, construct the canonical stalk comparison
+`Hom(E,F)_x → Hom(E_x,F_x)`; prove it is an isomorphism for finitely presented `E`, without
+asserting this for unrestricted sources. Make module pullback a strong symmetric monoidal functor
+with coherent identity and composition comparisons.
 
 **Milestone:** a symmetric monoidal closed category of sheaves of modules, with internal Hom
 characterized by the tensor--Hom adjunction.
@@ -210,7 +229,11 @@ characterized by the tensor--Hom adjunction.
 
 Prove that quasicoherence is an `ObjectProperty.IsMonoidal` and obtain the symmetric monoidal
 structure on `QCoh(X)` from Mathlib's generic full-subcategory machinery. Internal Hom from a
-finitely presented source preserves quasicoherence; for finite locally free `E`, construct
+finitely presented source preserves quasicoherence. Construct the canonical comparison
+`f* Hom(E,F) → Hom(f* E,f* F)`: it is an isomorphism for a finitely presented source and flat
+`f`, or for a finite locally free source and arbitrary `f`. Finite presentation alone does not
+justify a nonflat base-change isomorphism (see [Stacks, tag 0C6I](https://stacks.math.columbia.edu/tag/0C6I)).
+For finite locally free `E`, construct
 
 ```math
 \mathcal H\!om(\mathcal E,\mathcal F)
@@ -258,6 +281,11 @@ affineFunctions : AffSch/X ⥤ QCAlg(X)ᵒᵖ
 ```
 
 and state the functor-of-points equivalence naturally in the test scheme and the algebra.
+The carrier of `affineFunctions(V)` is the actual `p_* O_V`: its unit and multiplication are
+those on regular functions, and its morphism on `g : V → W` pulls back regular functions along
+`g`. The universal property's test-scheme map pulls back algebra maps using the coherent
+pullback-composition comparison and the structure-sheaf comparison; its algebra map is
+precomposition with the pulled-back algebra morphism.
 
 ### L1B — the relative-Spec anti-equivalence
 
@@ -281,7 +309,9 @@ Use `GradedObject` and commutative monoid objects to define nonnegatively graded
 algebras with graded algebra morphisms. Construct the graded symmetric algebra and its full
 subcategory of objects freely generated in degree one. Apply relative Spec while retaining this
 grading. On `V_lin(F)`, construct zero, addition and scalar multiplication and prove the affine
-formulas and the equivalence with the graded presentation.
+formulas and the equivalence with the module-scheme presentation satisfying the canonical
+symmetric-algebra isomorphism condition above. The recognition theorem and its morphism
+correspondence concern precisely these free-degree-one objects.
 
 **First milestone:** the degree-one functor and `linearSpec` are quasi-inverse equivalences
 
@@ -328,13 +358,22 @@ the vectors of `E_x\otimes k(x)`.
 
 - Through `tildeEquiv`, a finite projective `R`-module `M` gives
   `Spec(Sym_R(M^\vee)) \to Spec R`.
-- The free sheaf on `Fin r` gives affine `r`-space and represents `r`-tuples of sections.
+- The free sheaf on `Fin r` (universe-lifted in Lean) gives Mathlib's `AffineSpace` and represents
+  `r`-tuples of sections. Compare the universal property with `AffineSpace.homOfVector` and
+  `AffineSpace.homOverEquiv`, and its affine normalization with `AffineSpace.SpecIso`.
+  For rank one, recover `Γ(T,O_T)` with test-scheme maps given by pullback of regular functions.
+  A free-bundle map with matrix `A` over `Γ(X,O_X)` acts on section vectors over `T` by the
+  matrix obtained by pulling each entry of `A` along `T → X`.
 - `InvertibleSheaf.trivial X` gives the trivial geometric line bundle.
 
 ## Cross-cutting acceptance criteria
 
-- Every construction has restriction, affine-local computation, pullback, and arbitrary-base-change
-  theorems.
+- Every construction has restriction, affine-local computation and pullback comparisons. Prove
+  arbitrary-base-change isomorphisms for relative Spec, symmetric/exterior powers and finite
+  locally free bundle operations. For internal Hom, the general base-change and stalk statements
+  are comparison maps; the base-change isomorphism requires a finitely presented source and flat
+  base change, or a finite locally free source and arbitrary base change, and the stalk
+  isomorphism requires a finitely presented source.
 - Every opaque construction has a characteristic equation identifying its underlying object with
   the intended Mathlib or earlier-roadmap construction.
 - Every equivalence exposes its functors, unit, counit, and naturality, and identifies its
